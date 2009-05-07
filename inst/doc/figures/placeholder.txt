@@ -1,0 +1,1 @@
+Sweave stores some figures in this directory.

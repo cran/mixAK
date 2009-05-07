@@ -1,0 +1,609 @@
+%\VignetteIndexEntry{Mixture Analysis of the Galaxy Data}
+
+\documentclass[a4paper, 11pt]{article}
+
+\newcommand{\FIGKEEPDIR}{./figuresKeep}
+\newcommand{\FIGDIR}{./figures}
+
+\usepackage{amssymb, amsmath}
+\usepackage{color}
+\usepackage{graphicx} 
+\usepackage{psfrag}
+\usepackage{natbib}
+\usepackage{SweaveAK}
+%\usepackage{Sweave}
+\usepackage[breaklinks=true]{hyperref}
+
+\setlength{\textwidth}{6.5in} 
+\setlength{\textheight}{9.5in}
+\setlength{\voffset}{-1in}
+\setlength{\hoffset}{-0.6in} 
+\setlength{\parskip}{1ex}
+\setlength{\parindent}{0pt}
+
+\newcommand{\AKpack}{\textsf{mixAK}}
+\newcommand{\Ritem}{\textcolor{blue}{\textsf{R}$\boldsymbol{\Rightarrow}$}\ }
+
+\title{Mixture Analysis of the \textsf{Galaxy} Data Using the Package {\AKpack}}
+\author{Arno\v{s}t Kom\'arek}
+%\address{Dept. of Probability and Mathematical Statistics, 
+%         Faculty of Mathematics and Physics,
+%         Charles University in Prague, 
+%         Sokolovsk\'a 83, CZ--186$\;$75, Praha 8, Czech Republic}
+
+\begin{document}
+
+\maketitle
+\par\rule{\textwidth}{1pt}
+
+\bigskip
+This document supplements a~paper \citet{KomarekNMix} and shows an~analysis of the Galaxy data 
+introduced in the context of mixture modelling by \citet{Roeder90} using the {\Rko} package 
+\Rfun{\AKpack}. 
+
+\section{Introduction}
+\textbullet\ 
+Due to the fact that some code (especially MCMC) is time consuming, some code chunks found in this
+vignette are not run when compiling the package. You should set the variable \Rvar{RUN.TIMECONSUMING.CODE}
+to \Rvar{TRUE} to run full MCMC and related code.
+
+\textbullet\ Having run full MCMC and related code, setting the variable \Rvar{RUN.ALLOUT}
+to \Rvar{TRUE} will cause that all output shown in this vignette is re-created and not taken
+from previously computed results.
+
+\textbullet\ Results based on full MCMC runs are stored (chains excluded) in \Rfile{Galaxy-Result.RData}
+in \Rfile{./RESULT\_{}OBJ} directory and are used to create majority of this vignette
+at the time of compilation of the package.
+
+\bigskip
+\Ritem Setting variables \Rvar{RUN.ALLOUT} and \Rvar{RUN.TIMECONSUMING.CODE}.
+<<What should be created in this Sweave run>>=
+RUN.TIMECONSUMING.CODE <- FALSE
+RUN.ALLOUT <- FALSE
+@ 
+
+\Ritem Directory to store postscript files with figures.
+Figures which require chains are stored in \Rvar{FIGKEEPDIR} directory all other figures
+are stored in \Rvar{FIGDIR} directory.
+<<Directory to store figures>>=
+FIGDIR <- "./figures/"
+FIGKEEPDIR <- "./figuresKeep/"
+@ 
+
+\Ritem Directories with results computed in past.
+Objects with chains will be stored in directory specified by variable \Rvar{RESULTDIR}.
+All other objects will be stored in directory \Rvar{RESULT2DIR}.
+%%% Scripts to compute main objects:  /home/komarek/Rlib/mixAK/Vignette/RMCMC/Galaxy-MCMC.R
+<<Directory with results computed in past, keep.source=TRUE>>=
+RESULTDIR <- "/home/komarek/RESULT_OBJ/mixAK-Galaxy-S081115/"
+RESULT2DIR <- "./RESULT_OBJ/"      ### available in package as /inst/doc/RESULT_OBJ
+@
+
+\Ritem Display options.
+<<Options>>=
+options(width=80)
+@ 
+
+\Ritem Load results computed in past.
+<<Load results computed in past, keep.source=TRUE>>=
+if (RUN.ALLOUT){
+  load(paste(RESULT2DIR, "Galaxy-Result.RData", sep=""))    
+     ## contains RJModel2 (without chains), FixModel2 (without chains), 
+     ##          PDensRJ2, PDensFix2  
+  load(paste(RESULTDIR, "Galaxy-RJ2.RData", sep=""))        
+     ## contains RJModel2 (contains chains as well)
+}else{
+  load(paste(RESULT2DIR, "Galaxy-Result.RData", sep=""))    
+     ## contains RJModel2 (without chains), FixModel2 (without chains), 
+     ##          PDensRJ2, PDensFix2  
+}  
+@ 
+
+\Ritem Load the package {\AKpack} and package \Rfun{coda} which will be used to perform
+some basic convergence diagnostics.
+<<Load needed packages>>=
+library("mixAK")
+library("coda")
+@ 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\clearpage
+\section{Exploration of the data}
+
+\Ritem The data are read and summarized as follows. 
+<<Read the data and compute a brief summary>>=
+data("Galaxy", package="mixAK")
+summary(Galaxy)
+@
+\Ritem Additionally, Figure~\ref{fig01} shows the histogram of the data.
+<<Draw histogram, keep.source=TRUE, results=hide>>=
+postscript(paste(FIGDIR, "figGalaxy01.ps", sep=""), width=6, height=6, 
+           horizontal=FALSE)
+par(mfrow=c(1, 1), bty="n")
+hist(Galaxy, prob=TRUE, col="sandybrown", breaks=seq(7, 37, by=0.5), 
+     xlab="Velocity (km/sec)", ylab="Density", main="")
+dev.off()
+@ 
+\begin{figure}[b!]\centering
+%\vspace*{-8ex}
+\includegraphics[width=0.8\textwidth, height=0.4\textheight]{\FIGDIR/figGalaxy01.ps}
+\caption{Histogram of Galaxy data.}\label{fig01}
+\end{figure}
+
+%%%%% %%%%%%%%%%%%%%%
+\clearpage
+\section{Preparation of the MCMC}
+
+\Ritem Length of the MCMC simulation for all models in this document 
+(burn-in of 100\,000 iterations, additional 500\,000 iterations
+are kept for the inference, thinning 1:10):
+<<Length of the MCMC, keep.source=TRUE>>=
+nMCMC <- c(burn=100000, keep=500000, thin=10, info=10000)
+@ 
+\Ritem Grid of values where we evaluate and subsequently plot the predictive density for all models in this document:
+<<Grid of values for the predictive density>>=
+ygrid <- seq(5, 40, length=500)
+@ 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\clearpage
+\section{Model with a~number of components estimated using the RJ-MCMC}
+
+%%%%% %%%%%%%%%%%%%%%
+\subsection{Specification of the prior distributions and MCMC simulation}
+
+\Ritem The minimal specification of the prior distribution and running RJ-MCMC with default values for all 
+prior parameters:
+<<RJ prior distribution, keep.source=TRUE>>=
+RJPrior1 <- list(priorK="uniform", Kmax=30)
+if (RUN.TIMECONSUMING.CODE){
+  RJModel1 <- NMixMCMC(y0=Galaxy, prior=RJPrior1, nMCMC=nMCMC, 
+                       scale=list(shift=0, scale=1), PED=TRUE)
+}  
+@ 
+\Ritem The prior distribution for the function \Rfun{NMixMCMC} was the same as with
+<<The prior distribution for the function NMixMCMC was the same as with, keep.source=TRUE>>=
+RJPrior1 <- list(priorK="uniform", Kmax=30,
+                 delta=1,
+                 priormuQ="independentC", xi=21.7255, D=630.3614,
+                 zeta=2, g=0.2, h=0.01586391)
+@ 
+
+% --------------------------------------
+In the following, we will use the same prior hyperparameters and tuning parameters as in \citet{RichardsonGreen97} when analyzing this dataset. 
+Note that our prior for the mixture inverse variances is parametrized in terms of the Wishart distribution whereas Gamma distribution is used 
+in \citet{RichardsonGreen97}. Hence our $\zeta = 2\cdot2$ corresponds to $\alpha = 2$ in [RG] and our $h = 0.016/2$ corresponds to 
+$h = 0.016$ in [RG]. \\[1ex]
+\Ritem Prior distribution of \citet{RichardsonGreen97}:
+<<RJ prior distribution of Richardson and Green, keep.source=TRUE>>=
+RJPrior2 <- list(priorK="uniform", Kmax=30,
+                 delta=1,
+                 priormuQ="independentC", xi=21.73, D=630.5121,
+                 zeta=2*2, g=0.2, h=0.016/2)
+@
+
+% --------------------------------------
+\Ritem Parameters to tune RJ-MCMC:
+<<Tuning parameters for RJ-MCMC, keep.source=TRUE>>=
+parRJMCMC2 <- list(par.u1=c(2, 2), 
+                   par.u2=c(2, 2), 
+                   par.u3=c(1, 1))
+@ 
+
+% --------------------------------------
+\clearpage
+\Ritem Running the MCMC simulation.
+
+<<TESTING: RJMCMC, echo=FALSE, results=hide>>=
+set.seed(770328)
+TEST.RJModel2 <- NMixMCMC(y0=Galaxy, prior=RJPrior2, RJMCMC=parRJMCMC2, nMCMC=c(burn=100, keep=100, thin=2, info=50), scale=list(shift=0, scale=1), PED=TRUE)
+TEST.PDensRJ2 <- NMixPredDensMarg(TEST.RJModel2[[1]], grid=ygrid)  
+@ 
+
+\Ritem Two chains will be generated since the argument \Rarg{PED} is set to \Rvar{TRUE}
+(output is shown from MCMC simulation performed by author):
+<<RJMCMC, keep.source=TRUE, results=hide>>=
+if (RUN.TIMECONSUMING.CODE){
+  set.seed(770328)
+  RJModel2 <- NMixMCMC(y0=Galaxy, prior=RJPrior2, RJMCMC=parRJMCMC2, 
+                       nMCMC=nMCMC, scale=list(shift=0, scale=1), PED=TRUE)
+}  
+@ 
+%% CP time: PC Karlin (Pentium Dual Core 3GHz, 3 MB RAM)
+\begin{Schunk}
+\begin{Soutput}
+Chain number 1
+==============
+MCMC sampling started on Tue Nov 11 12:11:23 2008.
+Burn-in iteration 100000
+Iteration 600000
+MCMC sampling finished on Tue Nov 11 12:22:08 2008.
+
+Chain number 2
+==============
+MCMC sampling started on Tue Nov 11 12:22:09 2008.
+Burn-in iteration 100000
+Iteration 600000
+MCMC sampling finished on Tue Nov 11 12:32:55 2008.
+
+Computation of penalized expected deviance started on Tue Nov 11 12:32:57 2008.
+Computation of penalized expected deviance finished on Tue Nov 11 12:36:54 2008.
+\end{Soutput}
+\end{Schunk}
+
+% --------------------------------------
+\Ritem Information concerning the acceptance rates of different move types (separately for each chain):
+<<RJMCMC: Acceptance rates of the different move types>>=
+print(RJModel2[[1]]$moves)
+print(RJModel2[[2]]$moves)
+@
+
+
+%%%%% %%%%%%%%%%%%%%%
+\clearpage
+\subsection{Posterior inference}
+
+% --------------------------------------
+\Ritem Basic posterior summary of the fitted model:
+<<RJMCMC: Basic posterior summary>>=
+print(RJModel2)
+@
+
+% --------------------------------------
+\clearpage
+\Ritem Computation of the predictive density (separately for chain 1 and chain 2):
+<<RJMCMC: Predictive density>>=
+if (RUN.TIMECONSUMING.CODE){
+  PDensRJ2 <- list()
+  PDensRJ2[[1]] <- NMixPredDensMarg(RJModel2[[1]], grid=ygrid)
+  PDensRJ2[[2]] <- NMixPredDensMarg(RJModel2[[2]], grid=ygrid)
+}  
+@
+
+% --------------------------------------
+\Ritem Default \Rfun{plot} method for the computed object (see Figure~\ref{fig02}):
+<<RJMCMC: Plot of the predictive density, echo=TRUE, results=hide>>=
+postscript(paste(FIGDIR, "figGalaxy02.ps", sep=""), width=6, height=6, horizontal=FALSE)
+par(mfrow=c(1, 1), bty="n")
+plot(PDensRJ2[[1]], xlab="Velocity (km/sec)")
+dev.off()
+@ 
+
+% --------------------------------------
+\Ritem Plots of conditional predictive densities (given $K$) plus the overall predictive density (see Figure~\ref{fig03}):
+<<RJMCMC: Plot of the conditional predictive densities, keep.source=TRUE, results=hide>>=
+postscript(paste(FIGDIR, "figGalaxy03.ps", sep=""), width=6, height=6, 
+           horizontal=FALSE)
+par(mfrow=c(1, 1), bty="n")
+plot(PDensRJ2[[1]], K=c(0, 4:7), xlab="Velocity (km/sec)", 
+     lty=c(1, rep(2, 4)), col=c("darkblue", rep("red", 4)), 
+     lwd=c(2, rep(1, 4)))
+dev.off()
+@ 
+
+% --------------------------------------
+\Ritem Plot of the predictive density together with the histogram of the data for both chains
+(see Figure~\ref{fig04}):
+<<RJMCMC: Plot of the predictive density, keep.source=TRUE, echo=TRUE, results=hide>>=
+postscript(paste(FIGDIR, "figGalaxy04.ps", sep=""), width=6, height=10, 
+           horizontal=FALSE)
+par(mfrow=c(2, 1), bty="n")
+#
+## Chain 1
+hist(Galaxy, prob=TRUE, col="sandybrown", 
+     breaks=seq(7, 37, by=0.5), 
+     xlab="Velocity (km/sec)", ylab="Density", main="Chain 1")
+lines(PDensRJ2[[1]]$x$x1, PDensRJ2[[1]]$dens[[1]], 
+      col="darkblue", lwd=2)
+#
+## Chain 2
+hist(Galaxy, prob=TRUE, col="sandybrown", 
+     breaks=seq(7, 37, by=0.5), 
+     xlab="Velocity (km/sec)", ylab="Density", main="Chain 2")
+lines(PDensRJ2[[2]]$x$x1, PDensRJ2[[2]]$dens[[1]], 
+      col="darkblue", lwd=2)
+dev.off()
+@
+
+\begin{figure}[p!]\centering
+\includegraphics[width=1.0\textwidth, height=0.45\textheight]{\FIGDIR/figGalaxy02.ps}
+\caption{Predictive density based on the model with a~random number of mixture components
+(results from chain~1).}\label{fig02}
+\includegraphics[width=1.0\textwidth, height=0.45\textheight]{\FIGDIR/figGalaxy03.ps}
+\caption{Overall predictive density based on the model with a~random number of mixture components (in blue) and
+  conditional predictive densities for $K=4,5,6,7$ (in red),
+  results from chain~1.}\label{fig03}
+\end{figure}
+
+\begin{figure}[p!]\centering
+\includegraphics[width=1.0\textwidth, height=0.9\textheight]{\FIGDIR/figGalaxy04.ps}
+\caption{Predictive density (red line) based on the model with a~random number of mixture components.}\label{fig04}
+\end{figure}
+
+
+%%%%% %%%%%%%%%%%%%%%
+\clearpage
+\subsection{Convergence diagnostics}
+\Ritem Single chain convergence diagnostics using chain~1 will be shown here.
+<<RJMCMC: Choose chain>>=
+CH <- 1
+@ 
+
+\Ritem Converting the chains into \Rfun{mcmc} objects to be used in the package \Rfun{coda}:
+<<RJMCMC: Create mcmc objects, keep.source=TRUE>>=
+if (RUN.ALLOUT){
+  start <- RJModel2[[CH]]$nMCMC["burn"] + 1
+  end <- RJModel2[[CH]]$nMCMC["burn"] + RJModel2[[CH]]$nMCMC["keep"]
+  chK <- mcmc(RJModel2[[CH]]$K, start=start, end=end)
+  chgammaInv <- mcmc(RJModel2[[CH]]$gammaInv, start=start, end=end)
+  chmixture <- mcmc(RJModel2[[CH]]$mixture, start=start, end=end)
+  chdeviance <- mcmc(RJModel2[[CH]]$deviance, start=start, end=end)
+}
+@ 
+
+
+% --------------------------------------
+\Ritem Traceplots for selected parameters (not shown) can be drawn using the following commands:
+<<RJMCMC: Traceplots, keep.source=TRUE, results=hide>>=
+if (RUN.ALLOUT){
+  lwd <- 0.5
+  postscript(paste(FIGKEEPDIR, "figGalaxy07.ps", sep=""), width=6, height=9, 
+             horizontal=FALSE)
+  par(mfrow=c(2, 2), bty="n")
+  traceplot(chK, smooth=FALSE, col="darkgreen", lwd=lwd, main="K")
+  traceplot(chgammaInv[, "gammaInv1"], smooth=FALSE, 
+            col="brown", lwd=lwd, main="gamma^{-1}")
+  traceplot(chmixture[, "y.Mean.1"], smooth=FALSE, 
+            col="darkblue", lwd=lwd, main="EY")
+  traceplot(chmixture[, "y.SD.1"], smooth=FALSE, 
+            col="darkblue", lwd=lwd, main="sd(Y)")
+  dev.off()
+#
+  postscript(paste(FIGKEEPDIR, "figGalaxy08.ps", sep=""), width=6, height=9, 
+             horizontal=FALSE)
+  par(mfrow=c(2, 2), bty="n")
+  traceplot(chdeviance[, "LogL0"], smooth=FALSE, 
+            col="red", lwd=lwd, main="Log(L0)")
+  traceplot(chdeviance[, "LogL1"], smooth=FALSE, 
+            col="red", lwd=lwd, main="Log(L1)")
+  traceplot(chdeviance[, "dev.complete"], smooth=FALSE, 
+            col="red", lwd=lwd, main="D(complete)")
+  traceplot(chdeviance[, "dev.observed"], smooth=FALSE, 
+            col="red", lwd=lwd, main="D(observed)")
+  dev.off()
+}
+@ 
+%\begin{figure}[p!]\centering
+%\includegraphics[width=1.0\textwidth, height=0.9\textheight]{\FIGKEEPDIR/figGalaxy07.ps}
+%\caption{Model with a~random number of mixture components. Traceplots for selected parameters.}\label{fig07}
+%\end{figure}
+%\begin{figure}[p!]\centering
+%\includegraphics[width=1.0\textwidth, height=0.9\textheight]{\FIGKEEPDIR/figGalaxy08.ps}
+%\caption{Model with a~random number of mixture components. Traceplots for selected parameters.}\label{fig08}
+%\end{figure}
+
+\newpage
+\Ritem On Figure~\ref{fig07a}, we show a~traceplot of $K$ of last 10\,000 iterations drawn using the
+following commands:
+<<RJMCMC: Short traceplot K, keep.source=TRUE, results=hide>>=
+if (RUN.ALLOUT){
+  chKpart <- mcmc(RJModel2[[CH]]$K[490001:500000], start=start+490000, end=end)
+  postscript(paste(FIGKEEPDIR, "figGalaxy07a.ps", sep=""), width=9, height=6, 
+             horizontal=FALSE)
+  par(mfrow=c(1, 1), bty="n")
+  traceplot(chKpart, smooth=FALSE, col="darkgreen", main="K")
+  dev.off()
+}  
+@ 
+\begin{figure}[b!]\centering
+\rotatebox{270}{
+  \includegraphics[width=0.9\textheight, height=\textwidth]{\FIGKEEPDIR/figGalaxy07a.ps}
+}
+\caption{Model with a~random number of mixture components. 
+Traceplots for the number of mixture components $K$ (last $10\,000$ iterations).}\label{fig07a}
+\end{figure}
+
+
+% --------------------------------------
+\Ritem Posterior density estimates for selected parameters (see Figure~\ref{fig09}):
+<<RJMCMC: Density plots, keep.source=TRUE, results=hide>>=
+if (RUN.ALLOUT){
+  postscript(paste(FIGKEEPDIR, "figGalaxy09.ps", sep=""), width=6, height=9, 
+             horizontal=FALSE)
+  par(mfrow=c(2, 2), bty="n")
+  densplot(chK, show.obs=FALSE, col="darkgreen", main="K")
+  densplot(chgammaInv[, "gammaInv1"], show.obs=FALSE, 
+           col="brown", main="gamma^{-1}", xlim=c(0, 30))
+  densplot(chmixture[, "y.Mean.1"], show.obs=FALSE, 
+           col="darkblue", main="EY", xlim=c(15, 25))
+  densplot(chmixture[, "y.SD.1"], show.obs=FALSE, 
+           col="darkblue", main="sd(Y)", xlim=c(0, 12))
+  dev.off()
+}  
+@
+\begin{figure}[p!]\centering
+\includegraphics[width=1.0\textwidth, height=0.9\textheight]{\FIGKEEPDIR/figGalaxy09.ps}
+\caption{Model with a~random number of mixture components. Posterior density estimates for selected parameters.}\label{fig09}
+\end{figure}
+
+
+% --------------------------------------
+\Ritem Autocorrelation plots for selected parameters (see Figure~\ref{fig10}):
+<<RJMCMC: Autocorrelation plots, keep.source=TRUE, results=hide>>=
+if (RUN.ALLOUT){
+  postscript(paste(FIGKEEPDIR, "figGalaxy10.ps", sep=""), width=6, height=9, 
+             horizontal=FALSE)
+  par(mfrow=c(2, 2), bty="n")
+  autocorr.plot(chK, auto.layout=FALSE, ask=FALSE, 
+                col="darkgreen", lwd=2, main="K")
+  autocorr.plot(chgammaInv[, "gammaInv1"], auto.layout=FALSE, ask=FALSE, 
+                col="brown", lwd=2, main="gamma^{-1}")
+  autocorr.plot(chmixture[, "y.Mean.1"], auto.layout=FALSE, ask=FALSE, 
+                col="darkblue", lwd=2, main="EY")
+  autocorr.plot(chmixture[, "y.SD.1"], auto.layout=FALSE, ask=FALSE, 
+                col="darkblue", lwd=2, main="sd(Y)")
+  dev.off()
+}  
+@
+\begin{figure}[p!]\centering
+\includegraphics[width=1.0\textwidth, height=0.9\textheight]{\FIGKEEPDIR/figGalaxy10.ps}
+\caption{Model with a~random number of mixture components. Autocorrelation plots for selected parameters.}\label{fig10}
+\end{figure}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\clearpage
+\section{Model with a~fixed number of components}
+We will fit a~mixture model for $K=1,\dots, 10$, compare the deviance based quantities
+and predictive densities. For the prior hyperparameters common to the model with a~random $K$, 
+we will use the same as in the model \Rvar{RJModel2}. \\[1ex]
+%
+\Ritem Specification of the prior hyperparameters:
+<<Fixed K prior distribution, keep.source=TRUE>>=
+FixPrior2 <- list(priorK="fixed",
+                  delta=1,
+                  priormuQ="independentC", xi=21.73, D=630.5121,
+                  zeta=2*2, g=0.2, h=0.016/2)
+@ 
+
+% --------------------------------------
+\Ritem Running the MCMC simulation for $K = 1,\dots, 10$ 
+(output printed during the MCMC run on the screen not shown),
+computation of predictive densities. \par
+\Ritem After predictive densities are computed, we remove all chains from resulting objects 
+(to save some memory).
+<<Fixed K MCMC, keep.source=TRUE, results=hide>>=
+if (RUN.TIMECONSUMING.CODE){
+  Keep <- c("iter", "nMCMC", "dim", "prior", "init", "RJMCMC", 
+            "scale", "state", "freqK", "propK", "DIC", "moves", 
+            "pm.y", "pm.z", "pm.indDev", "pred.dens", "summ.y.Mean", 
+            "summ.y.SDCorr", "summ.z.Mean", "summ.z.SDCorr")
+  set.seed(770328)  
+  FixModel2 <- list()
+  PDensFix2 <- list()
+  for (k in 1:10){
+    cat(paste("K = ", k, "\n-------------------------------\n", sep=""))
+    PriorNow <- FixPrior2
+    PriorNow$Kmax <- k
+    FixModel2[[k]] <- NMixMCMC(y0=Galaxy, prior=PriorNow, nMCMC=nMCMC, 
+                               scale=list(shift=0, scale=1), PED=TRUE)
+  #
+    cat(paste("\nComputation of pred. densities started on ", date(), 
+              "\n", sep=""))  
+    PDensFix2[[k]] <- list()
+    PDensFix2[[k]][[1]] <- NMixPredDensMarg(FixModel2[[k]][[1]], grid=ygrid)
+    PDensFix2[[k]][[2]] <- NMixPredDensMarg(FixModel2[[k]][[2]], grid=ygrid)
+    cat(paste("Computation of pred. densities finished on ", date(), 
+              "\n\n\n", sep=""))
+  #
+    FixModel2[[k]][[1]] <- FixModel2[[k]][[1]][Keep]
+    FixModel2[[k]][[2]] <- FixModel2[[k]][[2]][Keep]  
+    class(FixModel2[[k]][[1]]) <- class(FixModel2[[k]][[2]]) <- "NMixMCMC"    
+  }
+}  
+@ 
+
+% --------------------------------------
+\clearpage
+\Ritem Basic posterior summary of the fitted model with $K = 6$:
+<<Fixed K MCMC: Basic posterior summary>>=
+print(FixModel2[[6]])
+@
+
+% --------------------------------------
+\Ritem Summary of PED and DIC's for the fitted models:
+<<Fixed K: PED and DIC>>=
+PED <- RJModel2$PED
+DIC <- list(Chain1=RJModel2[[1]]$DIC, Chain2=RJModel2[[2]]$DIC)
+for (k in 1:length(FixModel2)){
+  PED <- rbind(PED, FixModel2[[k]]$PED)
+  DIC[[1]] <- rbind(DIC[[1]], FixModel2[[k]][[1]]$DIC)
+  DIC[[2]] <- rbind(DIC[[2]], FixModel2[[k]][[2]]$DIC)  
+}
+rownames(PED) <- rownames(DIC[[1]]) <- rownames(DIC[[2]]) <- c("RJ-MCMC", paste("K = ", 1:length(FixModel2), sep=""))
+@
+\clearpage
+<<Fixed K: print PED>>=
+print(PED)
+@ 
+<<Fixed K: print DIC>>=
+print(DIC)
+@ 
+
+
+% --------------------------------------
+\clearpage
+\Ritem Plot of the predictive densities for different values of $K$ 
+based on chain~1 (see Figures~\ref{fig05} and \ref{fig06}):
+<<Fixed K MCMC: Plot of the predictive density, keep.source=TRUE, results=hide>>=
+postscript(paste(FIGDIR, "figGalaxy05.ps", sep=""), width=6, height=6, 
+           horizontal=FALSE)
+par(mfrow=c(1, 1), bty="n")
+hist(Galaxy, prob=TRUE, col="grey90", breaks=seq(7, 37, by=0.5), 
+     xlab="Velocity (km/sec)", ylab="Density", main="")
+for (k in 1:10){
+  lines(PDensFix2[[k]][[1]]$x$x1, PDensFix2[[k]][[1]]$dens[[1]], col="red")
+}  
+dev.off()
+@ 
+
+% --------------------------------------
+<<Fixed K MCMC: Plot of the predictive density, keep.source=TRUE, results=hide>>=
+postscript(paste(FIGDIR, "figGalaxy06.ps", sep=""), width=6, height=9, 
+           horizontal=FALSE)
+par(mar=c(3, 2, 2, 1)+0.1)
+par(mfrow=c(5, 2), bty="n")
+for (k in 1:10){
+  hist(Galaxy, prob=TRUE, col="lightblue", breaks=seq(7, 37, by=0.5), 
+       xlab="", ylab="", main=paste("K = ", k, sep=""))
+  lines(PDensFix2[[k]][[1]]$x$x1, PDensFix2[[k]][[1]]$dens[[1]], col="red", lwd=2)
+}  
+dev.off()
+@ 
+
+% --------------------------------------
+\begin{figure}[b!]\centering
+\includegraphics[width=1.0\textwidth, height=0.45\textheight]{\FIGDIR/figGalaxy05.ps}
+\caption{Predictive densities based on the models with a~fixed number of mixture components
+(results from chain~1).}\label{fig05}
+\end{figure}
+
+% --------------------------------------
+\begin{figure}[b!]\centering
+\includegraphics[width=1.0\textwidth, height=0.9\textheight]{\FIGDIR/figGalaxy06.ps}
+\caption{Predictive densities based on the models with a~fixed number of mixture components
+(results from chain~1).}\label{fig06}
+\end{figure}
+
+
+% --------------------------------------
+\clearpage
+\Ritem Save results for future use. For file \Rfile{Galaxy-Result.RData}, we exclude all chains
+from object \Rvar{RJModel2}.
+<<Save results, keep.source=TRUE>>=
+if (RUN.TIMECONSUMING.CODE){
+  save(list="RJModel2", 
+       file=paste(RESULTDIR, "Galaxy-RJ2.RData", sep=""))  
+  
+  Keep <- c("iter", "nMCMC", "dim", "prior", "init", "RJMCMC", 
+            "scale", "state", "freqK", "propK", "DIC", "moves", 
+            "pm.y", "pm.z", "pm.indDev", "pred.dens", "summ.y.Mean", 
+            "summ.y.SDCorr", "summ.z.Mean", "summ.z.SDCorr")
+  #
+  RJModel2[[1]] <- RJModel2[[1]][Keep]
+  RJModel2[[2]] <- RJModel2[[2]][Keep]
+  class(RJModel2[[1]]) <- class(RJModel2[[2]]) <- "NMixMCMC"
+  #
+  save(list=c("RJModel2", "PDensRJ2", "FixModel2", "PDensFix2"), 
+       file=paste(RESULT2DIR, "/Galaxy-Result.RData", sep=""))    
+}  
+@ 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\clearpage
+\bibliographystyle{akplainnat}\bibliography{mixAK}
+
+
+\end{document}

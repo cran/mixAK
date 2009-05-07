@@ -1,0 +1,1113 @@
+%\VignetteIndexEntry{Mixture Analysis of the Signal Tandmobiel Data}
+
+\documentclass[a4paper, 11pt]{article}
+
+\newcommand{\FIGKEEPDIR}{./figuresKeep}
+\newcommand{\FIGDIR}{./figures}
+
+\usepackage{amssymb, amsmath}
+\usepackage{color}
+\usepackage{graphicx} 
+\usepackage{psfrag}
+\usepackage{natbib}
+\usepackage{multicol}
+\usepackage{SweaveAK}
+%\usepackage{Sweave}
+\usepackage[breaklinks=true]{hyperref}
+
+\setlength{\textwidth}{6.5in} 
+\setlength{\textheight}{9in}
+\setlength{\hoffset}{-0.6in} 
+\setlength{\parskip}{1ex}
+\setlength{\parindent}{0pt}
+
+\newcommand{\AKpack}{\textsf{mixAK}}
+\newcommand{\Ritem}{\textcolor{blue}{\textsf{R}$\boldsymbol{\Rightarrow}$}\ }
+\newcommand{\Kshow}{two}
+\newcommand{\nKshow}{2}
+
+\title{Mixture Analysis of the \textsf{Signal Tandmobiel}$^{\circledR}$ Data Using the Package {\AKpack}}
+\author{Arno\v{s}t Kom\'arek}
+%\address{Dept. of Probability and Mathematical Statistics, 
+%         Faculty of Mathematics and Physics,
+%         Charles University in Prague, 
+%         Sokolovsk\'a 83, CZ--186$\;$75, Praha 8, Czech Republic}
+
+\begin{document}
+
+\maketitle
+\par\rule{\textwidth}{1pt}
+
+\bigskip
+This document supplements a~paper \citet{KomarekNMix} and shows an~analysis of a~part of 
+Signal Tandmobiel$^{\circledR}$ data introduced in \citet{Vanobbergenet00}. We will estimate 
+a~joint distribution of the emergence times of six permanent teeth
+from one quandrant of the mouth. The dataset contains observed intervals of teeth emergence 
+for 4\,430 Flemish children resulting from a~longitudinal project performed in 1996\,--\,2002. 
+The observed intervals result from annual dental examinations
+and are hence of the length approximately one year.
+
+\section{Introduction}
+\textbullet\ 
+Due to the fact that some code (especially MCMC) is time consuming, some code chunks found in this
+vignette are not run when compiling the package. You should set the variable \Rvar{RUN.TIMECONSUMING.CODE}
+to \Rvar{TRUE} to run full MCMC and related code.
+
+\textbullet\ Having run full MCMC and related code, setting the variable \Rvar{RUN.ALLOUT}
+to \Rvar{TRUE} will cause that all output shown in this vignette is re-created and not taken
+from previously computed results.
+
+\textbullet\ Results based on full MCMC runs are stored (chains excluded) in \Rfile{Tandmob-Result.RData}
+in \Rfile{./RESULT\_{}OBJ} directory and are used to create majority of this vignette
+at the time of compilation of the package. Additionally, file \Rfile{Tandmob-PDensBiModelK02.RData}
+in the same directory contains estimated predictive density.
+
+\bigskip
+\Ritem Setting variables \Rvar{RUN.ALLOUT} and \Rvar{RUN.TIMECONSUMING.CODE}.
+<<What should be created in this Sweave run>>=
+RUN.TIMECONSUMING.CODE <- FALSE
+RUN.ALLOUT <- FALSE
+@ 
+
+\Ritem Directory to store postscript files with figures.
+Figures which require chains are stored in \Rvar{FIGKEEPDIR} directory all other figures
+are stored in \Rvar{FIGDIR} directory.
+<<Directory to store figures>>=
+FIGDIR <- "./figures/"
+FIGKEEPDIR <- "./figuresKeep/"
+@ 
+
+\Ritem Directories with results computed in past.
+Objects with chains will be stored in directory specified by variable \Rvar{RESULTDIR}.
+All other objects will be stored in directory \Rvar{RESULT2DIR}.
+%%% Scripts to compute main objects:  /home/komarek/Rlib/mixAK/Vignette/RMCMC/Faithful-MCMC.R
+<<Directory with results computed in past, keep.source=TRUE>>=
+RESULTDIR <- "/home/komarek/RESULT_OBJ/mixAK-Tandmob-S090426/"
+RESULT2DIR <- "./RESULT_OBJ/"      ### available in package as /inst/doc/RESULT_OBJ
+@
+
+\Ritem Display options.
+<<Options>>=
+options(width=80)
+@ 
+
+\Ritem Load results computed in past. Variable \Rvar{Kshow} determines which value for fixed
+number of components $K$ is used in section~\ref{sec:modelFixedK}.
+<<Load results computed in past, keep.source=TRUE>>=
+Kshow <- 2
+if (RUN.ALLOUT){
+  load(paste(RESULT2DIR, "Tandmob-Result.RData", sep=""))                    
+     ## contains ModelK (without chains), PDensUniModelK  
+  load(paste(RESULT2DIR, "Tandmob-PDensBiModelK0", Kshow,".RData", sep=""))  
+     ## contains PDensBiModelK[[Kshow]]    
+  load(paste(RESULTDIR, "Tandmob-Model0", Kshow, ".RData", sep=""))          
+     ## contains Model0=ModelK[[Kshow]] (chains included)  
+  PDensUniModel0 <- PDensUniModelK[[Kshow]]
+  PDensBiModel0 <- PDensBiModelK[[Kshow]]    
+}else{
+  load(paste(RESULT2DIR, "Tandmob-Result.RData", sep=""))                    
+     ## contains ModelK (without chains), PDensUniModelK
+  load(paste(RESULT2DIR, "Tandmob-PDensBiModelK0", Kshow,".RData", sep=""))  
+     ## contains PDensBiModelK[[Kshow]]  
+  Model0 <- ModelK[[Kshow]]
+  PDensUniModel0 <- PDensUniModelK[[Kshow]]
+  PDensBiModel0 <- PDensBiModelK[[Kshow]]  
+}  
+@ 
+
+\Ritem Load the package {\AKpack} and packages \Rfun{coda} and \Rfun{colorspace}. 
+Package \Rfun{coda} is used to perform some basic convergence diagnostics, package \Rfun{colorspace}
+is used to draw nicer image plots with estimated bivariate densities.
+<<Load needed packages>>=
+library("mixAK")
+library("coda")
+library("colorspace")
+@ 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\clearpage
+\section{Exploration of the data}
+
+\Ritem The data are read as follows.
+<<Read the data and compute a brief summary>>=
+data("Tandmob", package="mixAK")
+data("TandmobEmer", package="mixAK")
+@ 
+\Ritem The following table shows the number and proportion of each type of censoring for each tooth.
+<<Table showing the number and proportion of each type of censoring for each tooth, keep.source=TRUE>>=
+NUM.PROP.CENS <- function(data, tanden)
+{
+  TABLE <- matrix(NA, nrow=length(tanden), ncol=3)
+  rownames(TABLE) <- paste(tanden)
+  colnames(TABLE) <- c("Left", "Interval", "Right")
+  for (tt in 1:length(tanden)){
+    ebeg <- get(data)[,paste("EBEG.", tanden[tt], sep="")]
+    eend <- get(data)[,paste("EEND.", tanden[tt], sep="")]  
+    TABLE[tt, "Left"]     <- sum(is.na(ebeg) & !is.na(eend))  
+    TABLE[tt, "Interval"] <- sum(!is.na(ebeg) & !is.na(eend))
+    TABLE[tt, "Right"]    <- sum(!is.na(ebeg) & is.na(eend))      
+    rm(list=c("ebeg", "eend"))  
+  }
+  PROP.TABLE <- t(round(apply(TABLE, 1, prop.table)*100, 3))
+  RET <- list(Table=TABLE, Prop.Table=PROP.TABLE)
+  return(RET)
+}
+
+tanden <- rep(c(10, 20, 30, 40), 7) + rep(1:7, each=4)
+TAB01 <- NUM.PROP.CENS(data="Tandmob", tanden=tanden)
+@
+\clearpage
+\begin{multicols}{2}
+<<Print table TAB01, echo=FALSE>>=
+print(TAB01)
+@ 
+\end{multicols}
+
+%%%%% %%%%%%%%%%%%%%%
+\clearpage
+\section{Transformation of the data and preparation of the MCMC}
+\Ritem We will take teeth 1--6 of one quadrant (right maxillary teeth, i.e. teeth 11, 12, 13, 14, 15, 16). 
+To pass the data into \Rfun{NMixMCMC} function, 6-column matrices (called \Rvar{y0}, \Rvar{y1} and \Rvar{censor}) have to be created. 
+Matrix \Rvar{y0} will contain lower limit of observed intervals in the case of interval censoring or lower limits of right-censored observations. 
+Matrix \Rvar{y1} will contain upper limits of observed intervals in the case of interval censoring and \Rvar{NA}'s in the case of right censoring. 
+Matrix \Rvar{censor} will contain \Rvar{3} for interval-censored observations and \Rvar{0} for right-censored observations. 
+All originally left-censored observations have been changed into interval-censored ones with 5 years of age as the lower limit of the observed intervals 
+in the \Rfun{data.frame} \Rvar{TandmobEmer}. The reason for this is the fact that 5~years of age is clinically the minimal age when the permanent teeth 
+emerge \citep{Ekstrandet03}. However note that this is not necessary and it is possible to consider also left-censored observation and pass them into 
+the function \Rfun{NMixMCMC} (use then the \Rfun{data.frame} \Rvar{Tandmob}). 
+
+\Ritem Preparation of the data using the original \Rfun{data.frame} \Rvar{Tandmob}:
+<<Preparation of the data using the original data.frame Tandmob, keep.source=TRUE>>=
+Emerg.min <- 5
+
+Tooth <- 10 + 1:6
+y0 <- Tandmob[, paste("EBEG.", Tooth, sep="")]
+y1 <- Tandmob[, paste("EEND.", Tooth, sep="")]
+y0[is.na(y0)] <- Emerg.min     
+   ### Left-censored changed into interval-censored with the lower limit=5
+   ###
+censor <- matrix(3, nrow=nrow(y0), ncol=length(Tooth))
+censor[is.na(y1)] <- 0
+   ###
+colnames(y0) <- colnames(y1) <- colnames(censor) <- Tooth
+rownames(y0) <- rownames(y1) <- rownames(censor) <- Tandmob$IDNR
+@ 
+
+\Ritem Preparation of the data using the \Rfun{data.frame} \Rvar{TandmobEmer}:
+<<Preparation of the data using the data.frame TandmobEmer>>=
+Tooth <- 10 + 1:6
+y0 <- TandmobEmer[, paste("EBEG.", Tooth, sep="")]
+y1 <- TandmobEmer[, paste("EEND.", Tooth, sep="")]
+censor <- TandmobEmer[, paste("CENSOR.", Tooth, sep="")]
+colnames(y0) <- colnames(y1) <- colnames(censor) <- Tooth
+rownames(y0) <- rownames(y1) <- rownames(censor) <- TandmobEmer$IDNR
+@ 
+
+\Ritem Print part of prepared data:
+\begin{multicols}{2}
+<<Print part of prepared data>>=
+print(y0[1:5,])
+print(y1[1:5,])
+@ 
+\end{multicols}
+
+\Ritem Print censor indicators:
+<<Print censor indicators>>=
+print(censor[1:5,])
+@ 
+
+\Ritem Length of the MCMC simulation for all models in this document 
+(burn-in of 10\,000 iterations, additional 20\,000 iterations
+are kept for the inference, thinning of 1:10):
+<<Length of the MCMC>>=
+nMCMC <- c(burn=10000, keep=20000, thin=10, info=1000)
+@ 
+
+\Ritem Grid of values where we evaluate and subsequently plot the predictive densities for 
+all models in this document (we use different range of values for different teeth to cover 
+the range when a~specific tooth emerges with probability approaching one):
+<<Grid of values for the predictive density, keep.source=TRUE>>=
+lygridBi <- 50
+lygridUni <- 100
+ymin <- c(4, 5, 6, 6, 6, 4)
+ymax <- c(10, 12, 17, 16, 17, 9)
+ygridBi <- list(seq(ymin[1], ymax[1], length=lygridBi),
+                seq(ymin[2], ymax[2], length=lygridBi),
+                seq(ymin[3], ymax[3], length=lygridBi),
+                seq(ymin[4], ymax[4], length=lygridBi),
+                seq(ymin[5], ymax[5], length=lygridBi),
+                seq(ymin[6], ymax[6], length=lygridBi))
+ygridUni <- list(seq(ymin[1], ymax[1], length=lygridUni),
+                 seq(ymin[2], ymax[2], length=lygridUni),
+                 seq(ymin[3], ymax[3], length=lygridUni),
+                 seq(ymin[4], ymax[4], length=lygridUni),
+                 seq(ymin[5], ymax[5], length=lygridUni),
+                 seq(ymin[6], ymax[6], length=lygridUni))
+@ 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\clearpage
+\section{Model with {\Kshow} mixture components}\label{sec:modelFixedK}
+In this section, we will fit a~mixture model with $K={\nKshow}$ components.
+
+\Ritem We will also compute penalized expected deviance and hence two chains will be sampled.
+
+<<TESTING: Prior distribution and model with two components and posterior predictive density, echo=FALSE, eval=TRUE, results=hide>>=
+set.seed(770328)
+Prior0 <- list(priorK="fixed", Kmax=2)
+TEST.Model0 <- NMixMCMC(y0=y0[1:100,], y1=y1[1:100,], censor=censor[1:100,], prior=Prior0, 
+                        nMCMC=c(burn=100, keep=100, thin=2, info=50), scale=list(shift=0, scale=1), PED=TRUE)
+TEST.Model0 <- NMixMCMC(y0=y0, y1=y1, censor=censor, prior=Prior0, 
+                        nMCMC=c(burn=10, keep=10, thin=2, info=10), scale=list(shift=0, scale=1), PED=TRUE)
+TEST.PDensUniModel0 <- NMixPredDensMarg(TEST.Model0[[1]], grid=ygridUni)
+TEST.PDensBiModel0 <- NMixPredDensJoint2(TEST.Model0[[1]], grid=ygridBi)
+@ 
+
+\subsection{Specification of the prior distributions and MCMC simulation}
+\Ritem The minimal specification of the prior distribution with $K={\nKshow}$:
+<<Prior distribution>>=
+Prior0 <- list(priorK="fixed", Kmax=2)
+@ 
+
+\Ritem Running MCMC with default values for all prior parameters and $K={\nKshow}$
+(output is shown from MCMC simulation performed by author):
+<<Model with two components, keep.source=TRUE>>=
+if (RUN.TIMECONSUMING.CODE){
+  set.seed(770328)  
+  Model0 <- NMixMCMC(y0=y0, y1=y1, censor=censor, prior=Prior0, 
+                     nMCMC=nMCMC, scale=list(shift=0, scale=1), PED=TRUE)
+}
+@ 
+%%% CP time: Snehurka
+\begin{Schunk}
+%% K = 2
+\begin{Soutput}  
+Chain number 1
+==============
+MCMC sampling started on Sun Apr 26 11:25:40 2009.
+Burn-in iteration 10000
+Iteration 30000
+MCMC sampling finished on Sun Apr 26 13:10:24 2009.
+
+Chain number 2
+==============
+MCMC sampling started on Sun Apr 26 13:10:26 2009.
+Burn-in iteration 10000
+Iteration 30000
+MCMC sampling finished on Sun Apr 26 14:55:48 2009.
+
+Computation of penalized expected deviance started on Sun Apr 26 14:55:50 2009.
+Computation of penalized expected deviance finished on Sun Apr 26 15:18:24 2009.
+\end{Soutput}
+\end{Schunk}
+
+\Ritem The prior distribution for the function \Rfun{NMixMCMC} was the same as with
+<<The prior distribution for the function NMixMCMC was the same as with, keep.source=TRUE, eval=FALSE>>=
+Prior0 <- list(priorK="fixed", Kmax=2,
+            delta=1,
+            priormuQ="independentC", 
+            xi=c(8.425, 9.508172, 9.769336, 9.75195, 9.789845, 7.675), 
+            D=diag(c(31.9225, 59.54195, 67.87572, 67.30397, 68.55327, 18.0625)),
+            zeta=7, 
+            g=0.2, 
+            h=c(0.3132587, 0.1679488, 0.1473281, 0.1488796, 0.1458720, 0.5536332))
+@ 
+Note that due to the fact that the argument \Rarg{scale} has been specified in function 
+\Rfun{NMixMCMC} as \Rarg{scale=list(shift=0, scale=1)}, the MCMC has been run on the original
+data.
+
+
+%%%%% %%%%%%%%%%%%%%%
+\clearpage
+\subsection{Posterior inference}
+
+% --------------------------------------
+\Ritem Basic posterior summary of the fitted model is obtained using the command \Rfun{print(Model0)}.
+
+\Ritem Quantities shown in section labeled 
+``\textsf{\color{blue} Penalized expected deviance}'' are computed from two sampled chains and
+have the following meaning: \Rvar{D.expect} is $\hat{D}_e$ from \citet{KomarekNMix},
+\Rvar{p(opt)} is estimated optimism $\hat{p}_{opt}$ computed with unit weights,
+\Rvar{PED} equals \Rvar{D.expect} $+$ \Rvar{p(opt)} gives the estimate of penalized
+expected deviance with optimism computed without the use of importance sampling.
+Further, \Rvar{wp(opt)} is estimated optimism $\hat{p}_{opt}$ computed as described
+in \citet{KomarekNMix}, i.e., using importance sampling. Finally, \Rvar{wPED} equals
+\Rvar{D.expect} $+$ \Rvar{wp(opt)} gives the estimate of penalized expected deviance
+as described in \citet{KomarekNMix}.
+
+\Ritem Quantities shown in section labeled
+``\textsf{\color{blue} Deviance information criteria}'' are computed separately from the first
+and the second sampled chain. They have the following meaning:
+\Rvar{DIC} is deviance information criterion denoted as DIC in \citet{KomarekNMix},
+\Rvar{pD} is the effective dimension $p_D$, \Rvar{D.bar} is approximated posterior mean
+$\overline{D}$ of the deviance and \Rvar{D.in.bar} is $\tilde{D}$ -- deviance evaluated
+in the ``estimate''.
+
+\Ritem Section ``\textsf{\color{blue} Posterior summary statistics for moments of mixture
+for original data}'' gives posterior summary statistics for 
+$\mbox{E}(\boldsymbol{Y}) = \boldsymbol{m} + \boldsymbol{S}\mbox{E}(\boldsymbol{Y}^*)$
+and quantities derived from $\mbox{var}(\boldsymbol{Y}) = \boldsymbol{S}\,\mbox{var}(\boldsymbol{Y}^*)\,\boldsymbol{S}'$
+in the notation of \citet{KomarekNMix}, separately for each generated chain.
+
+<<Model0: Basic posterior summary>>=
+print(Model0)
+@
+
+% --------------------------------------
+\Ritem Computation of the marginal (univariate) predictive densities
+(separately for chain~1 and chain~2):
+<<Model0: Marginal predictive densities, keep.source=TRUE>>=
+if (RUN.TIMECONSUMING.CODE){
+  PDensUniModel0 <- list()
+  PDensUniModel0[[1]] <- NMixPredDensMarg(Model0[[1]], grid=ygridUni)  
+  PDensUniModel0[[2]] <- NMixPredDensMarg(Model0[[2]], grid=ygridUni)  
+}
+@
+
+% --------------------------------------
+\Ritem Default \Rfun{plot} method for the computed object (see Figure~\ref{fig01}):
+<<Model0: Plot of the marginal predictive density, keep.source=TRUE, results=hide>>=
+postscript(paste(FIGDIR, "figTandmob01.ps", sep=""), width=10, height=7, 
+           horizontal=FALSE)
+plot(PDensUniModel0[[1]])
+dev.off()
+@ 
+
+\begin{figure}[p!]\centering
+\rotatebox{270}{
+  \includegraphics[height=1.0\textwidth, width=0.9\textheight]{\FIGDIR/figTandmob01.ps}
+}
+\caption{Default \Rfun{plot} method for the marginal predictive densities based on the model with 
+{\Kshow} mixture components (results from chain~1).}\label{fig01}
+\end{figure}
+
+
+% --------------------------------------
+\clearpage
+\Ritem Computation of the joint bivariate predictive densities (for each pair
+and separately for chain~1 and chain~2):
+<<Model0: Joint predictive density, keep.source=TRUE>>=
+if (RUN.TIMECONSUMING.CODE){
+  PDensBiModel0 <- list()
+  PDensBiModel0[[1]] <- NMixPredDensJoint2(Model0[[1]], grid=ygridBi)  
+  PDensBiModel0[[2]] <- NMixPredDensJoint2(Model0[[2]], grid=ygridBi)  
+}
+@
+
+% --------------------------------------
+\Ritem Default \Rfun{plot} method for the computed object (see Figure~\ref{fig02}):
+<<Model0: Plot of the joint predictive density, keep.source=TRUE, results=hide>>=
+postscript(paste(FIGDIR, "figTandmob02.ps", sep=""), width=20, height=14, 
+           horizontal=FALSE)
+plot(PDensBiModel0[[1]])
+dev.off()
+@ 
+
+\begin{figure}[p!]\centering
+\rotatebox{270}{
+  \includegraphics[height=1.0\textwidth, width=0.9\textheight]{\FIGDIR/figTandmob02.ps}
+}
+\caption{Default \Rfun{plot} method for the joint bivariate predictive densities based 
+on the model with {\Kshow} mixture components (results from chain~1).}\label{fig02}
+\end{figure}
+
+
+%%%%% %%%%%%%%%%%%%%%
+\clearpage
+\subsection{Nicer figures of posterior predictive densities}
+
+% --------------------------------------
+\Ritem Plot of the marginal predictive densities,
+results from chain~1 in red, results from chain~2 in blue, (see Figure~\ref{fig03}):
+<<Model0: Nicer plot of the marginal predictive density, keep.source=TRUE, results=hide>>=
+postscript(paste(FIGDIR, "figTandmob03.ps", sep=""), width=7, height=5, 
+           horizontal=FALSE)
+xlim <- c(4, 17)
+ylim <- c(0, 0.8)
+par(mfrow=c(2, 3), bty="n", mar=c(4, 4, 4, 0)+0.1)
+for (tt in 1:6){
+  plot(PDensUniModel0[[1]]$x[[tt]], PDensUniModel0[[1]]$dens[[tt]], 
+       type="l", col="red", xlim=xlim, ylim=ylim, 
+       xlab="Age (years)", ylab="Density of emergence", 
+       main=paste("Tooth ", 10+tt, sep=""))
+  lines(PDensUniModel0[[2]]$x[[tt]], PDensUniModel0[[2]]$dens[[tt]], col="blue")
+}  
+dev.off()
+@
+
+% --------------------------------------
+\Ritem Contour plots of the joint bivariate predictive densities for each pair,
+results from chain~1 (see Figure~\ref{fig04}):
+<<Model0: Contour plot of the joint bivariate predictive densities with the scatterplot, keep.source=TRUE, results=hide>>=
+CH <- 1
+postscript(paste(FIGDIR, "figTandmob04.ps", sep=""), width=10, height=7, 
+           horizontal=FALSE)
+par(mfrow=c(3, 5), bty="n", mar=c(4, 4, 4, 0)+0.1)
+for (tt1 in 1:5){
+  for (tt2 in (tt1+1):6){
+    contour(PDensBiModel0[[CH]]$x[[tt1]], PDensBiModel0[[CH]]$x[[tt2]], 
+            PDensBiModel0[[CH]]$dens[[paste(tt1, "-", tt2, sep="")]],
+            col="red", xlab="Age (years)", ylab="Age (years)", 
+            main=paste("Teeth ", 10+tt1, "-", 10+tt2, sep=""))    
+  }  
+}
+dev.off()
+@
+
+\begin{figure}[p!]\centering
+\rotatebox{270}{
+  \includegraphics[height=1.0\textwidth, width=0.9\textheight]{\FIGDIR/figTandmob03.ps}
+}
+\caption{Marginal predictive densities based on the model with {\Kshow} 
+mixture components, results from chain~1 in red, results from chain~2 in blue.}\label{fig03}
+\end{figure}
+
+\begin{figure}[p!]\centering
+\rotatebox{270}{
+  \includegraphics[height=1.0\textwidth, width=0.9\textheight]{\FIGDIR/figTandmob04.ps}
+}
+\caption{Contour plots of the joint bivariate predictive densities based on the model with 
+{\Kshow} mixture components, results from chain~1.}\label{fig04}
+\end{figure}
+
+% --------------------------------------
+\clearpage
+\Ritem Image plots of the joint bivariate predictive densities for each pair,
+results from chain~1 (see Figure~\ref{fig05}):
+<<Model0: Image plot of the joint bivariate predictive densities with the scatterplot, keep.source=TRUE, results=hide>>=
+CH <- 1
+postscript(paste(FIGDIR, "figTandmob05.ps", sep=""), width=10, height=7, 
+           horizontal=FALSE)
+par(mfrow=c(3, 5), bty="n", mar=c(4, 4, 4, 0)+0.1)
+for (tt1 in 1:5){
+  for (tt2 in (tt1+1):6){
+    image(PDensBiModel0[[CH]]$x[[tt1]], PDensBiModel0[[CH]]$x[[tt2]], 
+          PDensBiModel0[[CH]]$dens[[paste(tt1, "-", tt2, sep="")]],
+          col=rev(heat_hcl(33, c=c(80, 30), l=c(30, 90), power=c(1/5, 1.3))),
+          xlab="Age (years)", ylab="Age (years)", 
+          main=paste("Teeth ", 10+tt1, "-", 10+tt2, sep=""))    
+  }  
+}
+dev.off()
+@
+Note that package \Rfun{colorspace} is needed to specify the colors in the plot.
+
+\begin{figure}[p!]\centering
+\rotatebox{270}{
+  \includegraphics[height=1.0\textwidth, width=0.9\textheight]{\FIGDIR/figTandmob05.ps}
+}
+\caption{Image plots of the joint bivariate predictive densities based on the model with 
+{\Kshow} mixture components, results from chain~1.}\label{fig05}
+\end{figure}
+
+
+%%%%% %%%%%%%%%%%%%%%
+\clearpage
+\subsection{Convergence diagnostics}
+\Ritem Single chain convergence diagnostics using chain~1 will be shown here.
+<<RJMCMC: Choose chain>>=
+CH <- 1
+@ 
+
+\Ritem Converting the chains into \Rfun{mcmc} objects to be used in the package \Rfun{coda}:
+<<Model0: Create mcmc objects, keep.source=TRUE>>=
+if (RUN.ALLOUT){
+  start <- Model0[[CH]]$nMCMC["burn"] + 1
+  end <- Model0[[CH]]$nMCMC["burn"] + Model0[[CH]]$nMCMC["keep"]
+  chgammaInv <- mcmc(Model0[[CH]]$gammaInv, start=start, end=end)
+  chmixture <- mcmc(Model0[[CH]]$mixture, start=start, end=end)
+  chdeviance <- mcmc(Model0[[CH]]$deviance, start=start, end=end)
+}  
+@ 
+
+
+\subsubsection{Traceplots}
+% --------------------------------------
+\Ritem Traceplots for the overall means of emergence (see Figure~\ref{fig06}):
+<<Model0: Traceplots, keep.source=TRUE, results=hide>>=
+if (RUN.ALLOUT){
+  postscript(paste(FIGKEEPDIR, "figTandmob06.ps", sep=""), width=7, height=10, 
+             horizontal=FALSE)  
+  lwd <- 0.5
+  par(mfrow=c(2, 3), bty="n")
+  traceplot(chmixture[, "y.Mean.1"], smooth=FALSE, col="darkblue", 
+            lwd=lwd, main="E(Tooth 11)")
+  traceplot(chmixture[, "y.Mean.2"], smooth=FALSE, col="darkblue", 
+            lwd=lwd, main="E(Tooth 12)")
+  traceplot(chmixture[, "y.Mean.3"], smooth=FALSE, col="darkblue", 
+            lwd=lwd, main="E(Tooth 13)")
+  traceplot(chmixture[, "y.Mean.4"], smooth=FALSE, col="darkblue", 
+            lwd=lwd, main="E(Tooth 14)")
+  traceplot(chmixture[, "y.Mean.5"], smooth=FALSE, col="darkblue", 
+            lwd=lwd, main="E(Tooth 15)")
+  traceplot(chmixture[, "y.Mean.6"], smooth=FALSE, col="darkblue", 
+            lwd=lwd, main="E(Tooth 16)")
+  dev.off()
+}  
+@ 
+
+\begin{figure}[b!]\centering
+\vspace*{-3ex}
+\rotatebox{270}{
+  \includegraphics[width=0.85\textheight, height=\textwidth]{\FIGKEEPDIR/figTandmob06.ps}
+}
+\caption{Model with {\Kshow} mixture components. Traceplots for the means of emergence.}\label{fig06}
+\end{figure}
+
+
+% --------------------------------------
+\clearpage
+\Ritem Traceplots for the standard deviations of emergence (not shown): %(see Figure~\ref{fig07}):
+<<Model0: Traceplots, keep.source=TRUE, results=hide>>=
+if (RUN.ALLOUT){
+  postscript(paste(FIGKEEPDIR, "figTandmob07.ps", sep=""), width=7, height=10, 
+             horizontal=FALSE)
+  par(mfrow=c(2, 3), bty="n")
+  traceplot(chmixture[, "y.SD.1"], smooth=FALSE, col="darkgreen", 
+            lwd=lwd, main="SD(Tooth 11)")
+  traceplot(chmixture[, "y.SD.2"], smooth=FALSE, col="darkgreen", 
+            lwd=lwd, main="SD(Tooth 12)")
+  traceplot(chmixture[, "y.SD.3"], smooth=FALSE, col="darkgreen", 
+            lwd=lwd, main="SD(Tooth 13)")
+  traceplot(chmixture[, "y.SD.4"], smooth=FALSE, col="darkgreen", 
+            lwd=lwd, main="SD(Tooth 14)")
+  traceplot(chmixture[, "y.SD.5"], smooth=FALSE, col="darkgreen", 
+            lwd=lwd, main="SD(Tooth 15)")
+  traceplot(chmixture[, "y.SD.6"], smooth=FALSE, col="darkgreen", 
+            lwd=lwd, main="SD(Tooth 16)")
+  dev.off()
+}
+@
+
+% --------------------------------------
+\Ritem Traceplots for the pairwise correlations between the emergence times (not shown): %(see Figure~\ref{fig08}):
+<<Model0: Traceplots, keep.source=TRUE, results=hide>>=
+if (RUN.ALLOUT){
+  postscript(paste(FIGKEEPDIR, "figTandmob08.ps", sep=""), width=10, height=7, 
+             horizontal=FALSE)
+  par(bty="n", mar=c(1, 1, 4, 0)+0.1)
+  layout(matrix(c(1,2,3,4,5, 0,6,7,8,9, 0,0,10,11,12, 0,0,0,13,14, 0,0,0,0,15), 
+                nrow=5, byrow=TRUE))
+  traceplot(chmixture[, "y.Corr.2.1"], smooth=FALSE, col="darkgreen", 
+            main="Corr 2-1")
+  traceplot(chmixture[, "y.Corr.3.1"], smooth=FALSE, col="darkgreen", 
+            main="Corr 3-1")
+  traceplot(chmixture[, "y.Corr.4.1"], smooth=FALSE, col="darkgreen", 
+            main="Corr 4-1")
+  traceplot(chmixture[, "y.Corr.5.1"], smooth=FALSE, col="darkgreen", 
+            main="Corr 5-1")
+  traceplot(chmixture[, "y.Corr.6.1"], smooth=FALSE, col="darkgreen", 
+            main="Corr 6-1")
+  traceplot(chmixture[, "y.Corr.3.2"], smooth=FALSE, col="darkgreen", 
+            main="Corr 3-2")
+  traceplot(chmixture[, "y.Corr.4.2"], smooth=FALSE, col="darkgreen", 
+            main="Corr 4-2")
+  traceplot(chmixture[, "y.Corr.5.2"], smooth=FALSE, col="darkgreen", 
+            main="Corr 5-2")
+  traceplot(chmixture[, "y.Corr.6.2"], smooth=FALSE, col="darkgreen", 
+            main="Corr 6-2")
+  traceplot(chmixture[, "y.Corr.4.3"], smooth=FALSE, col="darkgreen", 
+            main="Corr 4-3")
+  traceplot(chmixture[, "y.Corr.5.3"], smooth=FALSE, col="darkgreen", 
+            main="Corr 5-3")
+  traceplot(chmixture[, "y.Corr.6.3"], smooth=FALSE, col="darkgreen", 
+            main="Corr 6-3")
+  traceplot(chmixture[, "y.Corr.5.4"], smooth=FALSE, col="darkgreen", 
+            main="Corr 5-4")
+  traceplot(chmixture[, "y.Corr.6.4"], smooth=FALSE, col="darkgreen", 
+            main="Corr 6-4")
+  traceplot(chmixture[, "y.Corr.6.5"], smooth=FALSE, col="darkgreen", 
+            main="Corr 6-5")
+  dev.off()
+}
+@
+
+% --------------------------------------
+\Ritem Traceplots for some other parameters (not shown): %(see Figure~\ref{fig09}):
+<<Model0: Traceplots, keep.source=TRUE, results=hide>>=
+if (RUN.ALLOUT){
+  postscript(paste(FIGKEEPDIR, "figTandmob09.ps", sep=""), width=10, height=7, 
+             horizontal=FALSE)
+  par(bty="n")
+  layout(matrix(c(1,1,2,2,3,3, 0,4,4,5,5,0), nrow=2, byrow=TRUE))
+  traceplot(chgammaInv[, "gammaInv1"], smooth=FALSE, 
+            col="brown", main="gamma^{-1}")
+  traceplot(chdeviance[, "LogL0"], smooth=FALSE, 
+            col="red", lwd=lwd, main="Log(L0)")
+  traceplot(chdeviance[, "LogL1"], smooth=FALSE, 
+            col="red", lwd=lwd, main="Log(L1)")
+  traceplot(chdeviance[, "dev.complete"], smooth=FALSE, 
+            col="red", lwd=lwd, main="D(complete)")
+  traceplot(chdeviance[, "dev.observed"], smooth=FALSE, 
+            col="red", lwd=lwd, main="D(observed)")
+  dev.off()
+}
+@
+
+%\begin{figure}[p!]\centering
+%\rotatebox{270}{
+%  \includegraphics[width=0.9\textheight, height=\textwidth]{\FIGKEEPDIR/figTandmob07.ps}
+%}
+%\caption{Model with {\Kshow} mixture components. Traceplots for the standard deviations of emergence.}\label{fig07}
+%\end{figure}
+
+%\begin{figure}[p!]\centering
+%\rotatebox{270}{
+%  \includegraphics[width=0.9\textheight, height=\textwidth]{\FIGKEEPDIR/figTandmob08.ps}
+%}
+%\caption{Model with {\Kshow} mixture components. Traceplots for the pairwise correlations between the emergence times.}\label{fig08}
+%\end{figure}
+
+%\begin{figure}[p!]\centering
+%\rotatebox{270}{
+%  \includegraphics[width=0.9\textheight, height=\textwidth]{\FIGKEEPDIR/figTandmob09.ps}
+%}
+%\caption{Model with {\Kshow} mixture components. Traceplots for some other parameters.}\label{fig09}
+%\end{figure}
+
+
+\clearpage
+\subsubsection{Posterior density estimates}
+% --------------------------------------
+\Ritem Posterior density estimates for the overall means of emergence (see Figure~\ref{fig10}):
+<<Model0: Posterior density estimates, keep.source=TRUE, results=hide>>=
+if (RUN.ALLOUT){
+  postscript(paste(FIGKEEPDIR, "figTandmob10.ps", sep=""), width=7, height=10, 
+             horizontal=FALSE)
+  par(mfrow=c(2, 3), bty="n")
+  densplot(chmixture[, "y.Mean.1"], show.obs=FALSE, col="darkblue", 
+           main="E(Tooth 11)")
+  densplot(chmixture[, "y.Mean.2"], show.obs=FALSE, col="darkblue", 
+           main="E(Tooth 12)")
+  densplot(chmixture[, "y.Mean.3"], show.obs=FALSE, col="darkblue", 
+           main="E(Tooth 13)")
+  densplot(chmixture[, "y.Mean.4"], show.obs=FALSE, col="darkblue", 
+           main="E(Tooth 14)")
+  densplot(chmixture[, "y.Mean.5"], show.obs=FALSE, col="darkblue", 
+           main="E(Tooth 15)")
+  densplot(chmixture[, "y.Mean.6"], show.obs=FALSE, col="darkblue", 
+           main="E(Tooth 16)")
+  dev.off()
+}
+@
+
+% --------------------------------------
+\Ritem Posterior density estimates for the standard deviations of emergence (see Figure~\ref{fig11}):
+<<Model0: Posterior density estimates, keep.source=TRUE, results=hide>>=
+if (RUN.ALLOUT){
+  postscript(paste(FIGKEEPDIR, "figTandmob11.ps", sep=""), width=7, height=10, 
+             horizontal=FALSE)
+  par(mfrow=c(2, 3), bty="n")
+  densplot(chmixture[, "y.SD.1"], show.obs=FALSE, col="darkgreen",  
+           main="SD(Tooth 11)")
+  densplot(chmixture[, "y.SD.2"], show.obs=FALSE, col="darkgreen", 
+           main="SD(Tooth 12)")
+  densplot(chmixture[, "y.SD.3"], show.obs=FALSE, col="darkgreen", 
+           main="SD(Tooth 13)")
+  densplot(chmixture[, "y.SD.4"], show.obs=FALSE, col="darkgreen", 
+           main="SD(Tooth 14)")
+  densplot(chmixture[, "y.SD.5"], show.obs=FALSE, col="darkgreen", 
+           main="SD(Tooth 15)")
+  densplot(chmixture[, "y.SD.6"], show.obs=FALSE, col="darkgreen", 
+           main="SD(Tooth 16)")
+  dev.off()
+}
+@
+
+\begin{figure}[p!]\centering
+\rotatebox{270}{
+  \includegraphics[width=0.9\textheight, height=\textwidth]{\FIGKEEPDIR/figTandmob10.ps}
+}
+\caption{Model with {\Kshow} mixture components. Posterior density estimates for the means of emergence.}\label{fig10}
+\end{figure}
+
+\begin{figure}[p!]\centering
+\rotatebox{270}{
+  \includegraphics[width=0.9\textheight, height=\textwidth]{\FIGKEEPDIR/figTandmob11.ps}
+}
+\caption{Model with {\Kshow} mixture components. Posterior density estimates for the standard deviations of emergence.}\label{fig11}
+\end{figure}
+
+
+% --------------------------------------
+\clearpage
+\Ritem Posterior density estimates for the pairwise correlations between the emergence times (see Figure~\ref{fig12}):
+<<Model0: Posterior density estimates, keep.source=TRUE, results=hide>>=
+if (RUN.ALLOUT){
+  postscript(paste(FIGKEEPDIR, "figTandmob12.ps", sep=""), width=10, height=7, 
+             horizontal=FALSE)
+  par(bty="n", mar=c(2, 1, 4, 0)+0.1)
+  layout(matrix(c(1,2,3,4,5, 0,6,7,8,9, 0,0,10,11,12, 
+                  0,0,0,13,14, 0,0,0,0,15), nrow=5, byrow=TRUE))
+  densplot(chmixture[, "y.Corr.2.1"], show.obs=FALSE, col="darkgreen", 
+           main="Corr 2-1")
+  densplot(chmixture[, "y.Corr.3.1"], show.obs=FALSE, col="darkgreen", 
+           main="Corr 3-1")
+  densplot(chmixture[, "y.Corr.4.1"], show.obs=FALSE, col="darkgreen", 
+           main="Corr 4-1")
+  densplot(chmixture[, "y.Corr.5.1"], show.obs=FALSE, col="darkgreen", 
+           main="Corr 5-1")
+  densplot(chmixture[, "y.Corr.6.1"], show.obs=FALSE, col="darkgreen", 
+           main="Corr 6-1")
+  densplot(chmixture[, "y.Corr.3.2"], show.obs=FALSE, col="darkgreen", 
+           main="Corr 3-2")
+  densplot(chmixture[, "y.Corr.4.2"], show.obs=FALSE, col="darkgreen", 
+           main="Corr 4-2")
+  densplot(chmixture[, "y.Corr.5.2"], show.obs=FALSE, col="darkgreen", 
+           main="Corr 5-2")
+  densplot(chmixture[, "y.Corr.6.2"], show.obs=FALSE, col="darkgreen", 
+           main="Corr 6-2")
+  densplot(chmixture[, "y.Corr.4.3"], show.obs=FALSE, col="darkgreen", 
+           main="Corr 4-3")
+  densplot(chmixture[, "y.Corr.5.3"], show.obs=FALSE, col="darkgreen", 
+           main="Corr 5-3")
+  densplot(chmixture[, "y.Corr.6.3"], show.obs=FALSE, col="darkgreen", 
+           main="Corr 6-3")
+  densplot(chmixture[, "y.Corr.5.4"], show.obs=FALSE, col="darkgreen", 
+           main="Corr 5-4")
+  densplot(chmixture[, "y.Corr.6.4"], show.obs=FALSE, col="darkgreen", 
+           main="Corr 6-4")
+  densplot(chmixture[, "y.Corr.6.5"], show.obs=FALSE, col="darkgreen", 
+           main="Corr 6-5")
+  dev.off()
+}
+@
+
+\begin{figure}[p!]\centering
+\rotatebox{270}{
+  \includegraphics[width=0.9\textheight, height=\textwidth]{\FIGKEEPDIR/figTandmob12.ps}
+}
+\caption{Model with {\Kshow} mixture components. Posterior density estimates for the pairwise correlations between the emergence times.}\label{fig12}
+\end{figure}
+
+
+% --------------------------------------
+\clearpage
+\Ritem Posterior density estimates for some other parameters (see Figure~\ref{fig13}):
+<<Model0: Posterior density estimates, keep.source=TRUE, results=hide>>=
+if (RUN.ALLOUT){
+  postscript(paste(FIGKEEPDIR, "figTandmob13.ps", sep=""), width=10, height=7, 
+             horizontal=FALSE)
+  par(bty="n")
+  layout(matrix(c(1,1,2,2,3,3, 0,4,4,5,5,0), 
+         nrow=2, byrow=TRUE))
+  densplot(chgammaInv[, "gammaInv1"], show.obs=FALSE, 
+           col="brown", main="gamma^{-1}")
+  densplot(chdeviance[, "LogL0"], show.obs=FALSE, 
+           col="red", main="Log(L0)")
+  densplot(chdeviance[, "LogL1"], show.obs=FALSE, 
+           col="red", main="Log(L1)")
+  densplot(chdeviance[, "dev.complete"], show.obs=FALSE, 
+           col="red", main="D(complete)")
+  densplot(chdeviance[, "dev.observed"], show.obs=FALSE, 
+           col="red", main="D(observed)")
+  dev.off()
+}
+@
+
+\begin{figure}[p!]\centering
+\rotatebox{270}{
+  \includegraphics[width=0.9\textheight, height=\textwidth]{\FIGKEEPDIR/figTandmob13.ps}
+}
+\caption{Model with {\Kshow} mixture components. Posterior density estimates for some other parameters.}\label{fig13}
+\end{figure}
+
+
+\clearpage
+\subsubsection{Autocorrelation plots}
+% --------------------------------------
+\Ritem Autocorrelation plots for the overall means of emergence (see Figure~\ref{fig14}):
+<<Model0: Autocorrelation plots, keep.source=TRUE, results=hide>>=
+if (RUN.ALLOUT){
+  postscript(paste(FIGKEEPDIR, "figTandmob14.ps", sep=""), width=7, height=10, 
+             horizontal=FALSE)
+  par(mfrow=c(2, 3), bty="n")
+  autocorr.plot(chmixture[, "y.Mean.1"], auto.layout=FALSE, ask=FALSE, 
+                col="darkblue", main="E(Tooth 11)")
+  autocorr.plot(chmixture[, "y.Mean.2"], auto.layout=FALSE, ask=FALSE, 
+                col="darkblue", main="E(Tooth 12)")
+  autocorr.plot(chmixture[, "y.Mean.3"], auto.layout=FALSE, ask=FALSE, 
+                col="darkblue", main="E(Tooth 13)")
+  autocorr.plot(chmixture[, "y.Mean.4"], auto.layout=FALSE, ask=FALSE, 
+                col="darkblue", main="E(Tooth 14)")
+  autocorr.plot(chmixture[, "y.Mean.5"], auto.layout=FALSE, ask=FALSE, 
+                col="darkblue", main="E(Tooth 15)")
+  autocorr.plot(chmixture[, "y.Mean.6"], auto.layout=FALSE, ask=FALSE, 
+                col="darkblue", main="E(Tooth 16)") 
+  dev.off()
+}
+@
+
+% --------------------------------------
+\Ritem Autocorrelation plots for the standard deviations of emergence (see Figure~\ref{fig15}):
+<<Model0: Autocorrelation plots, keep.source=TRUE, results=hide>>=
+if (RUN.ALLOUT){
+  postscript(paste(FIGKEEPDIR, "figTandmob15.ps", sep=""), width=7, height=10, 
+             horizontal=FALSE)
+  par(mfrow=c(2, 3), bty="n")
+  autocorr.plot(chmixture[, "y.SD.1"], auto.layout=FALSE, ask=FALSE, 
+                col="darkgreen", main="SD(Tooth 11)")
+  autocorr.plot(chmixture[, "y.SD.2"], auto.layout=FALSE, ask=FALSE, 
+                col="darkgreen", main="SD(Tooth 12)")
+  autocorr.plot(chmixture[, "y.SD.3"], auto.layout=FALSE, ask=FALSE, 
+                col="darkgreen", main="SD(Tooth 13)")
+  autocorr.plot(chmixture[, "y.SD.4"], auto.layout=FALSE, ask=FALSE, 
+                col="darkgreen", main="SD(Tooth 14)")
+  autocorr.plot(chmixture[, "y.SD.5"], auto.layout=FALSE, ask=FALSE, 
+                col="darkgreen", main="SD(Tooth 15)")
+  autocorr.plot(chmixture[, "y.SD.6"], auto.layout=FALSE, ask=FALSE, 
+                col="darkgreen", main="SD(Tooth 16)")
+  dev.off()
+}
+@
+
+\begin{figure}[p!]\centering
+\rotatebox{270}{
+  \includegraphics[width=0.9\textheight, height=\textwidth]{\FIGKEEPDIR/figTandmob14.ps}
+}
+\caption{Model with {\Kshow} mixture components. Autocorrelation plots for the means of emergence.}\label{fig14}
+\end{figure}
+
+\begin{figure}[p!]\centering
+\rotatebox{270}{
+  \includegraphics[width=0.9\textheight, height=\textwidth]{\FIGKEEPDIR/figTandmob15.ps}
+}
+\caption{Model with {\Kshow} mixture components. Autocorrelation plots for the standard deviations of emergence.}\label{fig15}
+\end{figure}
+
+% --------------------------------------
+\clearpage
+\Ritem Autocorrelation plots for the pairwise correlations between the emergence times (see Figure~\ref{fig16}):
+<<Model0: Autocorrelation plots, keep.source=TRUE, results=hide>>=
+if (RUN.ALLOUT){
+  postscript(paste(FIGKEEPDIR, "figTandmob16.ps", sep=""), width=10, height=7, 
+             horizontal=FALSE)
+  par(bty="n", mar=c(1, 1, 4, 0)+0.1)
+  layout(matrix(c(1,2,3,4,5, 0,6,7,8,9, 0,0,10,11,12, 
+                  0,0,0,13,14, 0,0,0,0,15), nrow=5, byrow=TRUE))
+  autocorr.plot(chmixture[, "y.Corr.2.1"], auto.layout=FALSE, 
+                ask=FALSE, col="darkgreen", main="Corr 2-1")
+  autocorr.plot(chmixture[, "y.Corr.3.1"], auto.layout=FALSE, 
+                ask=FALSE, col="darkgreen", main="Corr 3-1")
+  autocorr.plot(chmixture[, "y.Corr.4.1"], auto.layout=FALSE, 
+                ask=FALSE, col="darkgreen", main="Corr 4-1")
+  autocorr.plot(chmixture[, "y.Corr.5.1"], auto.layout=FALSE, 
+                ask=FALSE, col="darkgreen", main="Corr 5-1")
+  autocorr.plot(chmixture[, "y.Corr.6.1"], auto.layout=FALSE, 
+                ask=FALSE, col="darkgreen", main="Corr 6-1")
+  autocorr.plot(chmixture[, "y.Corr.3.2"], auto.layout=FALSE, 
+                ask=FALSE, col="darkgreen", main="Corr 3-2")
+  autocorr.plot(chmixture[, "y.Corr.4.2"], auto.layout=FALSE, 
+                ask=FALSE, col="darkgreen", main="Corr 4-2")
+  autocorr.plot(chmixture[, "y.Corr.5.2"], auto.layout=FALSE, 
+                ask=FALSE, col="darkgreen", main="Corr 5-2")
+  autocorr.plot(chmixture[, "y.Corr.6.2"], auto.layout=FALSE, 
+                ask=FALSE, col="darkgreen", main="Corr 6-2")
+  autocorr.plot(chmixture[, "y.Corr.4.3"], auto.layout=FALSE, 
+                ask=FALSE, col="darkgreen", main="Corr 4-3")
+  autocorr.plot(chmixture[, "y.Corr.5.3"], auto.layout=FALSE, 
+                ask=FALSE, col="darkgreen", main="Corr 5-3")
+  autocorr.plot(chmixture[, "y.Corr.6.3"], auto.layout=FALSE, 
+                ask=FALSE, col="darkgreen", main="Corr 6-3")
+  autocorr.plot(chmixture[, "y.Corr.5.4"], auto.layout=FALSE, 
+                ask=FALSE, col="darkgreen", main="Corr 5-4")
+  autocorr.plot(chmixture[, "y.Corr.6.4"], auto.layout=FALSE, 
+                ask=FALSE, col="darkgreen", main="Corr 6-4")
+  autocorr.plot(chmixture[, "y.Corr.6.5"], auto.layout=FALSE, 
+                ask=FALSE, col="darkgreen", main="Corr 6-5")
+  dev.off()
+}
+@
+
+\begin{figure}[p!]\centering
+\rotatebox{270}{
+  \includegraphics[width=0.9\textheight, height=\textwidth]{\FIGKEEPDIR/figTandmob16.ps}
+}
+\caption{Model with {\Kshow} mixture components. Autocorrelation plots for the pairwise correlations between the emergence times.}\label{fig16}
+\end{figure}
+
+
+% --------------------------------------
+\clearpage
+\Ritem Autocorrelation plots for some other parameters (see Figure~\ref{fig17}):
+<<Model0: Autocorrelation plots, keep.source=TRUE, results=hide>>=
+if (RUN.ALLOUT){
+  postscript(paste(FIGKEEPDIR, "figTandmob17.ps", sep=""), width=10, height=7, 
+             horizontal=FALSE)
+  par(bty="n")
+  layout(matrix(c(1,1,2,2,3,3, 0,4,4,5,5,0), nrow=2, byrow=TRUE))
+  autocorr.plot(chgammaInv[, "gammaInv1"], auto.layout=FALSE, 
+                ask=FALSE, col="brown", main="gamma^{-1}")
+  autocorr.plot(chdeviance[, "LogL0"], auto.layout=FALSE, 
+                ask=FALSE, col="red", main="Log(L0)")
+  autocorr.plot(chdeviance[, "LogL1"], auto.layout=FALSE, 
+                ask=FALSE, col="red", main="Log(L1)")
+  autocorr.plot(chdeviance[, "dev.complete"], auto.layout=FALSE, 
+                ask=FALSE, col="red", main="D(complete)")
+  autocorr.plot(chdeviance[, "dev.observed"], auto.layout=FALSE, 
+                ask=FALSE, col="red", main="D(observed)")
+  dev.off()
+}
+@
+
+\begin{figure}[p!]\centering
+\rotatebox{270}{
+  \includegraphics[width=0.9\textheight, height=\textwidth]{\FIGKEEPDIR/figTandmob17.ps}
+}
+\caption{Model with {\Kshow} mixture components. Autocorrelation plots for some other parameters.}\label{fig17}
+\end{figure}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\clearpage
+\section{Models with different fixed numbers of components}
+In this section, we will fit a~mixture model for $K=1,\dots, 10$, compare 
+the deviance based quantities and predictive densities.
+
+% --------------------------------------
+\Ritem Running the MCMC simulation for $K = 1,\dots, 10$ 
+(output printed during the MCMC run on the screen not shown),
+computation of predictive densities. \par
+\Ritem After predictive densities are computed, we remove all chains from resulting objects 
+(to save some memory).
+%This took about 16 hours on Intel Core~2 Duo 3 GHz CPU with 4 GB RAM:
+<<Fixed K MCMC, keep.source=TRUE, results=hide>>=
+Seed <- c(770328, 770328, 770328, 770328, 770328, 
+          770328, 780830, 761014, 770328, 770328)
+
+Keep <- c("iter", "nMCMC", "dim", "prior", "init", "RJMCMC", 
+          "scale", "freqK", "propK", "DIC", "moves", 
+          "summ.y.Mean", "summ.y.SDCorr", 
+          "summ.z.Mean", "summ.z.SDCorr")
+
+if (RUN.TIMECONSUMING.CODE){
+  ModelK <- list()
+  PDensUniModelK <- list()
+  PDensBiModelK <- list()
+  for (K in 1:10){  
+    set.seed(Seed[K])      
+    cat(paste("K = ", K, "\n-------------------------------\n", sep=""))
+    cat("Seed is", Seed[K], "\n")  
+    Prior0 <- list(priorK="fixed", Kmax=K)
+    Model0 <- NMixMCMC(y0=y0, y1=y1, censor=censor, prior=Prior0, 
+                       nMCMC=nMCMC, scale=list(shift=0, scale=1), PED=TRUE)
+  
+    cat(paste("\nComputation of marginal pred. densities started on ", date(), 
+              "\n", sep=""))  
+    PDensUniModelK[[k]] <- list()
+    PDensUniModelK[[k]][[1]] <- NMixPredDensMarg(Model0[[1]], grid=ygridUni)
+    PDensUniModelK[[k]][[2]] <- NMixPredDensMarg(Model0[[2]], grid=ygridUni)
+    cat(paste("Computation of marginal pred. densities finished on ", date(), 
+              "\n\n", sep=""))  
+
+    cat(paste("Computation of joint pred. densities started on ", date(), 
+              "\n", sep=""))    
+    PDensBiModelK[[k]] <- list()
+    PDensBiModelK[[k]][[1]] <- NMixPredDensJoint2(Model0[[1]], grid=ygridBi)
+    PDensBiModelK[[k]][[2]] <- NMixPredDensJoint2(Model0[[2]], grid=ygridBi)
+    cat(paste("Computation of joint pred. densities finished on ", date(), 
+              "\n\n\n", sep=""))      
+
+    ModelK[[k]][[1]] <- Model0[[1]][Keep]
+    ModelK[[k]][[2]] <- Model0[[2]][Keep]  
+    class(ModelK[[k]][[1]]) <- class(ModelK[[k]][[2]]) <- "NMixMCMC"
+
+    rm(list="Model0")
+  }  
+}
+@ 
+
+% --------------------------------------
+\Ritem Summary of PED and DIC's for the fitted models:
+<<Fixed K: PED and DIC, keep.source=TRUE>>=
+PED <- ModelK[[1]]$PED
+DIC <- list(Chain1=ModelK[[1]][[1]]$DIC, Chain2=ModelK[[1]][[2]]$DIC)
+for (k in 2:length(ModelK)){
+  PED <- rbind(PED, ModelK[[k]]$PED)
+  DIC[[1]] <- rbind(DIC[[1]], ModelK[[k]][[1]]$DIC)
+  DIC[[2]] <- rbind(DIC[[2]], ModelK[[k]][[2]]$DIC)  
+}
+rownames(PED) <- paste("K=", 1:length(ModelK), sep="")  
+rownames(DIC[[1]]) <- rownames(DIC[[2]]) <- paste("K=", 1:length(ModelK), sep="")  
+@
+<<Fixed K: print PED>>=
+print(PED)
+@ 
+<<Fixed K: print DIC>>=
+print(DIC)
+@ 
+
+% --------------------------------------
+\Ritem Plots of the (univariate) predictive densities for different values of $K$ are shown 
+in Figures~\ref{fig18}--\ref{fig20}:
+<<FixedK: Plots of univariate predictive densities for different values of K, keep.source=TRUE, results=hide>>=
+if (RUN.ALLOUT){
+  CH <- 1
+  for (fig in 1:3){
+    postscript(paste(FIGKEEPDIR, "figTandmob", 17+fig, ".ps", sep=""), 
+               width=7, height=10, horizontal=FALSE)  
+    par(mfrow=c(2, 1), bty="n")
+    for (tt in (2*(fig-1)+1):(2*fig)){
+      plot(PDensUniModelK[[Kshow]][[CH]]$x[[tt]], 
+           PDensUniModelK[[Kshow]][[CH]]$dens[[tt]], 
+           type="n", xlab="Age (years)", ylab="Density", 
+           main=paste("Tooth ", 10+tt, sep=""))    
+      for (k in 1:10){
+        lines(PDensUniModelK[[k]][[CH]]$x[[tt]], 
+              PDensUniModelK[[k]][[CH]]$dens[[tt]], 
+              col="blue") 
+      }  
+      lines(PDensUniModelK[[Kshow]][[CH]]$x[[tt]], 
+            PDensUniModelK[[Kshow]][[CH]]$dens[[tt]], 
+            col="red", lwd=2)     
+    }
+    dev.off()
+  }  
+}
+@ 
+
+\begin{figure}[p!]\centering
+\includegraphics[height=0.9\textheight, width=\textwidth]{\FIGKEEPDIR/figTandmob18.ps}
+\caption{Teeth 11 and 12. Estimated predictive densities of emergence for different values of $K$ ranging from $1$ to $10$ (blue lines) 
+         and for $K={\nKshow}$ (red line).}\label{fig18}
+\end{figure}
+
+\begin{figure}[p!]\centering
+\includegraphics[height=0.9\textheight, width=\textwidth]{\FIGKEEPDIR/figTandmob19.ps}
+\caption{Teeth 13 and 14. Estimated predictive densities of emergence for different values of $K$ ranging from $1$ to $10$ (blue lines) 
+         and for $K={\nKshow}$ (red line).}\label{fig19}
+\end{figure}
+
+\begin{figure}[p!]\centering
+\includegraphics[height=0.9\textheight, width=\textwidth]{\FIGKEEPDIR/figTandmob20.ps}
+\caption{Teeth 15 and 16. Estimated predictive densities of emergence for different values of $K$ ranging from $1$ to $10$ (blue lines) 
+         and for $K={\nKshow}$ (red line).}\label{fig20}
+\end{figure}
+
+
+% --------------------------------------
+\clearpage
+\Ritem Save results for future use:
+<<Save results, keep.source=TRUE>>=
+if (RUN.TIMECONSUMING.CODE){
+  save(list="Model0", 
+       file=paste(RESULTDIR, "/Tandmob-Model0", Kshow, ".RData", sep=""))            
+
+  PDensBiModelK <- list()
+  PDensBiModelK[[Kshow]] <- PDensBiModel0
+  save(list="PDensBiModelK", 
+       file=paste(RESULT2DIR, "/Tandmob-PDensBiModelK0", Kshow, ".RData", sep=""))  
+  
+  save(list=c("ModelK", "PDensUniModelK", "PDensBiModelK"), 
+       file=paste(RESULT2DIR, "/Tandmob-Result.RData", sep=""))      
+}  
+@ 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\clearpage
+\bibliographystyle{akplainnat}\bibliography{mixAK}
+
+\end{document}

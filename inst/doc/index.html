@@ -1,0 +1,204 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+<title>Package mixAK vignettes</title>
+<!--<meta http-equiv="content-type" content="text/html; charset=iso-8859-2" />-->
+<meta name="description" content="Vignettes for package mixAK" />
+<meta name="keywords" content="vignette" />
+<meta name="author" content="Arno&#353t Kom&#225rek" />
+</head>
+
+<body>
+<h1>Package <tt>mixAK</tt></h1>
+<p>
+This package contains a mixture of statistical methods including the MCMC methods to analyze normal mixtures.
+Methods from the following areas can be found here
+<ul>
+  <li><a href="#NMixMCMC">Density estimation via normal mixtures and MCMC</a></li>
+  <li><a href="#UnivDist">Univariate distributions</a></li>
+  <li><a href="#MultDist">Multivariate distributions</a></li>
+  <li><a href="#MiscelRN">Miscellaneous random number generation</a></li>
+  <li><a href="#MatrixLA">Matrix linear algebra</a></li>
+  <li><a href="#BasicStat">Basic statistics</a></li>
+  <li><a href="#Utils">Utilities</a></li>
+  <li><a href="#Datasets">Datasets</a></li>
+</ul>
+Additional information can be found in the references mentioned below and
+at personal webpage of <a href="http://www.karlin.mff.cuni.cz/~komarek"> Arno&#353t Kom&#225rek.</a>
+</p>
+
+<br><br>
+<p>
+This overview provides a sorted list of the functions of the package and links to few more involved examples.
+</p>
+
+<!-- ======================================================================================================== -->
+<br><p><a name="NMixMCMC"></a>
+<h1>1. Density estimation via normal mixtures and MCMC</h1>
+<ul>
+  <li><a href="../html/NMixMCMC.html"> <b>NMixMCMC</b></a> <br>
+    <ul>
+      <li>There exists a <b>print</b> method for objects of class <i>NMixMCMC</i>.</li>
+    </ul>
+  </li>
+  <li><a href="../html/NMixPredDensJoint2.html"> <b>NMixPredDensJoint2</b></a> <br>
+    <ul>
+      <li>This is a generic function with <i>default</i> method and a method for objects of class <i>NMixMCMC</i> implemented.</li>
+      <li>There is also a <a href="../html/plot.NMixPredDensJoint2.html"><b>plot</b></a> method for objects of class <i>NMixPredDensJoint2</i>.
+    </ul>
+  </li>
+  <li><a href="../html/NMixPredDensMarg.html"> <b>NMixPredDensMarg</b></a> <br>
+    <ul>
+      <li>This is a generic function with <i>default</i> method and a method for objects of class <i>NMixMCMC</i> implemented.</li>
+      <li>There is also a <a href="../html/plot.NMixPredDensMarg.html"><b>plot</b></a> method for objects of class <i>NMixPredDensMarg</i>.
+    </ul>
+  </li>
+</ul>
+</p>
+
+<p>
+Supplementary material for this part is available:
+<ul>
+  <li><a href="http://www.karlin.mff.cuni.cz/~komarek/publication.html#KomarekNMixIC">Kom&#225rek, A. (2009).
+           A new R package for Bayesian estimation of multivariate normal mixtures allowing for
+           selection of the number of components and interval-censored data.</a>  
+  <cite>Computational Statistics and Data Analysis,</cite> <b>53</b>(?). To appear.
+  <br>
+  Paper describing the methods implemented in the package.  
+  </li>
+  <li><a href="Komarek-NMix-supplement.pdf">Komarek-NMix-supplement.pdf</a><br>
+  Supplement to the paper which includes some technical details.
+  </li>
+  <li><a href="Galaxy.pdf">Galaxy.pdf</a>, <a href="Galaxy.R">Galaxy.R</a>, <a href="Galaxy.Rnw">Galaxy.Rnw</a><br>
+  Example of 1 dimensional analysis using the RJ-MCMC.
+  </li>
+  <li><a href="Faithful.pdf">Faithful.pdf</a>, <a href="Faithful.R">Faithful.R</a>, <a href="Faithful.Rnw">Faithful.Rnw</a><br>
+  Example of 2 dimensional analysis.
+  </li>
+  <li><a href="Tandmob.pdf">Tandmob.pdf</a>, <a href="Tandmob.R">Tandmob.R</a>, <a href="Tandmob.Rnw">Tandmob.Rnw</a><br>
+  Example of 6 dimensional analysis with the interval-censored data.
+  </li>
+</ul>
+</p>
+
+<!-- ======================================================================================================== -->
+
+<br><p><a name="UnivDist"></a>
+<h1>2. Univariate distributions</h1>
+<ul>
+  <li><a href="../html/TNorm.html"> <b>rTNorm</b></a> <br>
+  Random number generation from a <i>truncated normal</i> distribution.
+  </li>
+</ul>
+</p>
+
+<!-- ======================================================================================================== -->
+
+<br><p><a name="MultDist"></a>
+<h1>3. Multivariate distributions</h1>
+<ul>
+  <li><a href="../html/MVN.html"> <b>dMVN</b>, <b>rMVN</b>, <b>rcMVN</b></a> <br>
+  (Log-)density and random number genaration for a <i>multivariate normal</i> distribution.
+  </li>
+  <li><a href="../html/TMVN.html"> <b>rTMVN</b></a> <br>
+  Random number genaration from a <i>truncated multivariate normal</i> distribution.
+  </li>
+  <li><a href="../html/MVNmixture.html"> <b>dMVNmixture</b>, <b>dMVNmixture2</b>, 
+  <b>rMVNmixture</b>, <b>rMVNmixture2</b></a> <br>
+  (Log-)density and random number genaration for a <i>mixture of (multivariate) normal distributions</i>.
+  </li>
+  <li><a href="../html/Wishart.html"> <b>dWishart</b>, <b>rWishart</b></a> <br>
+  (Log-)density and random number genaration for a <i>Wishart</i> distribution.
+  </li>
+  <li><a href="../html/Dirichlet.html"> <b>rDirichlet</b></a> <br>
+  Random number genaration from a <i>Dirichlet</i> distribution.
+  </li>
+</ul>
+</p>
+
+<!-- ======================================================================================================== -->
+
+<br><p><a name="MiscelRN"></a>
+<h1>4. Miscellaneous random number generation</h1>
+<ul>
+  <li><a href="../html/rRotationMatrix.html"> <b>rRotationMatrix</b></a> <br>
+  Random <i>rotation matrix</i>.
+  </li>
+  <li><a href="../html/rSamplePair.html"> <b>rSamplePair</b></a> <br>
+  Sample a random pair.
+  </li>
+</ul>
+</p>
+
+<!-- ======================================================================================================== -->
+
+<br><p><a name="MatrixLA"></a>
+<h1>5. Matrix linear algebra</h1>
+<ul>
+  <li><a href="../html/MatMPpinv.html"> <b>MatMPpinv</b></a> <br>
+  Moore-Penrose pseudoinverse of a squared matrix.
+  </li>
+  <li><a href="../html/MatSqrt.html"> <b>MatSqrt</b></a> <br>
+  Square root of a matrix.
+  </li>
+</ul>
+</p>
+
+<!-- ======================================================================================================== -->
+
+<br><p><a name="BasicStat"></a>
+<h1>6. Basic statistics</h1>
+<ul>
+  <li><a href="../html/BLA.html"> <b>BLA</b></a> <br>
+  Best linear approximation with respect to the mean squared error (theoretical least squares).
+  </li>
+</ul>
+</p>
+
+
+<!-- ======================================================================================================== -->
+
+<br><p><a name="Utils"></a>
+<h1>7. Utilities</h1>
+<ul>
+  <li><a href="../html/SP2Rect.html"> <b>SP2Rect</b></a> <br>
+  Conversion of a symmetric matrix stored in a packed format (lower triangle only) into a matrix.
+  </li>
+</ul>
+</p>
+
+<!-- ======================================================================================================== -->
+
+<br><p><a name="Datasets"></a>
+<h1>8. Datasets</h1>
+<ul>
+  <li><a href="../html/Acidity.html"> <b>Acidity</b></a> <br>
+  Acidity index measured in a sample of 155 lakes in North-Central
+  Wisconsin.
+  </li>
+  <li><a href="../html/Enzyme.html"> <b>Enzyme</b></a> <br>
+  Enzymatic activity in the blood, for an enzyme involved in the
+  metabolism of carcinogenic substances, among a group of 245 unrelated individuals.
+  </li>
+  <li><a href="../html/Faithful.html"> <b>Faithful</b></a> <br>
+  Waiting time between eruptions and the duration of the eruption
+  for the Old Faithful geyser in Yellowstone National Park, Wyoming,
+  USA, version used in H&#228rdle (1991).
+  </li>
+  <li><a href="../html/Galaxy.html"> <b>Galaxy</b></a> <br>
+  Velocities of 82 distant galaxies, diverging from our own galaxy.
+  </li>
+  <li><a href="../html/Tandmob.html"> <b>Tandmob</b></a> <br>
+  Dental (Signal Tandmobiel) data for 4430 6-12 year old children.
+  </li>
+  <li><a href="../html/TandmobEmer.html"> <b>TandmobEmer</b></a> <br>
+  Data derived from <a href="../html/Tandmob.html"> <b>Tandmob</b></a>.
+  </li>
+</ul>
+</p>
+
+<br><br><br>
+
+</body>
+</html>
