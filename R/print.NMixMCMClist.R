@@ -15,10 +15,16 @@
 ## *************************************************************
 ## print.NMixMCMC
 ## *************************************************************
-print.NMixMCMClist <- function(x, ...)
+print.NMixMCMClist <- function(x, ped, dic, ...)
 {
   cat("\n")
   chNames <- c("Chain 1", "Chain 2")
+
+  if (missing(dic)) dic <- (x[[1]]$prior$priorK == "fixed")
+  if (!is.logical(dic)) stop("dic must be logical")
+
+  if (missing(ped)) ped <- (x[[1]]$prior$priorK == "fixed")
+  if (!is.logical(ped)) stop("dic must be logical")
   
   if (x[[1]]$prior$priorK == "fixed"){
     cat(paste("     ", x[[1]]$prior$Kmax, " component normal mixture estimated using MCMC\n", sep=""))
@@ -27,10 +33,12 @@ print.NMixMCMClist <- function(x, ...)
     cat(paste("     Normal mixture with at most ", x[[1]]$prior$Kmax, " components estimated using RJ-MCMC\n", sep=""))
     cat("     =================================================================")
   }  
-  
-  cat("\nPenalized expected deviance:")
-  cat("\n----------------------------\n")
-  print(x$PED, ...)
+
+  if (ped){
+    cat("\nPenalized expected deviance:")
+    cat("\n----------------------------\n")
+    print(x$PED, ...)
+  }  
 
   if (x[[1]]$prior$priorK != "fixed"){
     cat("\nPosterior distribution of K:")
@@ -43,12 +51,14 @@ print.NMixMCMClist <- function(x, ...)
     xpropK[2, names(x[[2]]$propK)] <- x[[2]]$propK        
     print(xpropK, ...)
   }
-    
-  cat("\nDeviance information criteria:")
-  cat("\n------------------------------\n")
-  xDIC <- rbind(x[[1]]$DIC, x[[2]]$DIC)
-  rownames(xDIC) <- chNames
-  print(xDIC, ...)    
+
+  if (dic){
+    cat("\nDeviance information criteria:")
+    cat("\n------------------------------\n")
+    xDIC <- rbind(x[[1]]$DIC, x[[2]]$DIC)
+    rownames(xDIC) <- chNames
+    print(xDIC, ...)
+  }  
 
   cat("\nPosterior summary statistics for moments of mixture for original data:")
   cat("\n----------------------------------------------------------------------")
@@ -72,7 +82,22 @@ print.NMixMCMClist <- function(x, ...)
     print(x[[1]]$summ.y.SDCorr, ...)
     cat("\nStandard deviations and correlations (chain 2):\n")
     print(x[[2]]$summ.y.SDCorr, ...)    
-  }  
+  }
 
+  if (!is.null(x[[1]]$summ.expy.Mean)){
+    cat("\nPosterior summary statistics for mean of exp(data):")
+    cat("\n---------------------------------------------------\n")
+    if (x[[1]]$dim == 1){
+      xsummexpyMean <- rbind(x[[1]]$summ.expy.Mean, x[[2]]$summ.expy.Mean)
+      rownames(xsummexpyMean) <- chNames    
+      print(xsummexpyMean, ...)
+    }else{
+      cat("\nChain 1:\n")
+      print(x[[1]]$summ.y.Mean, ...)
+      cat("\nChain 2:\n")
+      print(x[[2]]$summ.y.Mean, ...)
+    }  
+  }
+    
   return(invisible(x))  
 }

@@ -27,10 +27,11 @@ NMixPredDensJoint2.default <- function(x, scale, K, w, mu, Li, Krandom=TRUE, ...
   ## Dimension of the normal mixture
   if (!is.list(x)) stop("x must be a list")
   p <- length(x)
-  names(x) <- paste("x", 1:p, sep="")
   if (p < 2) stop("length of x must be 2 or more")
   LTp <- p * (p + 1)/2
 
+  if (is.null(names(x))) names(x) <- paste("x", (1:p), sep="")
+  
   ## scale
   if (missing(scale)) scale <- list(shift=rep(0, p), scale=rep(1, p))
   if (!is.list(scale)) stop("scale must be a list")
@@ -67,11 +68,9 @@ NMixPredDensJoint2.default <- function(x, scale, K, w, mu, Li, Krandom=TRUE, ...
 
   ## Lengths of grids for each pair
   lgrids <- numeric(0)
-  pp <- 1
   for (m0 in 1:(p-1)){
     for (m1 in (m0+1):p){
       lgrids <- c(lgrids, n[m0]*n[m1])
-      pp <- pp + 1
     }
   }
 

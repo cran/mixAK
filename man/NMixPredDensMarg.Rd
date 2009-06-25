@@ -53,7 +53,8 @@ NMixPredDensMarg(x, \dots)
 \value{
   An object of class \code{NMixPredDensMarg} which has the following components:  
   \item{x}{a list with the grid values for each margin. The components
-    of the list are named \code{x1}, \ldots.}
+    of the list are named \code{x1}, \ldots or take names from
+    \code{grid} argument.}
   \item{freqK}{frequency table for the values of \eqn{K} (numbers of
     mixture components) in the MCMC chain.}
   \item{propK}{proportions derived from \code{freqK}.}

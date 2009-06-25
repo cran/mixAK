@@ -3,7 +3,7 @@
 \alias{NMixPredDensJoint2.default}
 \alias{NMixPredDensJoint2.NMixMCMC}
 \title{
-  Marginal (pairwise bivariate) predictive density
+  Pairwise bivariate predictive density
 }
 \description{
   This function serves as an inference tool for the MCMC output
@@ -24,7 +24,9 @@ NMixPredDensJoint2(x, \dots)
     A list with the grid values (see below) for
     \code{NMixPredDensJoint2.default} function.
   }
-  \item{scale}{a two component list giving the \code{shift} and the \code{scale}.}
+  \item{scale}{a two component list giving the \code{shift} and the
+    \code{scale}. If not given, shift is equal to zero and scale is
+    equal to one.}
   \item{K}{either a number (when \code{Krandom}\eqn{=}\code{FALSE}) or a
     numeric vector with the chain for the number of mixture components.}
   \item{w}{a numeric vector with the chain for the mixture weights.}
@@ -49,7 +51,8 @@ NMixPredDensJoint2(x, \dots)
 \value{
   An object of class \code{NMixPredDensJoint2} which has the following components:  
   \item{x}{a list with the grid values for each margin. The components
-    of the list are named \code{x1}, \ldots.}
+    of the list are named \code{x1}, \ldots or take names from
+    \code{grid} argument.}
   \item{freqK}{frequency table for the values of \eqn{K} (numbers of
     mixture components) in the MCMC chain.}
   \item{propK}{proportions derived from \code{freqK}.}

@@ -26,10 +26,11 @@ NMixPredDensMarg.default <- function(x, scale, K, w, mu, Li, Krandom=TRUE, ...)
   if (is.numeric(x)) x <- list(x1=x)
   if (!is.list(x)) stop("x must be a list")
   p <- length(x)
-  names(x) <- paste("x", 1:p, sep="")
   if (p < 1) stop("length of x must be 1 or more")
   LTp <- p * (p + 1)/2
 
+  if (is.null(names(x))) names(x) <- paste("x", (1:p), sep="")
+  
   ## scale
   if (missing(scale)) scale <- list(shift=rep(0, p), scale=rep(1, p))
   if (!is.list(scale)) stop("scale must be a list")

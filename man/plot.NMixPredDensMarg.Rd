@@ -27,9 +27,12 @@
   \item{col}{color used to draw the lines.}
   \item{lty}{type of the line.}
   \item{lwd}{line width.}
-  \item{main}{main title of the plot.}
-  \item{xlab}{label for the x-axis.}
-  \item{ylab}{label for the y-axis.}
+  \item{main}{main title of the plot. Either character which is
+    replicated or a vector of characters of the length equal to the number of margins.}
+  \item{xlab}{label for the x-axis. Either character which is
+    replicated or a vector of characters of the length equal to the number of margins.}
+  \item{ylab}{label for the y-axis. Either character which is
+    replicated or a vector of characters of the length equal to the number of margins.}
   \item{\dots}{additional arguments passed to the \code{plot} function.} 
 }
 \value{

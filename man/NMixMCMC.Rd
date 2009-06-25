@@ -61,9 +61,9 @@ NMixMCMC(y0, y1, censor, scale, prior,
          nMCMC=c(burn=10, keep=10, thin=1, info=10),
          PED, keep.chains=TRUE, onlyInit=FALSE, dens.zero=1e-300)
 
-\method{print}{NMixMCMC}(x, \dots)
+\method{print}{NMixMCMC}(x, dic, \dots)
 
-\method{print}{NMixMCMClist}(x, \dots)
+\method{print}{NMixMCMClist}(x, ped, dic, \dots)
 }
 \arguments{
   \item{y0}{numeric vector of length \eqn{n} or \eqn{n\times p}{n x p}
@@ -438,7 +438,16 @@ NMixMCMC(y0, y1, censor, scale, prior,
 % }
   \item{dens.zero}{a small value used instead of zero when computing
     deviance related quantities.}
-  \item{x}{an object of class \code{NMixMCMC} or \code{NMixMCMClist} to be printed.}
+  \item{x}{an object of class \code{NMixMCMC} or \code{NMixMCMClist} to
+    be printed.}
+  \item{dic}{logical which indicates whether DIC should be printed. By
+    default, DIC is printed only for models with a fixed number of
+    mixture components.
+  }
+  \item{ped}{logical which indicates whether PED should be printed. By
+    default, PED is printed only for models with a fixed number of
+    mixture components.
+  }  
   \item{\dots}{additional arguments passed to the default \code{print} method.}
 }
 \value{

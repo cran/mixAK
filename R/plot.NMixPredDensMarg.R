@@ -19,27 +19,38 @@ plot.NMixPredDensMarg <- function(x, K=0, auto.layout=TRUE, type="l", col="darkb
   nfig <- p
 
   miss.main <- missing(main)
-  miss.xlab <- missing(xlab)
-  miss.ylab <- missing(ylab)
   
+  if (missing(xlab)){
+    if (p == 1) xlab <- "x"
+    else        xlab <- paste("x", 1:p, sep="")
+  }else{
+    if (length(xlab) == 1){
+      xlab <- rep(xlab, p)
+    }else{
+      if (length(xlab) != p) stop(paste("xlab must be of length 1 or ", p, sep=""))
+    }  
+  }  
+  
+  if (missing(ylab)){
+    ylab <- rep("Density", p)
+  }else{
+    if (length(ylab) == 1){
+      ylab <- rep(ylab, p)
+    }else{
+      if (length(ylab) != p) stop(paste("ylab must be of length 1 or ", p, sep=""))
+    }  
+  }  
+
   #if (length(K) != 1) stop("K must be of length 1")
   if (any(K < 0)) stop("K must not be negative")
   if (any(K > length(x$densK[[1]]))) stop("K is too high")
 
   percK <- paste(" (", round(x$propK*100, 1), "%)", sep="")
       
-  if (auto.layout){
-    if (p == 1) lay <- c(1, 1)
-    else if (p <= 2) lay <- c(1, 2)
-         else if (p <= 4) lay <- c(2, 2)
-              else if (p <= 6) lay <- c(2, 3)
-                   else if (p <= 9) lay <- c(3, 3)
-                        else if (p <= 12) lay <- c(3, 4)
-                             else if (p <= 16) lay <- c(4, 4)
-                                  else if (p <= 20) lay <- c(4, 5)
-                                  else stop("layout must be given for p > 20")
-    
-    oldPar <- par(mfrow=lay, bty="n")
+  if (auto.layout){    
+    LAY <- autolayout(p)    
+    oldPar <- par(bty="n")
+    layout(LAY)
     on.exit(oldPar)
   }
 
@@ -56,12 +67,17 @@ plot.NMixPredDensMarg <- function(x, K=0, auto.layout=TRUE, type="l", col="darkb
       }
       
       if (miss.main){
-        if (p == 1) main <- main2b
-        else        main <- paste("Margin ", m0, main2, sep="")
+        if (p == 1) MAIN <- main2b
+        else        MAIN <- paste("Margin ", m0, main2, sep="")
+      }else{
+        if (length(main) == 1) MAIN <- main
+        else{
+          if (length(main) != p) stop(paste("main must be of length 1 or ", p, sep=""))
+          MAIN <- main[m0]
+        }  
       }  
-      if (miss.xlab) if (p == 1) xlab <- "x" else xlab <- paste("x", m0, sep="")
-      if (miss.ylab) ylab <- "Density"
-      plot(x$x[[m0]], dx, type=type, col=col[1], main=main, xlab=xlab, ylab=ylab, lty=lty[1], lwd=lwd[1], ...)
+
+      plot(x$x[[m0]], dx, type=type, col=col[1], main=MAIN, xlab=xlab[m0], ylab=ylab[m0], lty=lty[1], lwd=lwd[1], ...)
     }    
   }else{
     if (length(col) == 1) col <- rep(col, length(K))
@@ -74,13 +90,18 @@ plot.NMixPredDensMarg <- function(x, K=0, auto.layout=TRUE, type="l", col="darkb
       if (miss.main){
         if (p == 1) main <- paste("MCMC length = ", x$MCMC.length, sep="")
         else        main <- paste("Margin ", m0, " (MCMC length = ", x$MCMC.length, ")", sep="")
-      }
-      if (miss.xlab) if (p == 1) xlab <- "x" else xlab <- paste("x", m0, sep="")
-      if (miss.ylab) ylab <- "Density"      
+      }else{
+        if (length(main) == 1) MAIN <- main
+        else{
+          if (length(main) != p) stop(paste("main must be of length 1 or ", p, sep=""))
+          MAIN <- main[m0]
+        }
+      }  
+      
       for (kk in 1:length(K)){
         if (K[kk] == 0) dx <- x$dens[[paste(m0)]]
         else            dx <- x$densK[[paste(m0)]][[K[kk]]]
-        if (kk == 1) plot(x$x[[m0]], dx, type=type, col=col[1], main=main, xlab=xlab, ylab=ylab, lty=lty[1], lwd=lwd[1], ...)
+        if (kk == 1) plot(x$x[[m0]], dx, type=type, col=col[1], main=main, xlab=xlab[m0], ylab=ylab[m0], lty=lty[1], lwd=lwd[1], ...)
         else         lines(x$x[[m0]], dx, col=col[kk], lty=lty[kk], lwd=lwd[kk])
       } 
     }            

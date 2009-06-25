@@ -1,5 +1,5 @@
 //
-//  PURPOSE:   Implementation of methods declared in NMix_PredDensJoint.h
+//  PURPOSE:   Implementation of methods declared in NMix_PredDensMarg.h
 //
 //  AUTHOR:    Arnost Komarek (LaTeX: Arno\v{s}t Kom\'arek)
 //             arnost.komarek[AT]mff.cuni.cz

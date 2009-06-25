@@ -9,7 +9,11 @@
 {
 #   require(coda)
    library.dynam("mixAK", pkg, lib)
-
+   cat("\n")
+   cat("### Mixture of methods including mixtures\n")
+   cat("### Arnost Komarek\n\n")
+   cat("### See citation(\"mixAK\") for the best way to cite\n")
+   cat("### the package if you find it useful.\n\n")
    invisible()
 }
 

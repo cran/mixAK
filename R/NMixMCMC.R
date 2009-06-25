@@ -1150,7 +1150,7 @@ NMixMCMC <- function(y0, y1, censor, scale, prior,
                            scale=scale, prior=prior, inits=list(init), RJMCMC=RJMCMC,
                            Cinteger=Cinteger, Cdouble=Cdouble, CRJMCMC=CRJMCMC,
                            actionAll=actionAll, nMCMC=nMCMC, keep.chains=keep.chains,
-                           dens.zero=dens.zero)
+                           PED=FALSE, dens.zero=dens.zero)
   }  
   
   return(RET)
