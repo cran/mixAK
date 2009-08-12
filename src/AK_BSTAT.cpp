@@ -58,4 +58,34 @@ yBar_s(double* yBar,  double* ySD,  const double* y,  const int* dimy)
   return;
 }
 
+
+/***** *************************************************************************************************** *****/
+/***** AK_BSTAT::shiftScale                                                                                *****/
+/***** *************************************************************************************************** *****/
+void
+shiftScale(double* yscaled,  const double* y,  const double* shift,  const double* scale,  const int* n,  const int* p)
+{
+  static const double *yP;
+  static const double *shiftP;
+  static const double *scaleP;
+  static double *yscaledP;
+  static int i, j;
+
+  yP       = y;
+  yscaledP = yscaled;
+  for (i = 0; i < *n; i++){
+    shiftP = shift;
+    scaleP = scale;
+    for (j = 0; j < *p; j++){
+      *yscaledP = (*yP - *shiftP) / *scaleP;
+      yscaledP++;
+      yP++;
+      shiftP++;
+      scaleP++;
+    }
+  }
+  
+  return;
+}
+
 }  /*** end of namespace AK_BSTAT ***/

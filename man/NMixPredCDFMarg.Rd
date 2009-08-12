@@ -2,6 +2,7 @@
 \alias{NMixPredCDFMarg}
 \alias{NMixPredCDFMarg.default}
 \alias{NMixPredCDFMarg.NMixMCMC}
+\alias{NMixPredCDFMarg.GLMM_MCMC}
 \title{
   Marginal (univariate) predictive cumulative distribution function
 }
@@ -16,11 +17,16 @@ NMixPredCDFMarg(x, \dots)
 \method{NMixPredCDFMarg}{default}(x, scale, K, w, mu, Li, Krandom=TRUE, \dots)
 
 \method{NMixPredCDFMarg}{NMixMCMC}(x, grid, lgrid=50, scaled=FALSE, \dots)
+
+\method{NMixPredCDFMarg}{GLMM_MCMC}(x, grid, lgrid=50, scaled=FALSE, \dots)
 }
 \arguments{
   \item{x}{an object of class \code{NMixMCMC} for
     \code{NMixPredCDFMarg.NMixMCMC} function.
 
+    An object of class \code{GLMM_MCMC} for
+    \code{NMixPredCDFMarg.GLMM_MCMC} function.
+    
     A list with the grid values (see below) for
     \code{NMixPredCDFMarg.default} function.
   }
@@ -85,7 +91,7 @@ NMixPredCDFMarg(x, \dots)
   \emph{Computational Statistics and Data Analysis.} To appear.  
 }
 \seealso{
-  \code{\link{plot.NMixPredCDFMarg}}, \code{\link{NMixMCMC}}.
+  \code{\link{plot.NMixPredCDFMarg}}, \code{\link{NMixMCMC}}, \code{\link{GLMM_MCMC}}.
 }
 \author{
   \eqn{\mbox{Arno\v{s}t Kom\'arek}}{Arno&#353t Kom&#225rek} \email{arnost.komarek[AT]mff.cuni.cz}

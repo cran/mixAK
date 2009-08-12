@@ -2,6 +2,7 @@
 \alias{NMixPredCondDensMarg}
 \alias{NMixPredCondDensMarg.default}
 \alias{NMixPredCondDensMarg.NMixMCMC}
+\alias{NMixPredCondDensMarg.GLMM_MCMC}
 \title{
   Univariate conditional predictive density
 }
@@ -18,11 +19,16 @@ NMixPredCondDensMarg(x, \dots)
 \method{NMixPredCondDensMarg}{default}(x, icond, scale, K, w, mu, Li, Krandom=FALSE, ...)
 
 \method{NMixPredCondDensMarg}{NMixMCMC}(x, icond, grid, lgrid=50, scaled=FALSE, \dots)
+
+\method{NMixPredCondDensMarg}{GLMM_MCMC}(x, icond, grid, lgrid=50, scaled=FALSE, \dots)
 }
 \arguments{
   \item{x}{an object of class \code{NMixMCMC} for
     \code{NMixPredCondDensMarg.NMixMCMC} function.
 
+    An object of class \code{GLMM_MCMC} for
+    \code{NMixPredCondDensMarg.GLMM_MCMC} function.
+    
     A list with the grid values (see below) for
     \code{NMixPredCondDensMarg.default} function.
   }
@@ -77,7 +83,7 @@ NMixPredCondDensMarg(x, \dots)
   There is also a \code{plot} method implemented for the resulting object.
 }
 \seealso{
-  \code{\link{plot.NMixPredCondDensMarg}}, \code{\link{NMixMCMC}}.
+  \code{\link{plot.NMixPredCondDensMarg}}, \code{\link{NMixMCMC}}, \code{\link{GLMM_MCMC}}.
 }
 \author{
   \eqn{\mbox{Arno\v{s}t Kom\'arek}}{Arno&#353t Kom&#225rek} \email{arnost.komarek[AT]mff.cuni.cz}

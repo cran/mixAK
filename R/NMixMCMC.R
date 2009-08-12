@@ -366,7 +366,7 @@ NMixMCMC <- function(y0, y1, censor, scale, prior,
   if (is.na(izeta)) prior$zeta <- p + 1
   if (length(prior$zeta) != 1) stop("prior$zeta must be of length 1")  
   if (is.na(prior$zeta)) stop("NA in prior$zeta")
-  if (prior$zeta <= p - 1) stop(paste("prior$zeta must be higher then ", p - 1, sep=""))
+  if (prior$zeta <= p - 1) stop(paste("prior$zeta must be higher than ", p - 1, sep=""))
   Czeta <- as.numeric(prior$zeta)
   names(Czeta) <- "zeta"
   
@@ -403,7 +403,8 @@ NMixMCMC <- function(y0, y1, censor, scale, prior,
   if (is.na(iK)){
     if (prior$priorK == "fixed") init$K <- CKmax
     else                         init$K <- 1
-  }  
+  }
+  if (prior$priorK == "fixed") init$K <- CKmax  
   if (length(init$K) != 1) stop("init$K must be of length 1")
   if (is.na(init$K)) stop("NA in init$K")
   if (init$K <= 0 | init$K > CKmax) stop("init$K out of the range")

@@ -2,6 +2,7 @@
 \alias{NMixPredCondDensJoint2}
 \alias{NMixPredCondDensJoint2.default}
 \alias{NMixPredCondDensJoint2.NMixMCMC}
+\alias{NMixPredCondDensJoint2.GLMM_MCMC}
 \title{
   Pairwise bivariate conditional predictive densities
 }  
@@ -18,11 +19,16 @@ NMixPredCondDensJoint2(x, \dots)
 \method{NMixPredCondDensJoint2}{default}(x, icond, scale, K, w, mu, Li, Krandom=FALSE, \dots)
 
 \method{NMixPredCondDensJoint2}{NMixMCMC}(x, icond, grid, lgrid=50, scaled=FALSE, \dots)
+
+\method{NMixPredCondDensJoint2}{GLMM_MCMC}(x, icond, grid, lgrid=50, scaled=FALSE, \dots)
 }
 \arguments{
   \item{x}{an object of class \code{NMixMCMC} for
     \code{NMixPredCondDensJoint2.NMixMCMC} function.
 
+    An object of class \code{GLMM_MCMC} for
+    \code{NMixPredCondDensJoint2.GLMM_MCMC} function.
+    
     A list with the grid values (see below) for
     \code{NMixPredCondDensJoint2.default} function.
   }
@@ -75,7 +81,7 @@ NMixPredCondDensJoint2(x, \dots)
   There is also a \code{plot} method implemented for the resulting object.  
 }
 \seealso{
-  \code{\link{plot.NMixPredCondDensJoint2}}, \code{\link{NMixMCMC}}.
+  \code{\link{plot.NMixPredCondDensJoint2}}, \code{\link{NMixMCMC}}, \code{\link{GLMM_MCMC}}.
 }
 \author{
   \eqn{\mbox{Arno\v{s}t Kom\'arek}}{Arno&#353t Kom&#225rek} \email{arnost.komarek[AT]mff.cuni.cz}

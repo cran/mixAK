@@ -14,6 +14,8 @@
 //       * invlogit_AK
 //       * log_AK, log0_AK
 //       * cumsum
+//       * sum
+//       * prod
 //       * maxArray (OVERLOADED)
 //       * fillArray (OVERLOADED)
 //       * copyArray (OVERLOADED)
@@ -92,7 +94,21 @@ log0_AK(const double& x){
   return(x < _ZERO0 ? R_NegInf : log(x));
 }
 
-/*** cumulative sums ***/
+/*** sum of elements of an array ***/
+inline int
+sum(const int* x,  const int& nx){
+  static int i;
+  const int *xP = x;
+  int VALUE = *xP;
+  for (i = 1; i < nx; i++){
+    xP++;
+    VALUE += *xP;  
+  }
+
+  return(VALUE);
+}
+
+/*** cumulative sums (overloaded function) ***/
 inline void
 cumsum(double* csx,  const double* x,  const int& nx){
   static int i;
@@ -108,6 +124,37 @@ cumsum(double* csx,  const double* x,  const int& nx){
     *csxP = *(csxP-1) + *xP;
   }
   return;
+}
+
+inline void
+cumsum(int* csx,  const int* x,  const int& nx){
+  static int i;
+  static int *csxP;
+  static const int *xP;
+
+  csxP = csx;
+  xP   = x;
+  *csxP = *xP;
+  for (i = 1; i < nx; i++){
+    csxP++;
+    xP++;
+    *csxP = *(csxP-1) + *xP;
+  }
+  return;
+}
+
+/*** product of elements of an array ***/
+inline double
+prod(const double* x,  const int& nx){
+  static int i;
+  const double *xP = x;
+  double VALUE = *xP;
+  for (i = 1; i < nx; i++){
+    xP++;
+    VALUE *= *xP;  
+  }
+
+  return(VALUE);
 }
 
 /*** max(vector) (overloaded function) ***/
@@ -273,7 +320,7 @@ printArray(const int* a,  const int& length)
 
   aP = a;
   for (j = 0; j < length; j++){
-    Rprintf((char*)("%d, "), fabs(*aP) < AK_Basic::_ZERO ? 0 : *aP);
+    Rprintf((char*)("%d, "), fabs((double)(*aP)) < AK_Basic::_ZERO ? 0 : *aP);
     aP++;
   }
   Rprintf((char*)("\n\n"));
@@ -294,7 +341,7 @@ printVec4R(const double* a,  const int& length)
     Rprintf((char*)("%g, "), fabs(*aP) < AK_Basic::_ZERO ? 0 : *aP);
     aP++;
   }
-  Rprintf((char*)("%g)\n"), fabs(*aP) < AK_Basic::_ZERO ? 0 : *aP);
+  Rprintf((char*)("%g);\n"), fabs(*aP) < AK_Basic::_ZERO ? 0 : *aP);
 
   return;
 }
@@ -308,10 +355,10 @@ printVec4R(const int* a,  const int& length)
   Rprintf((char*)("c("));
   aP = a;
   for (j = 0; j < length - 1; j++){
-    Rprintf((char*)("%d, "), fabs(*aP) < AK_Basic::_ZERO ? 0 : *aP);
+    Rprintf((char*)("%d, "), fabs((double)(*aP)) < AK_Basic::_ZERO ? 0 : *aP);
     aP++;
   }
-  Rprintf((char*)("%d)\n"), fabs(*aP) < AK_Basic::_ZERO ? 0 : *aP);
+  Rprintf((char*)("%d);\n"), fabs((double)(*aP)) < AK_Basic::_ZERO ? 0 : *aP);
 
   return;
 }
@@ -348,7 +395,7 @@ printMatrix(const int *a,  const int& nrow,  const int& ncol)
   for (i = 0; i < nrow; i++){
     aP = astartP;
     for (j = 0; j < ncol; j++){
-      Rprintf((char*)("%d, "), fabs(*aP) < AK_Basic::_ZERO ? 0 : *aP);
+      Rprintf((char*)("%d, "), fabs((double)(*aP)) < AK_Basic::_ZERO ? 0 : *aP);
       aP += nrow;
     }
     Rprintf((char*)("\n"));
@@ -384,7 +431,7 @@ printMatrix4R(const double *a,  const int& nrow,  const int& ncol)
     Rprintf((char*)("%g, "), fabs(*aP) < AK_Basic::_ZERO ? 0 : *aP);
     aP += nrow;
   }
-  Rprintf((char*)("%g), nrow=%d, ncol=%d, byrow=TRUE)\n"), fabs(*aP) < AK_Basic::_ZERO ? 0 : *aP, nrow, ncol);
+  Rprintf((char*)("%g), nrow=%d, ncol=%d, byrow=TRUE);\n"), fabs(*aP) < AK_Basic::_ZERO ? 0 : *aP, nrow, ncol);
 
   return;
 }
@@ -400,7 +447,7 @@ printMatrix4R(const int *a,  const int& nrow,  const int& ncol)
   for (i = 0; i < nrow - 1; i++){
     aP = astartP;
     for (j = 0; j < ncol; j++){
-      Rprintf((char*)("%d, "), fabs(*aP) < AK_Basic::_ZERO ? 0 : *aP);
+      Rprintf((char*)("%d, "), fabs((double)(*aP)) < AK_Basic::_ZERO ? 0 : *aP);
       aP += nrow;
     }
     Rprintf((char*)("\n"));
@@ -410,10 +457,10 @@ printMatrix4R(const int *a,  const int& nrow,  const int& ncol)
   /** i = nrow - 1 **/
   aP = astartP;
   for (j = 0; j < ncol - 1; j++){
-    Rprintf((char*)("%d, "), fabs(*aP) < AK_Basic::_ZERO ? 0 : *aP);
+    Rprintf((char*)("%d, "), fabs((double)(*aP)) < AK_Basic::_ZERO ? 0 : *aP);
     aP += nrow;
   }
-  Rprintf((char*)("%d), nrow=%d, ncol=%d, byrow=TRUE)\n"), fabs(*aP) < AK_Basic::_ZERO ? 0 : *aP, nrow, ncol);
+  Rprintf((char*)("%d), nrow=%d, ncol=%d, byrow=TRUE);\n"), fabs((double)(*aP)) < AK_Basic::_ZERO ? 0 : *aP, nrow, ncol);
 
   return;
 }
@@ -458,12 +505,12 @@ printSP(const int* a,  const int& nrow)
     aP = astartP;
     j = 0;
     while (j < i){
-      Rprintf((char*)("%d, "), fabs(*aP) < AK_Basic::_ZERO ? 0 : *aP);
+      Rprintf((char*)("%d, "), fabs((double)(*aP)) < AK_Basic::_ZERO ? 0 : *aP);
       aP += nrow - j - 1; 
       j++;
     }
     while (j < nrow){
-      Rprintf((char*)("%d, "), fabs(*aP) < AK_Basic::_ZERO ? 0 : *aP);
+      Rprintf((char*)("%d, "), fabs((double)(*aP)) < AK_Basic::_ZERO ? 0 : *aP);
       aP++;
       j++;
     }
@@ -509,7 +556,7 @@ printSP4R(const double* a,  const int& nrow)
     aP += nrow - j - 1; 
     j++;
   }
-  Rprintf((char*)("%g), nrow=%d, ncol=%d, byrow=TRUE)\n"), fabs(*aP) < AK_Basic::_ZERO ? 0 : *aP, nrow, nrow);
+  Rprintf((char*)("%g), nrow=%d, ncol=%d, byrow=TRUE);\n"), fabs(*aP) < AK_Basic::_ZERO ? 0 : *aP, nrow, nrow);
 
   return;
 }
@@ -526,12 +573,12 @@ printSP4R(const int* a,  const int& nrow)
     aP = astartP;
     j = 0;
     while (j < i){
-      Rprintf((char*)("%d, "), fabs(*aP) < AK_Basic::_ZERO ? 0 : *aP);
+      Rprintf((char*)("%d, "), fabs((double)(*aP)) < AK_Basic::_ZERO ? 0 : *aP);
       aP += nrow - j - 1; 
       j++;
     }
     while (j < nrow){
-      Rprintf((char*)("%d, "), fabs(*aP) < AK_Basic::_ZERO ? 0 : *aP);
+      Rprintf((char*)("%d, "), fabs((double)(*aP)) < AK_Basic::_ZERO ? 0 : *aP);
       aP++;
       j++;
     }
@@ -543,11 +590,11 @@ printSP4R(const int* a,  const int& nrow)
   aP = astartP;
   j = 0;
   while (j < nrow - 1){
-    Rprintf((char*)("%d, "), fabs(*aP) < AK_Basic::_ZERO ? 0 : *aP);
+    Rprintf((char*)("%d, "), fabs((double)(*aP)) < AK_Basic::_ZERO ? 0 : *aP);
     aP += nrow - j - 1; 
     j++;
   }
-  Rprintf((char*)("%d), nrow=%d, ncol=%d, byrow=TRUE)\n"), fabs(*aP) < AK_Basic::_ZERO ? 0 : *aP, nrow, nrow);
+  Rprintf((char*)("%d), nrow=%d, ncol=%d, byrow=TRUE);\n"), fabs((double)(*aP)) < AK_Basic::_ZERO ? 0 : *aP, nrow, nrow);
 
   return;
 }

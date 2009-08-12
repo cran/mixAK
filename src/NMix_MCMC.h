@@ -27,7 +27,7 @@
 #include "AK_BLAS.h"
 
 #include "Dist_MVN.h"
-#include "Dist_Wishart.h"
+//#include "Dist_Wishart.h"
 
 #include "NMix.h"
 #include "NMix_Utils.h"

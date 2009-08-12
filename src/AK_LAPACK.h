@@ -36,6 +36,9 @@
 //
 //     * invComplexGE                23/01/2008:  Invert a general complex (squared) matrix 
 //
+//     * invLT                       07/09/2009:  Invert a lower triangular matrix stored in packed format
+//                                                * partially taken from chinv0 in Cholesky2.{h,cpp}[glmmAK]
+//
 //     * sqrtGE                      22/01/2008:  Square root of a general real squared matrix
 //
 //
@@ -372,6 +375,22 @@ invGE(double* Ainv,  double* A,  int* jpvt,  int* err,  const int* p);
 //
 void
 invComplexGE(double* Ainv_re,  double* Ainv_im,  int* jpvt,  int* err,  const double* A_re,  const double* A_im,  const int* p);
+
+
+/***** **************************************************************************************************** *****/
+/***** AK_LAPACK::invLT:  Invert a lower triangular matrix stored in packed format                          *****/
+/***** **************************************************************************************************** *****/
+//
+//  ASSUMPTION:  Input matrix L is positive definite (not checked!!!)
+//
+//  L[LT(p)]:   INPUT:   lower triangular matrix L stored in packed format
+//              OUTPUT:  lower triangular matrix stored in packed format
+//                       containing the inverse of the matrix L
+//
+//  p:          number of rows and columns of matrix L
+//
+void
+invLT(double* L,  const int* p);
 
 
 /***** **************************************************************************************************** *****/

@@ -45,13 +45,12 @@ NMix_MCMC(const double* y0,  const double* y1,     const int* censor,          c
   double *pm_wP, *pm_muP, *pm_QP, *pm_SigmaP, *pm_LiP;
   double *indLogL0P, *indLogL1P, *indDevComplP, *indDevObsP, *indDevCompl_inHatP, *pred_densP;
   double *chmuP2, *chQP2, *chSigmaP2, *chLiP2;
-  double *log_detsP, *logPsplitP, *logPcombineP, *logPbirthP, *logPdeathP, *logKP;
-  double *c_xiP, *log_cP, *sqrt_cP, *Dinv_xiP, *D_LiP, *log_dets_DP, *XiInvP;
+  double *logPsplitP, *logPcombineP, *logPbirthP, *logPdeathP;
   double *yP;
   
   const double *wP, *muP, *QP, *SigmaP, *LiP;
   const double *PsplitP, *PbirthP;
-  const double *cP, *xiP, *DinvP, *gammaInvP;
+  const double *gammaInvP;
   const int *censorP;
   const int *orderP, *rankP;
 
@@ -279,185 +278,56 @@ NMix_MCMC(const double* y0,  const double* y1,     const int* censor,          c
 /***** Derived parameters from priorInt and priorDouble                                                   *****/
 /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/ 
 
-  /***** logK:                                                                              *****/
-  double *logK = Calloc(*Kmax, double);
-  logKP = logK;
-  for (j = 1; j <= *Kmax; j++){
-    *logKP = log((double)(j));
-    logKP++;
-    //Rprintf((char*)("logK[%d] = %g\n"), j, logKP[-1]);
-  }  
-
-  /***** log_lambda:                                                                        *****/
-  double log_lambda[1];
-  switch (*priorK){
-  case NMix::K_FIXED:
-  case NMix::K_UNIF:
-    *log_lambda = 0.0;
-    break;
-  case NMix::K_TPOISS:
-    *log_lambda = AK_Basic::log_AK(*lambda);
-    break;
-  }
-
-  /***** c_xi:  c[j]*xi[j], j=0, ..., Kmax-1                                                *****/
-  /*****        * initialize it by xi when priormuQ = MUQ_IC                                *****/
-  /***** log_c: log(c[j]), j=0, ..., Kmax-1                                                 *****/
-  /*****        * initialize it by 0 when priormuQ = MUQ_IC                                 *****/
-  /***** sqrt_c: sqrt(c[j]), j=0, ..., Kmax-1                                               *****/
-  /*****        * initialize it by 0 when priormuQ = MUQ_IC                                 *****/
-  double *c_xi   = Calloc(*p * *Kmax, double);
-  double *log_c  = Calloc(*Kmax, double);
-  double *sqrt_c = Calloc(*Kmax, double);
-  switch (*priormuQ){
-  case NMix::MUQ_NC:
-    c_xiP   = c_xi;
-    log_cP  = log_c;
-    sqrt_cP = sqrt_c;
-    cP      = c;
-    xiP     = xi;
-    for (j = 0; j < *Kmax; j++){
-      *log_cP  = AK_Basic::log_AK(*cP);
-      *sqrt_cP = sqrt(*cP);
-      for (l = 0; l < *p; l++){
-        *c_xiP  = *cP * *xiP;
-        c_xiP++;
-        xiP++;
-      }
-      log_cP++;
-      sqrt_cP++;
-      cP++;
-    }
-    break;
-
-  case NMix::MUQ_IC:
-    AK_Basic::copyArray(c_xi, xi, *p * *Kmax);
-    AK_Basic::fillArray(log_c, 0.0, *Kmax);
-    AK_Basic::fillArray(sqrt_c, 0.0, *Kmax);
-    break;
-  }
-
+  /***** logK:                log(1), log(2), ..., log(Kmax)                                                               *****/
+  /***** log_lambda:          log(lambda)                                                                                  *****/
+  /***** c_xi:                c[j]*xi[j], j=0, ..., Kmax-1                                                                 *****/
+  /*****                      * initialize it by xi when priormuQ = MUQ_IC                                                 *****/
+  /***** log_c:               log(c[j]), j=0, ..., Kmax-1                                                                  *****/
+  /*****                      * initialize it by 0 when priormuQ = MUQ_IC                                                  *****/
+  /***** sqrt_c:              sqrt(c[j]), j=0, ..., Kmax-1                                                                 *****/
+  /*****                      * initialize it by 0 when priormuQ = MUQ_IC                                                  *****/
   /***** log_Wishart_const:   Logarithm of the constant in the Wishart density which depends only on degrees of freedom    *****/
+  /***** D_Li:                Cholesky decompositions of D[j]^{-1}, j=0, ..., Kmax-1                                       *****/
+  /*****                      * initialize it by unit matrices when priormuQ = MUQ_NC                                      *****/
+  /***** Dinv_xi:             D[j]^{-1} %*% xi[j], j=0, ..., Kmax-1                                                        *****/
+  /*****                      *initialize it by zero vectors when priormuQ = MUQ_NC                                        *****/
+  /***** log_dets_D:          log_dets based on D matrices                                                                 *****/
+  /*****                      * initialize it by zeros when priormuQ = MUQ_NC                                              *****/
+  double *logK       = Calloc(*Kmax, double);
+  double log_lambda[1];
+  double *c_xi       = Calloc(*p * *Kmax, double);
+  double *log_c      = Calloc(*Kmax, double);
+  double *sqrt_c     = Calloc(*Kmax, double);
   double log_Wishart_const[1];
-  Dist::l_Wishart_const(log_Wishart_const, zeta, p);
-
-  /***** D_Li:  Cholesky decompositions of D[j]^{-1}, j=0, ..., Kmax-1                         *****/
-  /*****        * initialize it by unit matrices when priormuQ = MUQ_NC                        *****/
-  /***** Dinv_xi:  D[j]^{-1} %*% xi[j], j=0, ..., Kmax-1                                       *****/
-  /*****           *initialize it by zero vectors when priormuQ = MUQ_NC                       *****/
-  /***** log_dets_D:  log_dets based on D matrices                                             *****/
-  /*****              * initialize it byzeros when priormuQ = MUQ_NC                           *****/
   double *D_Li       = Calloc(LTp * *Kmax, double);
   double *Dinv_xi    = Calloc(*p * *Kmax, double);
   double *log_dets_D = Calloc(2 * *Kmax, double);
-  switch (*priormuQ){
-  case NMix::MUQ_NC:
-    D_LiP = D_Li;
-    for (j = 0; j < *Kmax; j++){
-      AK_BLAS::eyeSP(D_LiP, p);
-      D_LiP += LTp;
-    }
-    AK_Basic::fillArray(Dinv_xi, 0.0, *p * *Kmax);
-    AK_Basic::fillArray(log_dets_D, 0.0, 2 * *Kmax);
-    break;
-
-  case NMix::MUQ_IC:
-    xiP         = xi;
-    D_LiP       = D_Li;
-    Dinv_xiP    = Dinv_xi;
-    log_dets_DP = log_dets_D;
-    DinvP       = Dinv;
-    for (j = 0; j < *Kmax; j++){
-
-      /*** Dinv_xi = Dinv %*% xi ***/
-      F77_CALL(dspmv)("L", p, &AK_Basic::_ONE_DOUBLE, DinvP, xiP, &AK_Basic::_ONE_INT, &AK_Basic::_ZERO_DOUBLE, Dinv_xiP, &AK_Basic::_ONE_INT); 
-
-      /*** D_Li = Cholesky decomposition of Dinv ***/
-      AK_Basic::copyArray(D_LiP, DinvP, LTp);
-      F77_CALL(dpptrf)("L", p, D_LiP, err);      
-      if (*err) error("%s:  Cholesky decomposition of Dinv[%d] failed.\n", fname, j);
-
-      /*** log_dets based on D ***/
-      *log_dets_DP = 0.0;                                   /*** log_dets_D[0, j] will be log(|D[j]|^{-1/2}) = sum(log(D_Li_{j}[l,l]))   ***/
-      for (l = *p; l > 0; l--){
-        *log_dets_DP += AK_Basic::log_AK(*D_LiP);
-        D_LiP += l;
-      }
-      log_dets_DP++;
-      *log_dets_DP = -(*p) * M_LN_SQRT_2PI;                 /*** log_dets_D[1, j] = -p * log(sqrt(2*pi)) ***/
-      log_dets_DP++;
-      
-      DinvP    += LTp;                                   /*** skip to the next D_inv ***/      
-      xiP      += *p;                                    /*** skip to the next xi    ***/
-      Dinv_xiP += *p;
-    }
-    break;
-  }
-
-
-  /***** log_dets:                                                                             *****/
-  double *log_dets = Calloc(2 * *Kmax, double);
-  log_detsP = log_dets;
-  LiP       = Li;
-  for (j = 0; j < *K; j++){
-    *log_detsP = 0.0;                                   /*** log_dets[0, j] will be log(|Sigma[j]|^{-1/2}) = sum(log(Li_{j}[l,l]))   ***/
-    for (l = *p; l > 0; l--){
-      *log_detsP += AK_Basic::log_AK(*LiP);
-      LiP += l;
-    }
-    log_detsP++;
-    *log_detsP = -(*p) * M_LN_SQRT_2PI;                 /*** log_dets[1, j] = -p * log(sqrt(2*pi)) ***/
-    log_detsP++;
-  }
-  for (j = *K; j < *Kmax; j++){
-    *log_detsP = 0.0;
-    log_detsP++;
-    *log_detsP = -(*p) * M_LN_SQRT_2PI;                 /*** log_dets[1, j] = -p * log(sqrt(2*pi)) ***/
-    log_detsP++;
-  }
+  NMix::prior_derived(p, priorK, priormuQ, Kmax, lambda, xi, c, Dinv, zeta,
+                      logK, log_lambda, c_xi, log_c, sqrt_c, log_Wishart_const, D_Li, Dinv_xi, log_dets_D, err);     /* declared in NMix_Utils.h */
+  if (*err) error("%s:  Something went wrong.\n", fname);
 
 
 /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/
-/***** Additional mixture related parameters                                                              *****/
+/***** Additional mixture related parameters (depending on initial values as well)                        *****/
 /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/ 
 
+  /***** log_dets:  log_dets for mixture covariance matrices                                    *****/
   /***** logw:  Log-weights                                                                     *****/
-  double *logw = Calloc(*Kmax, double);
-  NMix::w2logw(logw, w, K);
-  AK_Basic::fillArray(logw + *K, 0.0, *Kmax - *K);
-
   /***** Q:   Mixture inverse variances - compute them from Li                                  *****/
-  NMix::Li2Q(Q, Li, K, p);
-  AK_Basic::fillArray(Q + LTp * *K, 0.0, LTp * (*Kmax - *K));
-
   /***** Sigma:   Mixture variances - compute them from Li                                      *****/
-  NMix::Li2Sigma(Sigma, err, Li, K, p);
-  AK_Basic::fillArray(Sigma + LTp * *K, 0.0, LTp * (*Kmax - *K));
-
-  /*** Var, VarData:  Mixture overall variance                                                   *****/
-  double *Var     = Calloc(LTp, double);
-  double *VarData = Calloc(LTp, double);
-  NMix::Moments(chMeanP, Var, chCorrP, chMeanDataP, VarData, chCorrDataP, w, mu, Sigma, K, shift, scale, p);
-
-  /***** XiInv:              Diagonal matrix with gamma^{-1}'s on a diagonal            *****/
-  /***** log_sqrt_detXiInv:  log|XiInv|^{1/2}                                           *****/    
-  double *XiInv = Calloc(LTp, double);
+  /***** Var, VarData:  Mixture overall variance                                                *****/
+  /***** XiInv:              Diagonal matrix with gamma^{-1}'s on a diagonal                    *****/
+  /***** log_sqrt_detXiInv:  log|XiInv|^{1/2}                                                   *****/    
+  double *log_dets = Calloc(2 * *Kmax, double);
+  double *logw     = Calloc(*Kmax, double);
+  double *Var      = Calloc(LTp, double);
+  double *VarData  = Calloc(LTp, double);
+  double *XiInv    = Calloc(LTp, double);
   double log_sqrt_detXiInv[1];
-  XiInvP    = XiInv;
-  gammaInvP = gammaInv;
-  *log_sqrt_detXiInv = 0.0;
-  for (l2 = 0; l2 < *p; l2++){
-    *XiInvP = *gammaInvP;
-    *log_sqrt_detXiInv += AK_Basic::log_AK(*gammaInvP);    
-    XiInvP++;
-    gammaInvP++;
-    for (l = l2 + 1; l < *p; l++){
-      *XiInvP = 0;
-      XiInvP++;
-    }
-  }
-  *log_sqrt_detXiInv *= 0.5;
-
+  NMix::init_derived(p, Kmax, K, w, mu, Li, shift, scale, gammaInv,   
+                     log_dets, logw, Q, Sigma, chMeanP, Var, chCorrP, chMeanDataP, VarData, chCorrDataP,
+                     XiInv, log_sqrt_detXiInv, err);                                                               /* declared in NMix_Utils.h */
+  if (*err) error("%s:  Something went wrong.\n", fname);
 
 
 /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/
@@ -529,7 +399,8 @@ NMix_MCMC(const double* y0,  const double* y1,     const int* censor,          c
   double *cum_Pr            = Calloc(*Kmax * *n, double);
   const int ldwork_Deviance = *p + (2 * *p + LTp + 2 + *p + 2 * LTp + 2) * *Kmax;
   double *dwork_Deviance    = Calloc(ldwork_Deviance, double);
-  NMix_Deviance(indLogL0, indLogL1, indDevCompl, indDevObs, indDevCompl_inHat, chLogL0P, chLogL1P, chDevComplP, chDevObsP, chDevCompl_inHatP, 
+  NMix_Deviance(indLogL0, indLogL1, indDevCompl, indDevObs, indDevCompl_inHat, 
+                chLogL0P, chLogL1P, chDevComplP, chDevObsP, chDevCompl_inHatP, 
                 pred_dens, cum_Pr, dwork_Deviance, err,
                 y, r, mixN, p, n, K, logw, mu, Q, Li, log_dets, delta, c, xi, c_xi, Dinv, Dinv_xi, zeta, XiInv);
   bool cum_Pr_done[1] = {true};

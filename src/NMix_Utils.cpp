@@ -491,6 +491,220 @@ ySum_SSm_j(double* mixsumy,  double* mixSSm,  const double* y,  const int* r,  c
 }
 
 
+/***** ************************************************************************************ *****/
+/***** NMix::prior_derived1                                                                 *****/
+/***** ************************************************************************************ *****/
+void
+prior_derived(const int* p,      const int* priorK,  const int* priormuQ,  const int* Kmax,     const double* lambda,  
+              const double* xi,  const double* c,    const double* Dinv,   const double* zeta,
+              double* logK,  double* log_lambda,
+              double* c_xi,  double* log_c,       double* sqrt_c,      double* log_Wishart_const,
+              double* D_Li,  double* Dinv_xi,     double* log_dets_D,  int* err)
+{
+  const char *fname = "NMix::prior_derived";
+  const int LTp = (*p * (*p + 1))/2;
+
+  int j, l;
+
+  /***** logK:                log(1), log(2), ..., log(Kmax)                                                               *****/
+  double *logKP = logK;
+  for (j = 1; j <= *Kmax; j++){
+    *logKP = log((double)(j));
+    logKP++;
+    //Rprintf((char*)("logK[%d] = %g\n"), j, logKP[-1]);
+  }  
+
+
+  /***** log_lambda:          log(lambda)                                                                                  *****/
+  switch (*priorK){
+  case NMix::K_FIXED:
+  case NMix::K_UNIF:
+    *log_lambda = 0.0;
+    break;
+  case NMix::K_TPOISS:
+    *log_lambda = AK_Basic::log_AK(*lambda);
+    break;
+  }
+
+
+  /***** c_xi:                c[j]*xi[j], j=0, ..., Kmax-1                                                                 *****/
+  /*****                      * initialize it by xi when priormuQ = MUQ_IC                                                 *****/
+  /***** log_c:               log(c[j]), j=0, ..., Kmax-1                                                                  *****/
+  /*****                      * initialize it by 0 when priormuQ = MUQ_IC                                                  *****/
+  /***** sqrt_c:              sqrt(c[j]), j=0, ..., Kmax-1                                                                 *****/
+  /*****                      * initialize it by 0 when priormuQ = MUQ_IC                                                  *****/
+  const double *xiP, *cP;
+  double *c_xiP, *log_cP, *sqrt_cP;
+  switch (*priormuQ){
+  case NMix::MUQ_NC:
+    c_xiP   = c_xi;
+    log_cP  = log_c;
+    sqrt_cP = sqrt_c;
+    cP      = c;
+    xiP     = xi;
+    for (j = 0; j < *Kmax; j++){
+      *log_cP  = AK_Basic::log_AK(*cP);
+      *sqrt_cP = sqrt(*cP);
+      for (l = 0; l < *p; l++){
+        *c_xiP  = *cP * *xiP;
+        c_xiP++;
+        xiP++;
+      }
+      log_cP++;
+      sqrt_cP++;
+      cP++;
+    }
+    break;
+
+  case NMix::MUQ_IC:
+    AK_Basic::copyArray(c_xi, xi, *p * *Kmax);
+    AK_Basic::fillArray(log_c, 0.0, *Kmax);
+    AK_Basic::fillArray(sqrt_c, 0.0, *Kmax);
+    break;
+  }
+
+
+  /***** log_Wishart_const:   Logarithm of the constant in the Wishart density which depends only on degrees of freedom    *****/
+  Dist::l_Wishart_const(log_Wishart_const, zeta, p);
+
+
+  /***** D_Li:                Cholesky decompositions of D[j]^{-1}, j=0, ..., Kmax-1                                       *****/
+  /*****                      * initialize it by unit matrices when priormuQ = MUQ_NC                                      *****/
+  /***** Dinv_xi:             D[j]^{-1} %*% xi[j], j=0, ..., Kmax-1                                                        *****/
+  /*****                      *initialize it by zero vectors when priormuQ = MUQ_NC                                        *****/
+  /***** log_dets_D:          log_dets based on D matrices                                                                 *****/
+  /*****                      * initialize it by zeros when priormuQ = MUQ_NC                                              *****/
+  const double *DinvP;
+  double *D_LiP, *Dinv_xiP, *log_dets_DP;
+  switch (*priormuQ){
+  case NMix::MUQ_NC:
+    D_LiP = D_Li;
+    for (j = 0; j < *Kmax; j++){
+      AK_BLAS::eyeSP(D_LiP, p);
+      D_LiP += LTp;
+    }
+    AK_Basic::fillArray(Dinv_xi, 0.0, *p * *Kmax);
+    AK_Basic::fillArray(log_dets_D, 0.0, 2 * *Kmax);
+    break;
+
+  case NMix::MUQ_IC:
+    xiP         = xi;
+    D_LiP       = D_Li;
+    Dinv_xiP    = Dinv_xi;
+    log_dets_DP = log_dets_D;
+    DinvP       = Dinv;
+    for (j = 0; j < *Kmax; j++){
+
+      /*** Dinv_xi = Dinv %*% xi ***/
+      F77_CALL(dspmv)("L", p, &AK_Basic::_ONE_DOUBLE, DinvP, xiP, &AK_Basic::_ONE_INT, &AK_Basic::_ZERO_DOUBLE, Dinv_xiP, &AK_Basic::_ONE_INT); 
+
+      /*** D_Li = Cholesky decomposition of Dinv ***/
+      AK_Basic::copyArray(D_LiP, DinvP, LTp);
+      F77_CALL(dpptrf)("L", p, D_LiP, err);      
+      if (*err) error("%s:  Cholesky decomposition of Dinv[%d] failed.\n", fname, j);
+
+      /*** log_dets based on D ***/
+      *log_dets_DP = 0.0;                                   /*** log_dets_D[0, j] will be log(|D[j]|^{-1/2}) = sum(log(D_Li_{j}[l,l]))   ***/
+      for (l = *p; l > 0; l--){
+        *log_dets_DP += AK_Basic::log_AK(*D_LiP);
+        D_LiP += l;
+      }
+      log_dets_DP++;
+      *log_dets_DP = -(*p) * M_LN_SQRT_2PI;                 /*** log_dets_D[1, j] = -p * log(sqrt(2*pi)) ***/
+      log_dets_DP++;
+      
+      DinvP    += LTp;                                   /*** skip to the next D_inv ***/      
+      xiP      += *p;                                    /*** skip to the next xi    ***/
+      Dinv_xiP += *p;
+    }
+    break;
+  }
+
+  return;
+}
+
+
+/***** ***************************************************************************************** *****/
+/***** NMix::init_derived                                                                        *****/
+/***** ***************************************************************************************** *****/
+void
+init_derived(const int* p,         const int* Kmax,      const int* K,  
+             const double* w,      const double* mu,     const double* Li,
+             const double* shift,  const double* scale,  const double* gammaInv,   
+             double* log_dets,  double* logw,               double* Q,         double* Sigma,
+             double* Mean,      double* Var,                double* Corr,
+             double* MeanData,  double* VarData,            double* CorrData,
+             double* XiInv,     double* log_sqrt_detXiInv,  int* err)
+{
+  const char *fname = "NMix::init_derived";
+  const int LTp = (*p * (*p + 1))/2;
+
+  int j, l, l2;
+
+  /***** log_dets:  log_dets for mixture covariance matrices                                    *****/
+  const double *LiP = Li;
+  double *log_detsP = log_dets;
+  for (j = 0; j < *K; j++){
+    *log_detsP = 0.0;                                   /*** log_dets[0, j] will be log(|Sigma[j]|^{-1/2}) = sum(log(Li_{j}[l,l]))   ***/
+    for (l = *p; l > 0; l--){
+      *log_detsP += AK_Basic::log_AK(*LiP);
+      LiP += l;
+    }
+    log_detsP++;
+    *log_detsP = -(*p) * M_LN_SQRT_2PI;                 /*** log_dets[1, j] = -p * log(sqrt(2*pi)) ***/
+    log_detsP++;
+  }
+  for (j = *K; j < *Kmax; j++){
+    *log_detsP = 0.0;
+    log_detsP++;
+    *log_detsP = -(*p) * M_LN_SQRT_2PI;                 /*** log_dets[1, j] = -p * log(sqrt(2*pi)) ***/
+    log_detsP++;
+  }
+
+
+  /***** logw:  Log-weights                                                                     *****/
+  NMix::w2logw(logw, w, K);
+  AK_Basic::fillArray(logw + *K, 0.0, *Kmax - *K);
+
+
+  /***** Q:   Mixture inverse variances - compute them from Li                                  *****/
+  NMix::Li2Q(Q, Li, K, p);
+  AK_Basic::fillArray(Q + LTp * *K, 0.0, LTp * (*Kmax - *K));
+
+
+  /***** Sigma:   Mixture variances - compute them from Li                                      *****/
+  NMix::Li2Sigma(Sigma, err, Li, K, p);
+  AK_Basic::fillArray(Sigma + LTp * *K, 0.0, LTp * (*Kmax - *K));
+
+
+  /***** Mean, MeanData:  Mixture overall means                                                 *****/
+  /***** Var, VarData:    Mixture overall variance                                              *****/
+  /***** Corr, CorrData:  Mixture overall std. deviations and correlations                      *****/
+  NMix::Moments(Mean, Var, Corr, MeanData, VarData, CorrData, w, mu, Sigma, K, shift, scale, p);
+
+
+
+  /***** XiInv:              Diagonal matrix with gamma^{-1}'s on a diagonal                    *****/
+  /***** log_sqrt_detXiInv:  log|XiInv|^{1/2}                                                   *****/    
+  double *XiInvP    = XiInv;
+  const double *gammaInvP = gammaInv;
+  *log_sqrt_detXiInv = 0.0;
+  for (l2 = 0; l2 < *p; l2++){
+    *XiInvP = *gammaInvP;
+    *log_sqrt_detXiInv += AK_Basic::log_AK(*gammaInvP);    
+    XiInvP++;
+    gammaInvP++;
+    for (l = l2 + 1; l < *p; l++){
+      *XiInvP = 0;
+      XiInvP++;
+    }
+  }
+  *log_sqrt_detXiInv *= 0.5;
+
+  return;
+}
+
+
 }    /*** end of namespace NMix ***/
 
 

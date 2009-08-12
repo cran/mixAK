@@ -29,6 +29,10 @@
 //
 //     * ySum_SSm_j         13/02/2008:
 //
+//     * prior_derived      08/07/2009:
+//
+//     * init_derived       08/07/2009:
+//
 // ====================================================================================================
 //
 #ifndef _NMIX_UTILS_H_
@@ -40,6 +44,9 @@
 
 #include "AK_Basic.h"
 #include "Stat_BLA.h"
+#include "Dist_Wishart.h"
+
+#include "NMix.h"
 
 namespace NMix{
 
@@ -221,6 +228,108 @@ void
 ySum_SSm_j(double* mixsumy,  double* mixSSm,  const double* y,  const int* r,  const double* mu,  const int* K,  
            const int* LTp,   const int* p,    const int* n);
 
+
+/***** ***************************************************************************************** *****/
+/***** NMix::prior_derived                                                                       *****/
+/***** ***************************************************************************************** *****/
+//
+//  Calculate variables derived from the parameters of the prior distribution
+//  ===================================================================================================
+//
+//  /***** logK:                log(1), log(2), ..., log(Kmax)                                                               *****/
+//  /***** log_lambda:          log(lambda)                                                                                  *****/
+//  /***** c_xi:                c[j]*xi[j], j=0, ..., Kmax-1                                                                 *****/
+//  /*****                      * initialize it by xi when priormuQ = MUQ_IC                                                 *****/
+//  /***** log_c:               log(c[j]), j=0, ..., Kmax-1                                                                  *****/
+//  /*****                      * initialize it by 0 when priormuQ = MUQ_IC                                                  *****/
+//  /***** sqrt_c:              sqrt(c[j]), j=0, ..., Kmax-1                                                                 *****/
+//  /*****                      * initialize it by 0 when priormuQ = MUQ_IC                                                  *****/
+//  /***** log_Wishart_const:   Logarithm of the constant in the Wishart density which depends only on degrees of freedom    *****/
+//  /***** D_Li:                Cholesky decompositions of D[j]^{-1}, j=0, ..., Kmax-1                                       *****/
+//  /*****                      * initialize it by unit matrices when priormuQ = MUQ_NC                                      *****/
+//  /***** Dinv_xi:             D[j]^{-1} %*% xi[j], j=0, ..., Kmax-1                                                        *****/
+//  /*****                      *initialize it by zero vectors when priormuQ = MUQ_NC                                        *****/
+//  /***** log_dets_D:          log_dets based on D matrices                                                                 *****/
+//  /*****                      * initialize it by zeros when priormuQ = MUQ_NC                                              *****/
+//
+//  p[1]
+//  priorK[1]
+//  priormuQ[1]
+//  Kmax[1]
+//  lambda[1]
+//  xi[p*Kmax]
+//  c[Kmax]
+//  Dinv[]
+//  zeta[1]
+//
+//  logK[Kmax]
+//  log_lambda[1]
+//  c_xi[p*Kmax]
+//  log_c[Kmax]
+//  sqrt_c[Kmax]
+//  log_Wishart_const[1]
+//  D_Li[LT(p)*Kmax]
+//  Dinv_xi[p*Kmax]
+//  log_dets_D[2*Kmax]
+//
+void
+prior_derived(const int* p,      const int* priorK,  const int* priormuQ,  const int* Kmax,     const double* lambda,
+              const double* xi,  const double* c,    const double* Dinv,   const double* zeta,
+              double* logK,  double* log_lambda,
+              double* c_xi,  double* log_c,       double* sqrt_c,      double* log_Wishart_const,
+              double* D_Li,  double* Dinv_xi,     double* log_dets_D,  int* err);
+
+
+/***** ***************************************************************************************** *****/
+/***** NMix::init_derived                                                                        *****/
+/***** ***************************************************************************************** *****/
+//
+//  Calculate variables derived from the initial values of mixture parameters
+//  ===================================================================================================
+//
+//  /***** log_dets:  log_dets for mixture covariance matrices                                    *****/
+//  /***** logw:  Log-weights                                                                     *****/
+//  /***** Q:   Mixture inverse variances - compute them from Li                                  *****/
+//  /***** Sigma:   Mixture variances - compute them from Li                                      *****/
+//  /***** Mean, MeanData:  Mixture overall means                                                 *****/
+//  /***** Var, VarData:    Mixture overall variance                                              *****/
+//  /***** Corr, CorrData:  Mixture overall std. deviations and correlations                      *****/
+//  /***** XiInv:              Diagonal matrix with gamma^{-1}'s on a diagonal                    *****/
+//  /***** log_sqrt_detXiInv:  log|XiInv|^{1/2}                                                   *****/    
+//
+//
+// p[1]
+// Kmax[1]
+// K[1]
+// w[K]
+// mu[p*K]
+// Li[LT(p)*K]
+// shift[p]
+// scale[p]
+// gammaInv[p]
+//
+// log_dets[Kmax]
+// logw[Kmax]
+// Q[LT(p)*Kmax]
+// Sigma[LT(p)*Kmax]
+// Mean[p]
+// Var[LT(p)]
+// Corr[LT(p)]
+// MeanData[p]
+// VarData[LT(p)]
+// CorrData[LT(p)]
+// XiInv[LT(p)]
+// log_sqrt_detXiInv[1]
+// err[1]
+//
+void
+init_derived(const int* p,         const int* Kmax,      const int* K,  
+             const double* w,      const double* mu,     const double* Li,
+             const double* shift,  const double* scale,  const double* gammaInv,   
+             double* log_dets,  double* logw,               double* Q,         double* Sigma,
+             double* Mean,      double* Var,                double* Corr,
+             double* MeanData,  double* VarData,            double* CorrData,
+             double* XiInv,     double* log_sqrt_detXiInv,  int* err);
 
 }    /*** end of namespace NMix ***/
 

@@ -2,6 +2,7 @@
 \alias{NMixPredDensJoint2}
 \alias{NMixPredDensJoint2.default}
 \alias{NMixPredDensJoint2.NMixMCMC}
+\alias{NMixPredDensJoint2.GLMM_MCMC}
 \title{
   Pairwise bivariate predictive density
 }
@@ -16,11 +17,16 @@ NMixPredDensJoint2(x, \dots)
 \method{NMixPredDensJoint2}{default}(x, scale, K, w, mu, Li, Krandom=TRUE, \dots)
 
 \method{NMixPredDensJoint2}{NMixMCMC}(x, grid, lgrid=50, scaled=FALSE, \dots)
+
+\method{NMixPredDensJoint2}{NMixMCMC}(x, grid, lgrid=50, scaled=FALSE, \dots)
 }
 \arguments{
   \item{x}{an object of class \code{NMixMCMC} for
     \code{NMixPredDensJoint2.NMixMCMC} function.
 
+    an object of class \code{NMixMCMC} for
+    \code{NMixPlugDensJoint2.NMixMCMC} function.
+    
     A list with the grid values (see below) for
     \code{NMixPredDensJoint2.default} function.
   }
@@ -88,7 +94,8 @@ NMixPredDensJoint2(x, \dots)
   \emph{Computational Statistics and Data Analysis.} To appear.  
 }
 \seealso{
-  \code{\link{plot.NMixPredDensJoint2}}, \code{\link{NMixMCMC}}, \code{\link{NMixPredDensMarg}}.
+  \code{\link{plot.NMixPredDensJoint2}}, \code{\link{NMixMCMC}},
+  \code{\link{GLMM_MCMC}}, \code{\link{NMixPredDensMarg}}.
 }
 \author{
   \eqn{\mbox{Arno\v{s}t Kom\'arek}}{Arno&#353t Kom&#225rek} \email{arnost.komarek[AT]mff.cuni.cz}

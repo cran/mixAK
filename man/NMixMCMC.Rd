@@ -22,8 +22,8 @@
   Gibbs step is used within the MCMC algorithm 
 }
 \details{
-  See accompanying paper (\code{Komarek-NMix.pdf}) available in the
-  vignette section of the package. In the rest of the helpfile,
+  See accompanying paper (\eqn{\mbox{Kom\'arek}}{Kom&#225rek}, 2009).
+  In the rest of the helpfile,
   the same notation is used as in the paper, namely, \eqn{n} denotes the number of
   observations, \eqn{p} is dimension of the data, \eqn{K} is the number
   of mixture components,
@@ -622,7 +622,7 @@ NMixMCMC(y0, y1, censor, scale, prior,
   Estimation of finite mixture distributions through Bayesian sampling.
   \emph{Journal of the Royal Statistical Society, Series B}, \bold{56}, 363--375.
 
-  \eqn{\mbox{Kom\'{a}rek, A.}}{Kom&#225rek, A.}
+  \eqn{\mbox{Kom\'{a}rek, A.}}{Kom&#225rek, A.} (2009).
   A new R package for Bayesian estimation of multivariate normal mixtures allowing for selection 
   of the number of components and interval-censored data.
   \emph{Computational Statistics and Data Analysis.} To appear.

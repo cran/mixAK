@@ -787,6 +787,82 @@ invComplexGE(double* Ainv_re,  double* Ainv_im,  int* jpvt,  int* err,  const do
 
 
 /***** **************************************************************************************************** *****/
+/***** AK_LAPACK::invLT:  Invert a lower triangular matrix stored in packed format                          *****/
+/***** **************************************************************************************************** *****/
+void
+invLT(double* L,  const int* p)
+{
+  static double *LP, *LP2;
+  static int i, j, k, diagI_k;
+  static double temp;
+
+  if (*p == 1){
+    *L = 1 / *L;
+    return;
+  }
+
+  /*** Divide each column under the diagonal by the diagonal element. ***/
+  LP = L;
+  for (j = 0; j < *p - 1; j++){
+    temp = *LP;                                   // diagonal element
+    if (*LP != 0){
+      LP++;
+      for (i = j + 1; i < *p; i++){
+        *LP /= temp;
+        LP++;
+      }
+    }
+    else{
+      LP += *p - j;                               // skip to the next diagonal element
+    }
+  }
+
+  /*** (Almost) invert the lower triangle.                                                                            ***/
+  /*** Do not multiply the rows in the lower strict triangle by the inverse of the diagonal element on that row.     ***/
+  /*** This corresponds to L^{-1} where L had ones on the diagonal.                                                  ***/
+  LP = L;
+  for (j = 0; j < *p; j++){                                  // loop over columns
+    if (*LP > 0){                                            // if L[j,j] > 0
+      *LP = 1 / *LP;                                           // this line inverts a diagonal
+      LP++;
+      for (i = (j+1); i < *p; i++){                             // loop over the rows of the j-th column
+        *LP = -(*LP);
+        for (k = 0; k < j; k++){                               // sweep operator
+          diagI_k = (k * (2 * *p - k + 1))/2;
+          L[diagI_k + i - k] += *LP * L[diagI_k + j - k];     
+        }
+        LP++;
+      }
+    }
+    else{
+      LP += *p - j;
+    }
+  }
+
+  /*** Finish inversion ***/
+  LP = L;
+  for (i = 0; i < *p; i++){                    // loop over rows (each of them must be multiplied by the corresponding diagonal element)
+    LP2 = L + i;                               // pointer to L(i, 0)
+    if (*LP == 0){
+      for (j = 0; j < i; j++){
+        *LP2 = 0;
+        LP2 += *p - j - 1;
+      }
+    }
+    else{
+      for (j = 0 ; j < i; j++){                  // loop over columns of the i-th row
+        *LP2 *= *LP;
+        LP2 += *p - j - 1;                       // skip to A(i, j+1)
+      }
+    }
+    LP += *p - i;                              // skip to the next diagonal element
+  }
+
+  return;
+}
+
+
+/***** **************************************************************************************************** *****/
 /***** AK_LAPACK::sqrtGE: Square root of a general real squared matrix                                      *****/
 /***** **************************************************************************************************** *****/
 #ifdef __cplusplus

@@ -896,4 +896,225 @@ UTxVec(double* Ux,  double* ujx,  const double* U,  const double* x,  const int*
   return;
 }
 
+
+/***** ********************************************************************************* *****/
+/***** AK_BLAS::LTxtLT                                                                   *****/
+/***** ********************************************************************************* *****/
+void
+LTxtLT(double *LtL, const double *L, const int *p)
+{
+  static int i, j, i2;
+  static double *LtLP, *startLtLP;
+  static const double *LP, *LP2;
+
+  /*** Column 0 of LtL and initialization of the remaining columns of LtL ***/
+  startLtLP = LtL;
+  LtLP = startLtLP;
+  LP = L; 
+  for (i = 0; i < *p; i++){
+    LP2 = LP;
+    for (i2 = i; i2 < *p; i2++){
+      *LtLP = (*LP) * (*LP2);
+      LP2++;
+      LtLP++;
+    }
+    LP++;
+  }
+  startLtLP += *p;
+
+  /*** Column 1,...,p-1 of LtL ***/
+  for (j = 1; j < *p; j++){
+    LtLP = startLtLP;
+    for (i = j; i < *p; i++){
+      LP2 = LP;
+      for (i2 = i; i2 < *p; i2++){
+        *LtLP += (*LP) * (*LP2);
+        LP2++;
+        LtLP++;
+      }
+      LP++;
+    }
+    startLtLP += *p - j;
+  }
+  
+  return;
+}
+
+
+/***** ********************************************************************************* *****/
+/***** AK_BLAS::RectxtRect                                                              *****/
+/***** ********************************************************************************* *****/
+void
+RectxtRect(double* A,  const double* B,  const int* nrB,  const int* ncB)
+{
+  static int i, j, k;
+  static double *AP;
+  static const double *BP1, *BP2, *Bstart1, *Bstart2;
+
+                                        //int iA, iBstart1, iBstart2, iB1, iB2;
+
+  AP = A;                               //iA = 0;
+  Bstart2 = B;                          //iBstart2 = 0;
+  for (j = 0; j < *nrB; j++){
+    Bstart1 = Bstart2;                  //iBstart1 = iBstart2;
+    for (i = j; i < *nrB; i++){
+      *AP = 0.0;                        //Rprintf((char*)("\nA[%d]:=0"), iA);
+      BP1 = Bstart1;                    //iB1 = iBstart1;
+      BP2 = Bstart2;                    //iB2 = iBstart2;
+      *AP = *BP1 * *BP2;                //Rprintf((char*)(" +=B[%d]*B[%d]"), iB1, iB2);
+      for (k = 1; k < *ncB; k++){
+        BP1 += *nrB;                    //iB1 += *nrB;
+        BP2 += *nrB;                    //iB2 += *nrB;
+        *AP += *BP1 * *BP2;             //Rprintf((char*)(" +=B[%d]*B[%d]"), iB1, iB2);
+      }
+
+      AP++;                             //iA++;
+      Bstart1++;                        //iBstart1++;
+    }
+    Bstart2++;                          //iBstart2++;
+  }
+                                        //Rprintf((char*)("\n"));
+  return;
+}
+
+
+/***** ********************************************************************************* *****/
+/***** AK_BLAS::RectROWxtLT                                                              *****/
+/***** ********************************************************************************* *****/
+//
+//  A[nrB, p]:   Resulting general matrix stored in COLUMN major order
+//
+//  B[nrB, p]:   General matrix stored in ROW major order
+//
+//  L[LT(p)]:    Lower triangle of a lower triangular matrix stored in COLUMN major order
+//
+//  nrB[1]:      Number of rows of B and A
+//
+//  p[1]:        Number of columns of B and A, number of rows and columns of L
+//
+void
+RectROWxtLT(double* A,  const double* B,  const double* L,  const int* nrB,  const int* p)
+{
+  static double *AP;
+  static const double *BP, *LP, *L_b;
+  static int i, j, k;
+                                                     //int iA, iB, iL, iL_b;
+
+  /*** Loop over columns of resulting matrix ***/
+  AP  = A;                                           //iA = 0;
+  L_b = L;                                           //iL_b = 0;
+  for (j = 0; j < *p; j++){
+
+    /*** Loop over rows of resulting matrix ***/
+    BP = B;                                          //iB = 0;
+    for (i = 0; i < *nrB; i++){
+                                                     //Rprintf((char*)("\nA[%d] = A[%d,%d]: "), iA, i, j);
+      LP = L_b;                                      //iL = iL_b;
+      *AP = 0.0;                                     //Rprintf((char*)(" := 0.0"));
+      for (k = 0; k <= j; k++){
+        *AP += *BP * *LP;                            //Rprintf((char*)(" += B[%d]*L[%d]"), iB, iL);
+        BP++;                                        //iB++;
+        LP += (*p - k - 1);                          //iL += (*p - k - 1);
+      }
+      BP += (*p - j - 1);                            //iB += (*p - j - 1);
+      AP++;                                          //iA++;
+    }
+
+    L_b++;                                           //iL_b++;
+  }
+                                                     //Rprintf((char*)("\n"));  
+  return;
+}
+
+
+/***** ********************************************************************************* *****/
+/***** AK_BLAS::BDROWxtLT                                                                    *****/
+/***** ********************************************************************************* *****/
+void
+BDROWxtLT(double* A, const double* B, const double* L,  const int* nBl, const int* nrB,  const int* ncB,  const int* p)
+{
+  static double *AP;
+  static const double *BP, *LP, *L_b, *L_diag, *L_start;
+  static const int *ncB_b, *ncBP, *nrBP;
+  static int i, j, k, b, b2, rowL;
+                                                     //int iA, iB, iL, iL_b, iL_diag, iL_start;
+
+  /*** Loop over columns of resulting matrix ***/
+  L_b = L;                                           //iL_b = 0;
+  AP  = A;                                           //iA = 0;
+  ncB_b = ncB;
+  for (b = 0; b < *nBl; b++){
+
+    for (j = 0; j < *ncB_b; j++){
+      BP = B;                                        //iB = 0;
+      ncBP = ncB;
+      nrBP = nrB;
+      
+      /*** Rows above diagonal block            ***/
+      rowL = 0;
+      for (b2 = 0; b2 < b; b2++){
+        if (b2 == 0){
+          L_start = L_b;                             //iL_start = iL_b;
+        }
+        else{
+          L_start = LP;                              //iL_start = iL;
+        }
+
+        for (i = 0; i < *nrBP; i++){
+
+          LP  = L_start;                             //iL = iL_start;
+          *AP = 0.0;                                 //Rprintf("\nAbove diag. A[%d]:=0", iA);
+          for (k = 0; k < *ncBP; k++){
+            *AP += *BP * *LP;                        //Rprintf(" += B[%d]*L[%d]", iB, iL);
+            BP++;                                    //iB++;
+            LP += (*p - rowL - k - 1);               //iL += (*p - rowL - k - 1);
+          }
+          AP++;                                      //iA++;
+        }
+        rowL += *ncBP;
+        ncBP++;
+        nrBP++;
+      }
+      if (b == 0){
+        L_diag = L_b;                                //iL_diag = iL_b;
+      }
+      else{
+        L_diag = LP;                                 //iL_diag = iL;
+      }
+
+      /*** Rows in the diagonal block           ***/
+      for (i = 0; i < *nrBP; i++){
+
+        LP = L_diag;                                 //iL = iL_diag;
+        *AP = 0.0;                                   //Rprintf("\nDiag. A[%d]:=0", iA);
+        for (k = 0; k <= j; k++){
+          *AP += *BP * *LP;                          //Rprintf(" += B[%d]*L[%d]", iB, iL);
+          BP++;                                      //iB++;
+          LP += (*p - rowL - k - 1);                 //iL += (*p - rowL - k - 1);
+        }
+        BP += (*ncB_b - j - 1);                      //iB += (*ncB_b - j - 1);
+        AP++;                                        //iA++;
+      }
+      nrBP++;
+
+      /*** Rows with zeros below diagonal block ***/  
+      for (b2 = b + 1; b2 < *nBl; b2++){
+        for (i = 0; i < *nrBP; i++){
+
+          *AP = 0.0;                                 //Rprintf("\nBelow diag. A[%d]:=0", iA);
+          AP++;                                      //iA++;
+        }
+        nrBP++;
+      }
+
+      L_b++;                                         //iL_b++;
+    }  
+    ncB_b++;  
+  }
+                                                     //Rprintf((char*)("\n"));  
+  return;
+}
+
 }  /*** end of namespace AK_BLAS ***/
+
+

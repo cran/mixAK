@@ -2,6 +2,7 @@
 \alias{NMixPredDensMarg}
 \alias{NMixPredDensMarg.default}
 \alias{NMixPredDensMarg.NMixMCMC}
+\alias{NMixPredDensMarg.GLMM_MCMC}
 \title{
   Marginal (univariate) predictive density
 }
@@ -16,11 +17,16 @@ NMixPredDensMarg(x, \dots)
 \method{NMixPredDensMarg}{default}(x, scale, K, w, mu, Li, Krandom=TRUE, \dots)
 
 \method{NMixPredDensMarg}{NMixMCMC}(x, grid, lgrid=50, scaled=FALSE, \dots)
+
+\method{NMixPredDensMarg}{GLMM_MCMC}(x, grid, lgrid=50, scaled=FALSE, \dots)
 }
 \arguments{
   \item{x}{an object of class \code{NMixMCMC} for
     \code{NMixPredDensMarg.NMixMCMC} function.
 
+    An object of class \code{GLMM_MCMC} for
+    \code{NMixPredDensMarg.GLMM_MCMC} function.
+    
     A list with the grid values (see below) for
     \code{NMixPredDensMarg.default} function.
   }
@@ -85,7 +91,7 @@ NMixPredDensMarg(x, \dots)
   \emph{Computational Statistics and Data Analysis.} To appear.  
 }
 \seealso{
-  \code{\link{plot.NMixPredDensMarg}}, \code{\link{NMixMCMC}}, \code{\link{NMixPredDensJoint2}}.
+  \code{\link{plot.NMixPredDensMarg}}, \code{\link{NMixMCMC}}, \code{\link{GLMM_MCMC}}, \code{\link{NMixPredDensJoint2}}.
 }
 \author{
   \eqn{\mbox{Arno\v{s}t Kom\'arek}}{Arno&#353t Kom&#225rek} \email{arnost.komarek[AT]mff.cuni.cz}

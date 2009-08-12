@@ -60,7 +60,7 @@ NMixMCMCwrapper(chain=1,
     infinity. Such values are trimmed when computing expected deviance.}
 }  
 \value{
-  A~list having almost the same components as object returned by
+  A list having almost the same components as object returned by
   \code{\link{NMixMCMC}} function.
 }
 \seealso{

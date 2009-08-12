@@ -2,6 +2,7 @@
 \alias{NMixPlugDensJoint2}
 \alias{NMixPlugDensJoint2.default}
 \alias{NMixPlugDensJoint2.NMixMCMC}
+\alias{NMixPlugDensJoint2.GLMM_MCMC}
 \title{
   Pairwise bivariate densities: plug-in estimate
 }
@@ -18,11 +19,16 @@ NMixPlugDensJoint2(x, \dots)
 \method{NMixPlugDensJoint2}{default}(x, scale, w, mu, Sigma, \dots)
 
 \method{NMixPlugDensJoint2}{NMixMCMC}(x, grid, lgrid=50, scaled=FALSE, \dots)
+
+\method{NMixPlugDensJoint2}{GLMM_MCMC}(x, grid, lgrid=50, scaled=FALSE, \dots)
 }
 \arguments{
   \item{x}{an object of class \code{NMixMCMC} for
     \code{NMixPlugDensJoint2.NMixMCMC} function.
 
+    An object of class \code{GLMM_MCMC} for
+    \code{NMixPlugDensJoint2.GLMM_MCMC} function.
+    
     A list with the grid values (see below) for
     \code{NMixPlugDensJoint2.default} function.
   }
@@ -74,7 +80,7 @@ NMixPlugDensJoint2(x, \dots)
   There is also a \code{plot} method implemented for the resulting object.
 }
 \seealso{
-  \code{\link{plot.NMixPlugDensJoint2}}, \code{\link{NMixMCMC}}, \code{\link{NMixPredDensJoint2}}.
+  \code{\link{plot.NMixPlugDensJoint2}}, \code{\link{NMixMCMC}}, \code{\link{GLMM_MCMC}}, \code{\link{NMixPredDensJoint2}}.
 }
 \author{
   \eqn{\mbox{Arno\v{s}t Kom\'arek}}{Arno&#353t Kom&#225rek} \email{arnost.komarek[AT]mff.cuni.cz}

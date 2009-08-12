@@ -2,6 +2,7 @@
 \alias{NMixPlugDensMarg}
 \alias{NMixPlugDensMarg.default}
 \alias{NMixPlugDensMarg.NMixMCMC}
+\alias{NMixPlugDensMarg.GLMM_MCMC}
 \title{
   Marginal (univariate) densities: plug-in estimate
 }
@@ -18,10 +19,15 @@ NMixPlugDensMarg(x, \dots)
 \method{NMixPlugDensMarg}{default}(x, scale, w, mu, Sigma, \dots)
 
 \method{NMixPlugDensMarg}{NMixMCMC}(x, grid, lgrid=50, scaled=FALSE, \dots)
+
+\method{NMixPlugDensMarg}{GLMM_MCMC}(x, grid, lgrid=50, scaled=FALSE, \dots)
 }
 \arguments{
   \item{x}{an object of class \code{NMixMCMC} for
     \code{NMixPlugDensMarg.NMixMCMC} function.
+
+    An object of class \code{GLMM_MCMC} for
+    \code{NMixPlugDensMarg.GLMM_MCMC} function.    
 
     A list with the grid values (see below) for
     \code{NMixPlugDensMarg.default} function.
@@ -69,7 +75,8 @@ NMixPlugDensMarg(x, \dots)
   There is also a \code{plot} method implemented for the resulting object.
 }
 \seealso{
-  \code{\link{plot.NMixPlugDensMarg}}, \code{\link{NMixMCMC}}, \code{\link{NMixPredDensMarg}}.
+  \code{\link{plot.NMixPlugDensMarg}}, \code{\link{NMixMCMC}},
+  \code{\link{GLMM_MCMC}}, \code{\link{NMixPredDensMarg}}.
 }
 \author{
   \eqn{\mbox{Arno\v{s}t Kom\'arek}}{Arno&#353t Kom&#225rek} \email{arnost.komarek[AT]mff.cuni.cz}

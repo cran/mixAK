@@ -9,51 +9,71 @@
 //             14/11/2007 as AK_BLAS.h
 //
 //  FUNCTIONS:
-//     * ddot2  05/11/2007:  Scalar product t(x) %*% x
+//     * ddot             11/08/2009:    Scalar product t(x) %*% y
 //
-//     * transposition  12/11/2007:   Transpose a general matrix
-//                                    * taken from AK_BLAS_LAPACK.{h,cpp}[glmmAK]
+//     * ddot2            05/11/2007:    Scalar product t(x) %*% x
 //
-//     * eye 09/01/2008:       Create a unit matrix
+//     * transposition    12/11/2007:    Transpose a general matrix
+//                                       * taken from AK_BLAS_LAPACK.{h,cpp}[glmmAK]
 //
-//     * eyeSP 14/01/2008:     Create a unit matrix stored in a packed format
+//     * eye              09/01/2008:    Create a unit matrix
 //
-//     * SP2Rect  12/11/2007:  Copy a symmetric matrix stored in packed format into the rectangular array
-//                             * taken from LT2Rect in AK_BLAS_LAPACK.{h,cpp}[glmmAK]
+//     * eyeSP            14/01/2008:    Create a unit matrix stored in a packed format
 //
-//     * Rect2SP  12/11/2007:   Take only a lower triangle from a general nrow x nrow matrix
-//                              * taken from Rect2LT in AK_BLAS_LAPACK.{h,cpp}[glmmAK]
+//     * SP2Rect          12/11/2007:    Copy a symmetric matrix stored in packed format into the rectangular array
+//                                       * taken from LT2Rect in AK_BLAS_LAPACK.{h,cpp}[glmmAK]
 //
-//     * traceAB_SP  15/01/2008:   Compute trace(A %*% B), where A and B are symmetric matrices stored as lower triangles in a packed format.
+//     * Rect2SP          12/11/2007:    Take only a lower triangle from a general nrow x nrow matrix
+//                                       * taken from Rect2LT in AK_BLAS_LAPACK.{h,cpp}[glmmAK]
 //
-//     * SPjj  19/11/2007:      From a symmetric matrix A stored in a packed form extract A[-j,-j], A[-j,j] and ajj=A[j,j]
+//     * traceAB_SP       15/01/2008:    Compute trace(A %*% B), where A and B are symmetric matrices stored 
+//                                       as lower triangles in a packed format.
 //
-//     * SPjxScalar 10/01/2008:   Compute x * A[, j] or x * A[0:rowMax, j] for a symmatric matrix A stored in a packed format
-//                                and a scalar x
-//                                OVERLOADED FUNCTION
+//     * SPjj             19/11/2007:    From a symmetric matrix A stored in a packed form extract A[-j,-j], A[-j,j] and ajj=A[j,j]
 //
-//     * LT2UT  14/11/2007:    Transpose a lower triangular matrix both stored in a packed form
+//     * SPjxScalar       10/01/2008:    Compute x * A[, j] or x * A[0:rowMax, j] for a symmatric matrix A stored in a packed format
+//                                       and a scalar x
+//                                       OVERLOADED FUNCTION
 //
-//     * UT2LT  14/11/2007:    Transpose an upper triangular matrix both stored in a packed form
+//     * LT2UT            14/11/2007:    Transpose a lower triangular matrix both stored in a packed form
 //
-//     * LTxVec  14/11/2007:    Compute L %*% x or L[,-j] %*% x[-j] or L[,-j] %*% x[-j] and L[,j] * x[j], 
-//                              where L is lower triangular matrix stored in a packed form
-//                              OVERLOADED FUNCTION
+//     * UT2LT            14/11/2007:    Transpose an upper triangular matrix both stored in a packed form
 //
-//     * Vec1_LTjxVec2j  15/11/2007:    For lower triangular matrix L and vectors x and z computes 
-//                                      a) L[,j]
-//                                      b) x - L[,j]*z[j]
+//     * LTxVec           14/11/2007:    Compute L %*% x or L[,-j] %*% x[-j] or L[,-j] %*% x[-j] and L[,j] * x[j], 
+//                                       where L is lower triangular matrix stored in a packed form
+//                                       OVERLOADED FUNCTION
+//
+//     * Vec1_LTjxVec2j   15/11/2007:    For lower triangular matrix L and vectors x and z computes 
+//                                       a) L[,j]
+//                                       b) x - L[,j]*z[j]
 //        
-//     * tLTxVec  15/11/2007:   Compute t(L) %*% x or t(L)[,-j] %*% x[-j] or t(L)[,-j] %*% x[-j] and t(L)[,j] * x[j], 
-//                              where L is lower triangular matrix stored in a packed form
-//                              OVERLOADED FUNCTION
+//     * tLTxVec          15/11/2007:    Compute t(L) %*% x or t(L)[,-j] %*% x[-j] or t(L)[,-j] %*% x[-j] and t(L)[,j] * x[j], 
+//                                       where L is lower triangular matrix stored in a packed form
+//                                       OVERLOADED FUNCTION
 //
 //     * Vec1_tLTjxVec2j  15/11/2007:    For lower triangular matrix L and vectors x and z computes 
 //                                       a) t(L)[,j]
 //                                       b) x - t(L)[,j]*z[j]
 //
-//     * UTxVec  15/11/2007:    Compute U %*% x or U[,-j] %*% x[-j] and U[,j] * x[j], where U is upper triangular matrix stored in a packed form
-//                              OVERLOADED FUNCTION
+//     * UTxVec           15/11/2007:    Compute U %*% x or U[,-j] %*% x[-j] and U[,j] * x[j], 
+//                                       where U is upper triangular matrix stored in a packed form
+//                                       OVERLOADED FUNCTION
+//
+//     * LTxtLT           07/08/2009:    Compute L %*% t(L),
+//                                       where L is lower triangular matrix stored in a packed format
+//                                       * taken from LxtL method of class MatrixLT in MatrixLT.{h,cpp}[glmmAK]
+//
+//     * RectxtRect       10/08/2009:    Compute B %*% t(B),
+//                                       where B is a general matrix stored in COLUMN major order.
+//                                       The result is a symmetric matrix and only its lower triangle is returned.
+//
+//     * RectROWxtLT      10/08/2009:    Compute B %*% t(L),
+//                                       where B is a general matrix stored in ROW major order
+//                                       and L is lower triangular matrix stored in a packed format in COLUMN major order
+//
+//     * BDROWxtLT        10/08/2009:    Compute B %*% t(L),
+//                                       where B is a block diagonal matrix with blocks stored in ROW major order
+//                                       and L is lower triangular matrix stored in a packed format in COLUMN major order
 //
 // ======================================================================
 //
@@ -65,6 +85,28 @@
 namespace AK_BLAS{
 
 /***** ********************************************************************************* *****/
+/***** AK_BLAS::ddot:  Scalar product t(x) %*% y                                         *****/
+/***** ********************************************************************************* *****/
+inline void
+ddot(double* RES, const double* x, const double* y, const int& nxy)
+{
+  static int j;
+  static const double *xP, *yP;
+
+  xP = x;
+  yP = y;
+  *RES = (*xP) * (*yP);
+  for (j = 1; j < nxy; j++){
+    xP++;
+    yP++;
+    *RES += (*xP) * (*yP);
+  }
+
+  return;
+}
+
+
+/***** ********************************************************************************* *****/
 /***** AK_BLAS::ddot2:  Scalar product t(x) %*% x                                        *****/
 /***** ********************************************************************************* *****/
 inline void
@@ -73,11 +115,11 @@ ddot2(double* RES, const double* x, const int& nx)
   static int j;
   static const double *xP;
 
-  *RES = 0.0;
   xP = x;
-  for (j = 0; j < nx; j++){
-    *RES += (*xP)*(*xP);
+  *RES = (*xP) * (*xP);
+  for (j = 1; j < nx; j++){
     xP++;
+    *RES += (*xP) * (*xP);
   }
 
   return;
@@ -263,7 +305,7 @@ UT2LT(double* LT,  const double* UT,  const int* n);
 // x[nx]      Vector x
 //
 // nx[1]      Length of x
-//            * nx should be >= 2 (IT IS NOT CHECKED!)
+//            * nx should be >= 2 for PROTOTYPE 2 and 3 (IT IS NOT CHECKED!)
 //
 // j[1]       Column in L and component in x to skip
 //
@@ -320,7 +362,7 @@ Vec1_LTjxVec2j(double* x, double* ljz,  const double* L,  const double* z,  cons
 // x[nx]      Vector x
 //
 // nx[1]      Length of x
-//            * nx should be >= 2 (IT IS NOT CHECKED!)
+//            * nx should be >= 2 for PROTOTYPE 2 and 3 (IT IS NOT CHECKED!)
 //
 // j[1]       Column in t(L) and component in x to skip
 //
@@ -386,6 +428,97 @@ UTxVec(double* Ux,  const double* U,  const double* x,  const int* nx);
 
 void
 UTxVec(double* Ux,  double* ujx,  const double* U,  const double* x,  const int* nx,  const int* j);
+
+
+/***** ********************************************************************************* *****/
+/***** AK_BLAS::LTxtLT                                                                   *****/
+/***** ********************************************************************************* *****/
+//  Compute L %*% t(L),
+//  where L is lower triangular matrix stored in a packed format
+//  * taken from LxtL method of class MatrixLT in MatrixLT.{h,cpp}[glmmAK]
+/*                                                                                                */
+/*   LtL: RESULT, array of length LT(p)                                                           */
+/*     L: lower triangular matrix in an array of length LT(p)                                     */
+/*     p: number of rows and columns of all matrices                                              */
+/*                                                                                                */
+/* Idea of the algorithm, see p. 46 of red notes.                                                 */
+/*                                                                                                */
+/* ---------------------------------------------------------------------------------------------- */
+void
+LTxtLT(double *LtL, const double *L, const int *p);
+
+
+/***** ********************************************************************************* *****/
+/***** AK_BLAS::RectxtRect                                                              *****/
+/***** ********************************************************************************* *****/
+//
+//  Compute B %*% t(B),
+//  where B is a general matrix stored in COLUMN major order.
+//  The result is a symmetric matrix and only its lower triangle is returned.
+//
+//
+//  A[LT(nrB)]    OUTPUT:   lower triangle (in COLUMN major order) of matrix B %*% t(B)
+//
+//  B[nrB, ncB]   Input matrix B stored in COLUMN major order
+//
+//  nrB[1]        Number of rows of matrix B
+//
+//  ncB[1]        Number of columns of matrix B
+//
+void
+RectxtRect(double* A,  const double* B,  const int* nrB,  const int* ncB);
+
+
+/***** ********************************************************************************* *****/
+/***** AK_BLAS::RectROWxtLT                                                              *****/
+/***** ********************************************************************************* *****/
+//
+//  A[nrB, p]:   Resulting general matrix stored in COLUMN major order
+//
+//  B[nrB, p]:   General matrix stored in ROW major order
+//
+//  L[LT(p)]:    Lower triangle of a lower triangular matrix stored in COLUMN major order
+//
+//  nrB[1]:      Number of rows of B and A
+//
+//  p[1]:        Number of columns of B and A, number of rows and columns of L
+//
+void
+RectROWxtLT(double* A,  const double* B,  const double* L,  const int* nrB,  const int* p);
+
+
+/***** ********************************************************************************* *****/
+/***** AK_BLAS::BDROWxtLT                                                                   *****/
+/***** ********************************************************************************* *****/
+//  Compute A = B %*% t(L),
+//  where B is a block diagonal matrix with blocks stored in ROW major order
+//  and L is lower triangular matrix stored in a packed format in COLUMN major order
+//
+//  Resulting matrix A has zeros below diagonal blocks.
+//  Currently: these zeros are added to matrix A
+//             --> this might be improved somewhen...
+//
+//  A[]:       Resulting matrix fully stored in COLUMN major order
+//
+//  B[]:       Blocks of B stored in ROW major order
+//             (Block 1, Block 2, ...)
+//
+//  L[LT(p)]:  Lower triangle of L stored in COLUMN major order
+//
+//  nBl[1]:    Number of blocks in B
+//
+//  nrB[nBl]:  Number of rows in each block of B
+//             All must be > 0 (not checked)
+//
+//  ncB[nBl]:  Number of columns in each block of B
+//             All must be > 0 (not checked)
+//
+//  p[1]:      Number of rows and columns of L
+//             Number of columns of A
+//             ASSUMPTION (not checked):  sum(ncB) = p
+//
+void
+BDROWxtLT(double* A, const double* B, const double* L,  const int* nBl, const int* nrB,  const int* ncB,  const int* p);
 
 }  /*** end of namespace AK_BLAS ***/
 
