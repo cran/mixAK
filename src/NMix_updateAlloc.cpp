@@ -16,9 +16,20 @@ namespace NMix{
 /***** NMix::updateAlloc                                                                         *****/
 /***** ***************************************************************************************** *****/
 void 
-updateAlloc(int* r,   int* mixN,   int** rInv,   double* cum_Pr,   double* dwork_ldMVN,
-            const double* y,      const int* p,       const int* n,
-            const double* logw,   const double* mu,   const double* Li,   const double* log_dets,  const int* K,  const bool* cum_Pr_done)
+updateAlloc(int* r,   
+            int* mixN,   
+            int** rInv,   
+            double* cum_Pr,   
+            double* dwork_ldMVN,
+            const double* y,      
+            const int* p,       
+            const int* n,
+            const double* logw,   
+            const double* mu,   
+            const double* Li,   
+            const double* log_dets,  
+            const int* K,  
+            const bool* cum_Pr_done)
 {
   static int i, j, LTp;
   static int *rP;

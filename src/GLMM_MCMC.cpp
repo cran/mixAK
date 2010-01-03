@@ -18,55 +18,59 @@ extern "C" {
 /***** GLMM_MCMC                                                                                 *****/
 /***** ***************************************************************************************** *****/
 void
-GLMM_MCMC(double* Y_c,                            // this is in fact const, not declared as const to be able to use **
-          const int* R_c,   
-          int* Y_d,                               // this is in fact const, not declared as const to be able to use **
-          const int* R_d,  
-          const int* dist,                 
-          const int* I,                  
-          int* n,                                 // this is in fact const, not declared as const to be able to use **
+GLMM_MCMC(double*       Y_c,                               // this is in fact const, not declared as const to be able to use **
+          const int*    R_c,   
+          int*          Y_d,                               // this is in fact const, not declared as const to be able to use **
+          const int*    R_d,  
+          const int*    dist,                 
+          const int*    I,                  
+          int*          n,                                  // this is in fact const, not declared as const to be able to use **
           const double* X, 
-          const double* XtX,                
-          const int* p,                  
-          const int* fixedIntcpt,
-          double* Z,                              // this is in fact const, not declared as const to be able to use **
-          double* SZitZiS,               
-          const int* q,                  
-          const int* randIntcpt,   
+          //const double* XtX,                              // REMOVED ON 21/10/2009,  matrices XtX are computed directly in C++ code from X
+          const int*    p,                  
+          const int*    fixedIntcpt,
+          double*       Z,                                  // this is in fact const, not declared as const to be able to use **
+          //double*       SZitZiS,                          // REMOVED ON 20/10/2009,  matrices SZitZiS are computed directly in C++ code from Z and shiftScale_b
+          const int*    q,                  
+          const int*    randIntcpt,   
           const double* shiftScale_b,
-          const int* nMCMC,
-          const int* keepChain,
+          const int*    nMCMC,
+          const int*    keepChain,
           const double* priorDouble_eps,
-          const int* priorInt_b,           
+          const int*    priorInt_b,           
           const double* priorDouble_b,
           const double* priorDouble_beta, 
+          const double* tune_scale_beta,
+          const double* tune_scale_b,
           double* sigma_eps,     
           double* gammaInv_eps,
-          int* K_b,              
+          int*    K_b,              
           double* w_b,             
           double* mu_b,    
           double* Q_b,    
           double* Sigma_b,    
           double* Li_b,
           double* gammaInv_b,    
-          int* r_b,
+          int*    r_b,
           double* beta,          
           double* b, 
           double* chsigma_eps,   
           double* chgammaInv_eps,
-          int* chK_b,            
+          int*    chK_b,            
           double* chw_b,           
           double* chmu_b,  
           double* chQ_b,  
           double* chSigma_b,  
           double* chLi_b,
           double* chgammaInv_b,  
-          int* chorder_b,          
-          int* chrank_b,
+          int*    chorder_b,          
+          int*    chrank_b,
           double* chMeanData_b,      
           double* chCorrData_b,
           double* chbeta,        
           double* chb,
+          int*    naccept_beta,
+          int*    naccept_b,
           double* pm_eta_fixed,
           double* pm_eta_random,
           double* pm_b,
@@ -77,8 +81,10 @@ GLMM_MCMC(double* Y_c,                            // this is in fact const, not 
           double* pm_Li_b,
           double* pm_indLogL,
           double* pm_indLogpb,
-          int* iter,
-          int* err)
+          int*    sum_Ir_b,
+          double* sum_Pr_b_b,
+          int*    iter,
+          int*    err)
 {
   const char *fname = "GLMM_MCMC";
 
@@ -87,7 +93,10 @@ GLMM_MCMC(double* Y_c,                            // this is in fact const, not 
 
   /***** Declaration of often used variables *****/
   int s, i, j, k;
-
+  const int *Y_dP    = NULL;
+  const double *etaP = NULL;
+  double *dY_dP      = NULL;
+  double *mean_Y_dP  = NULL;
 
   /***** Dimensionality variables *****/
   const int R   = *R_c + *R_d;                                                          /* total number of response variables                */
@@ -105,7 +114,9 @@ GLMM_MCMC(double* Y_c,                            // this is in fact const, not 
   int *cumq_ri  = Calloc(R, int);
   AK_Basic::cumsum(cumq_ri, q_ri, R);
   int max_p_fi    = AK_Basic::maxArray(p_fi, R);
+  //int max_q_ri    = AK_Basic::maxArray(q_ri, R);
   int LT_max_p_fi = (max_p_fi * (max_p_fi + 1)) / 2;
+  //int LT_max_q_ri = (max_q_ri * (max_q_ri + 1)) / 2;
 
   /* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
   if (DEBUG == 1) Rprintf((char*)("R=%d, I=%d, N=%d, l_beta=%d, max_p_fi=%d, dim_b=%d, LT_b=%d\n"), R, *I, N, l_beta, max_p_fi, dim_b, LT_b);
@@ -126,7 +137,6 @@ GLMM_MCMC(double* Y_c,                            // this is in fact const, not 
 
   /***** Storage of optional parameters *****/
   const int *keep_b = keepChain;  
-
 
 
   /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/
@@ -178,6 +188,10 @@ GLMM_MCMC(double* Y_c,                            // this is in fact const, not 
     NMix_updateMeansVars = NMix::updateMeansVars_IC;
     NMix_Deviance        = NMix::Deviance_IC;
     break;
+  case NMix::MUQ_IC_homoscedastic:
+    NMix_updateMeansVars = NMix::updateMeansVars_IC_homoscedastic;
+    NMix_Deviance        = NMix::Deviance_IC;      // ??? Is this correct (also in NMix_MCMC.cpp) ???
+    break;
   default:
     *err = 1;
     error("%s:  Unimplemented type of the prior for (mu, Sigma) in the distribution of random effects.\n", fname);
@@ -215,37 +229,18 @@ GLMM_MCMC(double* Y_c,                            // this is in fact const, not 
   }
 
 
-  /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/
-  /***** Updating of b's                                                     *****/
-  /***** and related quantities (also working space for updating routines)   *****/
-  /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/
+  /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/
+  /***** Updating of b's                                                             *****/ 
+  /***** and related quantities (also working space for updating routines  )         *****/
+  /***** REMARK:  Working space for updating routines (dwork_ranef) is declared      *****/
+  /*****    and needed space allocated a little bit more below.                      *****/
+  /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/
   double *mu_full_ranef = NULL;
   double *Li_full_ranef = NULL;
   double log_dets_ranef[2]; 
   double *Qmu_ranef     = NULL;
-  double *dwork_ranef   = NULL;
-
-  void
-  (*GLMM_updateRanEf)(double* b,                 double* bscaled,           double** eta_randomresp,  
-                      double* mu_full,           double* Li_full,           double* log_dets,     
-                      double* Qmu,               double* dwork,
-                      double** Y_crespP,         int** Y_drespP,        
-                      double** eta_fixedrespP,   double** eta_randomrespP,  double** eta_zsrespP,
-                      double** ZrespP,           int** nrespP,
-                      int* err,
-                      double** Y_cresp,          int** Y_dresp,
-                      double** eta_fixedresp,    double** eta_zsresp, 
-                      double** Zresp,            const double* SZitZiS,  
-                      const double* shift,       const double* scale,
-                      const int* q,              const int* randIntcpt,    const int* q_ri,      const int* cumq_ri,
-                      const int* dim_b,          const int* LT_b,
-                      const int* R_c,            const int* R_d,           const int* I,               
-                      int** nresp,               const int* N_s,
-                      const double* sigma,       
-                      const int* K,              const double* mu,         const double* Q,      const int* r) = GLMM::updateRanEf_nmix_gauss;
 
   if (dim_b){
-    dwork_ranef   = Calloc(dim_b, double);
     mu_full_ranef = Calloc(dim_b, double);
     Li_full_ranef = Calloc(LT_b, double); 
 
@@ -253,22 +248,6 @@ GLMM_MCMC(double* Y_c,                            // this is in fact const, not 
     log_dets_ranef[1] = -dim_b * M_LN_SQRT_2PI;
 
     Qmu_ranef     = Calloc(dim_b * *Kmax_b, double);
-
-    if (*R_d == 0){ 
-      GLMM_updateRanEf = GLMM::updateRanEf_nmix_gauss;
-    }
-    else{
-      if (*R_c == 0){ 
-        *err = 1;
-        Rprintf((char*)("WARNING:  Update of b's not yet implemented for discrete responses.\n"));
-        return;
-      }
-      else{
-        *err = 1;
-        Rprintf((char*)("WARNING:  Update of b's not yet implemented for mixed continuous and discrete responses.\n"));
-        return;
-      }
-    }
   }
 
 
@@ -280,63 +259,44 @@ GLMM_MCMC(double* Y_c,                            // this is in fact const, not 
   const double *h_eps    = g_eps + *R_c;
  
 
-  /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/
-  /***** Prior distribution for beta's                                       *****/
-  /***** and related quantities (also working space for updating routines)   *****/
-  /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/
+  /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/
+  /***** Prior distribution for beta's                                              *****/
+  /***** and related quantities                                                     *****/
+  /***** REMARK:  Working space for updating routines (dwork_beta) is declared      *****/
+  /*****    and needed space allocated a little bit more below.                     *****/
+  /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/
   const double *Mbeta   = priorDouble_beta;
   const double *Vbeta   = Mbeta + l_beta;
   double *Pbeta         = NULL;                         /*** prior precisions                                     ***/
   double *Pbeta_Mbeta   = NULL;                         /*** prior precisions TIMES prior means                   ***/
-  double *mu_beta_full  = NULL;                         /*** working space for GLMM::updateFixEf_***              ***/
-  double *Li_beta_full  = NULL;                         /*** working space for GLMM::updateFixEf_***              ***/
   double *log_dets_beta = NULL;                         /*** working space for GLMM::updateFixEf_***              ***/
                                                         /*** having -p_fi[s]*log(sqrt(2pi)) on places 1, 3, ...   ***/
-  double *dwork_beta    = NULL;                         /*** working space for GLMM::updateFixEf_***              ***/
+  double *scale_beta    = NULL;                         /*** vector of ones                                       ***/
 
-  void
-  (*GLMM_updateFixEf)(double* beta,              double* eta_fixed,          
-                      double* mu_full,           double* Li_full,         double* log_dets,            double* dwork,
-                      int* err,
-                      const double* Y_c,         const int* Y_d,      
-                      const double* eta_random,  const double* X,         const double* XtX,
-                      const int* p,              const int* fixedIntcpt,  const int* p_fi,      
-                      const int* R_c,            const int* R_d,          const int* I,               
-                      const int* n,              const int* N_s,
-                      const double* sigma,       const double* Pbeta,     const double* Pbeta_Mbeta) = GLMM::updateFixEf_gauss;
+  double *sqrt_tune_scale_beta     = NULL;              /*** square root of the tuning scale parameter for discrete responses  ***/
+  double *log_sqrt_tune_scale_beta = NULL;              /*** log(sqrt_tune_scale_beta)                                         ***/
 
   if (l_beta){
     Pbeta       = Calloc(l_beta, double);
     Pbeta_Mbeta = Calloc(l_beta, double);
+    scale_beta  = Calloc(l_beta, double);
     for (i = 0; i < l_beta; i++){ 
       Pbeta[i]       = 1 / Vbeta[i];
       Pbeta_Mbeta[i] = Pbeta[i] * Mbeta[i];
+      scale_beta[i]  = 1.0;
     }
 
-    mu_beta_full  = Calloc(max_p_fi, double);
-    Li_beta_full  = Calloc(LT_max_p_fi, double);
     log_dets_beta = Calloc(2*R, double);
     for (s = 0; s < R; s++){
       log_dets_beta[2*s]     = 0.0;
       log_dets_beta[2*s + 1] = -p_fi[s] * M_LN_SQRT_2PI;
     }
 
-    dwork_beta = Calloc(max_p_fi, double);
-
-    if (*R_d == 0){ 
-      GLMM_updateFixEf = GLMM::updateFixEf_gauss;
-    }
-    else{
-      if (*R_c == 0){ 
-        *err = 1;
-        Rprintf((char*)("WARNING: Update of beta's not yet implemented for discrete responses.\n"));
-        return;
-      }
-      else{
-        *err = 1;
-        Rprintf((char*)("WARNING: Update of beta's not yet implemented for mixed continuous and discrete responses.\n"));
-        return;
-      }
+    sqrt_tune_scale_beta = Calloc(*R_d > 0 ? *R_d : 1, double);
+    log_sqrt_tune_scale_beta = Calloc(*R_d > 0 ? *R_d : 1, double);
+    for (s = 0; s < *R_d; s++){
+      sqrt_tune_scale_beta[s]     = sqrt(tune_scale_beta[s]);
+      log_sqrt_tune_scale_beta[s] = AK_Basic::log_AK(sqrt_tune_scale_beta[s]);
     }
   }
 
@@ -352,6 +312,8 @@ GLMM_MCMC(double* Y_c,                            // this is in fact const, not 
   double log_sqrt_detXiInv_b[1];                /** log|XiInv_b|^{1/2}                                                                                       **/
   double *Mean_b     = NULL;                    /** mixture overall mean (directly from the mixture, i.e. for shifted and scaled r. eff.)                    **/
   double *Corr_b     = NULL;                    /** mixture overall std. dev./corr. matrix (directly from the mixture, i.e. for shifted and scaled r. eff.)  **/
+  double sqrt_tune_scale_b[1]     = {1.0};      /** square root of the tuning scale parameter   **/
+  double log_sqrt_tune_scale_b[1] = {0.0};      /** log(sqrt(tune_scale))                       **/
   if (dim_b){
     log_dets_b = Calloc(2 * *Kmax_b, double);
     logw_b     = Calloc(*Kmax_b, double);
@@ -364,6 +326,9 @@ GLMM_MCMC(double* Y_c,                            // this is in fact const, not 
                        log_dets_b, logw_b, Q_b, Sigma_b, Mean_b, Var_b, Corr_b, chMeanData_b, VarData_b, chCorrData_b,
                        XiInv_b, log_sqrt_detXiInv_b, err);
     if (*err) error("%s:  Something went wrong.\n", fname);
+
+    *sqrt_tune_scale_b     = sqrt(*tune_scale_b);
+    *log_sqrt_tune_scale_b = AK_Basic::log_AK(*sqrt_tune_scale_b);
   }
 
 
@@ -411,24 +376,78 @@ GLMM_MCMC(double* Y_c,                            // this is in fact const, not 
   /***** Additional data dependent parameters                                                               *****/
   /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/ 
 
-  /***** Scaling of ZitZi matrices *****/
-  GLMM::scale_ZitZi(SZitZiS, scale_b, q_ri, &R, I);
-      
-
-  /***** Total number of observations for each response and each cluster       *****/
-  /***** Fixed, random effects, total  values of linear predictor              *****/
-  /***** Values of z'shift_b for each response (z including intercept)         *****/
+  /***** N_s:                         Total number of observations for each response                        *****/
+  /***** max_N_s:                     Maximal number of observations per response                           *****/
+  /***** N_i:                         Total number of observations for each cluster                         *****/
+  /***** max_N_i:                     Maximal number of observations per cluster                            *****/
+  /***** eta_fixed, eta_random, eta:  Fixed, random effects, total values of linear predictor               *****/
+  /***** eta_zs:                      Values of z'shift_b for each response (z including intercept)         *****/
   int *N_s           = Calloc(R, int);
+  int *N_i           = Calloc(*I, int);
   double *eta_fixed  = Calloc(N, double); 
   double *eta_random = Calloc(N, double);
   double *eta        = Calloc(N, double);  
   double *eta_zs     = Calloc(N, double);
-  GLMM::linear_predictors(eta_fixed, eta_random, eta, eta_zs, N_s,
+  GLMM::linear_predictors(eta_fixed, eta_random, eta, eta_zs, N_s, N_i,
                           X, beta, Z, b, shift_b, p, fixedIntcpt, q, randIntcpt, n, &R, I, &dim_b, cumq_ri);
+  int max_N_s = AK_Basic::maxArray(N_s, R);  
+  int max_N_i = AK_Basic::maxArray(N_i, *I);  
 
-  /***** Pointers to start of Y_c, Y_d, eta_fixed, eta_random, eta_zs, Z, n for each response                   *****/
-  /***** Y_crespP, Y_drespP, eta_fixedrespP, eta_randomrespP, eta_zsrespP, ZrespP, nrespP will be used          *****/
-  /***** as a working array in function which updates random effects                                            *****/
+  double *dwork_beta = NULL;                         /*** working space for GLMM::updateFixEf  ***/
+  if (l_beta) dwork_beta = Calloc(3 * max_p_fi + LT_max_p_fi + 2 * max_N_s, double);
+
+  double *dwork_ranef = NULL;                        /*** working space for GLMM::updateRanEf  ***/
+  if (dim_b) dwork_ranef   = Calloc(5 * dim_b + 3 * LT_b + 2 * max_N_i, double);
+
+
+  /***** mean_Y_d: Double vector used to store mean of Y_d during the computations                         *****/ 
+  /***** dY_d:     Additional double vector for discrete response to be used to compute the log-likelihood *****/
+  /***** CURRENTLY:  used only for Poisson response where = log(y!)                                        *****/
+  int l_dY_d = 0;
+  for (s = *R_c; s < (*R_c + *R_d); s++) l_dY_d += N_s[s];
+  double *mean_Y_d = Calloc(l_dY_d > 0 ? l_dY_d : 1, double);
+  double *dY_d     = Calloc(l_dY_d > 0 ? l_dY_d : 1, double);
+
+  Y_dP      = Y_d;
+  dY_dP     = dY_d;
+  mean_Y_dP = mean_Y_d;
+  etaP      = eta;
+  for (s = 0; s < *R_c; s++) etaP += N_s[s];
+
+  for (s = *R_c; s < (*R_c + *R_d); s++){
+    switch (dist[s]){
+    case GLMM::BERNOULLI_LOGIT:
+      for (i = 0; i < N_s[s]; i++){
+        *dY_dP = 0;
+        *mean_Y_dP = AK_Basic::invlogit_AK(*etaP);
+
+        Y_dP++;
+        dY_dP++;
+        mean_Y_dP++;
+        etaP++;
+      }
+      break;
+    case GLMM::POISSON_LOG:
+      for (i = 0; i < N_s[s]; i++){
+        *dY_dP = lgamma1p(double(*Y_dP));    /* = log(Gamma(1 + Y_d)) = log(Y_d!) */
+        *mean_Y_dP = AK_Basic::exp_AK(*etaP);
+
+        dY_dP++;
+        Y_dP++;
+        mean_Y_dP++;
+        etaP++;
+      }     
+      break;
+    default:
+      *err = 1;
+      error("%s: Unimplemented distributional type.\n", fname, dist[s]);
+    }
+  }  
+
+
+  /***** Pointers to start of Y_c, Y_d, mean_Y_d, dY_d, eta_fixed, eta_random, eta_zs, Z, n for each response                      *****/
+  /***** Y_crespP, Y_drespP, mean_Y_drespP, dY_drespP, eta_fixedrespP, eta_randomrespP, eta_zsrespP, ZrespP, nrespP will be used   *****/
+  /***** as a working array in function which updates random effects                                                               *****/
   double **Y_cresp  = NULL;
   double **Y_crespP = NULL;
   if (*R_c){
@@ -440,12 +459,42 @@ GLMM_MCMC(double* Y_c,                            // this is in fact const, not 
 
   int **Y_dresp  = NULL;
   int **Y_drespP = NULL;
+
+  double **mean_Y_dresp  = NULL;
+  double **mean_Y_drespP = NULL;
+
+  double **dY_dresp = NULL;
+  double **dY_drespP = NULL;
   if (*R_d){
     Y_dresp  = Calloc(*R_d, int*);
     Y_drespP = Calloc(*R_d, int*);
-    *Y_dresp = Y_d;
-    for (s = 1; s < *R_d; s++) Y_dresp[s] = Y_dresp[s-1] + N_s[*R_c+s-1];
+
+    mean_Y_dresp  = Calloc(*R_d, double*);
+    mean_Y_drespP = Calloc(*R_d, double*);
+
+    dY_dresp  = Calloc(*R_d, double*);
+    dY_drespP = Calloc(*R_d, double*);
+
+    *Y_dresp      = Y_d;
+    *mean_Y_dresp = mean_Y_d;
+    *dY_dresp     = dY_d;
+    for (s = 1; s < *R_d; s++){ 
+      Y_dresp[s]      = Y_dresp[s-1]      + N_s[*R_c+s-1];
+      mean_Y_dresp[s] = mean_Y_dresp[s-1] + N_s[*R_c+s-1];
+      dY_dresp[s]     = dY_dresp[s-1]     + N_s[*R_c+s-1];
+    }
   }
+
+  /***** ===== DEBUG SECTION ===== *****/
+  //for (s = 0; s < *R_c; s++){
+  //  Rprintf((char*)("\nY_cresp[%d]: "), s);
+  //  AK_Basic::printArray(Y_cresp[s], N_s[s]);
+  //}
+  //for (s = 0; s < *R_d; s++){
+  //  Rprintf((char*)("\nY_dresp[%d]: "), s);
+  //  AK_Basic::printArray(Y_dresp[s], N_s[*R_c + s]);
+  //}
+  /***** ========================= *****/
 
   double **eta_fixedresp   = Calloc(R, double*);
   double **eta_fixedrespP  = Calloc(R, double*);
@@ -471,63 +520,24 @@ GLMM_MCMC(double* Y_c,                            // this is in fact const, not 
   }
 
 
-  /* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
-  //const double *tmpeta_fixedP  = NULL;
-  //const double *tmpeta_randomP = NULL;
-  //const int *nP             = NULL;
-  //if (DEBUG == 2){
-  //  tmpeta_fixedP  = eta_fixed;
-  //  tmpeta_randomP = eta_random;
-  //  nP          = n;
-  //  for (s = 0; s < R; s++){
-  //    Rprintf((char*)("\n==================\n\nResponse %d\n\n"), s);
-  //    for (i = 0; i < *I; i++){        
-  //      Rprintf((char*)("i=%d (n_i=%d)\n"), i, *nP);
-  //      for (j = 0; j < *nP; j++){
-  //        Rprintf((char*)("   %g, %g\n"), *tmpeta_fixedP, *tmpeta_randomP);
-  //        tmpeta_fixedP++;
-  //        tmpeta_randomP++;
-  //     }
-  //     nP++;
-  //    }
-  //  }
-  //}
-  //const double* zP = NULL;
-  //if (DEBUG == 3){
-  //  nP = n;
-  //  for (s = 0; s < R; s++){
-  //    Rprintf((char*)("\n==================\n\nResponse %d\n\n"), s);
-  //    zP = Zresp[s];
-  //    for (i = 0; i < *I; i++){        
-  //      Rprintf((char*)("i=%d (n_i=%d), Z matrix:\n"), i, *nP);
-  //      for (j = 0; j < *nP; j++){
-  //        for (k = 0; k < q[s]; k++){
-  //          Rprintf((char*)("%g, "), *zP);
-  //          zP++;
-  //        }
-  //        Rprintf((char*)("\n"));
-  //      }
-  //      nP++;
-  //      Rprintf((char*)("\n"));
-  //    }      
-  //  }
-  //}
-  //const double* SZitZiSP = NULL;
-  //const int* q_riP       = NULL;
-  //if (DEBUG == 4){
-  //  SZitZiSP = SZitZiS;
-  //  for (i = 0; i < *I; i++){
-  //    Rprintf((char*)("\n==================\n\nCluster %d\n\n"), i);      
-  //    q_riP = q_ri;
-  //    for (s = 0; s < R; s++){
-  //      Rprintf((char*)("SZitZiS[resp %d]:\n"), s);
-  //      AK_Basic::printSP(SZitZiSP, *q_riP);
-  //      SZitZiSP += (*q_riP * (*q_riP + 1)) / 2;
-  //      q_riP++;
-  //    }
-  //  }
-  //}
-  /* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
+  /***** Create XtX matrices *****/
+  int l_XtX = 0;                                             // total length of lower triangles of all XtX matrices
+  for (s = 0; s < *R_c; s++)             l_XtX += (p_fi[s] * (p_fi[s] + 1)) / 2;  
+  for (s = *R_c; s < (*R_c + *R_d); s++) l_XtX += N_s[s] * ((p_fi[s] * (p_fi[s] + 1)) / 2);  
+  double *XtX = Calloc(l_XtX, double);
+  GLMM::create_XtX(XtX, X, p, fixedIntcpt, R_c, R_d, I, n);
+
+
+  /***** Create SZitZiS matrices *****/ 
+  int l_ZitZi = 0;                                           // total length of ZitZi lower triangles of all SZitZiS matrices
+  for (s = 0; s < *R_c; s++)             l_ZitZi += *I * ((q_ri[s] * (q_ri[s] + 1)) / 2);
+  for (s = *R_c; s < (*R_c + *R_d); s++) l_ZitZi += N_s[s] * ((q_ri[s] * (q_ri[s] + 1)) / 2);
+  if (!dim_b) l_ZitZi = 1;
+  double *SZitZiS = Calloc(l_ZitZi, double);
+  GLMM::create_SZitZiS(SZitZiS, ZrespP, Zresp, scale_b, q, randIntcpt, R_c, R_d, I, n);
+  //GLMM::scale_ZitZi(SZitZiS, scale_b, q_ri, &R, I);                               // REMOVED ON 20/10/2009 
+                                                                                    // and replaced by GLMM::create_SZitZiS
+         
 
   /***** Shifted and scaled values of random effects  *****/
   double *bscaled = NULL;
@@ -559,7 +569,7 @@ GLMM_MCMC(double* Y_c,                            // this is in fact const, not 
   /***** indDevCompl_inHat_b:   indDevCompl_inHat_b[i] = log(E[w_{r_i}|...] * phi(b_i | E[mu_{r_i}|...], (E[Q_{r_i}|...])^{-1}))  *****/
   /***** ------------------------------------------------------------------------------------------------------------------------ *****/
   /***** pred_dens_b:           pred_dens_b[i]         = sum_{j=1}^K w_j * phi(b_i | mu_j, Sigma_j)                               *****/
-  /***** cum_Pr_b:              cum_Pr_b[j, i]         = sum_{l=1}^j w_j * phi(b_i | mu_j, Sigma_j)                               *****/
+  /***** cum_Pr_b:              cum_Pr_b[j, i]         = sum_{l=1}^j w_l * phi(b_i | mu_l, Sigma_l)                               *****/
   /***** ------------------------------------------------------------------------------------------------------------------------ *****/
   double chLogL0_bP[1];
   double chLogL1_bP[1];
@@ -642,6 +652,13 @@ GLMM_MCMC(double* Y_c,                            // this is in fact const, not 
 
 
   /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/
+  /***** Reset naccept_*                                                                                    *****/
+  /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/
+  AK_Basic::fillArray(naccept_beta, 0, R);
+  AK_Basic::fillArray(naccept_b, 0, *I);
+
+
+  /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/
   /***** Reset pm_*                                                                                         *****/
   /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/
   AK_Basic::fillArray(pm_eta_fixed,  0.0, N);
@@ -654,6 +671,16 @@ GLMM_MCMC(double* Y_c,                            // this is in fact const, not 
   AK_Basic::fillArray(pm_Li_b,       0.0, *Kmax_b * LT_b);
   AK_Basic::fillArray(pm_indLogL,    0.0, *I);
   AK_Basic::fillArray(pm_indLogpb,   0.0, *I);
+
+  /***** DEBUG SECTION *****/
+  //Rprintf((char*)("##### ----- X matrices ----- #####\n"));
+  //const double *x_resp = X;
+  //for (s = 0; s < *R_c + *R_d; s++){
+  //  Rprintf((char*)("X%d <- "), s);
+  //  AK_Basic::printMatrixRow4R(x_resp, N_s[s], p[s]);
+  //  x_resp += N_s[s] * p[s];
+  //}
+  /***** END DEBUG SECTION *****/
 
 
   /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/
@@ -697,6 +724,16 @@ GLMM_MCMC(double* Y_c,                            // this is in fact const, not 
   const double *pred_dens_bP;
   const double *eta_fixedP, *eta_randomP;
 
+  /***** Weights of the full conditional of r (used for clustering) *****/
+  double *Pr_b = NULL;
+  if (dim_b && *priorK_b == NMix::K_FIXED){
+    Pr_b = Calloc(*Kmax_b * *I, double);
+  }
+  
+  /***** Other pointers used to loop *****/
+  int *sum_Ir_bP;
+  double *sum_Pr_b_bP;
+  double *Pr_bP;
 
   /***** Variables to count iterations *****/
     /* lastIterBurn ...                                                                  */
@@ -735,17 +772,19 @@ GLMM_MCMC(double* Y_c,                            // this is in fact const, not 
         NMix::updateWeights(w_b, logw_b, dwork_updateWeights_b, mixN_b, K_b, delta_b);
 
       /*** Update random effects ***/
-	GLMM_updateRanEf(b, bscaled, eta_randomresp, mu_full_ranef, Li_full_ranef, log_dets_ranef, Qmu_ranef, 
-                         dwork_ranef, Y_crespP, Y_drespP, eta_fixedrespP, eta_randomrespP, eta_zsrespP, ZrespP, nrespP, err,
-                         Y_cresp, Y_dresp, eta_fixedresp, eta_zsresp, Zresp, SZitZiS, shift_b, scale_b, 
-                         q, randIntcpt, q_ri, cumq_ri, &dim_b, &LT_b, R_c, R_d, I, nresp, N_s,
-                         sigma_eps, K_b, mu_b, Q_b, r_b);
+	GLMM::updateRanEf(b, bscaled, eta_randomresp, mean_Y_dresp, log_dets_ranef, Qmu_ranef, 
+	                  dwork_ranef, Y_crespP, Y_drespP, dY_drespP, eta_fixedrespP, eta_randomrespP, eta_zsrespP, mean_Y_drespP, 
+                          ZrespP, nrespP, naccept_b, err,
+	                  Y_cresp, Y_dresp, dY_dresp, eta_fixedresp, eta_zsresp, Zresp, SZitZiS, shift_b, scale_b, 
+	                  q, randIntcpt, q_ri, cumq_ri, &dim_b, &LT_b, R_c, R_d, dist, I, nresp, N_i,
+	                  sigma_eps, K_b, mu_b, Q_b, Li_b, log_dets_b, r_b, sqrt_tune_scale_b, log_sqrt_tune_scale_b);
       }
 
       /*** Update fixed effects (beta) ***/
       if (l_beta){
-	GLMM_updateFixEf(beta, eta_fixed, mu_beta_full, Li_beta_full, log_dets_beta, dwork_beta, err,
-                         Y_c, Y_d, eta_random, X, XtX, p, fixedIntcpt, p_fi, R_c, R_d, I, n, N_s, sigma_eps, Pbeta, Pbeta_Mbeta);        
+	GLMM::updateFixEf(beta, eta_fixed, mean_Y_d, log_dets_beta, dwork_beta, naccept_beta, err,
+                          Y_c, Y_d, dY_d, eta_random, scale_beta, X, XtX, p, fixedIntcpt, p_fi, R_c, R_d, dist, 
+                          I, n, N_s, sigma_eps, Mbeta, Pbeta, Pbeta_Mbeta, sqrt_tune_scale_beta, log_sqrt_tune_scale_beta);        
       }
 
       /*** Update variances of residuals of continuous responses ***/
@@ -760,7 +799,14 @@ GLMM_MCMC(double* Y_c,                            // this is in fact const, not 
 
   /***** Scans to keep                                    *****/
   /***** ------------------------------------------------ *****/
-  Rprintf((char*)("WARNING:  Computation of indLogL and related pm_indLogL not (yet) implemented!!!\n"));
+  AK_Basic::fillArray(naccept_beta, 0, R);             /*** Reset naccept_beta            ***/
+  AK_Basic::fillArray(naccept_b, 0, *I);               /*** Reset naccept_b               ***/
+  if (dim_b && *priorK_b == NMix::K_FIXED){            /*** Reset sum_Ir_b and sum_Pr_b_b ***/
+    AK_Basic::fillArray(sum_Ir_b, 0, *I * *K_b);
+    AK_Basic::fillArray(sum_Pr_b_b, 0, *I * *K_b);
+  }
+
+  //Rprintf((char*)("WARNING:  Computation of indLogL and related pm_indLogL not (yet) implemented!!!\n"));
   backs = 0;
   writeAll = 0;      
   Rprintf((char*)("Iteration "));
@@ -772,7 +818,7 @@ GLMM_MCMC(double* Y_c,                            // this is in fact const, not 
     for (witer = 0; witer < *Mthin; witer++){          
       if (dim_b){
       /*** Update mixture distribution of random effects ***/
-	NMix::updateAlloc(r_b, mixN_b, rInv_b, cum_Pr_b, dwork_updateAlloc_b, bscaled, &dim_b, I, logw_b, mu_b, Li_b, log_dets_b, K_b, cum_Pr_done_b);
+	NMix::updateAlloc(r_b, mixN_b, rInv_b, cum_Pr_b, dwork_updateAlloc_b, bscaled, &dim_b, I, logw_b, mu_b, Li_b, log_dets_b, K_b, cum_Pr_done_b);     
         NMix_updateMeansVars(mu_b, Q_b, Li_b, Sigma_b, log_dets_b, order_b, rank_b, dwork_updateMeansVars_b, err, bscaled, r_b, mixN_b,
                              &dim_b, I, K_b, c_b, xi_b, c_xi_b, Dinv_b, Dinv_xi_b, zeta_b, XiInv_b);
         *cum_Pr_done_b = false;
@@ -780,17 +826,19 @@ GLMM_MCMC(double* Y_c,                            // this is in fact const, not 
         NMix::updateWeights(w_b, logw_b, dwork_updateWeights_b, mixN_b, K_b, delta_b);
 
       /*** Update random effects ***/
-	GLMM_updateRanEf(b, bscaled, eta_randomresp, mu_full_ranef, Li_full_ranef, log_dets_ranef, Qmu_ranef, 
-                         dwork_ranef, Y_crespP, Y_drespP, eta_fixedrespP, eta_randomrespP, eta_zsrespP, ZrespP, nrespP, err,
-                         Y_cresp, Y_dresp, eta_fixedresp, eta_zsresp, Zresp, SZitZiS, shift_b, scale_b, 
-                         q, randIntcpt, q_ri, cumq_ri, &dim_b, &LT_b, R_c, R_d, I, nresp, N_s,
-                         sigma_eps, K_b, mu_b, Q_b, r_b);
+	GLMM::updateRanEf(b, bscaled, eta_randomresp, mean_Y_dresp, log_dets_ranef, Qmu_ranef, 
+	                  dwork_ranef, Y_crespP, Y_drespP, dY_drespP, eta_fixedrespP, eta_randomrespP, eta_zsrespP, mean_Y_drespP, 
+                          ZrespP, nrespP, naccept_b, err,
+	                  Y_cresp, Y_dresp, dY_dresp, eta_fixedresp, eta_zsresp, Zresp, SZitZiS, shift_b, scale_b, 
+	                  q, randIntcpt, q_ri, cumq_ri, &dim_b, &LT_b, R_c, R_d, dist, I, nresp, N_i,
+	                  sigma_eps, K_b, mu_b, Q_b, Li_b, log_dets_b, r_b, sqrt_tune_scale_b, log_sqrt_tune_scale_b);
       }
 
       /*** Update fixed effects (beta) ***/
       if (l_beta){
-	GLMM_updateFixEf(beta, eta_fixed, mu_beta_full, Li_beta_full, log_dets_beta, dwork_beta, err,
-                         Y_c, Y_d, eta_random, X, XtX, p, fixedIntcpt, p_fi, R_c, R_d, I, n, N_s, sigma_eps, Pbeta, Pbeta_Mbeta);        
+	GLMM::updateFixEf(beta, eta_fixed, mean_Y_d, log_dets_beta, dwork_beta, naccept_beta, err,
+                          Y_c, Y_d, dY_d, eta_random, scale_beta, X, XtX, p, fixedIntcpt, p_fi, R_c, R_d, dist, 
+                          I, n, N_s, sigma_eps, Mbeta, Pbeta, Pbeta_Mbeta, sqrt_tune_scale_beta, log_sqrt_tune_scale_beta);        
       }
 
       /*** Update variances of residuals of continuous responses ***/
@@ -934,7 +982,30 @@ GLMM_MCMC(double* Y_c,                            // this is in fact const, not 
           pm_bP++;
           bP++;
         }
-      }    
+      }
+
+      /*** Update sum_Ir_b and sum_Pr_b_b ***/
+      if (*priorK_b == NMix::K_FIXED){
+
+	AK_Utils::cum_Pr2Pr(Pr_b, cum_Pr_b, K_b, I);
+
+        r_bP        = r_b;
+        sum_Ir_bP   = sum_Ir_b;
+        Pr_bP       = Pr_b;
+        sum_Pr_b_bP = sum_Pr_b_b;
+
+        for (i = 0; i < *I; i++){
+          sum_Ir_bP[rank_b[*r_bP]]++;
+          r_bP++;
+          sum_Ir_bP += *K_b;
+
+          for (k = 0; k < *K_b; k++){
+            sum_Pr_b_bP[rank_b[k]] += *Pr_bP;
+            Pr_bP++;
+          }
+          sum_Pr_b_bP += *K_b;
+        }
+      }   
     }    /*** end of if (dim_b) ***/
 
     /*** Values of fixed effects ***/
@@ -1056,6 +1127,12 @@ GLMM_MCMC(double* Y_c,                            // this is in fact const, not 
   /***** Cleaning                                                                                           *****/
   /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/ 
   Free(N_s);
+  Free(N_i);
+
+  Free(mean_Y_d);
+  Free(dY_d);  
+  Free(SZitZiS);
+  Free(XtX);
 
   Free(nresp);
   Free(nrespP);
@@ -1074,6 +1151,12 @@ GLMM_MCMC(double* Y_c,                            // this is in fact const, not 
   if (*R_d){
     Free(Y_dresp);
     Free(Y_drespP);
+
+    Free(mean_Y_dresp);
+    Free(mean_Y_drespP);
+    
+    Free(dY_dresp);
+    Free(dY_drespP);
   }
 
   Free(eta_zs);
@@ -1082,14 +1165,16 @@ GLMM_MCMC(double* Y_c,                            // this is in fact const, not 
   Free(eta);  
 
   if (l_beta){ 
+    Free(sqrt_tune_scale_beta);
+    Free(log_sqrt_tune_scale_beta);
+
     Free(dwork_beta);
 
     Free(log_dets_beta);
-    Free(Li_beta_full);
-    Free(mu_beta_full);
 
     Free(Pbeta_Mbeta);
     Free(Pbeta);
+    Free(scale_beta);
   }
 
   if (dim_b){
@@ -1142,6 +1227,8 @@ GLMM_MCMC(double* Y_c,                            // this is in fact const, not 
     Free(log_c_b);
     Free(c_xi_b);
     Free(logK_b);
+
+    if (*priorK_b == NMix::K_FIXED) Free(Pr_b);
   }
   Free(cumq_ri);
   Free(q_ri);

@@ -8,14 +8,14 @@
 //
 // ======================================================================
 //
-#include "GLMM_longitClust.h"
+#include "GLMM_longitDA.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /***** ***************************************************************************************** *****/
-/***** GLMM_longitClust                                                                          *****/
+/***** GLMM_longitDA                                                                             *****/
 /***** ***************************************************************************************** *****/
 //
 // ---------------------------------------------------------------------------------------------------------
@@ -27,38 +27,37 @@ int clust_lC;
 //
 // ---------------------------------------------------------------------------------------------------------
 
-void
-GLMM_longitClust(double* Y_c,                       /* it is in fact const, not const to be able to use ** */
-                 const int* R_c,
-                 int* Y_d,                          /* it is in fact const, not const to be able to use ** */
-                 const int* R_d,
-                 const int* dist,
-                 const int* nClust,
-                 const int* I,
-                 const int* n,
-                 const double* X,
-                 const int* p,
-                 const int* fixedIntcpt,
-                 double* Z,                         /* it is in fact const, not const to be able to use ** */
-                 double* SZitZiS,               
-                 const int* q,
-                 const int* randIntcpt,
-                 const double* shiftScale_b,
-                 const int* keepMCMC,
-                 const int* info,
-                 const int* Kmax_b,
-                 const double* chsigma_eps,
-                 const int* chK_b,
-                 const double* chw_b,           
-                 const double* chmu_b,  
-                 const double* chLi_b,
-                 const double* chbeta,
-                 double* pi_marg,
-                 double* pi_cond,
-                 double* pi_ranef,
-                 int* err)
+void 
+GLMM_longitDA(double*       Y_c,                       /* it is in fact const, not const to be able to use ** */
+              const int*    R_c,
+              int*          Y_d,                       /* it is in fact const, not const to be able to use ** */
+              const int*    R_d,
+              const int*    dist,
+              const int*    nClust,
+              const int*    I,
+              const int*    n,
+              const double* X,
+              const int*    p,
+              const int*    fixedIntcpt,
+              double*       Z,                         /* it is in fact const, not const to be able to use ** */
+              const int*    q,
+              const int*    randIntcpt,
+              const double* shiftScale_b,
+              const int*    keepMCMC,
+              const int*    info,
+              const int*    Kmax_b,
+              const double* chsigma_eps,
+              const int*    chK_b,
+              const double* chw_b,           
+              const double* chmu_b,  
+              const double* chLi_b,
+              const double* chbeta,
+              double*       pi_marg,
+              double*       pi_cond,
+              double*       pi_ranef,
+              int*          err)
 {
-  const char *fname = "GLMM_longitClust";
+  const char *fname = "GLMM_longitDA";
 
   *err = 0;
   const int DEBUG = 0;
@@ -73,7 +72,7 @@ GLMM_longitClust(double* Y_c,                       /* it is in fact const, not 
   const int N     = R * N_s;                                                              /* total number of observations                      */
   const int max_n = AK_Basic::maxArray(n, *I); 
   const int LT_R_max_n = (R * max_n * (R * max_n + 1)) / 2;
-
+  
   for (i = 0; i < *I; i++){
     if (n[i] <= 0){
       *err = 1;
@@ -181,7 +180,11 @@ GLMM_longitClust(double* Y_c,                       /* it is in fact const, not 
   int nrowZiS, l_ZiS;
   const int *nP;
 
-  double *SZitZiS_cl = SZitZiS;
+
+  double *SZitZiS_c    = NULL;
+  double *SZitZiS_d    = NULL;
+  int l_SZitZiS_c, l_SZitZiS_d;
+
   const double *X_cl = X;
   double *Z_cl = Z;
 
@@ -206,11 +209,11 @@ GLMM_longitClust(double* Y_c,                       /* it is in fact const, not 
   int *iworkPred = Calloc(R, int);
 
   double det_S;
-  int ncolX, ncolZ, l_SZitZiS;
+  int ncolX, ncolZ; 
   double *log_dets_bP;
 
   //Rprintf((char*)("Cluster  "));
-  for (clust_lC = 0; clust_lC < *nClust; clust_lC++){
+  for (clust_lC = 0; clust_lC < *nClust; clust_lC++){          /*** loop(clust_lC) over groups to which we discriminate ***/
 
     /***** Progress information *****/
     Rprintf((char*)("Cluster %d\n"), clust_lC + 1);
@@ -233,19 +236,26 @@ GLMM_longitClust(double* Y_c,                       /* it is in fact const, not 
     ncolX = AK_Basic::sum(p_cl, R);
     ncolZ = AK_Basic::sum(q_cl, R);
 
-    l_SZitZiS = (q_ri_cl[0] * (q_ri_cl[0] + 1)) / 2;       /** = LT(q_ri_cl[0]) = length of SZitZiS for response 0 **/
-    *Zresp = Z_cl;
-    for (s = 1; s < R; s++){
-      l_SZitZiS += (q_ri_cl[s] * (q_ri_cl[s] + 1)) / 2;    /** = LT(q_ri_cl[s]) = length of SZitZiS for response s **/
-      Zresp[s] = Zresp[s-1] + q_cl[s-1] * N_s; 
-    }
-
     /***** Compute eta_zs *****/
     GLMM::linear_predictor_zs(eta_zs, Z_cl, shift_b_cl, q_cl, randIntcpt_cl, n, &R, I, dim_b_cl, cumq_ri_cl);
 
-    /***** Scale t(Zi) %*% Zi matrices *****/
-    GLMM::scale_ZitZi(SZitZiS_cl, scale_b_cl, q_ri_cl, &R, &N_s);
+    /***** Set-up Zresp *****/
+    *Zresp = Z_cl;
+    for (s = 1; s < R; s++) Zresp[s] = Zresp[s-1] + q_cl[s-1] * N_s; 
 
+    /***** Total space needed for SZitZiS_c and SZitZiS_d *****/
+    /***** Allocate this space                            *****/
+    l_SZitZiS_c = 0;
+    for (s = 0; s < *R_c; s++) l_SZitZiS_c += N_s * ((q_ri_cl[s] * (q_ri_cl[s] + 1)) / 2);       
+    SZitZiS_c = Calloc(l_SZitZiS_c > 0 ? l_SZitZiS_c : 1, double);
+
+    l_SZitZiS_d = 0;
+    for (s = *R_c; s < *R_c + *R_d; s++) l_SZitZiS_d += N_s * ((q_ri_cl[s] * (q_ri_cl[s] + 1)) / 2);       
+    SZitZiS_d = Calloc(l_SZitZiS_d > 0 ? l_SZitZiS_d : 1, double);   
+
+    /***** Calculate matrices SZitZiS_c and SZitZiS_d *****/
+    GLMM::create_SZitZiS_4longitDA(SZitZiS_c, SZitZiS_d, ZrespP, Zresp, scale_b_cl, q_cl, randIntcpt_cl, R_c, R_d, I, n);
+    
     /***** Compute Zi*S matrices for each observation we will predict       *****/
          /** First, calculate number of columns in one block for one response type  **/
          /** = (1+2+...+n[0] + ... + (1+2+...+n[I-1])) **/  
@@ -262,83 +272,6 @@ GLMM_longitClust(double* Y_c,                       /* it is in fact const, not 
          /** REMARK:  Like Z and X matrices, matrices ZiS are stored in ROW major order          **/
     GLMM::create_ZiS(ZiS, ZrespP, Zresp, scale_b_cl, q_cl, randIntcpt_cl, &R, I, n);
 
-    // ======= DEBUG SECTION =======
-    //Rprintf((char*)("\nl_beta: "));  AK_Basic::printArray(l_beta, *nClust);
-    //Rprintf((char*)("\ndim_b:  "));  AK_Basic::printArray(dim_b, *nClust);
-    //Rprintf((char*)("\nLT_b:   "));  AK_Basic::printArray(LT_b, *nClust);
-    //Rprintf((char*)("\np_fi:   "));  AK_Basic::printArray(p_fi, R * *nClust);
-    //Rprintf((char*)("\nq_ri:   "));  AK_Basic::printArray(q_ri, R * *nClust);
-    //Rprintf((char*)("\n"));
-    //
-    //const double *zP;
-    //for (s = 0; s < R; s++){
-    //  Rprintf((char*)("\nZ[%d]:\n"), s);
-    //  zP = Zresp[s];
-    //  if (!q_cl[s]) Rprintf((char*)("empty\n"));
-    //  else{
-    //    for (i = 0; i < *I; i++){
-    //      for (j = 0; j < n[i]; j++){
-    //        for (k = 0; k < q_cl[s]; k++){
-    //          Rprintf((char*)("%g, "), *zP);
-    //          zP++;
-    //        }
-    //        Rprintf((char*)("\n"));
-    //      }
-    //    }
-    //  }
-    //}
-    //const double *xP;
-    //xP = X_cl;
-    //for (s = 0; s < R; s++){
-    //  Rprintf((char*)("\nX[%d]:\n"), s);
-    //  if (!p_cl[s]) Rprintf((char*)("empty\n"));
-    //  else{
-    //    for (i = 0; i < *I; i++){
-    //      for (j = 0; j < n[i]; j++){
-    //        for (k = 0; k < p_cl[s]; k++){
-    //          Rprintf((char*)("%g, "), *xP);
-    //          xP++;
-    //       }
-    //        Rprintf((char*)("\n"));
-    //      }
-    //    }
-    //  }
-    //}
-    //
-    //const double *ZiSP = ZiS;
-    //int lZiS2 = 0;
-    //for (i = 0; i < *I; i++){
-    //  for (j = 0; j < n[i]; j++){
-    //    Rprintf((char*)("i=%d, j=%d:\n"), i, j);
-    //    for (s = 0; s < R; s++){
-    //      Rprintf((char*)("ZiS[s=%d]:\n"), s);
-    //      if (!q_ri_cl[s]) Rprintf((char*)("empty"));
-    //      else{
-    //        for (k = 0; k <= j; k++){
-    //          for (m = 0; m < q_ri_cl[s]; m++){
-    //            Rprintf((char*)("%g, "), *ZiSP);
-    //            ZiSP++;
-    //            lZiS2++;
-    //          }
-    //          Rprintf((char*)("\n"));
-    //        }
-    //      }
-    //    }
-    //  }
-    //}
-    //Rprintf((char*)("\nlZiS2 = %d\n\n"), lZiS2);    
-    //Rprintf((char*)("\nl_ZiS = %d\n\n"), l_ZiS);    
-    //Rprintf((char*)("\nscale_b: "));
-    //AK_Basic::printArray(scale_b_cl, *dim_b_cl);
-    //Rprintf((char*)("\nN_s = %d,  q_cl = "), N_s);
-    //for (s = 0; s < R; s++) Rprintf((char*)("%d,  "), q_cl[s]);
-    //Rprintf((char*)("\np_cl = "));
-    //for (s = 0; s < R; s++) Rprintf((char*)("%d,  "), p_cl[s]);
-    //Rprintf((char*)("\nn = "));
-    //for (s = 0; s < *I; s++) Rprintf((char*)("%d,  "), n[s]);    
-    //Rprintf((char*)("\ndim_b_cl = %d,  LT_b_cl = %d,  l_SZitZiS=%d"), *dim_b_cl, *LT_b_cl, l_SZitZiS);  
-    //Rprintf((char*)("\nnrowZiS[cluster %d] = %d,  l_ZiS = %d"), clust_lC, nrowZiS, l_ZiS);
-    // ======= END DEBUG SECTION =======
 
     /***** Loop over sampled values *****/
     iter_backs = 1;
@@ -349,7 +282,7 @@ GLMM_longitClust(double* Y_c,                       /* it is in fact const, not 
       if (!(iter_lC % *info) || iter_lC == *keepMCMC_cl){
         for (i = 0; i < iter_backs; i++) Rprintf((char*)("\b"));
         Rprintf((char*)("%d"), iter_lC);
-        backs = int(log10(double(iter_lC))) + 1;
+        iter_backs = int(log10(double(iter_lC))) + 1;
       }
 
       /*** Main computation ***/
@@ -357,7 +290,7 @@ GLMM_longitClust(double* Y_c,                       /* it is in fact const, not 
                                   eta_fixedresp, eta_random, 
                                   log_dets_b, dworkPred, iworkPred,
                                   Y_crespP, Y_drespP, eta_fixedrespP, eta_zsrespP, ZrespP, err,
-                                  Y_cresp, Y_dresp, eta_zsresp, X_cl, Zresp, SZitZiS_cl, ZiS, shift_b_cl, scale_b_cl, 
+                                  Y_cresp, Y_dresp, eta_zsresp, X_cl, Zresp, SZitZiS_c, ZiS, shift_b_cl, scale_b_cl, 
                                   p_cl, fixedIntcpt_cl, 
                                   q_cl, randIntcpt_cl, q_ri_cl, cumq_ri_cl, dim_b_cl, LT_b_cl,
                                   R_c, R_d, I, n, &max_n, beta, sigma_eps, K_b, w_b, mu_b, Li_b);
@@ -395,8 +328,6 @@ GLMM_longitClust(double* Y_c,                       /* it is in fact const, not 
     pi_cond_cl  = pi_condP;
     pi_ranef_cl = pi_ranefP;
 
-    if (*dim_b_cl) SZitZiS_cl += N_s * l_SZitZiS; 
-    else           SZitZiS_cl++; 
     if (ncolX) X_cl += N_s * ncolX;
     else       X_cl++;
     if (ncolZ) Z_cl += N_s * ncolZ;
@@ -419,6 +350,8 @@ GLMM_longitClust(double* Y_c,                       /* it is in fact const, not 
 
     /***** Cleaning *****/
     Free(ZiS);
+    Free(SZitZiS_c);
+    Free(SZitZiS_d);
   }
   Rprintf((char*)("\n"));  
 

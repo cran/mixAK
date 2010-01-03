@@ -82,16 +82,16 @@ GLMM_MCMCifit(do.init, na.complete,
      to be passed to C++, equal to 0 if there are no X matrices}
   \item{CZ}{vector containing Z matrices (without ones for possible intercept)
      to be passed to C++, equal to 0 if there are no Z matrices}
-  \item{CXtX}{vector containing lower triangles of X[s]'X[s] for each response to be passed to C++,
-     where X[s] contains also column of ones if there is a fixed intercept in the model,
-     equal to 0 if there are no beta coefficients in the model}
-  \item{CZitZi}{vector containig lower triangles of matrices Z[i,s]'Z[i,s] for each cluster and each response
-     to be passed to C++, where Z[i,s] contains also column of ones if there is a random intercept in the model,
-     Remark:   for cluster without any observations of response s, Z[i,s] is considered
-               to be a matrix of zeros
-               => for CZitZi, matrices Z[i,s]'Z[i,s] are for all i of the same dimension 
-     ordering: cluster 1: ZitZi matrices for s=1,...,R, cluster 2: ZitZi matrices for s=1,...,R, etc.,
-     equal to 0 if there are no random effects in the model}
+%  \item{CXtX}{vector containing lower triangles of X[s]'X[s] for each response to be passed to C++,
+%     where X[s] contains also column of ones if there is a fixed intercept in the model,
+%     equal to 0 if there are no beta coefficients in the model}
+%  \item{CZitZi}{vector containig lower triangles of matrices Z[i,s]'Z[i,s] for each cluster and each response
+%     to be passed to C++, where Z[i,s] contains also column of ones if there is a random intercept in the model,
+%     Remark:   for cluster without any observations of response s, Z[i,s] is considered
+%               to be a matrix of zeros
+%               => for CZitZi, matrices Z[i,s]'Z[i,s] are for all i of the same dimension 
+%     ordering: cluster 1: ZitZi matrices for s=1,...,R, cluster 2: ZitZi matrices for s=1,...,R, etc.,
+%     equal to 0 if there are no random effects in the model}
   \item{iintcpt}{data.frame(Est, SE) with estimated intercepts and their SE, R rows,
       row equal to (0, 0) if there is no fixed intercept for particular response}
   \item{ifixef}{a list of length R, each component is equal to 0 if there are no fixed effects for particular response,

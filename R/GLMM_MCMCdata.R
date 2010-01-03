@@ -56,24 +56,27 @@ GLMM_MCMCdata <- function(y, dist, id, time, x, z, random.intercept)
   }  
   R <- ncol(y)
 
+  
   ##### Type of response
   ##### --------------------------------------------
-  TAB.RESP <- c("gaussian", "binomial(logit)")
+  TAB.RESP <- c("gaussian", "binomial(logit)", "poisson(log)")
   if (length(dist) == 1) dist <- rep(dist, R)
   if (length(dist) != R) stop("dist argument has incorrect length")
   ndist <- pmatch(dist, table=TAB.RESP, nomatch=0, duplicates.ok=TRUE)
   if (any(!ndist)) stop(paste("dist must all be from ", paste(paste("\"", TAB.RESP, "\"", sep=""), collapse=", "), sep=""))
   ndist <- ndist - 1   ## 0 = gaussian etc.
-    
+  
   Rc <- sum(ndist %in% c(0))
-  Rd <- sum(ndist %in% c(1))
+  Rd <- sum(ndist %in% c(1, 2))
   if (Rc & Rd){   ## check that continuous response comes first
     if (any(ndist[1:Rc] > 0)) stop("continuous response must preceed discrete response in the y matrix")
   }  
-
+  
   if (Rd){
-    if (any(!(y[!is.na(y[, dist=="binomial(logit)"]), dist=="binomial(logit)"] %in% c(0, 1)))) stop("binomial response must be 0/1")
+    if (any(ndist == 1)) if (any(!(y[!is.na(y[, dist=="binomial(logit)"]), dist=="binomial(logit)"] %in% c(0, 1)))) stop("binomial response must be 0/1")
+    if (any(ndist == 2)) if (any(!(y[!is.na(y[, dist=="poisson(log)"]), dist=="poisson(log)"] >= 0))) stop("poisson response must be non-negative")    
   }  
+  
   
   ##### Cluster and time indicator
   ##### --------------------------------------------
@@ -85,12 +88,12 @@ GLMM_MCMCdata <- function(y, dist, id, time, x, z, random.intercept)
     if (length(TAB.ID) > 1) for (i in 2:length(TAB.ID)) time <- c(time, 1:TAB.ID[i])
   }
   if (length(time) != length(id)) stop("time and id variables must be of the same length")  
-  neworder <- order(id)
+  neworder <- order(id)  
   id <- id[neworder]
   time <- time[neworder]
   y <- y[neworder,]
   if (R == 1) y <- data.frame(y1=y)
-
+  
   ##### Random and fixed intercept
   ##### -------------------------------------------
   if (missing(random.intercept)) random.intercept <- rep(FALSE, R)
@@ -100,6 +103,7 @@ GLMM_MCMCdata <- function(y, dist, id, time, x, z, random.intercept)
 
   fixed.intercept <- !random.intercept
   CfixedIntcpt <- as.numeric(fixed.intercept)  
+
   
   ##### Design matrices for fixed effects
   ##### --------------------------------------------

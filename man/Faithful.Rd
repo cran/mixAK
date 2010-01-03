@@ -31,7 +31,7 @@
   A look at some data on the Old Faithful geyser.
   \emph{Applied Statistics}, \bold{39}, 357-365.
 }
-\seealso{\code{\link[MASS]{faithful}}, \code{\link[MASS]{geyser}}.}
+\seealso{\code{\link[MASS]{geyser}}.}
 \examples{
 data(Faithful)
 summary(Faithful)

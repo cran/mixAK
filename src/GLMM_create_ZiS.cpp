@@ -20,14 +20,14 @@ create_ZiS(double* ZiS,     double** ZrespP,
            double** Zresp,  const double* scale_b,  const int* q,  const int* randIntcpt,
            const int* R,    const int* I,           const int* n)
 {
-  static int s, i, j, k, l;
+  int s, i, j, k, l;
 
-  static double *ZiSP;
+  double *ZiSP;
 
-  static const int *nP;
-  static const int *q_s, *randIntcpt_s;
-  static double *zP;
-  static const double *scale_bP, *scale_b_s;  
+  const int *nP;
+  const int *q_s, *randIntcpt_s;
+  double *zP;
+  const double *scale_bP, *scale_b_s;  
 
   /*** Init for some pointers ***/
   for (s = 0; s < *R; s++){

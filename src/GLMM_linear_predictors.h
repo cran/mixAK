@@ -47,13 +47,33 @@ namespace GLMM{
 //                         OUTPUT:  N_s[s] = number of observations for response s
 //                                  sum(N_s) = sum(n)
 //
+//  N_i[I]:                 INPUT:  whatsever
+//                         OUTPUT:  N_i[i] = number of observations for cluster i
+//                                  sum(N_i) = sum(n)
+//
 //  OTHER VARIABLES:  see GLMM_MCMC.{h,cpp}
 //
 void
-linear_predictors(double* eta_fixed,  double* eta_random,      double* eta,      double* eta_zs,         int* N_s,
-                  const double* X,    const double* beta,      const double* Z,  const double* b,        const double* shift_b,
-                  const int* p,       const int* fixedIntcpt,  const int* q,     const int* randIntcpt,  
-                  const int* n,       const int* R,            const int* I,     const int* dim_b,       const int* cumq_ri);
+linear_predictors(double* eta_fixed,  
+                  double* eta_random,      
+                  double* eta,      
+                  double* eta_zs,         
+                  int*    N_s,
+                  int*    N_i,
+                  const double* X,    
+                  const double* beta,      
+                  const double* Z,  
+                  const double* b,        
+                  const double* shift_b,
+                  const int*    p,       
+                  const int*    fixedIntcpt,  
+                  const int*    q,     
+                  const int*    randIntcpt,  
+                  const int*    n,       
+                  const int*    R,            
+                  const int*    I,     
+                  const int*    dim_b,       
+                  const int*    cumq_ri);
 
 
 /***** ***************************************************************************************** *****/
@@ -66,7 +86,7 @@ linear_predictors(double* eta_fixed,  double* eta_random,      double* eta,     
 //  
 //  n[I]:                  number of observations for each longitudinal profile
 //                         REMARK:  This is different from 'n' argument in linear_predictors function!!!
-//                                  In linear_predictors2 function, it is assumed that the number of observations
+//                                  In linear_predictor_fixed function, it is assumed that the number of observations
 //                                  within each longitudinal profile is the same for all responses
 //
 //
@@ -74,9 +94,13 @@ linear_predictors(double* eta_fixed,  double* eta_random,      double* eta,     
 //
 void
 linear_predictor_fixed(double* eta_fixed,
-                       const double* X,    const double* beta,
-                       const int* p,       const int* fixedIntcpt,
-                       const int* n,       const int* R,            const int* I);
+                       const double* X,    
+                       const double* beta,
+                       const int*    p,       
+                       const int*    fixedIntcpt,
+                       const int*    n,       
+                       const int*    R,            
+                       const int*    I);
 
 
 /***** ***************************************************************************************** *****/
@@ -90,7 +114,7 @@ linear_predictor_fixed(double* eta_fixed,
 // 
 //  n[I]:                  number of observations for each longitudinal profile
 //                         REMARK:  This is different from 'n' argument in linear_predictors function!!!
-//                                  In linear_predictors2 function, it is assumed that the number of observations
+//                                  In linear_predictor_random function, it is assumed that the number of observations
 //                                  within each longitudinal profile is the same for all responses
 //
 //
@@ -98,9 +122,15 @@ linear_predictor_fixed(double* eta_fixed,
 //
 void
 linear_predictor_random(double* eta_random,
-                        const double* Z,     const double* b,
-                        const int* q,        const int* randIntcpt,  
-                        const int* n,        const int* R,            const int* I,     const int* dim_b,       const int* cumq_ri);
+                        const double* Z,     
+                        const double* b,
+                        const int*    q,        
+                        const int*    randIntcpt,  
+                        const int*    n,        
+                        const int*    R,            
+                        const int*    I,     
+                        const int*    dim_b,       
+                        const int*    cumq_ri);
 
 
 /***** ***************************************************************************************** *****/
@@ -111,7 +141,7 @@ linear_predictor_random(double* eta_random,
 //
 //  n[I]:                  number of observations for each longitudinal profile
 //                         REMARK:  This is different from 'n' argument in linear_predictors function!!!
-//                                  In linear_predictors2 function, it is assumed that the number of observations
+//                                  In linear_predictors_zs function, it is assumed that the number of observations
 //                                  within each longitudinal profile is the same for all responses
 //
 //
@@ -119,9 +149,15 @@ linear_predictor_random(double* eta_random,
 //
 void
 linear_predictor_zs(double* eta_zs, 
-                    const double* Z,  const double* shift_b,
-                    const int* q,     const int* randIntcpt,  
-                    const int* n,     const int* R,           const int* I,        const int* dim_b,       const int* cumq_ri);
+                    const double* Z,  
+                    const double* shift_b,
+                    const int*    q,     
+                    const int*    randIntcpt,  
+                    const int*    n,     
+                    const int*    R,           
+                    const int*    I,        
+                    const int*    dim_b,       
+                    const int*    cumq_ri);
 
 }
 

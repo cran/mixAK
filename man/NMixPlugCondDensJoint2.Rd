@@ -77,7 +77,7 @@ NMixPlugCondDensJoint2(x, \dots)
     value of \code{x[[icond]]}. Each \code{dens[[j]]} is again a list
     with conditional densities for each pair of margins given margin
     \code{icond} equal to \code{x[[icond]][j]}.
-    The value of \code{dens[[j]][[\dQuote{i-k}]]} gives values
+    The value of \code{dens[[j]][[i-k]]} gives values
     of conditional density of the (i,k)-th margins given margin
     \code{icond} equal to \code{x[[icond]][j]}.
   }    

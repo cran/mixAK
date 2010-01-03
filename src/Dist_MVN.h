@@ -24,9 +24,16 @@
 //                             and a canonical mean b is given, i.e., the mean mu = Q^{-1}*b
 //                             * function also returns log-density evaluated at sampled value
 //
+//     * rMVN3  10/11/2009:    Random number generation from multivariate normal distribution N(Q^{-1}*b, scale^{-1}*Q^{-1}),
+//                             where the Cholesky decomposition Li of the precision matrix is given, i.e., Q = Li %*% t(Li),
+//                             and a canonical mean b is given, i.e., the mean mu = Q^{-1}*b
+//                             * function also returns log-density evaluated at sampled value
+//
 //     * ldMVN1  03/12/2007:    Log-density of the multivariate normal distribution N(mu, Q^{-1})
 //
 //     * ldMVN2  03/12/2007:    Log-density of the multivariate normal distribution N(mu, Sigma)
+//
+//     * ldMVN3  10/11/2009:    Log-density of the multivariate normal distribution N(mu, scale^{-1}*Q^{-1})
 //
 //     * dMVN1_R  05/11/2007:    R wrapper for dMVN1 which allows to evaluate a density for several x points in a loop
 //
@@ -110,10 +117,6 @@ rMVN1(double* x,         double* log_dens,      double* work,
 // 
 // work[nx]     Working array
 //
-// unlog[1]     If not zero, then the value of the density is computed and not log-density
-//
-// b[nx]        Canonical mean of the normal distribution, i.e., mu=Q*b
-//
 // Li[LT(nx)]   Cholesky decomposition of the precision matrix Q (lower triangle only), i.e., Q = Li %*% t(Li)
 //              * array of length nx*(nx+1)/2
 //
@@ -125,6 +128,39 @@ rMVN1(double* x,         double* log_dens,      double* work,
 void
 rMVN2(double* x,         double* mu,              double* log_dens,  double* work,
       const double *Li,  const double *log_dets,  const int* nx);
+
+
+/***** ***************************************************************************************** *****/
+/***** Dist::rMVN3                                                                               *****/
+/***** ***************************************************************************************** *****/
+//
+// Random number generation from multivariate normal distribution N(Q^{-1}*b, scale^{-1}*Q^{-1}),
+//
+// x[nx]        OUTPUT:  Generated random number
+//
+// mu[nx]       INPUT:   Canonical mean b of the normal distribution 
+//              OUTPUT:  Computed mean of the normal distribution, i.e., mu = Q^{-1}*b
+//
+// log_dens[1]  Value of the (log-)density evaluated at x
+// 
+// work[nx]     Working array
+//
+// Li[LT(nx)]   Cholesky decomposition of the precision matrix Q (lower triangle only), i.e., Q = Li %*% t(Li)
+//              * array of length nx*(nx+1)/2
+//
+// log_dets[2]  log_dets[0] = log(|Q|^{1/2}) = sum(log(Li[j,j]))
+//              log_dets[1] = -nx*log(sqrt(2pi)) 
+//
+// sqrt_scale[1]          square root of the factor to scale the covariance matrix
+//
+// log_sqrt_scale[1]      log(sqrt(scale))
+//
+// nx[1]        Dimension of the normal distribution
+//
+void
+rMVN3(double* x,         double* mu,              double* log_dens,           double* work,
+      const double *Li,  const double *log_dets,  const double *sqrt_scale,   const double *log_sqrt_scale,
+      const int* nx);
 
 
 /***** ***************************************************************************************** *****/
@@ -164,6 +200,42 @@ void
 ldMVN2(double* log_dens,        double* work,
        const double* x,         const double* mu,  const double* L,       
        const double* log_dets,  const int* nx);
+
+
+/***** ***************************************************************************************** *****/
+/***** Dist::ldMVN3                                                                              *****/
+/***** ***************************************************************************************** *****/
+//
+// Log-density of the multivariate normal distribution N(mu, scale^{-1}*Q^{-1})
+//
+// log_dens[1]  Value of the log-density evaluated at x
+// 
+// work[nx]     Working array
+//
+// x[nx]        Point where the density is to be evaluated or generated random number
+//
+// mu[nx]       Mean of the normal distribution
+//              * not needed when mu_nonZERO = 0 in which case it can be set to NULL
+//
+// Li[LT(nx)]   Cholesky decomposition of the precision matrix Q (lower triangle only), i.e., Q = Li %*% t(Li)
+//              * array of length nx*(nx+1)/2
+//
+// log_dets[2]  log_dets[0] = log(|Q|^{1/2})  = sum(log(Li[j,j]))
+//                          = log(|Sigma|^{-1/2}) = -sum(log(L[j,j]))
+//              log_dets[1] = -nx*log(sqrt(2pi)) 
+//
+// sqrt_scale[1]        Scale factor for the covariance matrix
+//
+// log_sqrt_scale[1]    Log(sqrt(scale))
+//
+// nx[1]                Dimension of the normal distribution
+//
+void
+ldMVN3(double* log_dens,          double* work,
+       const double* x,           const double* mu,           
+       const double* Li,          const double* log_dets,
+       const double* sqrt_scale,  const double* log_sqrt_scale, 
+       const int* nx);
 
 
 /***** ************************************************************************************************* *****/

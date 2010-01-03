@@ -18,18 +18,60 @@ extern "C" {
 /***** NMix_MCMC                                                                                 *****/
 /***** ***************************************************************************************** *****/
 void
-NMix_MCMC(const double* y0,  const double* y1,     const int* censor,          const int* dimy,            const double* shiftScale,
-          const int* nMCMC,  const int* priorInt,  const double* priorDouble,  const double* priorRJMCMC,  const int* priorRJMCMCint,
-          double* y,            int* K,               double* w,                 double* mu,                
-          double* Q,            double* Sigma,        double* Li,                double* gammaInv,      int* r,
-          int* chK,             double* chw,          double* chmu,           
-          double* chQ,          double* chSigma,      double* chLi,              double* chgammaInv,    int* chorder,                  int* chrank,
-          double* chMean,       double* chCorr,       double* chMeanData,        double* chCorrData,
-          double* chLogL0,      double* chLogL1,      double* chDevCompl,        double* chDevObs,      double* chDevCompl_inHat,  
+NMix_MCMC(const double* y0,  
+          const double* y1,     
+          const int* censor,          
+          const int* dimy,            
+          const double* shiftScale,
+          const int* nMCMC,  
+          const int* priorInt,  
+          const double* priorDouble,  
+          const double* priorRJMCMC,  
+          const int* priorRJMCMCint,
+          double* y,            
+          int* K,               
+          double* w,                 
+          double* mu,                
+          double* Q,            
+          double* Sigma,        
+          double* Li,                
+          double* gammaInv,      
+          int* r,
+          int* chK,             
+          double* chw,          
+          double* chmu,           
+          double* chQ,          
+          double* chSigma,      
+          double* chLi,              
+          double* chgammaInv,    
+          int* chorder,                  
+          int* chrank,
+          double* chMean,       
+          double* chCorr,       
+          double* chMeanData,        
+          double* chCorrData,
+          double* chLogL0,      
+          double* chLogL1,      
+          double* chDevCompl,        
+          double* chDevObs,        
+          double* chDevCompl_inHat,  
           double* pm_y,         
-          double* pm_indLogL0,  double* pm_indLogL1,  double* pm_indDevCompl,    double* pm_indDevObs,  double* pm_indDevCompl_inHat,  double* pm_pred_dens,
-          double* pm_w,         double* pm_mu,        double* pm_Q,              double* pm_Sigma,      double* pm_Li,
-          int* iter,            int* nMoveAccept,     int* err)
+          double* pm_indLogL0,  
+          double* pm_indLogL1,  
+          double* pm_indDevCompl,    
+          double* pm_indDevObs,  
+          double* pm_indDevCompl_inHat,  
+          double* pm_pred_dens,
+          double* pm_w,         
+          double* pm_mu,          
+          double* pm_Q,              
+          double* pm_Sigma,      
+          double* pm_Li,
+          int*    sum_Ir,
+          double* sum_Pr_y,
+          int* iter,            
+          int* nMoveAccept,     
+          int* err)
 {
   const int debug = 4;
   const char *fname = "NMix_MCMC";
@@ -156,6 +198,17 @@ NMix_MCMC(const double* y0,  const double* y1,     const int* censor,          c
     error("%s:  Unimplemented type of the prior for K.\n", fname);
   }
 
+  /***** Reset sum_Ir, sum_Pr_y, declare some additional needed quantities *****/
+  double *Pr_y = NULL;
+  int    *sum_IrP;
+  double *sum_Pr_yP;
+  double *Pr_yP;
+  if (*priorK == NMix::K_FIXED){
+    Pr_y = Calloc(*Kmax * *n, double);
+
+    AK_Basic::fillArray(sum_Ir, 0, *n * *K);
+    AK_Basic::fillArray(sum_Pr_y, 0, *n * *K);
+  }
 
   /*** priormuQ:  Some checks ***/
   void
@@ -181,6 +234,10 @@ NMix_MCMC(const double* y0,  const double* y1,     const int* censor,          c
   case NMix::MUQ_IC:
     NMix_updateMeansVars = NMix::updateMeansVars_IC;
     NMix_Deviance        = NMix::Deviance_IC;
+    break;
+  case NMix::MUQ_IC_homoscedastic:
+    NMix_updateMeansVars = NMix::updateMeansVars_IC_homoscedastic;
+    NMix_Deviance        = NMix::Deviance_IC;      // ??? Is this correct (also in GLMM_MCMC.cpp) ???
     break;
   default:
     *err = 1;
@@ -861,6 +918,29 @@ NMix_MCMC(const double* y0,  const double* y1,     const int* censor,          c
       pm_indDevCompl_inHatP++;
       pm_pred_densP++;
     }
+
+    /*** Update sum_Ir and sum_Pr_y ***/
+    if (*priorK == NMix::K_FIXED){
+
+      AK_Utils::cum_Pr2Pr(Pr_y, cum_Pr, K, n);
+
+      rP        = r;
+      sum_IrP   = sum_Ir;
+      Pr_yP     = Pr_y;
+      sum_Pr_yP = sum_Pr_y;
+
+      for (l = 0; l < *n; l++){
+        sum_IrP[rank[*rP]]++;
+        rP++;
+        sum_IrP += *K;
+
+        for (j = 0; j < *K; j++){
+          sum_Pr_yP[rank[j]] += *Pr_yP;
+          Pr_yP++;
+        }
+        sum_Pr_yP += *K;
+      }
+    }   
   }                             /*** end of while (*iter < lastIter) ***/
   Rprintf((char*)("\n"));
 
@@ -1044,6 +1124,8 @@ NMix_MCMC(const double* y0,  const double* y1,     const int* censor,          c
   Free(log_dens_u);
   Free(P);
   Free(u);
+
+  if (*priorK == NMix::K_FIXED) Free(Pr_y);
 
   return;
 }    /** end of function MCMC_Nmixture **/

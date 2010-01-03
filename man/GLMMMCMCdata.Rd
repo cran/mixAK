@@ -15,7 +15,7 @@ GLMM_MCMCdata(y, dist, id, time, x, z, random.intercept)
   \item{y}{see \code{\link{GLMM_MCMC}} function.}
   \item{dist}{see \code{\link{GLMM_MCMC}} function.}
   \item{id}{see \code{\link{GLMM_MCMC}} function.}
-  \item{time}{see \code{\link{GLMM_longitClust}} function.}  
+  \item{time}{see \code{\link{GLMM_longitDA}} function.}  
   \item{x}{see \code{\link{GLMM_MCMC}} function.}
   \item{z}{see \code{\link{GLMM_MCMC}} function.}
   \item{random.intercept}{see \code{\link{GLMM_MCMC}} function.}  

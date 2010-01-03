@@ -1,22 +1,24 @@
 ##
-##  PURPOSE:    Determine component probabilities for "new" observations
+##  PURPOSE:    Simple discriminant analysis based on mixture model
+##              Determine component probabilities for "new" observations
 ##              based on posterior summary statistics of fitted components
 ##              (based on NMixMCMC)
 ##
 ##  AUTHOR:    Arnost Komarek (LaTeX: Arno\v{s}t Kom\'arek)
 ##             arnost.komarek[AT]mff.cuni.cz
 ##
-##  CREATED:   16/06/2009
+##  CREATED:   16/06/2009  as NMixClust
+##             22/11/2009  changed to NMixPlugDA
 ##
-##  FUNCTION:  NMixClust
+##  FUNCTION:  NMixPlugDA
 ##             
 ##
 ## ======================================================================
 
 ## *************************************************************
-## NMixClust
+## NMixPlugDA
 ## *************************************************************
-NMixClust <- function(object, y)
+NMixPlugDA <- function(object, y)
 {
   if (class(object) != "NMixMCMC") stop("object must be of class NMixMCMC")
   if (object$prior$priorK != "fixed") stop("number of mixture components was not fixed")

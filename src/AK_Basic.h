@@ -25,6 +25,7 @@
 //       * printVec4R (OVERLOADED)
 //       * printMatrix (OVERLOADED)
 //       * printMatrix4R (OVERLOADED)
+//       * printMatrixRow4R (OVERLOADED)
 //       * printSP (OVERLOADED)
 //       * printSP4R (OVERLOADED)
 //
@@ -38,6 +39,7 @@
 namespace AK_Basic{
 
 const int _INT_MAX = 999999;
+const int _TWO_INT = 2;
 const int _ONE_INT = 1;
 const int _ZERO_INT = 0;
 
@@ -464,6 +466,61 @@ printMatrix4R(const int *a,  const int& nrow,  const int& ncol)
 
   return;
 }
+
+
+/*** Print matrix stored ROWwise in an array for R (overloaded function) ***/
+inline void
+printMatrixRow4R(const double *a,  const int& nrow,  const int& ncol)
+{
+  static int i, j;
+  static const double *aP;
+
+  Rprintf((char*)("matrix(c(\n"));
+  aP = a;
+  for (i = 0; i < nrow - 1; i++){
+    for (j = 0; j < ncol; j++){
+      Rprintf((char*)("%g, "), fabs(*aP) < AK_Basic::_ZERO ? 0 : *aP);
+      aP++;
+    }
+    Rprintf((char*)("\n"));
+  }
+
+  /** i = nrow - 1 **/
+  for (j = 0; j < ncol - 1; j++){
+    Rprintf((char*)("%g, "), fabs(*aP) < AK_Basic::_ZERO ? 0 : *aP);
+    aP++;
+  }
+  Rprintf((char*)("%g), nrow=%d, ncol=%d, byrow=TRUE);\n"), fabs(*aP) < AK_Basic::_ZERO ? 0 : *aP, nrow, ncol);
+
+  return;
+}
+
+inline void
+printMatrixRow4R(const int *a,  const int& nrow,  const int& ncol)
+{
+  static int i, j;
+  static const int *aP;
+
+  Rprintf((char*)("matrix(c(\n"));
+  aP = a;
+  for (i = 0; i < nrow - 1; i++){
+    for (j = 0; j < ncol; j++){
+      Rprintf((char*)("%g, "), fabs(*aP) < AK_Basic::_ZERO ? 0 : *aP);
+      aP++;
+    }
+    Rprintf((char*)("\n"));
+  }
+
+  /** i = nrow - 1 **/
+  for (j = 0; j < ncol - 1; j++){
+    Rprintf((char*)("%g, "), fabs(*aP) < AK_Basic::_ZERO ? 0 : *aP);
+    aP++;
+  }
+  Rprintf((char*)("%g), nrow=%d, ncol=%d, byrow=TRUE);\n"), fabs(*aP) < AK_Basic::_ZERO ? 0 : *aP, nrow, ncol);
+
+  return;
+}
+
 
 /*** Print a symmetric matrix stored in a packed form as lower triangle columnwise (overloaded function) ***/
 inline void

@@ -53,6 +53,9 @@ GLMM_MCMCifit <- function(do.init, na.complete,
 #####             CXtX              vector containing lower triangles of X[s]'X[s] for each response to be passed to C++,
 #####                               where X[s] contains also column of ones if there is a fixed intercept in the model,
 #####                               equal to 0 if there are no beta coefficients in the model
+#####                        AS OF 21/10/2009, CXtX IS NO MORE COMPUTED
+#####                        AND NOT INCLUDED IN THE RESULTING OBJECT  
+#####                       
 #####             CZitZi            vector containig lower triangles of matrices Z[i,s]'Z[i,s] for each cluster and each response
 #####                               to be passed to C++,
 #####                               where Z[i,s] contains also column of ones if there is a random intercept in the model,
@@ -61,6 +64,8 @@ GLMM_MCMCifit <- function(do.init, na.complete,
 #####                               => for CZitZi, matrices Z[i,s]'Z[i,s] are for all i of the same dimension 
 #####                               ordering: cluster 1: ZitZi matrices for s=1,...,R, cluster 2: ZitZi matrices for s=1,...,R, etc.,
 #####                               equal to 0 if there are no random effects in the model
+#####                        AS OF 20/10/2009, CZitZi IS NO MORE COMPUTED
+#####                        AND NOT INCLUDED IN THE RESULTING OBJECT  
 #####
 ##### ------------------------------------------------------------------------------------------------------------------------------------
 #####
@@ -111,7 +116,9 @@ GLMM_MCMCifit <- function(do.init, na.complete,
     }
     is.NA <- as.logical(apply(is.na(dta), 1, sum))
 
-    y <- y[!is.NA,]
+    if (ncol(y) == 1) y <- data.frame(y1=y[!is.NA,])    ## this avoids that y is changed to a numeric vector
+    else              y <- y[!is.NA,]
+    
     id <- id[!is.NA]
     time <- time[!is.NA]
     for (s in 1:R){
@@ -141,9 +148,10 @@ GLMM_MCMCifit <- function(do.init, na.complete,
   Cn     <- numeric(0)
   CX     <- numeric(0)
   CZ     <- numeric(0)
-  CXtX   <- numeric(0)
-  tmpZitZi <- list()          ### will contain ZitZi matrices separately for each response
-                              ### will be reshuffeled afterwards to get main order by cluster
+  ##CXtX   <- numeric(0)        ### REMOVED ON 21/10/2009
+  ##tmpZitZi <- list()          ### will contain ZitZi matrices separately for each response
+                                ### will be reshuffeled afterwards to get main order by cluster
+                                ### REMOVED ON 20/10/2009
   LT_q_ri <- (q_ri * (1 + q_ri)) / 2
 
   
@@ -162,7 +170,7 @@ GLMM_MCMCifit <- function(do.init, na.complete,
   is.sigma  <- rep(FALSE, R)
   is.ranef  <- rep(FALSE, R)
   names(is.intcpt) <- names(is.fixef) <- names(is.sigma) <- names(is.ranef) <- colnames(y)
-  
+
   for (s in 1:R){
     dta <- data.frame(id=id, y=y[,s])
     if (!xempty[s]) dta <- cbind(dta, x[[s]])    
@@ -180,12 +188,12 @@ GLMM_MCMCifit <- function(do.init, na.complete,
 
     Cn <- c(Cn, n[[s]])
 
-    tmpZitZi[[s]] <- numeric(0)
+    ##tmpZitZi[[s]] <- numeric(0)          ### REMOVED ON 20/10/2009
     
     ##### Computation of basis for initial values
     ##### ---------------------------------------------------------------------
-    if (dist[s] %in% c("gaussian"))             Cy_c <- c(Cy_c, dta[,"y"])
-    else if (dist[s] %in% c("binomial(logit)")) Cy_d <- c(Cy_d, dta[,"y"])
+    if (dist[s] %in% c("gaussian"))                             Cy_c <- c(Cy_c, dta[,"y"])
+    else if (dist[s] %in% c("binomial(logit)", "poisson(log)")) Cy_d <- c(Cy_d, dta[,"y"])
 
     if (zempty[s] & !random.intercept[s]){             ## no random effects
       iEranef[[s]]  <- 0         
@@ -194,12 +202,13 @@ GLMM_MCMCifit <- function(do.init, na.complete,
       z[[s]] <- "empty"
       
       if (xempty[s]){
-        CXtX <- c(CXtX, nrow(dta))                     ## X'X = 1'1 = nrow(X)
-
+        ##CXtX <- c(CXtX, nrow(dta))                     ## X'X = 1'1 = nrow(X)
+                                                         ### REMOVED ON 21/10/2009
         if (do.init){
           FORM <- formula("y ~ 1")
-          if (dist[s] %in% c("gaussian"))             ifit <- lm(FORM, data=dta)
-          else if (dist[s] %in% c("binomial(logit)")) ifit <- glm(FORM, family=binomial(link=logit), data=dta)
+          if (dist[s] %in% c("gaussian"))               ifit <- lm(FORM, data=dta)
+          else if (dist[s] %in% c("binomial(logit)"))   ifit <- glm(FORM, family=binomial(link=logit), data=dta)
+               else if (dist[s] %in% c("poisson(log)")) ifit <- glm(FORM, family=poisson(link=log), data=dta)
           sifit <- summary(ifit)
 
           ifixef[[s]] <- 0          
@@ -209,14 +218,17 @@ GLMM_MCMCifit <- function(do.init, na.complete,
       }  
       else{
         CX <- c(CX, t(dta[, -(1:2)]))
-        tmpX <- as.matrix(cbind(1, dta[, -(1:2)]))
-        tmpXtX <- t(tmpX) %*% tmpX
-        CXtX <- c(CXtX, tmpXtX[lower.tri(tmpXtX, diag=TRUE)])          
-
+        ##### ----- CODE REMOVED ON 21/10/2009 ----- #####
+        ##tmpX <- as.matrix(cbind(1, dta[, -(1:2)]))
+        ##tmpXtX <- t(tmpX) %*% tmpX
+        ##CXtX <- c(CXtX, tmpXtX[lower.tri(tmpXtX, diag=TRUE)])          
+        ##### ----- END OF CODE REMOVED ON 21/10/2009 ----- #####
+        
         if (do.init){        
           FORM <- formula(paste("y ~", paste(colnames(x[[s]]), collapse=" + ")))
-          if (dist[s] %in% c("gaussian"))             ifit <- lm(FORM, data=dta)
-          else if (dist[s] %in% c("binomial(logit)")) ifit <- glm(FORM, family=binomial(link=logit), data=dta)
+          if (dist[s] %in% c("gaussian"))               ifit <- lm(FORM, data=dta)
+          else if (dist[s] %in% c("binomial(logit)"))   ifit <- glm(FORM, family=binomial(link=logit), data=dta)
+               else if (dist[s] %in% c("poisson(log)")) ifit <- glm(FORM, family=poisson(link=log), data=dta)          
           sifit <- summary(ifit)
 
           ifixef[[s]] <- data.frame(Est=coef(ifit)[-1], SE=sifit[["coefficients"]][-1, "Std. Error"])
@@ -236,23 +248,29 @@ GLMM_MCMCifit <- function(do.init, na.complete,
         }
       }  
     }else{                                           ## there are some random effects
+      #cat("Initial values for response ", s, " (", dist[s], "):\n", sep="")
       if (xempty[s]){
         if (!zempty[s] & !random.intercept[s]){
-          CXtX <- c(CXtX, nrow(dta))                     ## X'X = 1'1 = nrow(X)
+          #cat("xempty & !zempty & !random.intercept\n")
+          ##CXtX <- c(CXtX, nrow(dta))                     ## X'X = 1'1 = nrow(X)
+                                                           ### REMOVED ON 21/10/2009
           
           CZ <- c(CZ, t(dta[,-(1:2)]))
-          tmpZ <- as.matrix(z[[s]])
-          tmpZ[is.NA,] <- 0
-          for (i in 1:I){
-            tmpZi <- matrix(tmpZ[cumTAB[i]:(cumTAB[i+1]-1),], ncol=ncol(tmpZ))
-            tmpZtZ <- t(tmpZi) %*% tmpZi
-            tmpZitZi[[s]] <- c(tmpZitZi[[s]], tmpZtZ[lower.tri(tmpZtZ, diag=TRUE)])
-          }  
-
+          ##### ----- CODE REMOVED ON 20/10/2009 ----- #####
+          ##tmpZ <- as.matrix(z[[s]])
+          ##tmpZ[is.NA,] <- 0
+          ##for (i in 1:I){
+          ##  tmpZi <- matrix(tmpZ[cumTAB[i]:(cumTAB[i+1]-1),], ncol=ncol(tmpZ))
+          ##  tmpZtZ <- t(tmpZi) %*% tmpZi
+          ##  tmpZitZi[[s]] <- c(tmpZitZi[[s]], tmpZtZ[lower.tri(tmpZtZ, diag=TRUE)])
+          ##}  
+          ##### ----- END OF CODE REMOVED ON 20/10/2009 ----- #####
+          
           if (do.init){          
             FORM <- formula(paste("y ~ 1 +", paste(colnames(z[[s]]), collapse=" + "), " + (-1 +", paste(colnames(z[[s]]), collapse=" + "), " | id)"))
-            if (dist[s] %in% c("gaussian"))             ifit <- lmer(FORM, data=dta)
-            else if (dist[s] %in% c("binomial(logit)")) ifit <- glmer(FORM, family=binomial(link=logit), data=dta)
+            if (dist[s] %in% c("gaussian"))               ifit <- lmer(FORM, data=dta)
+            else if (dist[s] %in% c("binomial(logit)"))   ifit <- glmer(FORM, family=binomial(link=logit), data=dta)
+                 else if (dist[s] %in% c("poisson(log)")) ifit <- glmer(FORM, family=poisson(link=log), data=dta)            
           
             iintcpt[s, "Est"] <- fixef(ifit)["(Intercept)"]
             iintcpt[s, "SE"]  <- as.numeric(sqrt(vcov(ifit)[1, 1]))
@@ -266,12 +284,15 @@ GLMM_MCMCifit <- function(do.init, na.complete,
           z[[s]] <- as.matrix(dta[, (3+p[s]):(2+p[s]+q[s])])
         }else{
           if (zempty[s] & random.intercept[s]){
-            tmpZitZi[[s]] <- n[[s]]                    ## Z'Z = 1'1, where 1 = vector of length equal to number of obs. within cluster
+            #cat("xempty & zempty & random.intercept\n")            
+            ##tmpZitZi[[s]] <- n[[s]]                    ## Z'Z = 1'1, where 1 = vector of length equal to number of obs. within cluster
+                                                         ### REMOVED ON 20/10/2009
 
             if (do.init){            
               FORM <- formula("y ~ 1 + (1 | id)")
-              if (dist[s] %in% c("gaussian"))             ifit <- lmer(FORM, data=dta)
-              else if (dist[s] %in% c("binomial(logit)")) ifit <- glmer(FORM, family=binomial(link=logit), data=dta)
+              if (dist[s] %in% c("gaussian"))               ifit <- lmer(FORM, data=dta)
+              else if (dist[s] %in% c("binomial(logit)"))   ifit <- glmer(FORM, family=binomial(link=logit), data=dta)
+                   else if (dist[s] %in% c("poisson(log)")) ifit <- glmer(FORM, family=poisson(link=log), data=dta)                          
 
               iintcpt[s, "Est"] <- 0
               iintcpt[s, "SE"]  <- 0
@@ -284,19 +305,23 @@ GLMM_MCMCifit <- function(do.init, na.complete,
             z[[s]] <- matrix(1, nrow=nrow(dta), ncol=1)
           }else{
             if (!zempty[s] & random.intercept[s]){
+              #cat("xempty & !zempty & random.intercept\n")                          
               CZ <- c(CZ, t(dta[,-(1:2)]))
-              tmpZ <- as.matrix(cbind(1, z[[s]]))
-              tmpZ[is.NA,] <- 0
-              for (i in 1:I){
-                tmpZi <- matrix(tmpZ[cumTAB[i]:(cumTAB[i+1]-1),], ncol=ncol(tmpZ))
-                tmpZtZ <- t(tmpZi) %*% tmpZi
-                tmpZitZi[[s]] <- c(tmpZitZi[[s]], tmpZtZ[lower.tri(tmpZtZ, diag=TRUE)])
-              }  
-
+              ##### ----- CODE REMOVED ON 20/10/2009 ----- #####              
+              ##tmpZ <- as.matrix(cbind(1, z[[s]]))
+              ##tmpZ[is.NA,] <- 0
+              ##for (i in 1:I){
+              ##  tmpZi <- matrix(tmpZ[cumTAB[i]:(cumTAB[i+1]-1),], ncol=ncol(tmpZ))
+              ##  tmpZtZ <- t(tmpZi) %*% tmpZi
+              ##  tmpZitZi[[s]] <- c(tmpZitZi[[s]], tmpZtZ[lower.tri(tmpZtZ, diag=TRUE)])   ### REMOVED ON 20/10/2009
+              ##}  
+              ##### ----- END OF CODE REMOVED ON 20/10/2009 ----- #####              
+              
               if (do.init){              
                 FORM <- formula(paste("y ~ 1 +", paste(colnames(z[[s]]), collapse=" + "), " + (1 +", paste(colnames(z[[s]]), collapse=" + "), " | id)"))
-                if (dist[s] %in% c("gaussian"))             ifit <- lmer(FORM, data=dta)
-                else if (dist[s] %in% c("binomial(logit)")) ifit <- glmer(FORM, family=binomial(link=logit), data=dta)
+                if (dist[s] %in% c("gaussian"))               ifit <- lmer(FORM, data=dta)
+                else if (dist[s] %in% c("binomial(logit)"))   ifit <- glmer(FORM, family=binomial(link=logit), data=dta)
+                     else if (dist[s] %in% c("poisson(log)")) ifit <- glmer(FORM, family=poisson(link=log), data=dta)                            
 
                 iintcpt[s, "Est"] <- 0
                 iintcpt[s, "SE"]  <- 0
@@ -315,23 +340,29 @@ GLMM_MCMCifit <- function(do.init, na.complete,
       else{               ## else of if (xempty[s])
         CX <- c(CX, t(dta[, 3:(2+ncol(x[[s]]))]))          
         if (!zempty[s] & !random.intercept[s]){
-          tmpX <- as.matrix(cbind(1, dta[, 3:(2+ncol(x[[s]]))]))
-          tmpXtX <- t(tmpX) %*% tmpX
-          CXtX <- c(CXtX, tmpXtX[lower.tri(tmpXtX, diag=TRUE)])          
+          #cat("!xempty & !zempty & !random.intercept\n")
+          ##### ----- CODE REMOVED ON 21/10/2009 ----- #####
+          ##tmpX <- as.matrix(cbind(1, dta[, 3:(2+ncol(x[[s]]))]))
+          ##tmpXtX <- t(tmpX) %*% tmpX
+          ##CXtX <- c(CXtX, tmpXtX[lower.tri(tmpXtX, diag=TRUE)])
+          ##### ----- END OF CODE REMOVED ON 21/10/2009 ----- #####
           
           CZ <- c(CZ, t(dta[, (2+ncol(x[[s]])+1):(2+ncol(x[[s]])+ncol(z[[s]]))]))
-          tmpZ <- as.matrix(z[[s]])
-          tmpZ[is.NA,] <- 0
-          for (i in 1:I){
-            tmpZi <- matrix(tmpZ[cumTAB[i]:(cumTAB[i+1]-1),], ncol=ncol(tmpZ))
-            tmpZtZ <- t(tmpZi) %*% tmpZi
-            tmpZitZi[[s]] <- c(tmpZitZi[[s]], tmpZtZ[lower.tri(tmpZtZ, diag=TRUE)])
-          }            
-
+          ##### ----- CODE REMOVED ON 20/10/2009 ----- #####                        
+          ##tmpZ <- as.matrix(z[[s]])
+          ##tmpZ[is.NA,] <- 0
+          ##for (i in 1:I){
+          ##  tmpZi <- matrix(tmpZ[cumTAB[i]:(cumTAB[i+1]-1),], ncol=ncol(tmpZ))
+          ##  tmpZtZ <- t(tmpZi) %*% tmpZi
+          ##  tmpZitZi[[s]] <- c(tmpZitZi[[s]], tmpZtZ[lower.tri(tmpZtZ, diag=TRUE)])
+          ##}            
+          ##### ----- END OF CODE REMOVED ON 20/10/2009 ----- #####              
+          
           if (do.init){          
             FORM <- formula(paste("y ~ 1 +", paste(colnames(x[[s]]), collapse=" + "), " + ", paste(colnames(z[[s]]), collapse=" + "), " + (-1 +", paste(colnames(z[[s]]), collapse=" + "), " | id)"))
-            if (dist[s] %in% c("gaussian"))             ifit <- lmer(FORM, data=dta)
-            else if (dist[s] %in% c("binomial(logit)")) ifit <- glmer(FORM, family=binomial(link=logit), data=dta)
+            if (dist[s] %in% c("gaussian"))               ifit <- lmer(FORM, data=dta)
+            else if (dist[s] %in% c("binomial(logit)"))   ifit <- glmer(FORM, family=binomial(link=logit), data=dta)
+                 else if (dist[s] %in% c("poisson(log)")) ifit <- glmer(FORM, family=poisson(link=log), data=dta)                        
 
             iintcpt[s, "Est"] <- fixef(ifit)["(Intercept)"]
             iintcpt[s, "SE"]  <- as.numeric(sqrt(vcov(ifit)[1, 1]))
@@ -347,17 +378,21 @@ GLMM_MCMCifit <- function(do.init, na.complete,
           x[[s]] <- as.matrix(cbind(1, dta[, 3:(2+p[s])]))
           z[[s]] <- as.matrix(dta[, (3+p[s]):(2+p[s]+q[s])])
         }else{
-          tmpX <- as.matrix(dta[, 3:(2+ncol(x[[s]]))])
-          tmpXtX <- t(tmpX) %*% tmpX
-          CXtX <- c(CXtX, tmpXtX[lower.tri(tmpXtX, diag=TRUE)])
+          ##### ----- CODE REMOVED ON 21/10/2009 ----- #####
+          ##tmpX <- as.matrix(dta[, 3:(2+ncol(x[[s]]))])
+          ##tmpXtX <- t(tmpX) %*% tmpX
+          ##CXtX <- c(CXtX, tmpXtX[lower.tri(tmpXtX, diag=TRUE)])
+          ##### ----- END OF CODE REMOVED ON 21/10/2009 ----- #####
           
           if (zempty[s] & random.intercept[s]){
-            tmpZitZi[[s]] <- n[[s]]                    ## Z'Z = 1'1, where 1 = vector of length equal to number of obs. within cluster
-
+            #cat("!xempty & zempty & random.intercept\n")            
+            ##tmpZitZi[[s]] <- n[[s]]                    ## Z'Z = 1'1, where 1 = vector of length equal to number of obs. within cluster
+                                                         ### REMOVED ON 20/10/2009
             if (do.init){            
               FORM <- formula(paste("y ~ 1 +", paste(colnames(x[[s]]), collapse=" + "), " + (1 | id)"))
-              if (dist[s] %in% c("gaussian"))             ifit <- lmer(FORM, data=dta)
-              else if (dist[s] %in% c("binomial(logit)")) ifit <- glmer(FORM, family=binomial(link=logit), data=dta)
+              if (dist[s] %in% c("gaussian"))               ifit <- lmer(FORM, data=dta)
+              else if (dist[s] %in% c("binomial(logit)"))   ifit <- glmer(FORM, family=binomial(link=logit), data=dta)
+                   else if (dist[s] %in% c("poisson(log)")) ifit <- glmer(FORM, family=poisson(link=log), data=dta)                          
             
               iintcpt[s, "Est"] <- 0
               iintcpt[s, "SE"]  <- 0
@@ -373,19 +408,23 @@ GLMM_MCMCifit <- function(do.init, na.complete,
             z[[s]] <- matrix(1, nrow=nrow(dta), ncol=1)            
           }else{
             if (!zempty[s] & random.intercept[s]){
+              #cat("!xempty & !zempty & random.intercept\n")              
               CZ <- c(CZ, t(dta[, (2+ncol(x[[s]])+1):(2+ncol(x[[s]])+ncol(z[[s]]))]))
-              tmpZ <- as.matrix(cbind(1, z[[s]]))
-              tmpZ[is.NA,] <- 0
-              for (i in 1:I){
-                tmpZi <- matrix(tmpZ[cumTAB[i]:(cumTAB[i+1]-1),], ncol=ncol(tmpZ))
-                tmpZtZ <- t(tmpZi) %*% tmpZi
-                tmpZitZi[[s]] <- c(tmpZitZi[[s]], tmpZtZ[lower.tri(tmpZtZ, diag=TRUE)])
-              }  
-
-              if (do.init){              
+              ##### ----- CODE REMOVED ON 20/10/2009 ----- #####                            
+              ##tmpZ <- as.matrix(cbind(1, z[[s]]))
+              ##tmpZ[is.NA,] <- 0
+              ##for (i in 1:I){
+              ##  tmpZi <- matrix(tmpZ[cumTAB[i]:(cumTAB[i+1]-1),], ncol=ncol(tmpZ))
+              ##  tmpZtZ <- t(tmpZi) %*% tmpZi
+              ##  tmpZitZi[[s]] <- c(tmpZitZi[[s]], tmpZtZ[lower.tri(tmpZtZ, diag=TRUE)])
+              ##}  
+              ##### ----- END OF CODE REMOVED ON 20/10/2009 ----- #####              
+              
+              if (do.init){
                 FORM <- formula(paste("y ~ 1 +", paste(colnames(x[[s]]), collapse=" + "), " + ", paste(colnames(z[[s]]), collapse=" + "), " + (1 +", paste(colnames(z[[s]]), collapse=" + "), " | id)"))
-                if (dist[s] %in% c("gaussian"))             ifit <- lmer(FORM, data=dta)
-                else if (dist[s] %in% c("binomial(logit)")) ifit <- glmer(FORM, family=binomial(link=logit), data=dta)
+                if (dist[s] %in% c("gaussian"))               ifit <- lmer(FORM, data=dta)
+                else if (dist[s] %in% c("binomial(logit)"))   ifit <- glmer(FORM, family=binomial(link=logit), data=dta)
+                     else if (dist[s] %in% c("poisson(log)")) ifit <- glmer(FORM, family=poisson(link=log), data=dta)                            
               
                 iintcpt[s, "Est"] <- 0
                 iintcpt[s, "SE"]  <- 0
@@ -424,36 +463,42 @@ GLMM_MCMCifit <- function(do.init, na.complete,
       }  
     }                    ## end of else:  there are some random effects
 
-    if (length(tmpZitZi[[s]]) != I * LT_q_ri[s]) stop(paste("BUG in the function (strange length of tmpZitZi[[", s, "]]), contact AK!", sep=""))    
+    ##if (length(tmpZitZi[[s]]) != I * LT_q_ri[s]) stop(paste("BUG in the function (strange length of tmpZitZi[[", s, "]]), contact AK!", sep=""))
+    ### REMOVED ON 20/10/2009
   }       ### end of for (s in 1:R)
 
   sumCn <- sum(Cn)
-  
-  CZitZi <- numeric(0)
-  if (sum(q_ri)){
-    for (i in 1:I){
-      for (s in 1:R){
-        if (q_ri[s]){
-          CZitZi <- c(CZitZi, tmpZitZi[[s]][((i - 1)*LT_q_ri[s] + 1):(i*LT_q_ri[s])])
-        }  
-      }  
-    }      
-  }  
+
+  ##### ----- CODE REMOVED ON 20/10/2009 ----- #####
+  #CZitZi <- numeric(0)
+  #if (sum(q_ri)){
+  #  for (i in 1:I){
+  #    for (s in 1:R){
+  #      if (q_ri[s]){
+  #        CZitZi <- c(CZitZi, tmpZitZi[[s]][((i - 1)*LT_q_ri[s] + 1):(i*LT_q_ri[s])])
+  #      }  
+  #    }  
+  #  }      
+  #}  
+  #if (!length(CZitZi)) CZitZi <- 0
+  #
+  #if (length(CZitZi) != I*sum(LT_q_ri)) stop("BUG in the function (strange length of CZitZi), contact AK!")
+  #if (any(abs(CZitZi) >= Inf)) stop("numerically not stable (ZitZi contains +-Inf)")
+  #if (any(is.na(CZitZi))) stop("numerically not stable (ZitZi contains NaN/NA)")  
+  ##### ----- END OF CODE REMOVED ON 20/10/2009 ----- #####
   
   names(n) <- colnames(y)
   if (!length(CX))     CX <- 0
   if (!length(CZ))     CZ <- 0
-  if (!length(CXtX))   CXtX <- 0
-  if (!length(CZitZi)) CZitZi <- 0
 
-  if (length(CXtX) != sum((p_fi * (1 + p_fi)) / 2)) stop("BUG in the function (strange length of CXtX), contact AK!")
-  if (any(abs(CXtX) >= Inf)) stop("numerically not stable (XtX contains +-Inf)")
-  if (any(is.na(CXtX))) stop("numerically not stable (XtX contains NaN/NA)")
-
-  if (length(CZitZi) != I*sum(LT_q_ri)) stop("BUG in the function (strange length of CZitZi), contact AK!")
-  if (any(abs(CZitZi) >= Inf)) stop("numerically not stable (ZitZi contains +-Inf)")
-  if (any(is.na(CZitZi))) stop("numerically not stable (ZitZi contains NaN/NA)")  
-
+  ##### ----- CODE REMOVED ON 21/10/2009 ----- #####
+  #if (!length(CXtX))   CXtX <- 0
+  #
+  #if (length(CXtX) != sum((p_fi * (1 + p_fi)) / 2)) stop("BUG in the function (strange length of CXtX), contact AK!")
+  #if (any(abs(CXtX) >= Inf)) stop("numerically not stable (XtX contains +-Inf)")
+  #if (any(is.na(CXtX))) stop("numerically not stable (XtX contains NaN/NA)")
+  ##### ----- CODE REMOVED ON 21/10/2009 ----- #####
+  
   RET <- list(Y      = Y,
               ID     = ID,
               time   = time,   
@@ -466,9 +511,9 @@ GLMM_MCMCifit <- function(do.init, na.complete,
               Cy_c   = Cy_c,
               Cy_d   = Cy_d,
               CX     = CX,
-              CZ     = CZ,
-              CXtX   = CXtX,
-              CZitZi = CZitZi)
+              CZ     = CZ)
+              #CXtX   = CXtX)      ## REMOVED ON 21/10/2009
+              #CZitZi = CZitZi)    ## REMOVED ON 20/10/2009
 
   if (do.init){
     names(ifixef) <- names(iEranef) <- names(iSDranef) <- names(ib) <- colnames(y)

@@ -1,15 +1,16 @@
-\name{NMixClust}
-\alias{NMixClust}
+\name{NMixPlugDA}
+\alias{NMixPlugDA}
 \title{
-  Clustering based on a mixture model
+  Discriminant analysis based on plug-in estimates from the mixture model
 }
 \description{
-  It performs clustering based on posterior summary for (re-labeled) mixture
+  It performs discriminant analysis based on 
+  posterior summary for (re-labeled) mixture
   components in a model with fixed number of components fitted with
   \code{\link{NMixMCMC}} function.
 }
 \usage{
-NMixClust(object, y)
+NMixPlugDA(object, y)
 }
 \arguments{
   \item{object}{an object of class \code{NMixMCMC}}
@@ -30,3 +31,4 @@ NMixClust(object, y)
 }  
 \keyword{multivariate}
 \keyword{smooth}
+\keyword{cluster}

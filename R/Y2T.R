@@ -1,5 +1,5 @@
 ##
-##  PURPOSE:   Convert fitted distribution of Y=log(T) into distribution of T
+##  PURPOSE:   Convert fitted distribution of Y=trans(T) into distribution of T=itrans(Y)
 ##             * generic function
 ##
 ##  AUTHOR:    Arnost Komarek (LaTeX: Arno\v{s}t Kom\'arek)

@@ -1,20 +1,22 @@
 ##
-##  PURPOSE:   Longitudinal clustering based on GLMM MCMC fits (with possibly several response variables) of 
+##  PURPOSE:   Longitudinal discriminant analysis
+##             based on GLMM MCMC fits (with possibly several response variables) of 
 ##
 ##  AUTHOR:    Arnost Komarek (LaTeX: Arno\v{s}t Kom\'arek)
 ##             arnost.komarek[AT]mff.cuni.cz
 ##
-##  CREATED:    05/08/2009
+##  CREATED:    05/08/2009 (as GLMM_longitClust)
+##              28/10/2009: renamed to GLMM_longitDA
 ##
-##  FUNCTIONS:  GLMM_longitClust
+##  FUNCTIONS:  GLMM_longitDA
 ##
 ## ================================================================================================
 
 ## *************************************************************
-## GLMM_longitClust
+## GLMM_longitDA
 ## *************************************************************
 ##
-GLMM_longitClust <- function(mod, w.prior, y, id, time, x, z, xz.common=TRUE, info)
+GLMM_longitDA <- function(mod, w.prior, y, id, time, x, z, xz.common=TRUE, info)
 {
   thispackage <- "mixAK"
 
@@ -54,7 +56,8 @@ GLMM_longitClust <- function(mod, w.prior, y, id, time, x, z, xz.common=TRUE, in
 ########## ========== Work out the data ============ ##########
 ########## ========================================= ##########
   Cp <- Cq <- CfixedIntcpt <- CrandomIntcpt <- numeric()
-  CX <- CXtX <- CZ <- CZitZi <- numeric()
+  CX <- CZ <- numeric()
+  ## CXtX <- CZitZi <- numeric()                              ### CODE REMOVED ON 02/11/2009
   CshiftScale_b <- numeric()
   Kmax_b <- numeric()
   chK_b <- chw_b <- chmu_b <- chLi_b <- numeric()
@@ -123,23 +126,25 @@ GLMM_longitClust <- function(mod, w.prior, y, id, time, x, z, xz.common=TRUE, in
       if (any(ifit$n[[s]] != ifit$n[[1]])) stop("BUG in the function, contact AK")
     }
 
+    ### ===== CODE REMOVED ON 02/11/2009 =====
     ##### Calculate CZitZi to be used here (it is different from that needed by GLMM_MCMC function)
     ##### and now included in ifit$CZitZi
     ##### REMARK:  Due to a loop, this is relatively slow for larger data, do it in C++ in a future???
-    ZitZi <- numeric(0)
-    cumn <- c(0, cumsum(ifit$n[[1]]))
-    for (i in 1:I){                       ## loop over longitudinal profiles
-      for (j in 1:ifit$n[[1]][i]){        ## loop over observations within longitudinal profiles
-        for (s in 1:R){
-          if (dd$q_ri[s]){
-            tmpZ <- matrix(ifit$z[[s]][(cumn[i]+1):(cumn[i]+j),], ncol=ncol(ifit$z[[s]]))
-            tmpZtZ <- t(tmpZ) %*% tmpZ
-            ZitZi <- c(ZitZi, tmpZtZ[lower.tri(tmpZtZ, diag=TRUE)])
-          }  
-        }          
-      }  
-    }
-    #cat("length ZitZi[", cl, "] = ", length(ZitZi), "\n", sep="")
+    ##ZitZi <- numeric(0)
+    ##cumn <- c(0, cumsum(ifit$n[[1]]))
+    ##for (i in 1:I){                       ## loop over longitudinal profiles
+    ##  for (j in 1:ifit$n[[1]][i]){        ## loop over observations within longitudinal profiles
+    ##    for (s in 1:R){
+    ##      if (dd$q_ri[s]){
+    ##        tmpZ <- matrix(ifit$z[[s]][(cumn[i]+1):(cumn[i]+j),], ncol=ncol(ifit$z[[s]]))
+    ##        tmpZtZ <- t(tmpZ) %*% tmpZ
+    ##        ZitZi <- c(ZitZi, tmpZtZ[lower.tri(tmpZtZ, diag=TRUE)])
+    ##      }  
+    ##    }          
+    ##  }  
+    ##}
+    ##cat("length ZitZi[", cl, "] = ", length(ZitZi), "\n", sep="")
+    ### ===== END OF CODE REMOVED ON 02/11/2009 =====
     
     ##### Vectors to be supplied to C++
     Cp <- c(Cp, dd$p)
@@ -147,9 +152,9 @@ GLMM_longitClust <- function(mod, w.prior, y, id, time, x, z, xz.common=TRUE, in
     CfixedIntcpt  <- c(CfixedIntcpt, dd$CfixedIntcpt)
     CrandomIntcpt <- c(CrandomIntcpt, dd$CrandomIntcpt)
     CX     <- c(CX, ifit$CX)
-    CXtX   <- c(CXtX, ifit$CXtX)    
+    ##CXtX   <- c(CXtX, ifit$CXtX)           ## CODE REMOVED ON 02/11/2009
     CZ     <- c(CZ, ifit$CZ)
-    CZitZi <- c(CZitZi, ZitZi)
+    ##CZitZi <- c(CZitZi, ZitZi)             ## CODE REMOVED ON 02/11/2009
 
     CshiftScale_b <- c(CshiftScale_b, mod[[cl]]$scale.b$shift, mod[[cl]]$scale.b$scale)
     
@@ -340,8 +345,50 @@ GLMM_longitClust <- function(mod, w.prior, y, id, time, x, z, xz.common=TRUE, in
     #print(mm_marg)        
     cat("f_b = ", ff_b, "\nf_y_b = ", ff_y_b, "\nf_y = ", ff_y, "\n\n", sep="")   
   }  
+
+  if (FALSE){
+    cat("Cy_c:\n")
+    print(Cy_c)
+
+    cat("Cy_d:\n")
+    print(Cy_d)
+
+    cat("CX:\n")
+    print(CX)
+
+    cat("CZ:\n")
+    print(CZ)
+
+    ##cat("CZitZi:\n")
+    ##print(CZitZi)
+
+    cat("R_c = ", Rc, ", R_d = ", Rd, ", nClust = ", nClust, ", I = ", I, "\n", sep="")
+    cat("Cdist:\n")
+    print(Cdist)
+
+    cat("Cn:\n")
+    print(Cn)
+
+    cat("Cp:\n")
+    print(Cp)
+    
+    cat("CfixedIntcpt:\n")
+    print(CfixedIntcpt)
+
+    cat("Cq:\n")
+    print(Cq)
+    
+    cat("CrandomIntcpt:\n")
+    print(CrandomIntcpt)
+
+    cat("CshiftScale_b:\n")
+    print(CshiftScale_b)
+        
+    cat("keepMCMC:\n")
+    print(keepMCMC)        
+  }  
   
-  fit <- .C("GLMM_longitClust",
+  fit <- .C("GLMM_longitDA",
             Y_c          = as.double(Cy_c),
             R_c          = as.integer(Rc),
             Y_d          = as.integer(Cy_d),
@@ -354,7 +401,7 @@ GLMM_longitClust <- function(mod, w.prior, y, id, time, x, z, xz.common=TRUE, in
             p            = as.integer(Cp),
             fixedIntcpt  = as.integer(CfixedIntcpt),
             Z            = as.double(CZ),
-            SZitZiS      = as.double(CZitZi),
+            #SZitZiS      = as.double(CZitZi),                  ### REMOVED ON 02/11/2009
             q            = as.integer(Cq),
             randIntcpt   = as.integer(CrandomIntcpt),
             shiftScale_b = as.double(CshiftScale_b),
@@ -373,7 +420,7 @@ GLMM_longitClust <- function(mod, w.prior, y, id, time, x, z, xz.common=TRUE, in
             err          = as.integer(0),
             PACKAGE = thispackage)
 
-  # browser()
+  #browser()
   
   if (nrow_pi == 1){
     fit$pi_ranef <- w.prior * fit$pi_ranef
@@ -383,7 +430,7 @@ GLMM_longitClust <- function(mod, w.prior, y, id, time, x, z, xz.common=TRUE, in
     fit$pi_cond <- fit$pi_cond / sum(fit$pi_cond)
 
     fit$pi_marg <- w.prior * fit$pi_marg
-    fit$pi_marg <- fit$pi_cond / sum(fit$pi_marg)    
+    fit$pi_marg <- fit$pi_marg / sum(fit$pi_marg)    
   }else{     
     w.priorMat <- matrix(rep(w.prior, nrow_pi), ncol=nClust, byrow=TRUE)
     #

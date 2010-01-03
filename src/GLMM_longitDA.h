@@ -1,21 +1,24 @@
 //
-//  PURPOSE:   Main function to perform clustering of longitudinal profiles
+//  PURPOSE:   Main function to perform discriminant analysis of longitudinal profiles
 //             based on models fitted with MCMC
 //
 //  AUTHOR:    Arnost Komarek (LaTeX: Arno\v{s}t Kom\'arek)
 //             arnost.komarek[AT]mff.cuni.cz
 //
-//  CREATED:   06/08/2009
+//  CREATED:   06/08/2009 as GLMM_longitClust.h
+//             28/10/2009: renamed to GLMM_longitDA.h
 //
 //  FUNCTIONS:  
-//     * GLMM_longitClust  06/08/2009:  Start working on it
-//                         12/08/2009:  Version for all responses being continuous working
+//     * GLMM_longitDA  06/08/2009:  Start working on it
+//                      12/08/2009:  Version for all responses being continuous working (named as GLMM_longitClust)
+//                      28/10/2009:  Renamed to GLMM_longitDA
+//                      02/11/2009:  Matrices S %*% t(Zi) %*% Zi %*% S are computed directly in C++ code
 //
 // ======================================================================
 //
 //
-#ifndef _GLMM_LONGITUDINAL_CLUSTERING_H_
-#define _GLMM_LONGITUDINAL_CLUSTERING_H_
+#ifndef _GLMM_LONGITUDINAL_DISCRIMINANT_ANALYSIS_H_
+#define _GLMM_LONGITUDINAL_DISCRIMINANT_ANALYSIS_H_
 
 #include <R.h>
 #include <Rmath.h>
@@ -24,6 +27,7 @@
 
 #include "GLMM_longitPred_nmix_gauss.h"
 #include "GLMM_linear_predictors.h"
+#include "GLMM_create_SZitZiS_4longitDA.h"
 #include "GLMM_scale_ZitZi.h"
 #include "GLMM_create_ZiS.h"
 
@@ -32,7 +36,7 @@ extern "C" {
 #endif
 
 /***** ***************************************************************************************** *****/
-/***** GLMM_longitClust                                                                          *****/
+/***** GLMM_longitDA                                                                             *****/
 /***** ***************************************************************************************** *****/
 //
 //  Yc
@@ -72,6 +76,9 @@ extern "C" {
 //                           OUTPUT: lower triangles of matrices S %*% t(Z_s[i]) %*% Z_s[i] %*% S,
 //                                   where S is the diagonal matrix with scale_b on a diagonal  
 //
+//         ARGUMENT SZitZiS HAS BEEN REMOVED ON 02/11/2009
+//
+//
 //  q[R, nClust]:            numbers of columns of Z matrices (intercept excluded) for each cluster and each response
 // 
 //  randIntcpt[R, nClust]:  0/1
@@ -91,35 +98,34 @@ extern "C" {
 //  pi_ranef[I, nClust]   estimated cluster probabilities based on random effect approach
 //
 void
-GLMM_longitClust(double* Y_c,                       /* it is in fact const, not const to be able to use ** */
-                 const int* R_c,
-                 int* Y_d,                          /* it is in fact const, not const to be able to use ** */
-                 const int* R_d,
-                 const int* dist,
-                 const int* nClust,
-                 const int* I,
-                 const int* n,
-                 const double* X,
-                 const int* p,
-                 const int* fixedIntcpt,
-                 double* Z,                         /* it is in fact const, not const to be able to use ** */
-                 double* SZitZiS,               
-                 const int* q,
-                 const int* randIntcpt,
-                 const double* shiftScale_b,
-                 const int* keepMCMC,
-                 const int* info,
-                 const int* Kmax_b,
-                 const double* chsigma_eps,
-                 const int* chK_b,
-                 const double* chw_b,           
-                 const double* chmu_b,  
-                 const double* chLi_b,
-                 const double* chbeta,
-                 double* pi_marg,
-                 double* pi_cond,
-                 double* pi_ranef,
-                 int* err);
+GLMM_longitDA(double* Y_c,                       /* it is in fact const, not const to be able to use ** */
+              const int* R_c,
+              int* Y_d,                          /* it is in fact const, not const to be able to use ** */
+              const int* R_d,
+              const int* dist,
+              const int* nClust,
+              const int* I,
+              const int* n,
+              const double* X,
+              const int* p,
+              const int* fixedIntcpt,
+              double* Z,                         /* it is in fact const, not const to be able to use ** */
+              const int* q,
+              const int* randIntcpt,
+              const double* shiftScale_b,
+              const int* keepMCMC,
+              const int* info,
+              const int* Kmax_b,
+              const double* chsigma_eps,
+              const int* chK_b,
+              const double* chw_b,           
+              const double* chmu_b,  
+              const double* chLi_b,
+              const double* chbeta,
+              double* pi_marg,
+              double* pi_cond,
+              double* pi_ranef,
+              int* err);
 
 #ifdef __cplusplus
 }

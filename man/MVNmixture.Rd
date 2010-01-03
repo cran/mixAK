@@ -42,7 +42,7 @@ rMVNmixture2(n, weight, mean, Q, Sigma)
 
     For \eqn{p=1} this
     should be a vector of length \eqn{K}, for \eqn{p>1} this should be a
-    \eqn{K\times p} matrix with mixture means in rows.
+    \eqn{K\times p}{K x p} matrix with mixture means in rows.
   }
   \item{Q}{precision matrices of the multivariate normal
     distribution. Ignored if \code{Sigma} is given.

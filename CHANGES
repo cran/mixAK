@@ -1,0 +1,12 @@
+08/12/2009
+bug in computation of weights for the EB estimate of random effects in GLMM_longitPred_nmix_gauss.cpp fixed
+
+22/11/2009
+function NMixClust renamed to NMixPlugDA
+
+06/11/2009
+bugs in GLMM_updateRanEf.cpp found and fixed:  
+  * eta_random was computed incorrectly as Z %*% bscaled and not as Z %*% b, where b = shift + diag(scale) %*% b
+  * pointers in the final part of the code did not shift correctly
+
+

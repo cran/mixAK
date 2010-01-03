@@ -43,6 +43,40 @@ R_rsort_desc(double* a,  const int& n)
 
 
 /***** ***************************************************************************************** *****/
+/***** AK_Utils::cum_Pr2Pr                                                                       *****/
+/***** ***************************************************************************************** *****/
+void
+cum_Pr2Pr(double* Pr,  const double* cum_Pr,
+          const int* K,  const int *I)
+{
+  static int i, j;
+  static double *PrP;
+  static const double *cum_PrP;
+  static const double *sum_PrP;
+
+  PrP     = Pr;
+  cum_PrP = cum_Pr;
+  for (i = 0; i < *I; i++){
+    sum_PrP = cum_PrP + (*K - 1);
+
+    /** j = 0 **/
+    *PrP = *cum_PrP / *sum_PrP;
+    PrP++;
+    cum_PrP++;
+
+    /** j = 1, ..., K-1 **/
+    for (j = 1; j < *K; j++){
+      *PrP = (*cum_PrP - *(cum_PrP - 1)) / *sum_PrP;
+      PrP++;
+      cum_PrP++;
+    }
+  }
+
+  return;
+}
+
+
+/***** ***************************************************************************************** *****/
 /***** AK_Utils::printIterInfo                                                                   *****/
 /***** ***************************************************************************************** *****/
 void

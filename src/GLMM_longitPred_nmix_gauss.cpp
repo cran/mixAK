@@ -12,7 +12,7 @@
 
 // ---------------------------------------------------------------------------------------------------------
 //
-// GLOBAL VARIABLES DECLARED IN GLMM_longitClust.cpp (useful to have them global for debugging purposes)
+// GLOBAL VARIABLES DECLARED IN GLMM_longitDA.cpp (useful to have them global for debugging purposes)
 //
 extern int iter_lC;
 extern int clust_lC;
@@ -25,24 +25,48 @@ namespace GLMM{
 /***** GLMM::longitPred_nmix_gauss                                                               *****/
 /***** ***************************************************************************************** *****/
 void
-longitPred_nmix_gauss(double* f_marg,            double* f_cond,            double* f_ranef,
-                      double** eta_fixedresp,    double* eta_random,
-                      double* log_dets_b,        double* dwork,             int* iwork,
-                      double** Y_crespP,         int** Y_drespP,
-                      double** eta_fixedrespP,   double** eta_zsrespP,
+longitPred_nmix_gauss(double*  f_marg,            
+                      double*  f_cond,            
+                      double*  f_ranef,
+                      double** eta_fixedresp,    
+                      double*  eta_random,
+                      double*  log_dets_b,        
+                      double*  dwork,             
+                      int*     iwork,
+                      double** Y_crespP,         
+                      int**    Y_drespP,
+                      double** eta_fixedrespP,   
+                      double** eta_zsrespP,
                       double** ZrespP,
-                      int* err,
-                      double** Y_cresp,          int** Y_dresp,
-                      double** eta_zsresp,
-                      const double* X,           double** Zresp,            const double* SZitZiS,    const double* ZiS,
-                      const double* shift_b,     const double* scale_b,
-                      const int* p,              const int* fixedIntcpt,
-                      const int* q,              const int* randIntcpt,     const int* q_ri,          const int* cumq_ri,
-                      const int* dim_b,          const int* LT_b,
-                      const int* R_c,            const int* R_d,
-                      const int* I,              const int* n,              const int* max_n,
-                      const double* beta,        const double* sigma_eps,
-                      const int* K_b,            const double* w_b,         const double* mu_b,        const double* Li_b)
+                      int*     err,
+                      double**      Y_cresp,          
+                      int**         Y_dresp,
+                      double**      eta_zsresp,
+                      const double* X,           
+                      double**      Zresp,            
+                      const double* SZitZiS,    
+                      const double* ZiS,
+                      const double* shift_b,     
+                      const double* scale_b,
+                      const int*    p,              
+                      const int*    fixedIntcpt,
+                      const int*    q,              
+                      const int*    randIntcpt,     
+                      const int*    q_ri,          
+                      const int*    cumq_ri,
+                      const int*    dim_b,          
+                      const int*    LT_b,
+                      const int*    R_c,            
+                      const int*    R_d,
+                      const int*    I,              
+                      const int*    n,              
+                      const int*    max_n,
+                      const double* beta,        
+                      const double* sigma_eps,
+                      const int*    K_b,            
+                      const double* w_b,         
+                      const double* mu_b,        
+                      const double* Li_b)
 {
   static int s, k, i, j, l1, l2, itmp;
   static int dim_y;
@@ -141,8 +165,8 @@ longitPred_nmix_gauss(double* f_marg,            double* f_cond,            doub
       }
     }
 
-    *log_w_EB_k *= -0.5;
-    *log_w_EB_k += *log_dets_b_k;
+    *log_w_EB_k *= -0.5;                          /** Now: log_w_EB[k] = - 0.5*t(mu_b[k]) %*% Q_b[k] %*% mu_b[k]                                      **/
+    *log_w_EB_k += *log_dets_b_k;                 /** Now: log_w_EB[k] = - 0.5*log(|Sigma_b|) - 0.5*t(mu_b[k]) %*% Q_b[k] %*% mu_b[k]                 **/
     *log_w_EB_k += AK_Basic::log_AK(*w_b_k);      /** Finally: log_w_EB[k] = log(w_b[k]) - 0.5*log(|Sigma_b|) - 0.5*t(mu_b[k]) %*% Q_b[k] %*% mu_b[k] **/
 
     AK_LAPACK::invLT(iLi_bstart, dim_b);          /** iLi = Li^{-1}                                                                                   **/
@@ -261,7 +285,7 @@ longitPred_nmix_gauss(double* f_marg,            double* f_cond,            doub
       //}
 
       /*** Compute empirical Bayes estimates of random effects and corresponding log-weights for all mixture components  ***/
-      /*** --------------------------------------------------------------------------====------------------------------- ***/
+      /*** ------------------------------------------------------------------------------------------------------------- ***/
       Q_b_k         = Q_b;                      // shifted in for (l2 = 0; l2 < *dim_b; l2++) for (l1 = l2; l1 < *dim_b; l1++)
       Qmu_b_k       = Qmu_b;                    // shifted in for (l2 = 0; l2 < *dim_b; l2++)
       EBscaled_k    = EBscaled;                 // shifted at the end
@@ -347,8 +371,18 @@ longitPred_nmix_gauss(double* f_marg,            double* f_cond,            doub
 	AK_BLAS::ddot(log_w_EB_ij_k, tLimu_b, EBscaled_k, *dim_b);  
         
         /*** Compute log(w[k](y)) (value up to an additive constant) ***/
-        *log_w_EB_ij_k *= 0.5;
-        *log_w_EB_ij_k += *log_w_EB_k;
+        *log_w_EB_ij_k *= 0.5;                    /*** Now: log_w_EB_ij[k] = 0.5 * t(c[k]) %*%Q_full[k]^{-1} %*% c[k]                          ***/
+
+  	  /*** Add -0.5 * log|Q_full[k]| ***/
+        Li_fullP = Li_full;
+        for (l2 = *dim_b; l2 > 0; l2--){
+          *log_w_EB_ij_k -= AK_Basic::log_AK(*Li_fullP);
+          Li_fullP += l2;
+        }
+                        	                  /*** Now: log_w_EB_ij[k] = -0.5 * log|Q_full[k]| + 0.5 * t(c[k]) %*%Q_full[k]^{-1} %*% c[k]  ***/
+
+  	  /*** Add the common part computed previously ***/
+        *log_w_EB_ij_k += *log_w_EB_k;            /*** Add log(w_b[k]) - 0.5*log(|Sigma_b|) - 0.5*t(mu_b[k]) %*% Q_b[k] %*% mu_b[k] ***/
 
         //if (clust_lC == clShow && iter_lC == itShow && i == iShow && j == jShow){
         //  Rprintf((char*)("bbhat2[%d, ] <- "), k + 1);

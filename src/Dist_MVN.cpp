@@ -163,6 +163,66 @@ rMVN2(double* x,         double* mu,              double* log_dens,  double* wor
 
 
 /***** ***************************************************************************************** *****/
+/***** Dist::rMVN3                                                                               *****/
+/***** ***************************************************************************************** *****/
+void
+rMVN3(double* x,         double* mu,              double* log_dens,           double* work,
+      const double *Li,  const double *log_dets,  const double *sqrt_scale,   const double *log_sqrt_scale,
+      const int* nx)
+{
+  GetRNGstate();
+
+  static int i;
+  static double *dP;
+  static const double *cdP;
+
+  /*** Solve Li %*% w = b, then w = Li^{-1} %*% b  ***/
+  /*** Store the solution in mu                    ***/
+  AK_LAPACK::chol_solve_forward(mu, Li, nx);
+
+  /*** Solve t(Li) %*% mu = w, then mu = t(Li)^{-1} %*% Li^{-1} %*% b = (Li %*% t(Li))^{-1} %*% b = Q^{-1} %*% b ***/
+  AK_LAPACK::chol_solve_backward(mu, Li, nx);
+
+  /*** Sample z ~ N(0, I) ***/
+  dP = x;
+  for (i = 0; i < *nx; i++){
+    *dP = norm_rand();
+    dP++;
+  }
+
+  /*** Compute -0.5 * t(z) %*% z to get the -0.5 * t(x - mu) %*% Q %*% (x - mu) part of the log-density ***/
+  AK_BLAS::ddot2(log_dens, x, *nx);
+  *log_dens *= -0.5;
+
+  /*** Solve t(L) %*% v = z,  then v = t(L)^{-1} %*% z ~ N(0, Q^{-1}) ***/
+  /*** Store the solution in x                                        ***/
+  AK_LAPACK::chol_solve_backward(x, Li, nx);
+
+
+  /*** Compute x = mu + sqrt(scale)*v, then x = mu + scale^{1/2}L^{-1}z ~ N(mu, scale*Q^{-1}) ***/
+  cdP = mu;
+  dP = x;
+  for (i = 0; i < *nx; i++){
+    *dP *= *sqrt_scale;
+    *dP += *cdP;
+    cdP++;
+    dP++;
+  }
+
+  /*** Add + log(scale^{-1/2}) + sum(log(Li[j,j])) - (n/2)*log(2*pi) to the log of the density ***/
+  *log_dens -= *nx * *log_sqrt_scale;
+  cdP = log_dets;
+  *log_dens += *cdP;
+  cdP++;
+  *log_dens += *cdP;
+
+  PutRNGstate();
+
+  return;
+}
+
+
+/***** ***************************************************************************************** *****/
 /***** Dist::ldMVN1                                                                              *****/
 /***** ***************************************************************************************** *****/
 void
@@ -233,6 +293,50 @@ ldMVN2(double* log_dens,        double* work,
   *log_dens *= -0.5;
 
   /*** log_dens += -sum(log(L[j,j])) - (n/2)*log(2*pi) ***/
+  cdP1 = log_dets;
+  *log_dens += *cdP1;
+  cdP1++;
+  *log_dens += *cdP1;
+  
+  return;
+}
+
+
+/***** ***************************************************************************************** *****/
+/***** Dist::ldMVN3                                                                              *****/
+/***** ***************************************************************************************** *****/
+void
+ldMVN3(double* log_dens,          double* work,
+       const double* x,           const double* mu,           
+       const double* Li,          const double* log_dets,
+       const double* sqrt_scale,  const double* log_sqrt_scale, 
+       const int* nx)
+{
+  static int i;
+  static double *dP;
+  static const double *cdP1, *cdP2;
+
+  /*** work = x - mu ***/
+  dP = work;
+  cdP1 = x;
+  cdP2 = mu;
+  for (i = 0; i < *nx; i++){
+    *dP = *cdP1 - *cdP2;
+    dP++;
+    cdP1++;
+    cdP2++;
+  }
+
+  /*** work = t(Li) %*% (x - mu) ***/
+  F77_CALL(dtpmv)("L", "T", "N", nx, Li, work, &AK_Basic::_ONE_INT);          /* Lapack:  work = t(Li) %*% work */
+
+  /*** log_dens = -0.5 * scale^{-1} * t(x - mu) %*% Li %*% t(Li) %*% (x - mu) ***/
+  AK_BLAS::ddot2(log_dens, work, *nx);
+  *log_dens *= -0.5; 
+  *log_dens /= (*sqrt_scale * *sqrt_scale);
+
+  /*** log_dens += nx*log(scale^{-1/2}) + sum(log(Li[j,j])) - (n/2)*log(2*pi) ***/
+  *log_dens -= *nx * *log_sqrt_scale;
   cdP1 = log_dets;
   *log_dens += *cdP1;
   cdP1++;

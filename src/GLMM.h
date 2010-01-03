@@ -13,9 +13,13 @@
 
 namespace GLMM {
 
-  enum _GLMM_dist {NMIXTURE, ALT_LOGIT};       /* possible distributions for responses                 */
-                                                       /* NMIXTURE  = normal mixture                           */
-                                                       /* ALT_LOGIT = alternative (Bernoulli) with logit link  */    
+  enum _GLMM_dist {GAUSS_IDENTITY, BERNOULLI_LOGIT, POISSON_LOG};      
+         /* possible distributions for responses (given random effects)                               */
+         /*   0 = GAUSS_IDENTITY:   Gaussian (normal) distribution with identity link                 */
+         /*   1 = BERNOULLI_LOGIT:  Bernoulli (alternative) distribution with logit link              */
+         /*   2 = POISSON_LOG:      Poisson distribution with log link                                */
+
+  const int nNR_FS = 1;      /*** number of Newton-Raphson/Fisher scoring steps when updating fixed/random effects ***/
 }
 
 #endif

@@ -1,7 +1,7 @@
-\name{GLMM_longitClust}
-\alias{GLMM_longitClust}
+\name{GLMM_longitDA}
+\alias{GLMM_longitDA}
 \title{
-  Clustering of longitudinal profiles based on fitted GLMM's
+  Discriminant analysis for longitudinal profiles based on fitted GLMM's
 }  
 \description{
   THIS FUNCTION IS BEING DEVELOPED AND ORDINARY USERS
@@ -11,7 +11,7 @@
   I HOPE TO WRITE A PAPER DESCRIBING ALL THE DETAILS.
 }  
 \usage{
-GLMM_longitClust(mod, w.prior, y, id, time, x, z, xz.common=TRUE, info)
+GLMM_longitDA(mod, w.prior, y, id, time, x, z, xz.common=TRUE, info)
 }
 \arguments{
   \item{mod}{a list containing models fitted with the
@@ -59,9 +59,11 @@ GLMM_longitClust(mod, w.prior, y, id, time, x, z, xz.common=TRUE, info)
   \item{ranef}{ADD DESCRIPTION}
 }
 \references{
-  \eqn{\mbox{Kom\'{a}rek, A.}}{Kom&#225rek, A.} (20XX).
-  PAPER TO BE WRITTEN.
-  \emph{JOURNAL}, \bold{XX}, XXX-XXX.
+  \eqn{\mbox{Kom\'{a}rek, A.}}{Kom&#225rek, A.}, Hansen, B. E., Kuiper,
+  E. M. M., van Buuren, H. R., and Lesaffre, E. (2010).
+  Discriminant analysis using a multivariate linear mixed model with a
+  normal mixture in the random effects distribution.
+  \emph{Statistics in Medicine}. To appear. %\bold{XX}, XXX-XXX.
 }  
 \seealso{
   \code{\link{GLMM_MCMC}}.
@@ -74,3 +76,4 @@ GLMM_longitClust(mod, w.prior, y, id, time, x, z, xz.common=TRUE, info)
 }
 \keyword{models}
 \keyword{multivariate}
+\keyword{cluster}

@@ -12,6 +12,7 @@
 //                  21/12/2007:  Working version for fixed K, seems to be bugs free
 //                  29/01/2008:  Version for varying K with p = 1 seems to work
 //                               Version for varying K with p > 1 finished but does not seem to work ;-(
+//                  30/12/2009:  Computation of quantities needed for clustering added
 //
 // ======================================================================
 //
@@ -273,6 +274,18 @@ extern "C" {
 //                         OUTPUT:  posterior mean of Cholesky decompositions of mixture inverse variances, computed only if K is FIXED
 //                                  * before the posterior mean is computed, components are re-ordered to satisfy some constraint
 //
+// sum_Ir[n, Kmax]:    for each observation and each mixture component: sum(r[i] = k),
+//                     i = 0, ..., n-1, j = 0, ..., K - 1
+//                     from the main part of MCMC (burn-in not included) 
+//                     * COMPUTED ONLY WHEN K is FIXED
+//                     * COMPONENTS ARE (INTERNALLY) RE-LABELED BEFORE sum(r[i] = k) is computed
+//
+// sum_Pr_y[n, Kmax]:    for each observation and each mixture component: sum(P(r[i] = k | theta, y))
+//                       i = 0, ..., n-1, j = 0, ..., K - 1
+//                       from the main part of MCMC (burn-in not included) 
+//                       * COMPUTED ONLY WHEN K is FIXED
+//                       * COMPONENTS ARE (INTERNALLY) RE-LABELED BEFORE sum(P(r[i] = k | theta, y)) is computed
+//
 // iter[1]              INPUT:  index of the iteration corresponding to the initial values (usually zero)
 //                     OUTPUT:  index of the last performed iteration
 //
@@ -292,18 +305,60 @@ extern "C" {
 // err[1]
 //
 void
-NMix_MCMC(const double* y0,  const double* y1,     const int* censor,          const int* dimy,            const double* shiftScale,
-          const int* nMCMC,  const int* priorInt,  const double* priorDouble,  const double* priorRJMCMC,  const int* priorRJMCMCint,
-          double* y,            int* K,               double* w,                 double* mu,                
-          double* Q,            double* Sigma,        double* Li,                double* gammaInv,      int* r,
-          int* chK,             double* chw,          double* chmu,           
-          double* chQ,          double* chSigma,      double* chLi,              double* chgammaInv,    int* chorder,                  int* chrank,
-          double* chMean,       double* chCorr,       double* chMeanData,        double* chCorrData,
-          double* chLogL0,      double* chLogL1,      double* chDevCompl,        double* chDevObs,      double* chDevCompl_inHat,  
+NMix_MCMC(const double* y0,  
+          const double* y1,     
+          const int* censor,          
+          const int* dimy,            
+          const double* shiftScale,
+          const int* nMCMC,  
+          const int* priorInt,  
+          const double* priorDouble,  
+          const double* priorRJMCMC,  
+          const int* priorRJMCMCint,
+          double* y,            
+          int* K,               
+          double* w,                 
+          double* mu,                
+          double* Q,            
+          double* Sigma,        
+          double* Li,                
+          double* gammaInv,      
+          int* r,
+          int* chK,             
+          double* chw,          
+          double* chmu,           
+          double* chQ,          
+          double* chSigma,      
+          double* chLi,              
+          double* chgammaInv,    
+          int* chorder,                  
+          int* chrank,
+          double* chMean,       
+          double* chCorr,       
+          double* chMeanData,        
+          double* chCorrData,
+          double* chLogL0,      
+          double* chLogL1,      
+          double* chDevCompl,        
+          double* chDevObs,        
+          double* chDevCompl_inHat,  
           double* pm_y,         
-          double* pm_indLogL0,  double* pm_indLogL1,  double* pm_indDevCompl,    double* pm_indDevObs,  double* pm_indDevCompl_inHat,  double* pm_pred_dens,
-          double* pm_w,         double* pm_mu,        double* pm_Q,              double* pm_Sigma,      double* pm_Li,
-          int* iter,            int* nMoveAccept,     int* err);
+          double* pm_indLogL0,  
+          double* pm_indLogL1,  
+          double* pm_indDevCompl,    
+          double* pm_indDevObs,  
+          double* pm_indDevCompl_inHat,  
+          double* pm_pred_dens,
+          double* pm_w,         
+          double* pm_mu,          
+          double* pm_Q,              
+          double* pm_Sigma,      
+          double* pm_Li,
+          int*    sum_Ir,
+          double* sum_Pr_y,
+          int* iter,            
+          int* nMoveAccept,     
+          int* err);
 
 #ifdef __cplusplus
 }

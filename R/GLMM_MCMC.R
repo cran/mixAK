@@ -7,6 +7,7 @@
 ##
 ##  CREATED:    06/07/2009
 ##              03/08/2009:  version for continuous responses working
+##              10/11/2009:  version for combined discrete and continuous responses working
 ##
 ##  FUNCTIONS:  GLMM_MCMC
 ##
@@ -21,6 +22,7 @@ GLMM_MCMC <- function(y, dist="gaussian", id, x, z, random.intercept,
                       scale.b,    prior.b,   init.b,
                       prior.eps,  init.eps,
                       nMCMC=c(burn=10, keep=10, thin=1, info=10),
+                      tuneMCMC=list(beta=1, b=1),
                       store=c(b=FALSE), keep.chains=TRUE)
 {
   require("lme4")
@@ -33,10 +35,11 @@ GLMM_MCMC <- function(y, dist="gaussian", id, x, z, random.intercept,
 ########## ========== Data ========== ##########
 ########## ========================== ##########
   dd <- GLMM_MCMCdata(y=y, dist=dist, id=id, x=x, z=z, random.intercept=random.intercept)
+  if (dd$R > 1) NAAM.RESP <- names(x)
   rm(list=c("y", "dist", "id", "x", "z", "random.intercept"))
      ### use dd$y, dd$dist, dd$id, dd$x, dd$z, dd$random.intercept instead
      ### REMARK:  dd$x, dd$z are still without intercept column
-  
+
   
 ########## ========== Initial fits ======================================== ##########
 ########## ========== and design information to be passed to C++ ========== ##########
@@ -49,7 +52,7 @@ GLMM_MCMC <- function(y, dist="gaussian", id, x, z, random.intercept,
   dd$z <- NULL
      ### use ifit$x, ifit$z instead
      ### REMARK:  ifit$x, ifit$z contain intercept columns as well
-  
+
 
 ########## ========== Prior distribution for fixed effects (beta) ========== ##########
 ########## ================================================================= ##########
@@ -405,6 +408,33 @@ GLMM_MCMC <- function(y, dist="gaussian", id, x, z, random.intercept,
   if (nMCMC["info"] <= 0 | nMCMC["info"] > max(nMCMC["burn"], nMCMC["keep"])) nMCMC["info"] <- max(nMCMC["burn"], nMCMC["keep"])
 
 
+########## ========== tuneMCMC ========== ##########
+########## ============================== ##########
+  if (!is.list(tuneMCMC)) stop("tuneMCMC must be a list")
+  intuneMCMC <- names(tuneMCMC)
+  itune.beta <- match("beta", intuneMCMC, nomatch=NA)
+  itune.b    <- match("b", intuneMCMC, nomatch=NA)
+  
+  if (dd$Rd){
+    if (is.na(itune.beta)) tuneMCMC$beta <- rep(1, dd$Rd)
+    if (length(tuneMCMC$beta) == 1) tuneMCMC$beta <- rep(tuneMCMC$beta, dd$Rd)
+    if (length(tuneMCMC$beta) != dd$Rd) stop(paste("tuneMCMC$beta must be of length ", dd$Rd, sep=""))
+    if (any(is.na(tuneMCMC$beta))) stop("NA in tuneMCMC$beta")        
+    if (any(tuneMCMC$beta <= 0)) stop("tuneMCMC$beta must be all positive")            
+  }else{
+    tuneMCMC$beta <- 1
+  }  
+  
+  if (dd$dimb){
+    if (is.na(itune.b)) tuneMCMC$b <- 1
+    if (length(tuneMCMC$b) != 1) stop(paste("tuneMCMC$b must be of length ", 1, sep=""))
+    if (any(is.na(tuneMCMC$b))) stop("NA in tuneMCMC$b")        
+    if (any(tuneMCMC$b <= 0)) stop("tuneMCMC$b must be all positive")                
+  }else{
+    tuneMCMC$b <- 1
+  }  
+  
+  
 ########## ========== store ========== ##########
 ########## =========================== ##########
   if (length(store) != 1) stop("store must be of length 1")
@@ -415,226 +445,14 @@ GLMM_MCMC <- function(y, dist="gaussian", id, x, z, random.intercept,
   store <- c(store.b)
   names(store) <- c("b")
   if (!dd$dimb) store["b"] <- FALSE  
+
+
+########## ========== Some additional parameters ##########
+########## ===================================== ##########
+  if (prior.b$priorK == "fixed") lsum_Ir_b <- ifit$I * CK_b
+  else                           lsum_Ir_b <- 1
   
-
-########## ========== Show values of some variables when debugging ========== ##########
-########## ================================================================== ##########
-  DEBUG <- FALSE
-  if (DEBUG){
-    cat("ifit$n:\n------------\n")
-    print(ifit$n)
     
-    cat("\nifit$Cn:\n------------\n")
-    print(ifit$Cn)
-
-    cat("\ndd$dimb: ", dd$dimb, "\n-----------\n")
-
-    cat("\ndd$lbeta: ", dd$lbeta, "\n-----------\n")    
-
-    cat("\ndd$p:\n-----------\n")
-    print(dd$p)
-
-    cat("\ndd$q:\n-----------\n")
-    print(dd$q)    
-
-    cat("\ndd$random.intercept:\n-----------\n")
-    print(dd$random.intercept)    
-
-    cat("\ndd$CrandomIntcpt:\n-----------\n")
-    print(dd$CrandomIntcpt)    
-
-    cat("\ndd$fixed.intercept:\n-----------\n")
-    print(dd$fixed.intercept)    
-
-    cat("\ndd$CfixedIntcpt:\n-----------\n")
-    print(dd$CfixedIntcpt)    
-    
-    cat("\nifit$Cy_c:\n------------\n")
-    print(ifit$Cy_c)
-
-    cat("\nifit$Cy_d:\n------------\n")
-    print(ifit$Cy_d)
-    
-    cat("\nifit$CX:\n------------\n")
-    print(ifit$CX)
-
-    cat("\nifit$CZ:\n------------\n")
-    print(ifit$CZ)
-
-    cat("\nifit$CXtX:\n-----------\n")
-    print(ifit$CXtX)
-    
-    cat("\nifit$CZitZi:\n-----------\n")
-    print(ifit$CZitZi)
-    
-    cat("\nifit$iintcpt:\n------------\n")
-    print(ifit$iintcpt)
-
-    cat("\nifit$is.intcpt:\n------------\n")
-    print(ifit$is.intcpt)
-
-    cat("\nifit$ifixef:\n------------\n")
-    print(ifit$ifixef)
-
-    cat("ifit$is.fixef:\n------------\n")
-    print(ifit$is.fixef)
-
-    cat("\nifit$ibeta:\n-----------\n")
-    print(ifit$ibeta)
-    
-    cat("\nifit$isigma:\n------------\n")
-    print(ifit$isigma)
-
-    cat("\nifit$is.sigma:\n------------\n")
-    print(ifit$is.sigma)
-
-    cat("ifit$is.ranef:\n------------\n")
-    print(ifit$is.ranef)
-    
-    cat("\nifit$iEranefVec:\n------------\n")
-    print(ifit$iEranefVec)
-    
-    cat("\nifit$iEranef:\n------------\n")
-    print(ifit$iEranef)
-
-    cat("\nifit$iSEranefVec:\n------------\n")
-    print(ifit$iSEranefVec)
-    
-    cat("\nifit$iSDranefVec:\n------------\n")
-    print(ifit$iSDranefVec)
-    
-    cat("\nifit$iSDranef:\n------------\n")
-    print(ifit$iSDranef)
-
-    cat("\nifit$iSEranefVec:\n------------\n")
-    print(ifit$iSEranefVec)
-
-    cat("\nifit$ibMat:\n------------\n")
-    print(ifit$ibMat)
-    
-    cat("\nscale.b:\n------------\n")
-    print(scale.b)
-    
-    cat("scb$CshiftScale_b:\n------------\n")
-    print(scb$CshiftScale_b)
-
-    cat("pbeta$CpriorDouble_beta:\n-----------\n")
-    print(pbeta$CpriorDouble_beta)
-    
-    cat("peps$CpriorDouble_eps:\n-----------\n")
-    print(peps$CpriorDouble_eps)
-
-    cat("pbb$CpriorInt_b:\n-----------\n")
-    print(pbb$CpriorInt_b)    
-    cat("pbb$CpriorDouble_b:\n-----------\n")
-    print(pbb$CpriorDouble_b)
-
-    cat("Csigma_eps:\n-----------\n")
-    print(Csigma_eps)    
-    cat("CgammaInv_eps:\n-----------\n")
-    print(CgammaInv_eps)    
-
-    cat("CK_b:\n-----------\n")
-    print(CK_b)    
-    cat("Cw_b:\n-----------\n")
-    print(Cw_b)    
-    cat("Cmu_b:\n-----------\n")
-    print(Cmu_b)    
-    cat("CLi_b:\n-----------\n")
-    print(CLi_b)            
-    cat("CgammaInv_b:\n-----------\n")
-    print(CgammaInv_b)    
-    cat("Cr_b:\n-----------\n")
-    print(Cr_b)    
-    cat("Cbb:\n-----------\n")
-    print(Cbb)    
-    
-    cat("\n")
-  }  
-
-
-  SHOW.CLUST <- FALSE
-  if (SHOW.CLUST){
-    cumq_ri <- cumsum(dd$q_ri)
-    ishow <- 98
-    IDshow <- unique(dd$id)[ishow]
-    
-    iY <- iX <- iZ <- iZstar <- efixed <- erand <- ezs <- list()
-    inn <- numeric(dd$R)
-    for (s in 1:dd$R){
-      iRow <- (ifit$ID[[s]] == IDshow)
-      if (s == 1) iRand <- if (dd$q_ri[s]) 1:dd$q_ri[s] else NULL
-      else        iRand <- if (dd$q_ri[s]) (cumq_ri[s-1]+1):cumq_ri[s] else NULL
-      inn[s] <- ifit$n[[s]][ishow]
-      
-      iY[[s]] <- ifit$Y[[s]][iRow]
-      
-      if (!is.character(ifit$x[[s]])){
-        if (ncol(ifit$x[[s]]) == 1){
-          efixed[[s]] <- ifit$x[[s]][iRow,] * as.numeric(ifit$ifixef[[s]][, "Est"])
-          iifit$x[[s]] <- matrix(ifit$x[[s]][iRow,], ncol=1)
-        }else{  
-          efixed[[s]] <- as.numeric(ifit$x[[s]][iRow,] %*% as.numeric(ifit$ifixef[[s]][, "Est"]))
-          iX[[s]] <- ifit$x[[s]][iRow,]
-        }  
-      }else{
-        efixed[[s]] <- rep(0, sum(iRow))
-        iX[[s]] <- "empty"
-      }  
-      if (!is.character(ifit$z[[s]])){
-        if (ncol(ifit$z[[s]]) == 1){
-          erand[[s]] <- ifit$z[[s]][iRow,] * as.numeric(ifit$ib[[s]][as.character(IDshow),])
-          ezs[[s]]   <- ifit$z[[s]][iRow,] * scale.b$scale[iRand]
-          iZ[[s]] <- matrix(ifit$z[[s]][iRow,], ncol=1)          
-        }else{  
-          erand[[s]] <- as.numeric(ifit$z[[s]][iRow,] %*% as.numeric(ifit$ib[[s]][as.character(IDshow),]))
-          ezs[[s]]   <- as.numeric(ifit$z[[s]][iRow,] %*% scale.b$scale[iRand])
-          iZ[[s]] <- matrix(ifit$z[[s]][iRow,], ncol=ncol(ifit$z[[s]]))          
-        }
-        if (dd$R == 1){
-          iZstar[[s]] <- iZ[[s]]
-        }else{
-          if (s == 1){
-            if (sum(dd$q_ri[2:dd$R])) iZstar[[s]] <- cbind(iZ[[s]], matrix(0, ncol=sum(dd$q_ri[2:dd$R]), nrow=inn[s])) else iZstar[[s]] <- iZ[[s]]
-          }else{
-            if (s == dd$R){
-              if (sum(dd$q_ri[1:(dd$R-1)])) iZstar[[s]] <- cbind(matrix(0, ncol=sum(dd$q_ri[1:(dd$R-1)]), nrow=inn[s]), iZ[[s]]) else iZstar[[s]] <- iZ[[s]]
-            }else{
-              if (sum(dd$q_ri[1:(s-1)])) iZstar[[s]] <- cbind(matrix(0, ncol=sum(dd$q_ri[1:(s-1)]), nrow=inn[s]), iZ[[s]]) else iZstar[[s]] <- iZ[[s]]
-              if (sum(dd$q_ri[(s+1):dd$R])) iZstar[[s]] <- cbind(iZstar[[s]], matrix(0, ncol=sum(dd$q_ri[(s+1):dd$R]), nrow=inn[s])) else iZstar[[s]] <- iZstar[[s]]
-            }  
-          }  
-        }  
-      }else{
-        erand[[s]] <- ezs[[s]] <- rep(0, sum(iRow))
-        iZ[[s]] <- "empty"
-        iZstar[[s]] <- matrix(0, ncol=sum(dd$q_ri), nrow=inn[s])
-      }  
-    }  
-
-    iZZstar <- iZstar[[1]]
-    if (dd$R > 1) for (s in 2:dd$R) iZZstar <- rbind(iZZstar, iZstar[[s]])
-    
-    MU <- init.b$mu[init.b$r[ishow],]
-    SIGMA <- init.b$Sigma[((init.b$r[ishow]-1)*dd$dimb+1):(init.b$r[ishow]*dd$dimb),]
-    Q <- chol2inv(chol(SIGMA))
-
-    if (dd$dimb > 1) Smat <- diag(scale.b$scale) else Smat <- matrix(scale.b$scale, nrow=1, ncol=1)
-
-    cat("Cluster ", ishow, ": \n", sep="")
-    for (s in 1:dd$R){
-      cat("s=", s, ", SZ'ZS:\n", sep="")
-      if (dd$q_ri[s]){
-        if (s == 1) indr <- 1:dd$q_ri[s] else indr <- (cumq_ri[s-1]+1):cumq_ri[s]
-        Ss <- matrix(Smat[indr, indr], nrow=dd$q_ri[s], ncol=dd$q_ri[s])
-        print(Ss %*% t(iZ[[s]]) %*% iZ[[s]] %*% Ss)
-      }else{
-        cat("empty\n")
-      }  
-    }      
-  }  
-
-  
 ########## ========== MCMC simulation                              ========== ##########
 ########## ================================================================== ##########
   cat(paste("MCMC sampling started on ", date(), ".\n", sep=""))  
@@ -647,11 +465,11 @@ GLMM_MCMC <- function(y, dist="gaussian", id, x, z, random.intercept,
              I                = as.integer(ifit$I),
              n                = as.integer(ifit$Cn),
              X                = as.double(ifit$CX),
-             XtX              = as.double(ifit$CXtX),
+             #XtX              = as.double(ifit$CXtX),               ### REMOVED ON 21/10/2009, XtX is computed directly in C++
              p                = as.integer(dd$p),
              fixedIntcpt      = as.integer(dd$CfixedIntcpt),
              Z                = as.double(ifit$CZ),
-             ZitZi            = as.double(ifit$CZitZi),
+             #ZitZi            = as.double(ifit$CZitZi),             ### REMOVED ON 20/10/2009, ZitZi is computed directly in C++
              q                = as.integer(dd$q),
              randIntcpt       = as.integer(dd$CrandomIntcpt),
              shiftScale_b     = as.double(scb$CshiftScale_b),
@@ -661,6 +479,8 @@ GLMM_MCMC <- function(y, dist="gaussian", id, x, z, random.intercept,
              priorInt_b       = as.integer(pbb$CpriorInt_b),
              priorDouble_b    = as.double(pbb$CpriorDouble_b),
              priorDouble_beta = as.double(pbeta$CpriorDouble_beta),
+             tune_scale_beta  = as.double(tuneMCMC$beta),
+             tune_scale_b     = as.double(tuneMCMC$b),             
              sigma_eps        = as.double(Csigma_eps),
              gammaInv_eps     = as.double(CgammaInv_eps),
              K_b              = as.integer(CK_b),
@@ -688,6 +508,8 @@ GLMM_MCMC <- function(y, dist="gaussian", id, x, z, random.intercept,
              chCorrData_b     = double(ifelse(dd$dimb, dd$LTb * nMCMC["keep"], 1)),
              chbeta           = double(ifelse(dd$lbeta, dd$lbeta * nMCMC["keep"], 1)),
              chb              = double(ifelse(dd$dimb, ifelse(store["b"], ifit$I * dd$dimb * nMCMC["keep"], ifit$I * dd$dimb), 1)),
+             naccept_beta     = integer(dd$Rc + dd$Rd),
+             naccept_b        = integer(ifit$I),
              pm_eta_fixed     = double(ifit$sumCn),
              pm_eta_random    = double(ifit$sumCn),             
              pm_b             = double(ifelse(dd$dimb, dd$dimb * ifit$I, 1)),
@@ -697,7 +519,9 @@ GLMM_MCMC <- function(y, dist="gaussian", id, x, z, random.intercept,
              pm_Sigma_b       = double(ifelse(dd$dimb, dd$LTb * prior.b$Kmax, 1)),
              pm_Li_b          = double(ifelse(dd$dimb, dd$LTb * prior.b$Kmax, 1)),
              pm_indLogL       = double(ifit$I),
-             pm_indLogpb      = double(ifelse(dd$dimb, ifit$I, 1)),
+             pm_indLogpb      = double(ifit$I),
+             sum_Ir_b         = integer(lsum_Ir_b),
+             sum_Pr_b_b       = double(lsum_Ir_b),
              iter             = as.integer(0),
              err              = as.integer(0),
              PACKAGE=thispackage)            
@@ -774,6 +598,13 @@ GLMM_MCMC <- function(y, dist="gaussian", id, x, z, random.intercept,
   }  
 
   
+  ########## ========== Performance of MCMC ========== ##########
+  ########## ========================================= ##########
+  prop.accept.beta <- MCMC$naccept_beta / (nMCMC["keep"] * nMCMC["thin"])
+  if (dd$R > 1) names(prop.accept.beta) <- NAAM.RESP
+  prop.accept.b <- MCMC$naccept_b / (nMCMC["keep"] * nMCMC["thin"])  
+    
+  
   ########## ========== Create a list to be returned ========== ##########
   ########## ================================================== ##########
   RET <- list(iter             = MCMC$iter,
@@ -789,26 +620,39 @@ GLMM_MCMC <- function(y, dist="gaussian", id, x, z, random.intercept,
               prior.beta       = prior.beta,
               prior.b          = prior.b,
               prior.eps        = prior.eps,
-              init.beta        = init.beta,
-              init.b           = init.b,
-              init.eps         = init.eps,
-              state.beta       = state.beta,
-              state.b          = list(b        = state.b,
-                                      K        = as.numeric(MCMC$K_b),
-                                      w        = state.w_b,
-                                      mu       = state.mu_b,
-                                      Sigma    = state.Sigma_b,
-                                      Li       = state.Li_b,
-                                      Q        = state.Q_b,
-                                      gammaInv = state.gammaInv_b,
-                                      r        = state.r_b),
-              state.eps        = list(sigma    = state.sigma_eps,
-                                      gammaInv = state.gammaInv_eps),
-              scale.b          = scale.b,
-              freqK_b          = freqK_b,
-              propK_b          = propK_b)
+              init.eps         = init.eps)
 
+
+  if (dd$lbeta){
+    RET$init.beta        <- init.beta
+    RET$state.beta       <- state.beta
+    RET$prop.accept.beta <- prop.accept.beta    
+  }  
   
+  if (dd$dimb){
+    RET$init.b  <- init.b
+    RET$state.b <- list(b        = state.b,               
+                        K        = as.numeric(MCMC$K_b),  
+                        w        = state.w_b,             
+                        mu       = state.mu_b,            
+                        Sigma    = state.Sigma_b,         
+                        Li       = state.Li_b,            
+                        Q        = state.Q_b,             
+                        gammaInv = state.gammaInv_b,      
+                        r        = state.r_b)
+    RET$prop.accept.b <- prop.accept.b
+    RET$scale.b <- scale.b
+    RET$freqK_b <- freqK_b
+    RET$propK_b <- propK_b    
+  }                                 
+
+  if (dd$Rc){
+    RET$init.eps <- init.eps
+    RET$state.eps <- list(sigma    = state.sigma_eps,
+                          gammaInv = state.gammaInv_eps)           
+  }  
+                                      
+
   ########## ========== Posterior means of quantities computed in C++ ========== ##########
   ########## =================================================================== ##########
   RET$poster.mean.eta <- data.frame(fixed  = as.numeric(MCMC$pm_eta_fixed),
@@ -816,10 +660,10 @@ GLMM_MCMC <- function(y, dist="gaussian", id, x, z, random.intercept,
 
   if (dd$dimb){
     MCMC$pm_b <- matrix(MCMC$pm_b, ncol=dd$dimb, byrow=TRUE)
-    RET$poster.mean.cluster <- as.data.frame(MCMC$pm_b)
-    colnames(RET$poster.mean.cluster) <- paste("b", 1:dd$dimb, sep="")    
-    RET$poster.mean.cluster$LogL  <- as.numeric(MCMC$pm_indLogL)
-    RET$poster.mean.cluster$Logpb <- as.numeric(MCMC$pm_indLogpb)
+    RET$poster.mean.profile <- as.data.frame(MCMC$pm_b)
+    colnames(RET$poster.mean.profile) <- paste("b", 1:dd$dimb, sep="")    
+    RET$poster.mean.profile$LogL  <- as.numeric(MCMC$pm_indLogL)
+    RET$poster.mean.profile$Logpb <- as.numeric(MCMC$pm_indLogpb)
     
     if (prior.b$priorK == "fixed"){
                                                       ##### I am not sure whether the posterior means (especially of variance components) are useful!
@@ -852,9 +696,31 @@ GLMM_MCMC <- function(y, dist="gaussian", id, x, z, random.intercept,
       names(RET$poster.mean.Q_b) <- names(RET$poster.mean.Sigma_b) <- names(RET$poster.mean.Li_b) <- paste("j", 1:prior.b$Kmax, sep="")    
     }      
   }else{
-    RET$poster.mean.cluster <- data.frame(LogL  = as.numeric(MCMC$pm_indLogL))
+    RET$poster.mean.profile <- data.frame(LogL  = as.numeric(MCMC$pm_indLogL))
   }  
 
+
+  ########## ========== Clustering based on posterior P(alloc = k | y) or on P(alloc = k | theta, b, y)    ========== ##########
+  ########## ======================================================================================================== ##########
+  if (dd$dimb){
+    if (prior.b$priorK == "fixed"){
+      if (CK_b == 1){
+        RET$poster.comp.prob1 <- RET$poster.comp.prob2 <- matrix(1, nrow = ifit$I, ncol = 1)
+      }else{
+
+        ### Using mean(I(r=k))
+        MCMC$sum_Ir_b <- matrix(MCMC$sum_Ir_b, ncol = CK_b, nrow = ifit$I, byrow = TRUE)
+        Denom <- apply(MCMC$sum_Ir_b, 1, sum)
+        RET$poster.comp.prob1 <- MCMC$sum_Ir_b / matrix(rep(Denom, CK_b), ncol = CK_b, nrow = ifit$I)
+
+        ### Using mean(P(r=k | theta, b, y))
+        MCMC$sum_Pr_b_b<- matrix(MCMC$sum_Pr_b_b, ncol = CK_b, nrow = ifit$I, byrow = TRUE)
+        RET$poster.comp.prob2 <- MCMC$sum_Pr_b_b/ matrix(rep(Denom, CK_b), ncol = CK_b, nrow = ifit$I)        
+      }  
+    }  
+  }  
+  
+    
   ########## ========== Additional posterior summaries                ========== ##########
   ########## =================================================================== ##########
   qProbs <- c(0, 0.025, 0.25, 0.5, 0.75, 0.975, 1)
@@ -930,9 +796,9 @@ GLMM_MCMC <- function(y, dist="gaussian", id, x, z, random.intercept,
       RET$summ.sigma_eps     <- rbind(mean.sigma_eps, sd.sigma_eps, quant.sigma_eps)
       rownames(RET$summ.sigma_eps) <- nSumm            
     }    
-  }  
-  
-  
+  }
+
+    
   ########## ========== Chains for model parameters ========== ##########
   ########## ================================================= ##########
   if (keep.chains){

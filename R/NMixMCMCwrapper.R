@@ -67,6 +67,11 @@ NMixMCMCwrapper <- function(chain=1,
 
   Cr <- inits[[chain]]$r - 1
 
+  ##### Some additional parameters
+  ##### =============================================================================
+  if (prior$priorK == "fixed") lsum_Ir <- n * CK
+  else                         lsum_Ir <- 1
+
   
   ########## ========== MCMC sampling ========== ##########
   ########## =================================== ##########
@@ -122,6 +127,8 @@ NMixMCMCwrapper <- function(chain=1,
              pm.Q                 = double(LTp * CKmax),
              pm.Sigma             = double(LTp * CKmax),
              pm.Li                = double(LTp * CKmax),
+             sum_Ir               = integer(lsum_Ir),
+             sum_Pr_y             = double(lsum_Ir),
              iter                 = as.integer(0),
              nMoveAccept          = integer(9),
              err                  = as.integer(0),
@@ -323,7 +330,25 @@ NMixMCMCwrapper <- function(chain=1,
     MCMC$chDevObs         <- NULL
     MCMC$chDevCompl.inHat <- NULL        
   }  
-    
+
+  ########## ========== Clustering based on posterior P(alloc = k | y) or on P(alloc = k | theta, b, y)    ========== ##########
+  ########## ======================================================================================================== ##########
+  if (prior$priorK == "fixed"){
+    if (CK == 1){
+      RET$poster.comp.prob1 <- RET$poster.comp.prob2 <- matrix(1, nrow = n, ncol = 1)
+    }else{
+
+      ### Using mean(I(r=k))
+      MCMC$sum_Ir <- matrix(MCMC$sum_Ir, ncol = CK, nrow = n, byrow = TRUE)
+      Denom <- apply(MCMC$sum_Ir, 1, sum)
+      RET$poster.comp.prob1 <- MCMC$sum_Ir / matrix(rep(Denom, CK), ncol = CK, nrow = n)
+
+      ### Using mean(P(r=k | theta, b, y))
+      MCMC$sum_Pr_y <- matrix(MCMC$sum_Pr_y, ncol = CK, nrow = n, byrow = TRUE)
+      RET$poster.comp.prob2 <- MCMC$sum_Pr_y/ matrix(rep(Denom, CK), ncol = CK, nrow = n)        
+    }  
+  }  
+  
   ########## ========== Posterior means of scaled and original observations (useful in the case of censoring)  ========== ##########
   ########## ============================================================================================================ ##########  
   MCMC$pm.z <- matrix(MCMC$pm.z, ncol=p, byrow=TRUE)

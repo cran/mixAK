@@ -16,6 +16,7 @@ This package contains a mixture of statistical methods including the MCMC method
 Methods from the following areas can be found here
 <ul>
   <li><a href="#NMixMCMC">Density estimation via normal mixtures and MCMC</a></li>
+  <li><a href="#GLMMMCMC">Multivariate generalized linear mixed models with a normal mixture in the distribution of random effects</a></li>
   <li><a href="#UnivDist">Univariate distributions</a></li>
   <li><a href="#MultDist">Multivariate distributions</a></li>
   <li><a href="#MiscelRN">Miscellaneous random number generation</a></li>
@@ -44,65 +45,81 @@ This overview provides a sorted list of the functions of the package and links t
   </li>
   <li><a href="../html/NMixChainsDerived.html"> <b>NMixChainsDerived</b></a> <br>
   </li>
+  <li><a href="../html/NMixPlugDA.html"> <b>NMixPlugDA</b></a> <br>
+  </li>
   <li><a href="../html/NMixPredDensJoint2.html"> <b>NMixPredDensJoint2</b></a> <br>
     <ul>
-      <li>This is a generic function with <i>default</i> method and a method for objects of class <i>NMixMCMC</i> implemented.</li>
+      <li>This is a generic function with <i>default</i> method and a method for objects of class <i>NMixMCMC</i> and <i>GLMM_MCMC</i>
+          implemented.</li>
       <li>There is also a <a href="../html/plot.NMixPredDensJoint2.html"><b>plot</b></a> method for objects of class <i>NMixPredDensJoint2</i>.
     </ul>
   </li>
   <li><a href="../html/NMixPredCondDensJoint2.html"> <b>NMixPredCondDensJoint2</b></a> <br>
     <ul>
-      <li>This is a generic function with <i>default</i> method and a method for objects of class <i>NMixMCMC</i> implemented.</li>
+      <li>This is a generic function with <i>default</i> method and a method for objects of class <i>NMixMCMC</i> and <i>GLMM_MCMC</i>
+          implemented.</li>
       <li>There is also a <a href="../html/plot.NMixPredCondDensJoint2.html"><b>plot</b></a> method for objects of class <i>NMixPredCondDensJoint2</i>.
     </ul>
   </li>
   <li><a href="../html/NMixPlugDensJoint2.html"> <b>NMixPlugDensJoint2</b></a> <br>
     <ul>
-      <li>This is a generic function with <i>default</i> method and a method for objects of class <i>NMixMCMC</i> implemented.</li>
+      <li>This is a generic function with <i>default</i> method and a method for objects of class <i>NMixMCMC</i> and <i>GLMM_MCMC</i>
+          implemented.</li>
       <li>There is also a <a href="../html/plot.NMixPlugDensJoint2.html"><b>plot</b></a> method for objects of class <i>NMixPlugDensJoint2</i>.
     </ul>
   </li>
   <li><a href="../html/NMixPlugCondDensJoint2.html"> <b>NMixPlugCondDensJoint2</b></a> <br>
     <ul>
-      <li>This is a generic function with <i>default</i> method and a method for objects of class <i>NMixMCMC</i> implemented.</li>
+      <li>This is a generic function with <i>default</i> method and a method for objects of class <i>NMixMCMC</i> and <i>GLMM_MCMC</i>
+          implemented.</li>
       <li>There is also a <a href="../html/plot.NMixPlugCondDensJoint2.html"><b>plot</b></a> method for objects of class <i>NMixPlugCondDensJoint2</i>.
     </ul>
   </li>
   <li><a href="../html/NMixPredDensMarg.html"> <b>NMixPredDensMarg</b></a> <br>
     <ul>
-      <li>This is a generic function with <i>default</i> method and a method for objects of class <i>NMixMCMC</i> implemented.</li>
+      <li>This is a generic function with <i>default</i> method and a method for objects of class <i>NMixMCMC</i> and <i>GLMM_MCMC</i>
+          implemented.</li>
       <li>There is also a <a href="../html/plot.NMixPredDensMarg.html"><b>plot</b></a> method for objects of class <i>NMixPredDensMarg</i>.
     </ul>
   </li>
   <li><a href="../html/NMixPredCDFMarg.html"> <b>NMixPredCDFMarg</b></a> <br>
     <ul>
-      <li>This is a generic function with <i>default</i> method and a method for objects of class <i>NMixMCMC</i> implemented.</li>
+      <li>This is a generic function with <i>default</i> method and a method for objects of class <i>NMixMCMC</i> and <i>GLMM_MCMC</i>
+          implemented.</li>
       <li>There is also a <a href="../html/plot.NMixPredCDFMarg.html"><b>plot</b></a> method for objects of class <i>NMixPredCDFMarg</i>.
     </ul>
   </li>
   <li><a href="../html/NMixPredCondDensMarg.html"> <b>NMixPredCondDensMarg</b></a> <br>
     <ul>
-      <li>This is a generic function with <i>default</i> method and a method for objects of class <i>NMixMCMC</i> implemented.</li>
+      <li>This is a generic function with <i>default</i> method and a method for objects of class <i>NMixMCMC</i> and <i>GLMM_MCMC</i>
+          implemented.</li>
       <li>There is also a <a href="../html/plot.NMixPredCondDensMarg.html"><b>plot</b></a> method for objects of class <i>NMixPredCondDensMarg</i>.
     </ul>
   </li>
   <li><a href="../html/NMixPlugDensMarg.html"> <b>NMixPlugDensMarg</b></a> <br>
     <ul>
-      <li>This is a generic function with <i>default</i> method and a method for objects of class <i>NMixMCMC</i> implemented.</li>
+      <li>This is a generic function with <i>default</i> method and a method for objects of class <i>NMixMCMC</i> and <i>GLMM_MCMC</i>
+          implemented.</li>
       <li>There is also a <a href="../html/plot.NMixPlugDensMarg.html"><b>plot</b></a> method for objects of class <i>NMixPlugDensMarg</i>.
     </ul>
   </li>
   <li><a href="../html/NMixPredCondDensMarg.html"> <b>NMixPlugCondDensMarg</b></a> <br>
     <ul>
-      <li>This is a generic function with <i>default</i> method and a method for objects of class <i>NMixMCMC</i> implemented.</li>
+      <li>This is a generic function with <i>default</i> method and a method for objects of class <i>NMixMCMC</i> and <i>GLMM_MCMC</i>
+          implemented.</li>
       <li>There is also a <a href="../html/plot.NMixPlugCondDensMarg.html"><b>plot</b></a> method for objects of class <i>NMixPlugCondDensMarg</i>.
     </ul>
   </li>
   <li><a href="../html/Y2T.html"> <b>Y2T</b></a> <br>
     <ul>
-      <li>This is a generic function with <i>default</i> method to transform a fitted distribution of Y = log(T) into
-          a distribution of T = exp(Y). </li>
-      <li>There are methods for objects of class <i>NMixPredDensMarg</i> and <i>NMixPredCDFMarg</i>.</li>
+      <li>This is a generic function with <i>default</i> method to transform a fitted distribution of Y = trans(T) into
+          a distribution of T = itrans(Y). </li>
+      <li>There are methods for objects of class 
+          <i>NMixPredDensMarg</i>, <i>NMixPlugDensMarg</i>, <i>NMixPredCDFMarg</i>,
+          <i>NMixPredDensJoint2</i>, <i>NMixPlugDensJoint2</i>,
+          <i>NMixPredCondDensMarg</i>, <i>NMixPlugCondDensMarg</i>,
+          <i>NMixPredCondDensJoint2</i>, <i>NMixPlugCondDensJoint2</i>.
+      </li>
     </ul>
   </li>
 
@@ -115,7 +132,7 @@ Supplementary material for this part is available:
   <li><a href="http://www.karlin.mff.cuni.cz/~komarek/publication.html#KomarekNMixIC">Kom&#225rek, A. (2009).
            A new R package for Bayesian estimation of multivariate normal mixtures allowing for
            selection of the number of components and interval-censored data.</a>  
-  <cite>Computational Statistics and Data Analysis,</cite> <b>53</b>(?). To appear, doi: 10.1016/j.csda.2009.05.006.
+  <cite>Computational Statistics and Data Analysis,</cite> <b>53</b>(12). 3932-3947, doi: 10.1016/j.csda.2009.05.006.
   <br>
   Paper describing the methods implemented in the package.  
   </li>
@@ -135,9 +152,24 @@ Supplementary material for this part is available:
 </p>
 
 <!-- ======================================================================================================== -->
+<br><p><a name="GLMMMCMC"></a>
+<h1>2. Multivariate generalized linear mixed models with a normal mixture in the distribution of random effects</h1>
+This part of the package is under development and hence not fully implemented with only a limitted documentation.
+<ul>
+  <li><a href="../html/GLMMMCMC.html"> <b>GLMM_MCMC</b></a> <br>
+    <ul>
+      <li>There exists a <b>print</b> method for objects of class <i>GLMM_MCMC</i>.</li>
+    </ul>
+  </li>
+  <li><a href="../html/GLMMlongitDA.html"> <b>GLMM_longitDA</b></a> <br>
+  </li>
+</ul>
+</p>
+
+<!-- ======================================================================================================== -->
 
 <br><p><a name="UnivDist"></a>
-<h1>2. Univariate distributions</h1>
+<h1>3. Univariate distributions</h1>
 <ul>
   <li><a href="../html/TNorm.html"> <b>rTNorm</b></a> <br>
   Random number generation from a <i>truncated normal</i> distribution.
@@ -148,7 +180,7 @@ Supplementary material for this part is available:
 <!-- ======================================================================================================== -->
 
 <br><p><a name="MultDist"></a>
-<h1>3. Multivariate distributions</h1>
+<h1>4. Multivariate distributions</h1>
 <ul>
   <li><a href="../html/MVN.html"> <b>dMVN</b>, <b>rMVN</b>, <b>rcMVN</b></a> <br>
   (Log-)density and random number genaration for a <i>multivariate normal</i> distribution.
@@ -172,7 +204,7 @@ Supplementary material for this part is available:
 <!-- ======================================================================================================== -->
 
 <br><p><a name="MiscelRN"></a>
-<h1>4. Miscellaneous random number generation</h1>
+<h1>5. Miscellaneous random number generation</h1>
 <ul>
   <li><a href="../html/rRotationMatrix.html"> <b>rRotationMatrix</b></a> <br>
   Random <i>rotation matrix</i>.
@@ -186,7 +218,7 @@ Supplementary material for this part is available:
 <!-- ======================================================================================================== -->
 
 <br><p><a name="MatrixLA"></a>
-<h1>5. Matrix linear algebra</h1>
+<h1>6. Matrix linear algebra</h1>
 <ul>
   <li><a href="../html/MatMPpinv.html"> <b>MatMPpinv</b></a> <br>
   Moore-Penrose pseudoinverse of a squared matrix.
@@ -200,7 +232,7 @@ Supplementary material for this part is available:
 <!-- ======================================================================================================== -->
 
 <br><p><a name="BasicStat"></a>
-<h1>6. Basic statistics</h1>
+<h1>7. Basic statistics</h1>
 <ul>
   <li><a href="../html/BLA.html"> <b>BLA</b></a> <br>
   Best linear approximation with respect to the mean squared error (theoretical least squares).
@@ -212,10 +244,12 @@ Supplementary material for this part is available:
 <!-- ======================================================================================================== -->
 
 <br><p><a name="Utils"></a>
-<h1>7. Utilities</h1>
+<h1>8. Utilities</h1>
 <ul>
   <li><a href="../html/SP2Rect.html"> <b>SP2Rect</b></a> <br>
   Conversion of a symmetric matrix stored in a packed format (lower triangle only) into a matrix.
+  </li>
+  <li><a href="../html/autolayout.html"> <b>autolayout</b></a> <br>
   </li>
 </ul>
 </p>
@@ -223,7 +257,7 @@ Supplementary material for this part is available:
 <!-- ======================================================================================================== -->
 
 <br><p><a name="Datasets"></a>
-<h1>8. Datasets</h1>
+<h1>9. Datasets</h1>
 <ul>
   <li><a href="../html/Acidity.html"> <b>Acidity</b></a> <br>
   Acidity index measured in a sample of 155 lakes in North-Central

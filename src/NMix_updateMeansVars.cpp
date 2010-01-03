@@ -16,11 +16,28 @@ namespace NMix{
 /***** NMix::updateMeansVars_NC                                                                  *****/
 /***** ***************************************************************************************** *****/
 void
-updateMeansVars_NC(double* mu,          double* Q,              double* Li,          double* Sigma,
-                   double* log_dets,    int* order,             int* rank,           double* dwork,       int* err,
-                   const double* y,     const int* r,           const int* mixN,     const int* p,        const int* n,
-                   const int* K,        const double* c,        const double* xi,    const double* c_xi,  
-                   const double* Dinv,  const double* Dinv_xi,  const double* zeta,  const double* XiInv)
+updateMeansVars_NC(double* mu,          
+                   double* Q,              
+                   double* Li,          
+                   double* Sigma,
+                   double* log_dets,    
+                   int* order,             
+                   int* rank,           
+                   double* dwork,       
+                   int* err,
+                   const double* y,     
+                   const int* r,           
+                   const int* mixN,     
+                   const int* p,        
+                   const int* n,
+                   const int* K,        
+                   const double* c,        
+                   const double* xi,    
+                   const double* c_xi,  
+                   const double* Dinv,  
+                   const double* Dinv_xi,  
+                   const double* zeta,  
+                   const double* XiInv)
 {
   static int i, j, l, LTp;
   static double n_plus_zeta, nc_n_plus_c, n_plus_c, sqrt_n_plus_c, log_dens;
@@ -220,11 +237,28 @@ updateMeansVars_NC(double* mu,          double* Q,              double* Li,     
 /***** NMix::updateMeansVars_IC                                                                  *****/
 /***** ***************************************************************************************** *****/
 void
-updateMeansVars_IC(double* mu,          double* Q,              double* Li,          double* Sigma,
-                   double* log_dets,    int* order,             int* rank,           double* dwork,       int* err,
-                   const double* y,     const int* r,           const int* mixN,     const int* p,        const int* n,
-                   const int* K,        const double* c,        const double* xi,    const double* c_xi,  
-                   const double* Dinv,  const double* Dinv_xi,  const double* zeta,  const double* XiInv)
+updateMeansVars_IC(double* mu,          
+                   double* Q,              
+                   double* Li,          
+                   double* Sigma,
+                   double* log_dets,    
+                   int* order,             
+                   int* rank,           
+                   double* dwork,       
+                   int* err,
+                   const double* y,     
+                   const int* r,           
+                   const int* mixN,     
+                   const int* p,        
+                   const int* n,
+                   const int* K,        
+                   const double* c,        
+                   const double* xi,    
+                   const double* c_xi,  
+                   const double* Dinv,  
+                   const double* Dinv_xi,  
+                   const double* zeta,  
+                   const double* XiInv)
 {
   static int j, l, LTp;
   static double n_plus_zeta, log_dens;
@@ -397,6 +431,225 @@ updateMeansVars_IC(double* mu,          double* Q,              double* Li,     
     Dist::rMVN2(muP, canon_m, &log_dens, work4rWishart, XiInv4Q_OR_Li4mu, log_dets4mu, p);
     //Rprintf((char*)("Sampled mu[%d]|... (log-dens=%g): "), j, log_dens);                         // DEBUG CODE
     //AK_Basic::printArray(muP, *p);                                                               // DEBUG CODE
+
+    mixNP++;
+    muP += *p;
+  }    /*** end loop j (mixture components) ***/
+
+  /***** Compute order and rank for the mixture components *****/
+  /***** ================================================= *****/
+  NMix::orderComp(order, rank, work_orderComp, K, mu, p);
+
+  return;
+}
+
+
+/***** ***************************************************************************************** *****/
+/***** NMix::updateMeansVars_IC_homoscedastic                                                    *****/
+/***** ***************************************************************************************** *****/
+void
+updateMeansVars_IC_homoscedastic(double* mu,          
+                                 double* Q,              
+                                 double* Li,          
+                                 double* Sigma,
+                                 double* log_dets,    
+                                 int* order,             
+                                 int* rank,           
+                                 double* dwork,       
+                                 int* err,
+                                 const double* y,     
+                                 const int* r,           
+                                 const int* mixN,     
+                                 const int* p,        
+                                 const int* n,
+                                 const int* K,        
+                                 const double* c,        
+                                 const double* xi,          
+                                 const double* c_xi,  
+                                 const double* Dinv,  
+                                 const double* Dinv_xi,  
+                                 const double* zeta,  
+                                 const double* XiInv)
+{
+  static int j, l, LTp;
+  static double n_plus_zeta, log_dens;
+
+  static double *mixSumy, *mixSSm, *canon_m, *log_dets4mu, *work4rWishart, *work_orderComp;
+  static double *QP, *SigmaP, *LiP, *log_detsP, *muP, *mixSSmP, *dP;
+  static double *XiInv4Q_OR_Li4mu, *Q_j, *Sigma_j, *Li_j, *log_dets_j;
+
+  static const int *mixNP;
+  static const double *mixSumyP, *DinvP, *Dinv_xiP, *cdP;
+
+  LTp = (*p * (*p + 1))/2;
+  *err = 0;
+
+  mixSumy        = dwork;                           // To store sum_{i: r_i=j} y_i = n_j * ybar_j, vector of 0 if n_j = 0 
+  mixSSm         = mixSumy + *p * *K;               // To store sum_{i: r_i=j} (y_i - mu_j) %*% t(y_i - mu_j), matrix of 0 if n_j = 0
+  canon_m        = mixSSm + LTp * *K;               // To store canonical mean of the full conditional for mu_j
+  log_dets4mu    = canon_m + *p;                    // To store log_dets[,j] of the full conditional distribution of mu
+  work4rWishart  = log_dets4mu + 2;                 // Working space for Dist::rWishart (needs 2*p*p)
+                                                    //           and for Dist::rMVN2 (needs p)
+  work_orderComp = work4rWishart + 2 * *p * *p;     // Working space for NMix::orderComp
+  // next = work_orderComp + *K;
+
+  /*****  mixSumy[,j] = sum_{i: r_i=j} y_i = n_j * ybar_j                 *****/
+  /*****  mixSSm[,j]  = sum_{i: r_i=j} (y_i - mu_j) %*% t(y_i - mu_j)     *****/
+  NMix::ySum_SSm_j(mixSumy, mixSSm, y, r, mu, K, &LTp, p, n);
+
+
+  /***** Update of Q = Sigma^{-1} *****/
+  /***** ============================ *****/
+
+  /*** Degrees of freedom of the full conditional Wishart ***/
+  n_plus_zeta = *n + *zeta;
+
+  /*** Compute the first part of the inverse scale matrix of the full conditional Wishart (will be stored in XiInv4Q_OR_Li4mu = mixSSm[,0])  ***/
+  XiInv4Q_OR_Li4mu = mixSSm;
+  mixSSmP          = mixSSm + LTp;
+
+  mixNP = mixN + 1;
+  for (j = 1; j < *K; j++){  /*** loop j (mixture components) ***/   
+
+    if (*mixNP){
+      dP = XiInv4Q_OR_Li4mu;
+      for (l = 0; l < LTp; l++){            
+        *dP += *mixSSmP;
+        dP++;
+        mixSSmP;
+      }
+    }
+    else{
+      mixSSmP += LTp;
+    }
+
+    mixNP++;
+  } 
+
+  /*** Add XiInv to XiInv4Q_OR_Li4mu ***/
+  cdP = XiInv;       
+  dP  = XiInv4Q_OR_Li4mu;
+  for (l = 0; l < LTp; l++){
+    *dP += *cdP;
+    dP++;
+    cdP++;
+  }
+
+  /*** Cholesky decomposition of XiInv4Q, store it again in XiInv4Q_OR_Li4mu ***/
+  F77_CALL(dpptrf)("L", p, XiInv4Q_OR_Li4mu, err);                 /** this should never fail... **/
+  if (*err) error("NMix::updateMeansVars_IC_homoscedastic:  Cholesky decomposition of the Wishart inverse scale matrix failed.\n");
+
+  /*** Sample new component inverse variance from the full conditional Wishart ***/
+  Dist::rWishart(Q, work4rWishart, &n_plus_zeta, XiInv4Q_OR_Li4mu, p);
+
+  /*** Cholesky decomposition of the component inverse variance ***/
+  LiP = Li;
+  QP  = Q;
+  for (l = 0; l < LTp; l++){
+    *LiP = *QP;
+    LiP++;
+    QP++;
+  }
+  F77_CALL(dpptrf)("L", p, Li, err);                 /** this should never fail ... **/
+  if (*err) error("NMix::updateMeansVars_IC_homoscedastic:  Cholesky decomposition of the sampled component inverse covariance matrix failed.\n");
+
+  /*** Component variance ***/
+  SigmaP = Sigma;
+  LiP    = Li;
+  for (l = 0; l < LTp; l++){
+    *SigmaP = *LiP;
+    SigmaP++;
+    LiP++;
+  }
+  F77_CALL(dpptri)("L", p, Sigma, err);
+  if (*err) error("NMix::updateMeansVars_IC_homoscedastic:  Computation of Sigma failed.\n");
+    
+  /*** log_dets related to the new component inverse variance ***/
+  LiP = Li;
+  *log_dets = 0.0;
+  for (l = *p; l > 0; l--){
+    *log_dets += AK_Basic::log_AK(*LiP);
+    LiP += l;
+  }
+
+
+  /***** Update of mu_j, during the loop, recycle Q, Sigma, Li, log_dets *****/
+  /***** =============================================================== *****/
+  mixNP      = mixN;
+  muP        = mu;
+  mixSumyP   = mixSumy;
+  Q_j        = Q;
+  Li_j       = Li;
+  Sigma_j    = Sigma;
+  log_dets_j = log_dets;
+  DinvP      = Dinv;
+  Dinv_xiP   = Dinv_xi;
+
+  for (j = 0; j < *K; j++){  /*** loop j (mixture components) ***/
+
+    if (j > 0){
+      QP     = Q;
+      LiP    = Li;
+      SigmaP = Sigma;
+      for (l = 0; l < LTp; l++){
+        *Q_j     = *QP;
+        *Li_j    = *LiP;
+        *Sigma_j = *SigmaP;   
+        Q_j++;
+        QP++;
+        Li_j++;
+        LiP++;
+        Sigma_j++;
+        SigmaP++;     
+      }
+      *log_dets_j = *log_dets;            
+      log_dets_j += 2;
+    }
+    else{
+      Q_j        += LTp;
+      Li_j       += LTp;
+      Sigma_j    += LTp;
+      log_dets_j += 2;
+    }
+
+    /*** Inverse covariance matrix of the full conditional distribution of mu_j  ***/
+    /*** store it in XiInv4Q_OR_Li4mu which is in fact mixSSm[,j]                ***/
+    /*** var(mu_j|...)^{-1} = n_j*Q_j + D_j^{-1}                                 ***/
+    dP   = XiInv4Q_OR_Li4mu;
+    QP   = Q;
+    for (l = 0; l < LTp; l++){
+      *dP = *DinvP + *mixNP * *QP;
+      dP++;
+      QP++;
+      DinvP++;
+    }
+
+    /*** Cholesky decomposition of var(mu_j|...)^{-1} ***/
+    F77_CALL(dpptrf)("L", p, XiInv4Q_OR_Li4mu, err);                 /** this should never fail ... **/
+    if (*err) error("NMix::updateMeansVars_IC_homoscedastic:  Cholesky decomposition of the full conditional inverse covariance matrix of a mixture mean failed.\n");
+
+    /*** log_dets of the full conditional distribution ***/
+    cdP = XiInv4Q_OR_Li4mu;
+    log_dets4mu[0] = 0.0;  
+    for (l = *p; l > 0; l--){
+      log_dets4mu[0] += AK_Basic::log_AK(*cdP);
+      cdP += l;
+    }
+    log_dets4mu[1] = log_dets[1];
+
+    /*** Canonical mean of the full conditional distribution of mu        ***/
+    /*** canonical E[mu_j|...] = Q_j*sum_{i: r_i=j}y_i + D_j^{-1}*xi_j    ***/
+    F77_CALL(dspmv)("L", p, &AK_Basic::_ONE_DOUBLE, Q, mixSumyP, &AK_Basic::_ONE_INT, &AK_Basic::_ZERO_DOUBLE, canon_m, &AK_Basic::_ONE_INT);
+    dP = canon_m;
+    for (l = 0; l < *p; l++){
+      *dP += *Dinv_xiP;
+      dP++;
+      Dinv_xiP++;
+    }
+    mixSumyP += *p;
+
+    /*** Sample new component mean from multivariate normal ***/
+    Dist::rMVN2(muP, canon_m, &log_dens, work4rWishart, XiInv4Q_OR_Li4mu, log_dets4mu, p);
 
     mixNP++;
     muP += *p;

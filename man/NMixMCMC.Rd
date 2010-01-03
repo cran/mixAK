@@ -14,9 +14,10 @@
   dimension of the data can be arbitrary.
   With unknown number of components, currently only univariate case is
   implemented using the reversible jump MCMC (Richardson and Green,
-  1997). In a future, there are plans to implement the reversible jump
-  MCMC in a higher dimension using the algorithm presented by
-  Papageorgiou and Dellaportas (2006).
+  1997).
+  %In a future, there are plans to implement the reversible jump
+  %MCMC in a higher dimension using the algorithm presented by
+  %Papageorgiou and Dellaportas (2006).
   
   Further, the data are allowed to be censored in which case additional
   Gibbs step is used within the MCMC algorithm 
@@ -501,7 +502,7 @@ NMixMCMC(y0, y1, censor, scale, prior,
     columns when \eqn{K} is fixed. Otherwise, it is a vector with lower
     triangles put sequentially after each other.}
   \item{gammaInv}{matrix with \eqn{p} columns with a chain for inverses
-    of the hyperparameter \eqn{\boldsymbol{\gamma}}{gamma}
+    of the hyperparameter \eqn{\boldsymbol{\gamma}}{gamma}.
   }
   \item{order}{numeric vector or matrix with order indeces of mixture
     components. It is a matrix with \eqn{K} columns when \eqn{K} is
@@ -540,6 +541,25 @@ NMixMCMC(y0, y1, censor, scale, prior,
     each iteration evaluated at sampled values of latent observations at
     iterations.
   }
+  \item{poster.comp.prob1}{a matrix which is present in the output object
+    if the number of mixture components in the distribution of random
+    effects is fixed and equal to \eqn{K}. In that case,
+    \code{poster.comp.prob1} is a matrix with \eqn{K} columns and \eqn{n}
+    rows with estimated posterior component probabilities
+    -- posterior means of the components of the underlying 0/1
+    allocation vector.
+    
+    These can be used for possible clustering of the subjects.
+  }
+  \item{poster.comp.prob2}{a matrix which is present in the output object
+    if the number of mixture components in the distribution of random
+    effects is fixed and equal to \eqn{K}. In that case,
+    \code{poster.comp.prob2} is a matrix with \eqn{K} columns and \eqn{n}
+    rows  with estimated posterior component probabilities
+    -- posterior mean over model parameters.
+    
+    These can also be used for possible clustering of the subjects
+  }    
   \item{summ.y.Mean}{Posterior summary statistics based on chains stored
     in \code{y.Mean.*} columns of the \code{data.frame} \code{mixture}.}
   \item{summ.y.SDCorr}{Posterior summary statistics based on chains
@@ -614,9 +634,9 @@ NMixMCMC(y0, y1, censor, scale, prior,
   Reversible jump, birth-and-death and more general continuous time Markov chain Monte Carlo samplers.
   \emph{Journal of the Royal Statistical Society, Series B}, \bold{65}, 679-700.
   
-  Dellaportas, P. and Papageorgiou, I. (2006).
-  Multivariate mixtures of normals with unknown number of components.
-  \emph{Statistics and Computing}, \bold{16}, 57-68.
+  %Dellaportas, P. and Papageorgiou, I. (2006).
+  %Multivariate mixtures of normals with unknown number of components.
+  %\emph{Statistics and Computing}, \bold{16}, 57-68.
 
   Diebolt, J. and Robert, C. P. (1994).
   Estimation of finite mixture distributions through Bayesian sampling.
@@ -625,7 +645,7 @@ NMixMCMC(y0, y1, censor, scale, prior,
   \eqn{\mbox{Kom\'{a}rek, A.}}{Kom&#225rek, A.} (2009).
   A new R package for Bayesian estimation of multivariate normal mixtures allowing for selection 
   of the number of components and interval-censored data.
-  \emph{Computational Statistics and Data Analysis.} To appear.
+  \emph{Computational Statistics and Data Analysis}, \bold{53}, 3932--3947.
 
   Plummer, M. (2008).
   Penalized loss functions for Bayesian model comparison.
@@ -647,10 +667,111 @@ NMixMCMC(y0, y1, censor, scale, prior,
   \eqn{\mbox{Arno\v{s}t Kom\'arek}}{Arno&#353t Kom&#225rek} \email{arnost.komarek[AT]mff.cuni.cz}
 }  
 \examples{
-## See additional material available in 
+## See also additional material available in 
 ## YOUR_R_DIR/library/mixAK/doc/
 ## or YOUR_R_DIR/site-library/mixAK/doc/
 ## - files Galaxy.pdf, Faithful.pdf, Tandmob.pdf
+## ==============================================
+
+## Simple analysis of Anderson's iris data
+## ==============================================
+library("colorspace")
+
+data(iris, package="datasets")
+summary(iris)
+VARS <- names(iris)[1:4]
+#COLS <- rainbow_hcl(3, start = 60, end = 240)
+COLS <- c("red", "darkblue", "darkgreen")
+names(COLS) <- levels(iris[, "Species"])
+
+### Prior distribution and the length of MCMC
+Prior <- list(priorK = "fixed", Kmax = 3)
+nMCMC <- c(burn=5000, keep=10000, thin=5, info=1000)
+
+### Run MCMC
+set.seed(20091230)
+fit <- NMixMCMC(y0 = iris[, VARS], prior = Prior, nMCMC = nMCMC)
+
+### Basic posterior summary
+print(fit)
+
+### Univariate marginal posterior predictive densities
+### based on chain #1
+pdens1 <- NMixPredDensMarg(fit[[1]], lgrid=150)
+plot(pdens1)
+plot(pdens1, main=VARS, xlab=VARS)
+
+### Bivariate (for each pair of margins) predictive densities
+### based on chain #1
+pdens2a <- NMixPredDensJoint2(fit[[1]])
+plot(pdens2a)
+
+plot(pdens2a, xylab=VARS)
+plot(pdens2a, xylab=VARS, contour=TRUE)
+
+### Determine the grid to compute bivariate densities
+grid <- list(Sepal.Length=seq(3.5, 8.5, length=75),
+             Sepal.Width=seq(1.8, 4.5, length=75),
+             Petal.Length=seq(0, 7, length=75),
+             Petal.Width=seq(-0.2, 3, length=75))
+pdens2b <- NMixPredDensJoint2(fit[[1]], grid=grid)
+plot(pdens2b, xylab=VARS)
+
+### Plot with contours
+ICOL <- rev(heat_hcl(20, c=c(80, 30), l=c(30, 90), power=c(1/5, 2)))
+oldPar <- par(mfrow=c(2, 3), bty="n")
+for (i in 1:3){
+  for (j in (i+1):4){
+    NAME <- paste(i, "-", j, sep="")
+    MAIN <- paste(VARS[i], "x", VARS[j])
+    image(pdens2b$x[[i]], pdens2b$x[[j]], pdens2b$dens[[NAME]], col=ICOL,
+          xlab=VARS[i], ylab=VARS[j], main=MAIN)
+    contour(pdens2b$x[[i]], pdens2b$x[[j]], pdens2b$dens[[NAME]], add=TRUE, col="brown4")
+  }  
+}  
+
+### Plot with data
+for (i in 1:3){
+  for (j in (i+1):4){
+    NAME <- paste(i, "-", j, sep="")
+    MAIN <- paste(VARS[i], "x", VARS[j])
+    image(pdens2b$x[[i]], pdens2b$x[[j]], pdens2b$dens[[NAME]], col=ICOL,
+          xlab=VARS[i], ylab=VARS[j], main=MAIN)
+    for (spec in levels(iris[, "Species"])){
+      Data <- subset(iris, Species==spec)
+      points(Data[,i], Data[,j], pch=16, col=COLS[spec])
+    }  
+  }  
+}  
+
+### Set the graphical parameters back to their original values
+par(oldPar)
+
+### Clustering based on posterior summary statistics of component allocations
+### or on the posterior distribution of component allocations
+### (these are two equivalent estimators of probabilities of belonging
+###  to each mixture components for each observation)
+p1 <- fit[[1]]$poster.comp.prob1
+p2 <- fit[[1]]$poster.comp.prob2
+
+### Clustering based on posterior summary statistics of mixture weight, means, variances
+p3 <- NMixPlugDA(fit[[1]], iris[, VARS])
+p3 <- p3[, paste("prob", 1:3, sep="")]
+
+  ### Observations from "setosa" species (all would be allocated in component 1)
+apply(p1[1:50,], 2, quantile, prob=seq(0, 1, by=0.1))
+apply(p2[1:50,], 2, quantile, prob=seq(0, 1, by=0.1))
+apply(p3[1:50,], 2, quantile, prob=seq(0, 1, by=0.1))
+
+  ### Observations from "versicolor" species (almost all would be allocated in component 2)
+apply(p1[51:100,], 2, quantile, prob=seq(0, 1, by=0.1))
+apply(p2[51:100,], 2, quantile, prob=seq(0, 1, by=0.1))
+apply(p3[51:100,], 2, quantile, prob=seq(0, 1, by=0.1))
+
+  ### Observations from "virginica" species (all would be allocated in component 3)
+apply(p1[101:150,], 2, quantile, prob=seq(0, 1, by=0.1))
+apply(p2[101:150,], 2, quantile, prob=seq(0, 1, by=0.1))
+apply(p3[101:150,], 2, quantile, prob=seq(0, 1, by=0.1))
 }
 \keyword{multivariate}
 \keyword{survival}

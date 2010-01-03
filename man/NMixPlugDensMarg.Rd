@@ -23,14 +23,14 @@ NMixPlugDensMarg(x, \dots)
 \method{NMixPlugDensMarg}{GLMM_MCMC}(x, grid, lgrid=50, scaled=FALSE, \dots)
 }
 \arguments{
-  \item{x}{an object of class \code{NMixMCMC} for
+  \item{x}{a list with the grid values (see below) for
+    \code{NMixPlugDensMarg.default} function.
+
+    An object of class \code{NMixMCMC} for
     \code{NMixPlugDensMarg.NMixMCMC} function.
 
     An object of class \code{GLMM_MCMC} for
     \code{NMixPlugDensMarg.GLMM_MCMC} function.    
-
-    A list with the grid values (see below) for
-    \code{NMixPlugDensMarg.default} function.
   }
   \item{scale}{a two component list giving the \code{shift} and the
     \code{scale}. If not given, shift is equal to zero and scale is
@@ -46,7 +46,7 @@ NMixPlugDensMarg(x, \dots)
     of mixture components and \eqn{p} is dimension of the mixture
     distribution.
   }
-  \item{Sigma}{a list with posterior summary statistics for for mixture covariance matrices.
+  \item{Sigma}{a list with posterior summary statistics for mixture covariance matrices.
   }
   \item{grid}{a list with the grid values for each margin in which
     the density should be evaluated.

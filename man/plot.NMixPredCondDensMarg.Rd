@@ -9,7 +9,7 @@
 }
 \usage{
 \method{plot}{NMixPredCondDensMarg}(x, ixcond, imargin, over=FALSE,
-    auto.layout=TRUE, type="l", lwd=1, lty, col, main, xlab, ylab,
+    auto.layout=TRUE, type="l", lwd=1, lty, col, main, xlab, ylab, ylim,
     annot=TRUE, \dots)
 }
 \arguments{
@@ -38,6 +38,7 @@
     replicated or a vector of characters.}
   \item{ylab}{label for the y-axis. Either character which is
     replicated or a vector of characters.}
+  \item{ylim}{limits for the y-axis.}
   \item{annot}{if \code{TRUE} and \code{imargin} is given and
     \code{over} is \code{TRUE} then a legend is added to the plot.}
   \item{\dots}{additional arguments passed to the \code{plot} function.} 

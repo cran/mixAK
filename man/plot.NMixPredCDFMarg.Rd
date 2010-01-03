@@ -42,7 +42,7 @@
   \eqn{\mbox{Kom\'{a}rek, A.}}{Kom&#225rek, A.}
   A new R package for Bayesian estimation of multivariate normal mixtures allowing for selection 
   of the number of components and interval-censored data.
-  \emph{Computational Statistics and Data Analysis.} To appear.  
+  \emph{Computational Statistics and Data Analysis}, \bold{53}, 3932--3947.  
 }
 \seealso{
   \code{\link{NMixPredCDFMarg}}, \code{\link{NMixMCMC}}.

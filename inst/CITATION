@@ -6,11 +6,11 @@ vers <- paste("R package version", desc$Version)
 
 citEntry(entry   = "Article",
          title   = "A new R package for Bayesian estimation of multivariate normal mixtures allowing for selection of number of components and interval-censored data",
-         author  = "Kom\\'arek, A.",
+         author  = "Kom\\'arek A.",
          journal = "Computational Statistics and Data Analysis",
          year    = "2009",
-         pages   = "To appear, doi: 10.1016/j.csda.2009.05.006",
+         volume  = "53",
+         pages   = "3932-3947, doi: 10.1016/j.csda.2009.05.006",
          textVersion = "Komarek, A. (2009). A new R package for Bayesian estimation of multivariate normal mixtures
                         allowing for selection of number of components and interval-censored data.
-                        Computational Statistics and Data Analysis, doi: 10.1016/j.csda.2009.05.006.
-                        To appear.")
+                        Computational Statistics and Data Analysis, 53, 3932-3947. doi: 10.1016/j.csda.2009.05.006.")

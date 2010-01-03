@@ -12,8 +12,9 @@
 //  FUNCTIONS:  
 //     * longitPred_nmix_gauss  07/08/2009:  start programming
 //                              12/08/2009:  working version
+//                              08/12/2009:  bug in computation of weights of the empirical Bayes estimate fixed
 //
-// ======================================================================
+// ==============================================================================================================
 //
 #ifndef _GLMM_LONGITUDINAL_PREDICTION_NMIX_GAUSSIAN_H_
 #define _GLMM_LONGITUDINAL_PREDICTION_NMIX_GAUSSIAN_H_
@@ -130,24 +131,48 @@ namespace GLMM{
 // Li_b[LT_b, K_b]:                Cholesky decompositions of mixture precision matrices for the distribution of random effects
 //
 void
-longitPred_nmix_gauss(double* f_marg,            double* f_cond,            double* f_ranef,
-                      double** eta_fixedresp,    double* eta_random,
-                      double* log_dets_b,        double* dwork,             int* iwork,
-                      double** Y_crespP,         int** Y_drespP,
-                      double** eta_fixedrespP,   double** eta_zsrespP,
+longitPred_nmix_gauss(double*  f_marg,            
+                      double*  f_cond,            
+                      double*  f_ranef,
+                      double** eta_fixedresp,    
+                      double*  eta_random,
+                      double*  log_dets_b,        
+                      double*  dwork,             
+                      int*     iwork,
+                      double** Y_crespP,         
+                      int**    Y_drespP,
+                      double** eta_fixedrespP,   
+                      double** eta_zsrespP,
                       double** ZrespP,
-                      int* err,
-                      double** Y_cresp,          int** Y_dresp,
-                      double** eta_zsresp,
-                      const double* X,           double** Zresp,            const double* SZitZiS,    const double* ZiS,
-                      const double* shift_b,     const double* scale_b,
-                      const int* p,              const int* fixedIntcpt,
-                      const int* q,              const int* randIntcpt,     const int* q_ri,          const int* cumq_ri,
-                      const int* dim_b,          const int* LT_b,
-                      const int* R_c,            const int* R_d,
-                      const int* I,              const int* n,              const int* max_n,
-                      const double* beta,        const double* sigma_eps,
-                      const int* K_b,            const double* w_b,         const double* mu_b,        const double* Li_b);
+                      int*     err,
+                      double**      Y_cresp,          
+                      int**         Y_dresp,
+                      double**      eta_zsresp,
+                      const double* X,           
+                      double**      Zresp,            
+                      const double* SZitZiS,    
+                      const double* ZiS,
+                      const double* shift_b,     
+                      const double* scale_b,
+                      const int*    p,              
+                      const int*    fixedIntcpt,
+                      const int*    q,              
+                      const int*    randIntcpt,     
+                      const int*    q_ri,          
+                      const int*    cumq_ri,
+                      const int*    dim_b,          
+                      const int*    LT_b,
+                      const int*    R_c,            
+                      const int*    R_d,
+                      const int*    I,              
+                      const int*    n,              
+                      const int*    max_n,
+                      const double* beta,        
+                      const double* sigma_eps,
+                      const int*    K_b,            
+                      const double* w_b,         
+                      const double* mu_b,        
+                      const double* Li_b);
 
 }
 

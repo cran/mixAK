@@ -42,8 +42,8 @@ namespace NMix{
 //                      OUTPUT:  indeces of columns of y indicating observations belonging to each component
 //
 // cum_Pr[K, n]         INPUT:   if cum_Pr_done = false then whatsever
-//                               if cum_Pr_done = true then cum_Pr[j, i] = sum_{l=0}^j w_j * phi(y_i | mu_j, Sigma_j)
-//                      OUTPUT:  always cum_Pr[j, i] = C * sum_{l=0}^j w_j * phi(y_i | mu_j, Sigma_j)
+//                               if cum_Pr_done = true then cum_Pr[j, i] = sum_{l=0}^j w_l * phi(y_i | mu_l, Sigma_l)
+//                      OUTPUT:  always cum_Pr[j, i] = C * sum_{l=0}^j w_l * phi(y_i | mu_l, Sigma_l)
 //
 // dwork_ldMVN[p]       working array
 //
@@ -70,9 +70,20 @@ namespace NMix{
 // cum_Pr_done[1]       true/false, see above
 //
 void 
-updateAlloc(int* r,   int* mixN,   int** rInv,   double* cum_Pr,   double* dwork_ldMVN,
-            const double* y,      const int* p,       const int* n,
-            const double* logw,   const double* mu,   const double* Li,   const double* log_dets,  const int* K,  const bool* cum_Pr_done);
+updateAlloc(int* r,   
+            int* mixN,   
+            int** rInv,   
+            double* cum_Pr,   
+            double* dwork_ldMVN,
+            const double* y,      
+            const int* p,       
+            const int* n,
+            const double* logw,   
+            const double* mu,   
+            const double* Li,   
+            const double* log_dets,  
+            const int* K,  
+            const bool* cum_Pr_done);
 
 }   /** end of namespace NMix **/
 

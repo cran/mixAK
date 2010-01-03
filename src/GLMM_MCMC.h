@@ -1,6 +1,5 @@
 //
-//  PURPOSE:   Main functions to run MCMC to estimate
-//             a GLMM
+//  PURPOSE:   Main functions to run MCMC to estimate a (multivariate) GLMM
 //
 //  AUTHOR:    Arnost Komarek (LaTeX: Arno\v{s}t Kom\'arek)
 //             arnost.komarek[AT]mff.cuni.cz
@@ -9,9 +8,10 @@
 //
 //  FUNCTIONS:  
 //     * GLMM_MCMC  03/07/2009:  Start working on it
-//                  03/08/2009:  Version allowing for continuous responses working
-//
-// =================================================================================
+//                  03/08/2009:  Version allowing for gaussian responses
+//                  10/11/2009:  Version allowing for mixed gaussian and discrete response
+//                           
+// ============================================================================================
 //
 #ifndef _GLMM_MCMC_H_
 #define _GLMM_MCMC_H_
@@ -35,11 +35,14 @@
 
 #include "GLMM.h"
 #include "GLMM_linear_predictors.h"
-#include "GLMM_scale_ZitZi.h"
+//#include "GLMM_scale_ZitZi.h"
+#include "GLMM_create_SZitZiS.h"
+#include "GLMM_create_XtX.h"
+
 #include "GLMM_updateVars_eps.h"
 #include "GLMM_updateHyperVars_eps.h"
-#include "GLMM_updateFixEf_gauss.h"
-#include "GLMM_updateRanEf_nmix_gauss.h"
+#include "GLMM_updateFixEf.h"
+#include "GLMM_updateRanEf.h"
 
 
 #ifdef __cplusplus
@@ -76,8 +79,13 @@ extern "C" {
 //                           * in the following N = sum(n) (N = total number of observations)
 //
 //  X[]                      covariate matrices for fixed effects (without a column of ones for intercept)
-//                           * ordering of covariates: response 0 for observation (0, 0), response 0 for observation (0, 1), ..., response 0 for observation (I-1, n[0, I-1]),
-//                                                     ...
+//                           * ordering of covariates: response 0 for observation (0, 0), response 0 for observation (0, 1), 
+//                                                     ..., 
+//                                                     response 0 for observation (I-1, n[0, I-1]),
+//                                                     ...,
+//                                                     response R-1 for observation (0, 0), response R-1 for observation (0, 1), 
+//                                                     ...,
+//                                                     response R-1 for observation (I-1, n[0, I-1])
 //  XtX[]                    lower triangles of matrices t(X_s) %*% X_s, where X_s is the design matrix of the fixed effects 
 //                           (including possibly column of ones for a fixed intercept) for response s (s=0,...,R-1)
 //                                                     
@@ -96,7 +104,7 @@ extern "C" {
 //                                   t(Z_0[0]) %*% Z_0[0], ..., t(Z_{R-1}[0]) %*% Z_{R-1}[0],
 //                                   ...
 //                                   t(Z_0[I-1]) %*% Z_0[I-1], ..., t(Z_{R-1}[I-1]) %*% Z_{R-1}[I-1], 
-//                           OUTPUT: lower triangles of matrices S %*% t(Z_s[i]) %*% Z_s[i] %*% S,
+//                           OUTPUT: lower triangles of matrices S_s %*% t(Z_s[i]) %*% Z_s[i] %*% S_s,
 //                                   where S is the diagonal matrix with scale_b on a diagonal  
 //
 //  q[R]:                    numbers of random effect covariates for each response corresponding to Z matrices
@@ -162,6 +170,20 @@ extern "C" {
 //                       * prior_beta[+l_beta] = prior inverse variances for beta's
 //
 //
+//  PARAMETERS TO TUNE MCMC
+//  ================================================================
+//
+//  tune_scale_beta[R_d]:  scale parameters for each DISCRETE response profile by which we multiply
+//                         the proposal covariance matrix when updating the 'fixed' effects
+//                         of DISCRETE response profiles
+//
+//  tune_scale_b[1]:       scale paramater by which we multiply the proposal covariance matrix when updating
+//                         the fixed effects
+//                         * used only when there are some discrete response profiles
+//                         * ignored when there are only continuous responses since then the Gibbs move is used
+//                           to update random effects
+//
+//
 //  INITIAL AND LAST SAMPLED VALUES RELATED TO THE DISTRIBUTION OF Y
 //  ================================================================
 //  sigma_eps[R_c]    INPUT:  initial values for standard deviations of residuals of each continuous response
@@ -172,29 +194,29 @@ extern "C" {
 //
 //  INITIAL AND LAST SAMPLED VALUES RELATED TO THE DISTRIBUTION OF RANDOM EFFECTS b
 //  ===============================================================================
-//  K_b[1]:                  INPUT:  initial value for number of mixture components in the distribution of random effects
-//                          OUTPUT:  last sampled value
-//                                   * ignored if distribution is NORMAL
+//  K_b[1]:                   INPUT:  initial value for number of mixture components in the distribution of random effects
+//                           OUTPUT:  last sampled value
 //  
-//  w_b[Kmax_b]              INPUT:  initial values for mixture weights in the distribution of random effects
-//                          OUTPUT:  last sampled value
-//                                   * ignored if distribution is NORMAL
+//  w_b[Kmax_b]:              INPUT:  initial values for mixture weights in the distribution of random effects
+//                           OUTPUT:  last sampled value
 //
-//  mu_b[Kmax_b*q]           INPUT:  initial values for mixture means in the distribution of random effects
-//                          OUTPUT:  last sampled value
+//  mu_b[Kmax_b*q]:           INPUT:  initial values for mixture means in the distribution of random effects
+//                           OUTPUT:  last sampled value
 //
-//  Q_b[Kmax_b*LT(q)]        INPUT:  WHATSEVER
-//                          OUTPUT:  last sampled values of inverted mixture covariance matrices in the distribution of random effects
+//  Q_b[Kmax_b*LT(q)]:        INPUT:  WHATSEVER
+//                           OUTPUT:  last sampled values of inverted mixture covariance matrices in the distribution of random effects
 //
-//  Sigma_b[Kmax_b*LT(q)]    INPUT:  WHATSEVER
-//                          OUTPUT:  last sampled values of mixture covariance matrices in the distribution of random effects
+//  Sigma_b[Kmax_b*LT(q)]:     INPUT: WHATSEVER
+//                           OUTPUT:  last sampled values of mixture covariance matrices in the distribution of random effects
 //
-//  Li_b[Kmax_b*LT(q)]       INPUT:  initial values for Cholesky decompositions of inverted mixture covariance matrices in the distribution of random effects
-//                          OUTPUT:  last sampled value
+//  Li_b[Kmax_b*LT(q)]:       INPUT:  initial values for Cholesky decompositions of inverted mixture covariance matrices in the distribution of random effects
+//                           OUTPUT:  last sampled value
 //
-//  gammaInv_b[q]
+//  gammaInv_b[q]:            INPUT:  initial value of the inverse of the gamma hyperparameter for the distribution of random effects
+//                           OUTPUT:  last sampled value of the inverse of the gamma hyperparameter for the distruibution of random effects
 //
-//  r_b[I]
+//  r_b[I]:                   INPUT:  initial allocations for random effects
+//                           OUTPUT:  last values of allocations
 //
 //
 //  INITIAL AND LAST SAMPLED VALUES RELATED TO REGRESSION
@@ -244,9 +266,21 @@ extern "C" {
 //
 //  chb
 //
+//  
+//  PERFORMANCE OF MCMC
+//  ====================
+//  naccept_beta[R_c + R_d]    numbers of accepted beta's (in Metropolis-Hastings step)
+//                             for each response profiles
+//                             REMARK:  for continuous responses, naccept_beta[s] = number of MCMC iterations
+//                                      since Gibbs step is used there
 //
-//  POSTERIOR MEANS OF SOME QUANTITIES
-//  ==================================
+//  naccept_b[I]               number of accepted b's (in Metropolis-Hastings step) for each cluster 
+//                             REMARK:  for models with continuous response profiles only, naccept_b[i] = number of MCMC iterations
+//                                      since Gibbs step is used there
+//  
+//
+//  POSTERIOR MEANS OF SOME QUANTITIES, OTHER POSTERIOR QUANTITIES
+//  ==============================================================
 //  pm_eta_fixed
 //
 //  pm_eta_random
@@ -267,6 +301,17 @@ extern "C" {
 //
 //  pm_indLogpb[I]:    posterior means of log-density of random effects for each cluster
 //
+//  sum_Ir_b[I, K_b]:  for each cluster and each mixture component: sum(r_b[i] = k),
+//                     i = 0, ..., I-1, j = 0, ..., K_b - 1
+//                     from the main part of MCMC (burn-in not included) 
+//                     * COMPUTED ONLY WHEN K_b is FIXED
+//                     * COMPONENTS ARE (INTERNALLY) RE-LABELED BEFORE sum(r_b[i] = k) is computed
+//
+//  sum_Pr_b_b[I, K_b]:  for each cluster and each mixture component: sum(P(r_b[i] = k | theta, b, y))
+//                       i = 0, ..., I-1, j = 0, ..., K_b - 1
+//                       from the main part of MCMC (burn-in not included) 
+//                       * COMPUTED ONLY WHEN K_b is FIXED
+//                       * COMPONENTS ARE (INTERNALLY) RE-LABELED BEFORE sum(P(r_b[i] = k | theta, b, y)) is computed
 //
 //  MISCALLANEOUS
 //  =============
@@ -275,55 +320,59 @@ extern "C" {
 //  err[1]:            error flag
 //
 void
-GLMM_MCMC(double* Y_c,                            // this is in fact const, not declared as const to be able to use **
-          const int* R_c,   
-          int* Y_d,                               // this is in fact const, not declared as const to be able to use **
-          const int* R_d,  
-          const int* dist,                 
-          const int* I,                  
-          int* n,                                 // this is in fact const, not declared as const to be able to use **
+GLMM_MCMC(double*       Y_c,                               // this is in fact const, not declared as const to be able to use **
+          const int*    R_c,   
+          int*          Y_d,                               // this is in fact const, not declared as const to be able to use **
+          const int*    R_d,  
+          const int*    dist,                 
+          const int*    I,                  
+          int*          n,                                  // this is in fact const, not declared as const to be able to use **
           const double* X, 
-          const double* XtX,                
-          const int* p,                  
-          const int* fixedIntcpt,
-          double* Z,                              // this is in fact const, not declared as const to be able to use **
-          double* SZitZiS,               
-          const int* q,                  
-          const int* randIntcpt,   
+          //const double* XtX,                              // REMOVED ON 21/10/2009,  matrices XtX are computed directly in C++ code from X
+          const int*    p,                  
+          const int*    fixedIntcpt,
+          double*       Z,                                  // this is in fact const, not declared as const to be able to use **
+          //double*       SZitZiS,                          // REMOVED ON 20/10/2009,  matrices SZitZiS are computed directly in C++ code
+          const int*    q,                  
+          const int*    randIntcpt,   
           const double* shiftScale_b,
-          const int* nMCMC,
-          const int* keepChain,
+          const int*    nMCMC,
+          const int*    keepChain,
           const double* priorDouble_eps,
-          const int* priorInt_b,           
+          const int*    priorInt_b,           
           const double* priorDouble_b,
           const double* priorDouble_beta, 
+          const double* tune_scale_beta,
+          const double* tune_scale_b,
           double* sigma_eps,     
           double* gammaInv_eps,
-          int* K_b,              
+          int*    K_b,              
           double* w_b,             
           double* mu_b,    
           double* Q_b,    
           double* Sigma_b,    
           double* Li_b,
           double* gammaInv_b,    
-          int* r_b,
+          int*    r_b,
           double* beta,          
           double* b, 
           double* chsigma_eps,   
           double* chgammaInv_eps,
-          int* chK_b,            
+          int*    chK_b,            
           double* chw_b,           
           double* chmu_b,  
           double* chQ_b,  
           double* chSigma_b,  
           double* chLi_b,
           double* chgammaInv_b,  
-          int* chorder_b,          
-          int* chrank_b,
+          int*    chorder_b,          
+          int*    chrank_b,
           double* chMeanData_b,      
           double* chCorrData_b,
           double* chbeta,        
           double* chb,
+          int*    naccept_beta,
+          int*    naccept_b,
           double* pm_eta_fixed,
           double* pm_eta_random,
           double* pm_b,
@@ -334,8 +383,10 @@ GLMM_MCMC(double* Y_c,                            // this is in fact const, not 
           double* pm_Li_b,
           double* pm_indLogL,
           double* pm_indLogpb,
-          int* iter,
-          int* err);
+          int*    sum_Ir_b,
+          double* sum_Pr_b_b,
+          int*    iter,
+          int*    err);
 
 #ifdef __cplusplus
 }

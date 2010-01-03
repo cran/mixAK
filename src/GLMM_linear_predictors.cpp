@@ -16,14 +16,31 @@ namespace GLMM{
 /***** GLMM::linear_predictors                                                                   *****/
 /***** ***************************************************************************************** *****/
 void
-linear_predictors(double* eta_fixed,  double* eta_random,      double* eta,      double* eta_zs,         int* N_s,
-                  const double* X,    const double* beta,      const double* Z,  const double* b,        const double* shift_b,
-                  const int* p,       const int* fixedIntcpt,  const int* q,     const int* randIntcpt,  
-                  const int* n,       const int* R,            const int* I,     const int* dim_b,       const int* cumq_ri)
+linear_predictors(double* eta_fixed,  
+                  double* eta_random,      
+                  double* eta,      
+                  double* eta_zs,         
+                  int*    N_s,
+                  int*    N_i,
+                  const double* X,    
+                  const double* beta,      
+                  const double* Z,  
+                  const double* b,        
+                  const double* shift_b,
+                  const int*    p,       
+                  const int*    fixedIntcpt,  
+                  const int*    q,     
+                  const int*    randIntcpt,  
+                  const int*    n,       
+                  const int*    R,            
+                  const int*    I,     
+                  const int*    dim_b,       
+                  const int*    cumq_ri)
 {
   int s, i, j, k;
 
   int *N_sP                 = N_s;
+  int *N_iP                 = N_i;
   double *eta_fixedP        = eta_fixed;
   double *eta_randomP       = eta_random;
   double *eta_zsP           = eta_zs;
@@ -43,12 +60,26 @@ linear_predictors(double* eta_fixed,  double* eta_random,      double* eta,     
   const int *fixedIntcptP    = fixedIntcpt;
   const int *randIntcptP     = randIntcpt;
   const int *nP              = n;
+
+  
+  /*** Reset N_i ***/
+  /*** ========= ***/
+  for (i = 0; i < *I; i++){
+    *N_iP = 0;
+    N_iP++;
+  }
+
+  /*** Calculate linear predictors, N_s, N_i  ***/
+  /*** ====================================== ***/
   for (s = 0; s < *R; s++){                /* loop over responses                   */
     *N_sP = 0;
+    N_iP = N_i;
 
     if (s > 0) b_cluster = b + *(cumq_riP - 1);
-    for (i = 0; i < *I; i++){
+    for (i = 0; i < *I; i++){                 /* loop over clusters */
       *N_sP += *nP;
+      *N_iP += *nP;
+      N_iP++;
 
       if (*nP){
         for (j = 0; j < *nP; j++){              /* loop over observations within cluster */
@@ -95,7 +126,7 @@ linear_predictors(double* eta_fixed,  double* eta_random,      double* eta,     
       }
       nP++;
       b_cluster = bP + (*dim_b - *randIntcptP - *qP);
-    }
+    }     /* end of loop over clusters */
     N_sP++;
     pP++;
     qP++;
@@ -115,9 +146,13 @@ linear_predictors(double* eta_fixed,  double* eta_random,      double* eta,     
 /***** ***************************************************************************************** *****/
 void
 linear_predictor_fixed(double* eta_fixed,
-                       const double* X,    const double* beta,
-                       const int* p,       const int* fixedIntcpt,
-                       const int* n,       const int* R,            const int* I)
+                       const double* X,    
+                       const double* beta,
+                       const int*    p,       
+                       const int*    fixedIntcpt,
+                       const int*    n,       
+                       const int*    R,            
+                       const int*    I)
 {
   int s, i, j, k;
 
@@ -164,9 +199,15 @@ linear_predictor_fixed(double* eta_fixed,
 /***** ***************************************************************************************** *****/
 void
 linear_predictor_random(double* eta_random,
-                        const double* Z,     const double* b,
-                        const int* q,        const int* randIntcpt,  
-                        const int* n,        const int* R,            const int* I,     const int* dim_b,       const int* cumq_ri)
+                        const double* Z,     
+                        const double* b,
+                        const int*    q,        
+                        const int*    randIntcpt,  
+                        const int*    n,        
+                        const int*    R,            
+                        const int*    I,     
+                        const int*    dim_b,       
+                        const int*    cumq_ri)
 {
   int s, i, j, k;
 
@@ -221,9 +262,15 @@ linear_predictor_random(double* eta_random,
 /***** ***************************************************************************************** *****/
 void
 linear_predictor_zs(double* eta_zs, 
-                    const double* Z,  const double* shift_b,
-                    const int* q,     const int* randIntcpt,  
-                    const int* n,     const int* R,           const int* I,        const int* dim_b,       const int* cumq_ri)
+                    const double* Z,  
+                    const double* shift_b,
+                    const int*    q,     
+                    const int*    randIntcpt,  
+                    const int*    n,     
+                    const int*    R,           
+                    const int*    I,        
+                    const int*    dim_b,       
+                    const int*    cumq_ri)
 {
   int s, i, j, k;
 
