@@ -74,7 +74,8 @@ NMixPlugDA <- function(object, y)
   colnames(Poster) <- paste("prob", 1:object$prior$Kmax, sep="")
   rownames(Poster) <- namey
 
-  RET <- cbind(RET, Poster)
+  ##RET <- cbind(RET, Poster)                           ### commented on 15/02/2010
+  RET <- as.data.frame(Poster)                          ### added on 15/02/2010
   RET[,"component"] <- apply(Poster, 1, which.max)
   return(RET)
 }

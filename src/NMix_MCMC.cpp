@@ -20,32 +20,34 @@ extern "C" {
 void
 NMix_MCMC(const double* y0,  
           const double* y1,     
-          const int* censor,          
-          const int* dimy,            
+          const int*    censor,          
+          const int*    dimy,            
           const double* shiftScale,
-          const int* nMCMC,  
-          const int* priorInt,  
+          const int*    nMCMC,  
+          const int*    priorInt,  
           const double* priorDouble,  
           const double* priorRJMCMC,  
-          const int* priorRJMCMCint,
-          double* y,            
-          int* K,               
+          const int*    priorRJMCMCint,
+          double* y, 
+          double* y_first,           
+          int*    K,               
           double* w,                 
           double* mu,                
           double* Q,            
           double* Sigma,        
           double* Li,                
           double* gammaInv,      
-          int* r,
-          int* chK,             
+          int*    r,
+          int*    r_first,
+          int*    chK,             
           double* chw,          
           double* chmu,           
           double* chQ,          
           double* chSigma,      
           double* chLi,              
           double* chgammaInv,    
-          int* chorder,                  
-          int* chrank,
+          int*    chorder,                  
+          int*    chrank,
           double* chMean,       
           double* chCorr,       
           double* chMeanData,        
@@ -69,31 +71,28 @@ NMix_MCMC(const double* y0,
           double* pm_Li,
           int*    sum_Ir,
           double* sum_Pr_y,
-          int* iter,            
-          int* nMoveAccept,     
-          int* err)
+          int*    iter,            
+          int*    nMoveAccept,     
+          int*    err)
 {
-  const int debug = 4;
+  const int debug = 0;
   const char *fname = "NMix_MCMC";
 
   *err = 0;
 
   GetRNGstate();
 
+  /***** Declarations of variables used below *****/
   int i, j, l, l2;
-  int **rInvPP;
-  int *rP;
+
   double *pm_yP, *pm_indLogL0P, *pm_indLogL1P, *pm_indDevComplP, *pm_indDevObsP, *pm_indDevCompl_inHatP, *pm_pred_densP;
-  double *pm_wP, *pm_muP, *pm_QP, *pm_SigmaP, *pm_LiP;
   double *indLogL0P, *indLogL1P, *indDevComplP, *indDevObsP, *indDevCompl_inHatP, *pred_densP;
-  double *chmuP2, *chQP2, *chSigmaP2, *chLiP2;
   double *logPsplitP, *logPcombineP, *logPbirthP, *logPdeathP;
   double *yP;
   
   const double *wP, *muP, *QP, *SigmaP, *LiP;
   const double *PsplitP, *PbirthP;
   const double *gammaInvP;
-  const int *censorP;
   const int *orderP, *rankP;
 
   const int *p = dimy;
@@ -154,7 +153,7 @@ NMix_MCMC(const double* y0,
 
   /***** Are there any censored observations? *****/
   int anyCensor = 0;
-  censorP = censor;
+  const int *censorP = censor;
   for (i = 0; i < ly; i++){
     if (*censorP != 1){
       anyCensor = 1;
@@ -198,14 +197,8 @@ NMix_MCMC(const double* y0,
     error("%s:  Unimplemented type of the prior for K.\n", fname);
   }
 
-  /***** Reset sum_Ir, sum_Pr_y, declare some additional needed quantities *****/
-  double *Pr_y = NULL;
-  int    *sum_IrP;
-  double *sum_Pr_yP;
-  double *Pr_yP;
+  /***** Reset sum_Ir, sum_Pr_y *****/
   if (*priorK == NMix::K_FIXED){
-    Pr_y = Calloc(*Kmax * *n, double);
-
     AK_Basic::fillArray(sum_Ir, 0, *n * *K);
     AK_Basic::fillArray(sum_Pr_y, 0, *n * *K);
   }
@@ -220,7 +213,7 @@ NMix_MCMC(const double* y0,
   void
   (*NMix_Deviance)(double* indLogL0,     double* indLogL1,   double* indDevCompl,   double* indDevObs,   double* indDevCompl_inHat,
                    double* LogL0,        double* LogL1,      double* DevCompl,      double* DevObs,      double* DevCompl_inHat, 
-                   double* pred_dens,    double* cum_Pr,     double* dwork,         int* err,
+                   double* pred_dens,    double* Pr,         double* cum_Pr_y,      double* dwork,       int* err,
                    const double* y,      const int* r,           const int* mixN,     const int* p,      const int* n,
                    const int* K,         const double* logw,     const double* mu,    const double* Q,   const double* Li,  const double* log_dets,
                    const double* delta,  const double* c,        const double* xi,    const double* c_xi,  
@@ -416,8 +409,8 @@ NMix_MCMC(const double* y0,
   /*****         rInv[j][i] (j=0,...,Kmax, i=0,...,mixN[j]-1)                                       *****/
   /*****         = indeces of "columns" of y which are currently allocated in the j-th component    *****/
   /*****         * initialize rInv[j] by -1's                                                       *****/
-  int **rInv = Calloc(*Kmax, int*);
-  rInvPP = rInv;
+  int **rInv   = Calloc(*Kmax, int*);
+  int **rInvPP = rInv;
   for (j = 0; j < *Kmax; j++){
     *rInvPP = Calloc(*n, int);
     AK_Basic::fillArray(*rInvPP, -1, *n);
@@ -425,7 +418,7 @@ NMix_MCMC(const double* y0,
   }
   
   /***** Fill mixN, rInv in          *****/
-  rP    = r;
+  int *rP = r;
   for (i = 0; i < *n; i++){
     if (*rP >= *K){ 
       *err = 1;
@@ -446,19 +439,21 @@ NMix_MCMC(const double* y0,
   /***** indDevObs:          indDevObs[i]         = log(sum_{j=1}^K w_j * phi(y_i | mu_j, Sigma_j))                             *****/
   /***** indDevCompl_inHat:  indDevCompl_inHat[i] = log(E[w_{r_i}|...] * phi(y_i | E[mu_{r_i}|...], (E[Q_{r_i}|...])^{-1}))     *****/
   /***** pred_dens:          pred_dens[i]         = sum_{j=1}^K w_j * phi(y_i | mu_j, Sigma_j)                                  *****/
-  /***** cum_Pr:             cum_Pr[j, i]         = sum_{l=1}^j w_j * phi(y_i | mu_j, Sigma_j)                                  *****/
+  /***** Pr_y:               Pr_y[j, i]           = w_l * phi(y_i | mu_l, Sigma_l) / C (to sum-up to one)                       *****/
+  /***** cum_Pr_y:           cum_Pr_y[j, i]       = sum_{l=1}^j w_l * phi(y_i | mu_l, Sigma_l)                                  *****/
   double *indLogL0          = Calloc(*n, double);
   double *indLogL1          = Calloc(*n, double);
   double *indDevCompl       = Calloc(*n, double);
   double *indDevObs         = Calloc(*n, double);
   double *indDevCompl_inHat = Calloc(*n, double);
   double *pred_dens         = Calloc(*n, double);
-  double *cum_Pr            = Calloc(*Kmax * *n, double);
+  double *Pr_y              = Calloc(*Kmax * *n, double);
+  double *cum_Pr_y          = Calloc(*Kmax * *n, double);
   const int ldwork_Deviance = *p + (2 * *p + LTp + 2 + *p + 2 * LTp + 2) * *Kmax;
   double *dwork_Deviance    = Calloc(ldwork_Deviance, double);
   NMix_Deviance(indLogL0, indLogL1, indDevCompl, indDevObs, indDevCompl_inHat, 
                 chLogL0P, chLogL1P, chDevComplP, chDevObsP, chDevCompl_inHatP, 
-                pred_dens, cum_Pr, dwork_Deviance, err,
+                pred_dens, Pr_y, cum_Pr_y, dwork_Deviance, err,
                 y, r, mixN, p, n, K, logw, mu, Q, Li, log_dets, delta, c, xi, c_xi, Dinv, Dinv_xi, zeta, XiInv);
   bool cum_Pr_done[1] = {true};
   if (*err){
@@ -503,7 +498,7 @@ NMix_MCMC(const double* y0,
 /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/ 
   int *order = Calloc(*Kmax, int);
   int *rank  = Calloc(*Kmax, int);  
-  NMix::orderComp(order, rank, dwork_RJMCMC_birth, K, mu, p);
+  NMix::orderComp(order, rank, dwork_RJMCMC_birth, &AK_Basic::_ZERO_INT, K, mu, p);
   AK_Basic::fillArray(order + *K, 0, *Kmax - *K);
   AK_Basic::fillArray(rank  + *K, 0, *Kmax - *K);
 
@@ -627,7 +622,7 @@ NMix_MCMC(const double* y0,
       //Rprintf((char*)("Iter %d (%d): Action %s - "), *iter, witer, samplerAction == 0 ? "Gibbs" : (samplerAction == 1 ? "split/combine" : "birth/death"));
       switch (samplerAction){
       case NMix::GIBBS_K:
-	NMix::updateAlloc(r, mixN, rInv, cum_Pr, dwork_updateAlloc, y, p, n, logw, mu, Li, log_dets, K, cum_Pr_done);     // validated in R on 21/12/2007
+	NMix::updateAlloc(r, mixN, rInv, cum_Pr_y, dwork_updateAlloc, y, p, n, logw, mu, Li, log_dets, K, cum_Pr_done);   // validated in R on 21/12/2007
         NMix_updateMeansVars(mu, Q, Li, Sigma, log_dets, order, rank, dwork_updateMeansVars, err, y, r, mixN,             // partially validated in R on 21/12/2007
                              p, n, K, c, xi, c_xi, Dinv, Dinv_xi, zeta, XiInv);
         *cum_Pr_done = false;
@@ -691,6 +686,8 @@ NMix_MCMC(const double* y0,
   backs = 0;
   writeAll = 0;      
   AK_Basic::fillArray(nMoveAccept, 0, lnMoveAccept);            // reset nMoveAccept
+  bool first_keep_iter = true;
+
   Rprintf((char*)("Iteration "));
   while (*iter < lastIter){
     (*iter)++;
@@ -715,7 +712,7 @@ NMix_MCMC(const double* y0,
       switch (samplerAction){
       case NMix::GIBBS_K:
         (*nGibbs_K)++;
-	NMix::updateAlloc(r, mixN, rInv, cum_Pr, dwork_updateAlloc, y, p, n, logw, mu, Li, log_dets, K, cum_Pr_done);
+	NMix::updateAlloc(r, mixN, rInv, cum_Pr_y, dwork_updateAlloc, y, p, n, logw, mu, Li, log_dets, K, cum_Pr_done);
         NMix_updateMeansVars(mu, Q, Li, Sigma, log_dets, order, rank, dwork_updateMeansVars, err, y, r, mixN,
                              p, n, K, c, xi, c_xi, Dinv, Dinv_xi, zeta, XiInv);
         *cum_Pr_done = false;
@@ -869,7 +866,7 @@ NMix_MCMC(const double* y0,
 
     /*** Compute quantities needed to get DIC_3 and DIC_4 from Celeux, Forbes, Robert, Titterington (2006) ***/
     NMix_Deviance(indLogL0, indLogL1, indDevCompl, indDevObs, indDevCompl_inHat, chLogL0P, chLogL1P, chDevComplP, chDevObsP, chDevCompl_inHatP, 
-                  pred_dens, cum_Pr, dwork_Deviance, err,
+                  pred_dens, Pr_y, cum_Pr_y, dwork_Deviance, err,
                   y, r, mixN, p, n, K, logw, mu, Q, Li, log_dets, delta, c, xi, c_xi, Dinv, Dinv_xi, zeta, XiInv);
     *cum_Pr_done = true;
     if (*err){
@@ -921,27 +918,19 @@ NMix_MCMC(const double* y0,
 
     /*** Update sum_Ir and sum_Pr_y ***/
     if (*priorK == NMix::K_FIXED){
-
-      AK_Utils::cum_Pr2Pr(Pr_y, cum_Pr, K, n);
-
-      rP        = r;
-      sum_IrP   = sum_Ir;
-      Pr_yP     = Pr_y;
-      sum_Pr_yP = sum_Pr_y;
-
-      for (l = 0; l < *n; l++){
-        sum_IrP[rank[*rP]]++;
-        rP++;
-        sum_IrP += *K;
-
-        for (j = 0; j < *K; j++){
-          sum_Pr_yP[rank[j]] += *Pr_yP;
-          Pr_yP++;
-        }
-        sum_Pr_yP += *K;
-      }
+      //NMix::update_sum_Ir_and_sum_Pr_y(sum_Ir, sum_Pr_y, Pr_y, cum_Pr_y, r, rank, K, n);     // commented on 13/02/2010
+      NMix::update_sum_Ir_and_sum_Pr_y(sum_Ir, sum_Pr_y, Pr_y, r, rank, K, n);                 // added on 13/02/2010 (Pr_y is calculated in NMix_Deviance)
     }   
+
+    /***  Copy current value of r and y if this is the first iteration to keep ***/
+    if (first_keep_iter){
+      first_keep_iter = false;
+
+      AK_Basic::copyArray(y_first, y, ly);
+      AK_Basic::copyArray(r_first, r, *n);
+    }
   }                             /*** end of while (*iter < lastIter) ***/
+
   Rprintf((char*)("\n"));
 
   PutRNGstate();
@@ -986,89 +975,8 @@ NMix_MCMC(const double* y0,
 
   /*** Compute pm_w, pm_mu, pm_Q, pm_Sigma, pm_Li (do it only when K is fixed) ***/
   /*** THESE ARE VERY OFTEN VERY BAD ESTIMATES!!!                              ***/
-  if (*priorK == NMix::K_FIXED){
-
-    /*** Reset ***/
-    AK_Basic::fillArray(pm_w,     0.0, *Kmax);
-    AK_Basic::fillArray(pm_mu,    0.0, *Kmax * *p);
-    AK_Basic::fillArray(pm_Q,     0.0, *Kmax * LTp);
-    AK_Basic::fillArray(pm_Sigma, 0.0, *Kmax * LTp);
-    AK_Basic::fillArray(pm_Li,    0.0, *Kmax * LTp);
-
-    /*** Sums over sampled values***/
-    chKP      = chK;
-    chwP      = chw;
-    chmuP     = chmu;
-    chQP      = chQ;
-    chSigmaP  = chSigma;
-    chLiP     = chLi;
-    chorderP  = chorder;    
-
-    for (i = 0; i < *Mkeep; i++){
-      pm_wP     = pm_w;
-      pm_muP    = pm_mu;
-      pm_QP     = pm_Q;
-      pm_SigmaP = pm_Sigma;
-      pm_LiP    = pm_Li;
-
-      for (j = 0; j < *chKP; j++){
-        *pm_wP += chwP[*chorderP];
-        pm_wP++;
-
-        chmuP2    = chmuP    + (*chorderP * *p);
-        chQP2     = chQP     + (*chorderP * LTp);
-        chSigmaP2 = chSigmaP + (*chorderP * LTp);
-        chLiP2    = chLiP    + (*chorderP * LTp);
-        chorderP++;
-
-        for (l2 = 0; l2 < *p; l2++){
-          *pm_muP += *chmuP2;
-          pm_muP++;
-          chmuP2++;
-          for (l = l2; l < *p; l++){
-            *pm_QP     += *chQP2;
-            *pm_SigmaP += *chSigmaP2;
-            *pm_LiP    += *chLiP2;
-            pm_QP++;
-            pm_SigmaP++;
-            pm_LiP++;
-            chQP2++;
-            chSigmaP2++;
-            chLiP2++;
-          }
-        }
-      }
-
-      chwP     += *chKP;
-      chmuP    += *p * *chKP;
-      chQP     += LTp * *chKP;
-      chSigmaP += LTp * *chKP;
-      chLiP    += LTp * *chKP;
-      chKP++;            
-    }
-
-    /*** Averages over sampled values ***/
-    pm_wP     = pm_w;
-    pm_muP    = pm_mu;
-    pm_QP     = pm_Q;
-    pm_SigmaP = pm_Sigma;
-    pm_LiP    = pm_Li;
-    for (j = 0; j < *Kmax; j++){
-      *pm_wP /= *Mkeep;
-      pm_wP++;
-      for (l2 = 0; l2 < *p; l2++){
-        *pm_muP /= *Mkeep;
-        pm_muP++;
-        for (l = l2; l < *p; l++){
-          *pm_QP     /= *Mkeep;
-          *pm_SigmaP /= *Mkeep;
-          *pm_LiP    /= *Mkeep;
-          pm_QP++;
-          pm_SigmaP++;
-          pm_LiP++;
-        }
-      }
-    }
+  if (*priorK == NMix::K_FIXED){ 
+    NMix::PosterMeanMixParam(pm_w, pm_mu, pm_Q, pm_Sigma, pm_Li, Kmax, chw, chmu, chQ, chSigma, chLi, chorder, p, Mkeep);
   }
 
 
@@ -1092,7 +1000,8 @@ NMix_MCMC(const double* y0,
   Free(Var);
   Free(logw);
   Free(dwork_Deviance);
-  Free(cum_Pr);
+  Free(cum_Pr_y);
+  Free(Pr_y);
   Free(pred_dens);
   Free(indDevCompl_inHat);
   Free(indDevCompl);
@@ -1124,8 +1033,6 @@ NMix_MCMC(const double* y0,
   Free(log_dens_u);
   Free(P);
   Free(u);
-
-  if (*priorK == NMix::K_FIXED) Free(Pr_y);
 
   return;
 }    /** end of function MCMC_Nmixture **/

@@ -6,9 +6,6 @@
   with mixtures in the distributions.
 }
 \description{
-  THIS FUNCTION IS BEING DEVELOPED AND ORDINARY USERS
-  ARE NOT RECOMMENDED TO USE IT.
-  
   This function runs MCMC for a generalized linear mixed model
   with possibly several response variables and possibly normal
   mixtures in the distributions of random effects.
@@ -246,6 +243,53 @@ GLMM_MCMC(y, dist="gaussian", id, x, z, random.intercept,
     since the Gibbs algorithm is used there.}  
   \item{scale.b}{a list containing the used value of the argument
     \code{scale.b}.}
+  \item{summ.beta}{a matrix with posterior summary statistics for fixed effects.}
+  \item{summ.b.Mean}{a matrix with posterior summary statistics for
+    means of random effects.}
+  \item{summ.b.SDCorr}{a matrix with posterior summary statistics for
+    standard deviations of random effects and correlations of each pair
+    of random effects.}
+  \item{summ.sigma_eps}{a matrix with posterior summary statistics for
+    standard deviations of the error terms in the (mixed) models of
+    continuous responses.}
+  \item{poster.comp.prob1}{a matrix which is present in the output object
+    if the number of mixture components in the distribution of random
+    effects is fixed and equal to \eqn{K}. In that case,
+    \code{poster.comp.prob1} is a matrix with \eqn{K} columns and \eqn{I}
+    rows (\eqn{I} is the number of subjects defining the longitudinal
+    profiles or correlated observations) with estimated posterior component probabilities
+    -- posterior means of the components of the underlying 0/1
+    allocation vector.
+
+    \bold{WARNING:} The labels of components are based on artificial
+    identifiability constraints based on ordering of the mixture means
+    in the first margin. Very often, such identifiability constraint is
+    not satisfactory!
+    
+    %These can be used for possible clustering of the subjects based on
+    %the longitudinal profiles.
+  }
+  \item{poster.comp.prob2}{a matrix which is present in the output object
+    if the number of mixture components in the distribution of random
+    effects is fixed and equal to \eqn{K}. In that case,
+    \code{poster.comp.prob2} is a matrix with \eqn{K} columns and \eqn{I}
+    rows (\eqn{I} is the number of subjects defining the longitudinal
+    profiles or correlated observations)
+    with estimated posterior component probabilities
+    -- posterior mean over model parameters including random effects.
+
+    \bold{WARNING:} The labels of components are based on artificial
+    identifiability constraints based on ordering of the mixture means
+    in the first margin. Very often, such identifiability constraint is
+    not satisfactory!
+    
+    %These can be used for possible clustering of the subjects based on
+    %the longitudinal profiles.
+  }    
+  \item{freqK_b}{frequency table for the MCMC sample of the number of
+    mixture components in the distribution of the random effects.}
+  \item{propK_b}{posterior probabilities for the numbers of mixture
+    components in the distribution of random effects.}
   \item{poster.mean.eta}{a \code{data.frame} with columns labeled
     \code{fixed} and \code{random} holding posterior means for fixed
     effect part of the linear predictor and the random effect part of
@@ -259,61 +303,29 @@ GLMM_MCMC(y, dist="gaussian", id, x, z, random.intercept,
   \item{poster.mean.w_b}{a numeric vector with posterior means of mixture
     weights after re-labeling. It is computed only if \eqn{K_b}{K[b]} is fixed
     and even then I am not convinced that these are useful posterior
-    summary statistics. In any case, they should be used with care.}
+    summary statistics (see label switching problem mentioned above).
+    In any case, they should be used with care.}
   \item{poster.mean.mu_b}{a matrix with posterior means of mixture
     means after re-labeling. It is computed only if \eqn{K_b}{K[b]} is fixed
     and even then I am not convinced that these are useful posterior
-    summary statistics. In any case, they should be used with care.}
+    summary statistics (see label switching problem mentioned above).
+    In any case, they should be used with care.}
   \item{poster.mean.Q_b}{a list with posterior means of mixture inverse
     variances after re-labeling. It is computed only if \eqn{K_b}{K[b]} is fixed
     and even then I am not convinced that these are useful posterior
-    summary statistics. In any case, they should be used with care.}
+    summary statistics (see label switching problem mentioned above).
+    In any case, they should be used with care.}
   \item{poster.mean.Sigma_b}{a list with posterior means of mixture
     variances after re-labeling. It is computed only if \eqn{K_b}{K[b]} is fixed
     and even then I am not convinced that these are useful posterior
-    summary statistics. In any case, they should be used with care.}
+    summary statistics (see label switching problem mentioned above).
+    In any case, they should be used with care.}
   \item{poster.mean.Li_b}{a list with posterior means of Cholesky
     decompositions of mixture inverse
     variances after re-labeling. It is computed only if \eqn{K_b}{K[b]} is fixed
     and even then I am not convinced that these are useful posterior
-    summary statistics. In any case, they should be used with care.}
-  \item{poster.comp.prob1}{a matrix which is present in the output object
-    if the number of mixture components in the distribution of random
-    effects is fixed and equal to \eqn{K}. In that case,
-    \code{poster.comp.prob1} is a matrix with \eqn{K} columns and \eqn{I}
-    rows (\eqn{I} is the number of subjects defining the longitudinal
-    profiles or correlated observations) with estimated posterior component probabilities
-    -- posterior means of the components of the underlying 0/1
-    allocation vector.
-    
-    These can be used for possible clustering of the subjects based on
-    the longitudinal profiles.
-  }
-  \item{poster.comp.prob2}{a matrix which is present in the output object
-    if the number of mixture components in the distribution of random
-    effects is fixed and equal to \eqn{K}. In that case,
-    \code{poster.comp.prob2} is a matrix with \eqn{K} columns and \eqn{I}
-    rows (\eqn{I} is the number of subjects defining the longitudinal
-    profiles or correlated observations)
-    with estimated posterior component probabilities
-    -- posterior mean over model parameters including random effects.
-    
-    These can be used for possible clustering of the subjects based on
-    the longitudinal profiles.
-  }  
-  \item{summ.beta}{a matrix with posterior summary statistics for fixed effects.}
-  \item{summ.b.Mean}{a matrix with posterior summary statistics for
-    means of random effects.}
-  \item{summ.b.SDCorr}{a matrix with posterior summary statistics for
-    standard deviations of random effects and correlations of each pair
-    of random effects.}
-  \item{summ.sigma_eps}{a matrix with posterior summary statistics for
-    standard deviations of the error terms in the (mixed) models of
-    continuous responses.}
-  \item{freqK_b}{frequency table for the MCMC sample of the number of
-    mixture components in the distribution of the random effects.}
-  \item{propK_b}{posterior probabilities for the numbers of mixture
-    components in the distribution of random effects.}  
+    summary statistics (see label switching problem mentioned above).
+    In any case, they should be used with care.}  
   \item{K_b}{numeric vector with a chain for \eqn{K_b}{K[b]} (number of
     mixture components in the distribution of random effects).}
   \item{w_b}{numeric vector or matrix with a chain for \eqn{w_b}{w[b]} (mixture
@@ -341,11 +353,17 @@ GLMM_MCMC(y, dist="gaussian", id, x, z, random.intercept,
   \item{gammaInv_b}{matrix with \eqn{dimb} columns with a chain for inverses
     of the hyperparameter \eqn{\boldsymbol{\gamma}_b}{gamma[b]}.}
   \item{order_b}{numeric vector or matrix with order indeces of mixture
-    components in the distribution of random effects. It is a matrix with \eqn{K_b}{K[b]} columns when \eqn{K_b}{K[b]} is
+    components in the distribution of random effects related to artificial identifiability constraint
+    defined by ordering of the first component of the mixture means.
+
+    It is a matrix with \eqn{K_b}{K[b]} columns when \eqn{K_b}{K[b]} is
     fixed. Otherwise it is a vector with orders put sequentially after
     each other.}
   \item{rank_b}{numeric vector or matrix with rank indeces of mixture
-    components in the distribution of random effects. It is a matrix with \eqn{K_b}{K[b]} columns when \eqn{K_b}{K[b]} is
+    components in the distribution of random effects related to artificial identifiability constraint
+    defined by ordering of the first component of the mixture means.
+
+    It is a matrix with \eqn{K_b}{K[b]} columns when \eqn{K_b}{K[b]} is
     fixed. Otherwise it is a vector with ranks put sequentially after
     each other.}
   \item{mixture_b}{\code{data.frame} with columns labeled

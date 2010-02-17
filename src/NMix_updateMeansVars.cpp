@@ -227,7 +227,7 @@ updateMeansVars_NC(double* mu,
 
   /***** Compute order and rank for the mixture components *****/
   /***** ================================================= *****/
-  NMix::orderComp(order, rank, work_orderComp, K, mu, p);
+  NMix::orderComp(order, rank, work_orderComp, &AK_Basic::_ZERO_INT, K, mu, p);
 
   return;
 }
@@ -438,7 +438,7 @@ updateMeansVars_IC(double* mu,
 
   /***** Compute order and rank for the mixture components *****/
   /***** ================================================= *****/
-  NMix::orderComp(order, rank, work_orderComp, K, mu, p);
+  NMix::orderComp(order, rank, work_orderComp, &AK_Basic::_ZERO_INT, K, mu, p);
 
   return;
 }
@@ -657,7 +657,7 @@ updateMeansVars_IC_homoscedastic(double* mu,
 
   /***** Compute order and rank for the mixture components *****/
   /***** ================================================= *****/
-  NMix::orderComp(order, rank, work_orderComp, K, mu, p);
+  NMix::orderComp(order, rank, work_orderComp, &AK_Basic::_ZERO_INT, K, mu, p);
 
   return;
 }

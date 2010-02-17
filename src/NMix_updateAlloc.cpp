@@ -100,7 +100,7 @@ updateAlloc(int* r,
       //AK_Basic::printArray(cum_Pr_start, *K);                    // DEBUG CODE
 
       /*** Rescale log(P(r_i=j | ...)) such that the highest one will be equal to zero              ***/
-      /*** and compute cumulative sums of P(r_i=j | ...) which will again be stored in logPr_dots   ***/
+      /*** and compute cumulative sums of P(r_i=j | ...) which will again be stored in cumPr        ***/
       /*** ======================================================================================== ***/
       dv = AK_Basic::maxArray(cum_Pr_start, *K);
       cum_PrP = cum_Pr_start;

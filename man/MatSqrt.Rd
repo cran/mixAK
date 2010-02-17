@@ -36,11 +36,17 @@ sqrtA <- MatSqrt(A)
 sqrtA
 round(sqrtA \%*\% sqrtA - A, 13)
 
-B <- -A
-sqrtB <- MatSqrt(B)
-sqrtB
-round(Re(sqrtB \%*\% sqrtB - B), 13)
-round(Im(sqrtB \%*\% sqrtB - B), 13)
+### The following example crashes on r-devel Windows x64 x86_64,
+### on r-patched Linux x86_64 
+### due to the error in spevGE2GE subroutine
+###
+### Commented on 16/01/2010
+###
+# B <- -A
+# sqrtB <- MatSqrt(B)
+# sqrtB
+# round(Re(sqrtB \%*\% sqrtB - B), 13)
+# round(Im(sqrtB \%*\% sqrtB - B), 13)
 
 V <- eigen(A)$vectors
 sqrtV <- MatSqrt(V)

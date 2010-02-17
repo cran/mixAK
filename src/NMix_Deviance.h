@@ -6,10 +6,13 @@
 //             arnost.komarek[AT]mff.cuni.cz
 //
 //  CREATED:   06/12/2008
+//             13/02/2010:   argument 'Pr' added 
 //
 //  FUNCTIONS:  
 //     * Deviance_NC  08/02/2008:  Calculate all quantities needed to get DIC_3 and DIC_4 for natural conjugate prior on mu and Q
 //                                 (as explained in Celeux, Forbes, Robert and Titterington, 2006)
+//
+//     * Deviance_IC      
 //
 // ===================================================================================
 //
@@ -55,7 +58,11 @@ namespace NMix{
 // 
 // pred_dens[n]:       pred_dens[i] = sum_{j=1}^K w_j * phi(y_i | mu_j, Sigma_j)
 //
+// Pr[K, n]:           Pr[j, i] = P(r_i = l | ...)
+//                     (re-scaled to sum-up to one)
+//
 // cum_Pr[K, n]:       cum_Pr[j, i] = sum_{l=1}^j P(r_i = l | ...)
+//                     (NOT re-scaled to have a total sum of one)
 //
 // dwork[p + 2*p*K + LTp*K + 2*K + p*K + 2*LTp*K + 2*K]:
 //
@@ -100,26 +107,80 @@ namespace NMix{
 // XiInv[LTp]:
 //
 void
-Deviance_NC(double* indLogL0,     double* indLogL1,   double* indDevCompl,   double* indDevObs,   double* indDevCompl_inHat,
-            double* LogL0,        double* LogL1,      double* DevCompl,      double* DevObs,      double* DevCompl_inHat, 
-            double* pred_dens,    double* cum_Pr,     double* dwork,         int* err,
-            const double* y,      const int* r,           const int* mixN,     const int* p,      const int* n,
-            const int* K,         const double* logw,     const double* mu,    const double* Q,   const double* Li,  const double* log_dets,
-            const double* delta,  const double* c,        const double* xi,    const double* c_xi,  
-            const double* Dinv,   const double* Dinv_xi,  const double* zeta,  const double* XiInv);
+Deviance_NC(double* indLogL0,     
+            double* indLogL1,   
+            double* indDevCompl,   
+            double* indDevObs,   
+            double* indDevCompl_inHat,
+            double* LogL0,        
+            double* LogL1,      
+            double* DevCompl,      
+            double* DevObs,      
+            double* DevCompl_inHat, 
+            double* pred_dens,    
+            double* Pr,         
+            double* cum_Pr,        
+            double* dwork,         
+            int*    err,
+            const double* y,      
+            const int*    r,           
+            const int*    mixN,     
+            const int*    p,      
+            const int*    n,
+            const int*    K,         
+            const double* logw,     
+            const double* mu,    
+            const double* Q,   
+            const double* Li,  
+            const double* log_dets,
+            const double* delta,  
+            const double* c,        
+            const double* xi,    
+            const double* c_xi,  
+            const double* Dinv,   
+            const double* Dinv_xi,  
+            const double* zeta,  
+            const double* XiInv);
 
 
 /***** ***************************************************************************************** *****/
 /***** NMix::Deviance_IC                                                                         *****/
 /***** ***************************************************************************************** *****/
 void
-Deviance_IC(double* indLogL0,     double* indLogL1,   double* indDevCompl,   double* indDevObs,   double* indDevCompl_inHat,
-            double* LogL0,        double* LogL1,      double* DevCompl,      double* DevObs,      double* DevCompl_inHat, 
-            double* pred_dens,    double* cum_Pr,     double* dwork,         int* err,
-            const double* y,      const int* r,           const int* mixN,     const int* p,      const int* n,
-            const int* K,         const double* logw,     const double* mu,    const double* Q,   const double* Li,  const double* log_dets,
-            const double* delta,  const double* c,        const double* xi,    const double* c_xi,  
-            const double* Dinv,   const double* Dinv_xi,  const double* zeta,  const double* XiInv);
+Deviance_IC(double* indLogL0,     
+            double* indLogL1,   
+            double* indDevCompl,   
+            double* indDevObs,   
+            double* indDevCompl_inHat,
+            double* LogL0,        
+            double* LogL1,      
+            double* DevCompl,      
+            double* DevObs,      
+            double* DevCompl_inHat, 
+            double* pred_dens,    
+            double* Pr,
+            double* cum_Pr,     
+            double* dwork,         
+            int*    err,
+            const double* y,      
+            const int*    r,           
+            const int*    mixN,     
+            const int*    p,      
+            const int*    n,
+            const int*    K,         
+            const double* logw,     
+            const double* mu,    
+            const double* Q,   
+            const double* Li,  
+            const double* log_dets,
+            const double* delta,  
+            const double* c,        
+            const double* xi,    
+            const double* c_xi,  
+            const double* Dinv,   
+            const double* Dinv_xi,  
+            const double* zeta,  
+            const double* XiInv);
 
 }  /*** end of the namespace NMix ***/
 

@@ -8,6 +8,7 @@
 //
 //  FUNCTIONS:  
 //      * orderComp (OVERLOADED)   30/01/2008
+//                                 09/02/2010:  argument margin added 
 //      * orderComp_add            31/01/2008
 //      * orderComp_remove         31/01/2008
 //
@@ -25,7 +26,10 @@ namespace NMix{
 /***** ***************************************************************************************** *****/
 //
 // Currently ordering is defined as of ordering of the first elements of mixture means, 
-// i.e., mu[,j1] < mu[,j2] <=> mu[0,j1] < mu[0,j2]
+// i.e., mu[,j1] < mu[,j2] <=> mu[margin, j1] < mu[margin, j2]
+//
+// With mu = w, margin = 0, p=1, this function can also be used to determine the ordering of the mixture components
+// using the mixture weights.
 //
 // Relationship between order and rank:  rank[order[j]] = j
 //                                       order[rank[j]] = j
@@ -52,14 +56,26 @@ namespace NMix{
 // p[1]         Dimension
 //
 void
-orderComp(int* order,  int* rank,  double* dwork,  const int* K,  const double* mu,  const int* p);
+orderComp(int*    order,  
+          int*    rank,  
+          double* dwork,  
+          const int*    margin,
+          const int*    K,  
+          const double* mu,  
+          const int*    p);
 
 void
-orderComp(int* order,  double* dwork,  const int* K,  const double* mu,  const int* p);
+orderComp(int*    order,  
+          double* dwork,  
+          const int*    margin,  
+          const int*    K,  
+          const double* mu,  
+          const int*    p);
 
 
 /***** ***************************************************************************************** *****/
 /***** NMix::orderComp_add:   Update order and rank after adding one component                   *****/
+//                            * this version assumes that margin = 0                             *****/
 /***** ***************************************************************************************** *****/
 //
 // order[K+1]  INPUT:   Order indeces (on the first K places) before adding a new component
@@ -78,11 +94,17 @@ orderComp(int* order,  double* dwork,  const int* K,  const double* mu,  const i
 // p[1]         Dimension
 //
 void
-orderComp_add(int* order,  int* rank,  const double* mustar,  const int* K,  const double* mu,  const int* p);
+orderComp_add(int* order,  
+              int* rank,  
+              const double* mustar,  
+              const int*    K,  
+              const double* mu,  
+              const int*    p);
 
 
 /***** ***************************************************************************************** *****/
 /***** NMix::orderComp_remove:   Update order and rank after removal of one component            *****/
+/*****                           * this version assumes that margin = 0                          *****/
 /***** ***************************************************************************************** *****/
 //
 // order[K]    INPUT:   Order indeces before removal of the jstar-th component
@@ -96,7 +118,10 @@ orderComp_add(int* order,  int* rank,  const double* mustar,  const int* K,  con
 // K[1]       The length of the corresponding vector BEFORE removal of the jstar-th component
 //
 void
-orderComp_remove(int* order,  int* rank,  const int* jstar,  const int* K);
+orderComp_remove(int* order,  
+                 int* rank,  
+                 const int* jstar,  
+                 const int* K);
 
 
 }  /*** end of namespace NMix ***/

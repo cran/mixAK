@@ -33,6 +33,8 @@
 #include "NMix_updateMeansVars.h"
 #include "NMix_updateHyperVars.h"
 
+#include "NMix_PosterMeanMixParam.h"
+
 #include "GLMM.h"
 #include "GLMM_linear_predictors.h"
 //#include "GLMM_scale_ZitZi.h"

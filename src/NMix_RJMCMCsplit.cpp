@@ -700,7 +700,7 @@ RJMCMCsplit(int* accept,           double* log_AR,
     *K += 1;
 
     /*** order, rank ***/
-    NMix::orderComp(order, rank, dwork_misc, K, mu, p);
+    NMix::orderComp(order, rank, dwork_misc, &AK_Basic::_ZERO_INT, K, mu, p);
   }              /** end of if (*accept) **/
 
   return;

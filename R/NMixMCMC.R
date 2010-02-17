@@ -35,80 +35,18 @@ NMixMCMC <- function(y0, y1, censor, scale, prior,
   
   ########## ========== Data ========== ##########
   ########## ========================== ##########
-  if (missing(y0)) stop("y0 (data) must be given")
-  if (is.null(dim(y0))){
-    y0 <- matrix(y0, ncol=1, nrow=length(y0))
-    
-    if (missing(censor)) censor <- rep(1, nrow(y0))
-    if (!is.null(dim(censor))) stop("y0 and censor mismatch (dimensions)")
-    censor <- matrix(censor, ncol=1, nrow=length(censor))
-    
-    if (missing(y1)){
-      if (any(censor == 3)) stop("y1 must be given when there are some censor=3 values")      
-      y1 <- rep(0, nrow(y0))
-    }  
-    if (!is.null(dim(y1))) stop("y0 and y1 mismatch (dimensions)")
-    y1 <- matrix(y1, ncol=1, nrow=length(y1))
-  }else{
-    if (is.data.frame(y0)) y0 <- as.matrix(y0)
-    
-    if (missing(censor)) censor <- matrix(rep(1, nrow(y0)*ncol(y0)), nrow=nrow(y0), ncol=ncol(y0))
-    if (is.null(dim(censor))) stop("y0 and censor mismatch (dimensions)")
-    if (nrow(censor) != nrow(y0) | ncol(censor) != ncol(y0)) stop("y0 and censor mismatch (dimensions)")
-    if (is.data.frame(censor)) censor <- as.matrix(censor)
+  dd <- NMixMCMCdata(y0=y0, y1=y1, censor=censor)
+  rm(list=c("y0", "y1", "censor"))
+    ### use dd$y0, dd$y1, dd$censor instead  
 
-    if (missing(y1)){
-      if (any(censor == 3)) stop("y1 must be given when there are some censor=3 values")      
-      y1 <- matrix(rep(0, nrow(y0)*ncol(y0)), nrow=nrow(y0), ncol=ncol(y0))
-    }  
-    if (is.null(dim(y1))) stop("y0 and y1 mismatch (dimensions)")
-    if (nrow(y1) != nrow(y0) | ncol(y1) != ncol(y0)) stop("y0 and y1 mismatch (dimensions)")
-    if (is.data.frame(y1)) y1 <- as.matrix(y1)    
-  }  
   
-  n <- nrow(y0)
-  if (n < 2) stop("n (number of observations) must be at least 2")
-  p <- ncol(y0)
-  LTp <- p * (p + 1)/2
-  Imat <- diag(p)
-  rowsI <- row(Imat)[lower.tri(row(Imat), diag=TRUE)]
-  colsI <- col(Imat)[lower.tri(col(Imat), diag=TRUE)] 
-  naamLTp <- paste(".", rowsI, ".", colsI, sep="")      
-  
-  if (any(is.na(y0))) stop("NA's in y0 are not allowed")
-  
-  if (missing(censor)) censor <- matrix(1, nrow=n, ncol=p) 
-  if (is.null(dim(censor))) stop("y0 and censor mismatch (dimensions)") 
-  if (nrow(censor) != n | ncol(censor) != p) stop("y0 and censor mismatch (nrow/ncol)")
-  if (any(is.na(censor))) stop("NA's in censor are not allowed")
-  if (any(!(as.matrix(censor) %in% c(0, 1, 2, 3)))) stop("censor values must be from {0, 1, 2, 3}")
-  are.Censored <- any(censor != 1)
-  are.Right <- any(censor == 0)
-  are.Exact <- any(censor == 1)
-  are.Left <- any(censor == 2)
-  are.Interval <- any(censor == 3)  
-  
-  is.Interval <- (censor == 3)
-
-  if (missing(y1)){
-    if (any(is.Interval)) stop("y1 must be given when there are some censor=3 values")
-    y1 <- matrix(0, nrow=n, ncol=p)
-  }
-  if (!any(is.Interval)) y1 <- matrix(0, nrow=n, ncol=p)  
-  if (is.null(dim(y1))) stop("y0 and y1 mismatch (dimensions)")
-  if (nrow(y1) != n | ncol(y1) != p) stop("y0 and y1 mismatch (nrow/ncol)")  
-  if (any(is.na(y1[is.Interval]))) stop("NA in the upper limit of the observed interval indicated")
-  if (any(y0[is.Interval] >= y1[is.Interval])) stop("y0 and y1 mismatch (y0 >= y1 for some interval-censored observation)")
-  y1[!is.Interval] <- 0
-
-
   ######### =========== Temporar initial values (equal to lower limit of right-censored, =========== #########
   ######### =========== upper limit of left-censored                                     =========== #########
   ######### =========== and midpoint of interval-censored observation)                   =========== #########
   ########## ======================================================================================= #########
-  tmpinity <- y0
-  if (are.Interval) tmpinity[censor == 3] <- (y0[censor == 3] + y1[censor == 3])/2      
-
+  tmpinity <- dd$y0
+  if (dd$are.Interval) tmpinity[dd$censor == 3] <- (dd$y0[dd$censor == 3] + dd$y1[dd$censor == 3])/2      
+  
   
   ########## ========== Prior and Initial Values (chain 1), Scaling the data ========== ##########
   ########## ========================================================================== ##########
@@ -120,27 +58,27 @@ NMixMCMC <- function(y0, y1, censor, scale, prior,
   if (!is.list(init)) stop("init must be a list")
   
   inprior <- names(prior)
-  ipriorK   <- match("priorK", inprior, nomatch=NA)
+  ipriorK   <- match("priorK",   inprior, nomatch=NA)
   ipriormuQ <- match("priormuQ", inprior, nomatch=NA)
-  iKmax     <- match("Kmax", inprior, nomatch=NA)
-  ilambda   <- match("lambda", inprior, nomatch=NA)
-  idelta    <- match("delta", inprior, nomatch=NA)
-  ixi       <- match("xi", inprior, nomatch=NA)  
-  ice       <- match("ce", inprior, nomatch=NA)
-  iD        <- match("D", inprior, nomatch=NA)
-  izeta     <- match("zeta", inprior, nomatch=NA)
-  ig        <- match("g", inprior, nomatch=NA)
-  ih        <- match("h", inprior, nomatch=NA)
+  iKmax     <- match("Kmax",     inprior, nomatch=NA)
+  ilambda   <- match("lambda",   inprior, nomatch=NA)
+  idelta    <- match("delta",    inprior, nomatch=NA)
+  ixi       <- match("xi",       inprior, nomatch=NA)  
+  ice       <- match("ce",       inprior, nomatch=NA)
+  iD        <- match("D",        inprior, nomatch=NA)
+  izeta     <- match("zeta",     inprior, nomatch=NA)
+  ig        <- match("g",        inprior, nomatch=NA)
+  ih        <- match("h",        inprior, nomatch=NA)
 
   ininit    <- names(init)
-  iy        <- match("y", ininit, nomatch=NA)    
-  iK        <- match("K", ininit, nomatch=NA)
-  iw        <- match("w", ininit, nomatch=NA)
-  imu       <- match("mu", ininit, nomatch=NA)
-  iSigma    <- match("Sigma", ininit, nomatch=NA)
-  iLi       <- match("Li", ininit, nomatch=NA)  
+  iy        <- match("y",        ininit, nomatch=NA)    
+  iK        <- match("K",        ininit, nomatch=NA)
+  iw        <- match("w",        ininit, nomatch=NA)
+  imu       <- match("mu",       ininit, nomatch=NA)
+  iSigma    <- match("Sigma",    ininit, nomatch=NA)
+  iLi       <- match("Li",       ininit, nomatch=NA)  
   igammaInv <- match("gammaInv", ininit, nomatch=NA)
-  ir        <- match("r", ininit, nomatch=NA)    
+  ir        <- match("r",        ininit, nomatch=NA)    
   
   ##### integer prior:  Kprior
   ##### ----------------------------------------------------
@@ -197,33 +135,21 @@ NMixMCMC <- function(y0, y1, censor, scale, prior,
 
   
   ##### init:  y
-  ##### ----------------------------------------------------  
-  if (are.Censored){
-    if (is.na(iy)){
-      init$y <- y0
-      tmpsd <- matrix(rep(sd(tmpinity), n), nrow=n, ncol=p, byrow=TRUE)
-      if (are.Right) init$y[censor == 0] <- y0[censor == 0] + tmpsd[censor==0]
-      if (are.Left) init$y[censor == 2] <- y0[censor == 2] - tmpsd[censor==2]
-      if (are.Interval) init$y[censor == 3] <- (y0[censor == 3] + y1[censor == 3])/2      
-    }
-    if (any(is.na(init$y))) stop("NA in init$y")
-    if (p == 1) init$y <- matrix(init$y, ncol=1)
-    if (!is.matrix(init$y)) stop("init$y must be a matrix")
-    if (nrow(init$y) != n | ncol(init$y) != p) stop("data and init$y mismatch (dimension)")
-    if (are.Right) if(any(init$y[censor == 0] <= y0[censor == 0])) stop("init$y and y0 mismatch (initial value lower than right-censored observation)")
-    if (are.Exact) init$y[censor == 1] != y0[censor == 1]
-    if (are.Left) if(any(init$y[censor == 2] >= y0[censor == 2])) stop("init$y and y0 mismatch (initial value higher than left-censored observation)")
-    if (are.Interval){
-      if(any(init$y[censor == 3] <= y0[censor == 3])) stop("init$y and y0 mismatch (initial value lower than the left limit of the interval-censored observation)")
-      if(any(init$y[censor == 3] >= y1[censor == 3])) stop("init$y and y1 mismatch (initial value higher than the right limit of the interval-censored observation)")        
-    }    
-  }else{     ### !are.Censored
-    init$y <- y0  
-  }
+  ##### ----------------------------------------------------
+  if (is.na(iy)){
+    init$y <- NMixMCMCinity(y0=dd$y0, y1=dd$y1, censor=dd$censor, sd.init=sd(tmpinity),
+                            are.Censored=dd$are.Censored, are.Right=dd$are.Right, are.Exact=dd$are.Exact, are.Left=dd$are.Left, are.Interval=dd$are.Interval,
+                            p=dd$p, n=dd$n, random=FALSE)    
+  }else{
+    init$y <- NMixMCMCinity(y0=dd$y0, y1=dd$y1, censor=dd$censor, sd.init=sd(tmpinity),
+                            are.Censored=dd$are.Censored, are.Right=dd$are.Right, are.Exact=dd$are.Exact, are.Left=dd$are.Left, are.Interval=dd$are.Interval,
+                            p=dd$p, n=dd$n, inity=init$y)    
+  }  
+  
     
   ##### scale:  Scaling the data
   ##### ------------------------------------------------------
-  if (missing(scale)){                   ### REMARK: y0, y1 and init$y are already of class matrix (even if p = 1)
+  if (missing(scale)){                   ### REMARK: dd$y0, dd$y1 and init$y are already of class matrix (even if p = 1)
     SHIFT <- apply(init$y, 2, mean)
     SCALE <- apply(init$y, 2, sd)
     scale <- list(shift=SHIFT, scale=SCALE)
@@ -235,24 +161,24 @@ NMixMCMC <- function(y0, y1, censor, scale, prior,
   iscale.shift <- match("shift", inscale, nomatch=NA)
   iscale.scale <- match("scale", inscale, nomatch=NA)
   if (is.na(iscale.shift)) stop("scale$shift is missing")
-  if (length(scale$shift) == 1) scale$shift <- rep(scale$shift, p)
-  if (length(scale$shift) != p) stop(paste("scale$shift must be a vector of length ", p, sep=""))    
+  if (length(scale$shift) == 1) scale$shift <- rep(scale$shift, dd$p)
+  if (length(scale$shift) != dd$p) stop(paste("scale$shift must be a vector of length ", dd$p, sep=""))    
   if (is.na(iscale.scale)) stop("scale$scale is missing")
-  if (length(scale$scale) == 1) scale$scale <- rep(scale$scale, p)
-  if (length(scale$scale) != p) stop(paste("scale$scale must be a vector of length ", p, sep=""))
+  if (length(scale$scale) == 1) scale$scale <- rep(scale$scale, dd$p)
+  if (length(scale$scale) != dd$p) stop(paste("scale$scale must be a vector of length ", dd$p, sep=""))
   if (any(scale$scale <= 0)) stop("all elements of scale$scale must be positive")
 
-  z0    <- (y0 - matrix(rep(scale$shift, n), ncol=p, byrow=TRUE))/matrix(rep(scale$scale, n), ncol=p, byrow=TRUE)
-  z1    <- (y1 - matrix(rep(scale$shift, n), ncol=p, byrow=TRUE))/matrix(rep(scale$scale, n), ncol=p, byrow=TRUE)    
-  tmpinitz <- (tmpinity - matrix(rep(scale$shift, n), ncol=p, byrow=TRUE))/matrix(rep(scale$scale, n), ncol=p, byrow=TRUE)
+  z0    <- (dd$y0 - matrix(rep(scale$shift, dd$n), ncol=dd$p, byrow=TRUE))/matrix(rep(scale$scale, dd$n), ncol=dd$p, byrow=TRUE)
+  z1    <- (dd$y1 - matrix(rep(scale$shift, dd$n), ncol=dd$p, byrow=TRUE))/matrix(rep(scale$scale, dd$n), ncol=dd$p, byrow=TRUE)    
+  tmpinitz <- (tmpinity - matrix(rep(scale$shift, dd$n), ncol=dd$p, byrow=TRUE))/matrix(rep(scale$scale, dd$n), ncol=dd$p, byrow=TRUE)
   
-  if (p == 1){
+  if (dd$p == 1){
     initz <- (init$y - scale$shift)/scale$scale
     zBar <- mean(initz)
     zMin <- min(initz)
     zMax <- max(initz)
   }else{
-    initz <- (init$y - matrix(rep(scale$shift, n), ncol=p, byrow=TRUE))/matrix(rep(scale$scale, n), ncol=p, byrow=TRUE)
+    initz <- (init$y - matrix(rep(scale$shift, dd$n), ncol=dd$p, byrow=TRUE))/matrix(rep(scale$scale, dd$n), ncol=dd$p, byrow=TRUE)
     zBar <- apply(initz, 2, mean)    ### will be used to determine prior$xi if this not given by the user
     zMin <- apply(initz, 2, min)     
     zMax <- apply(initz, 2, max)
@@ -266,24 +192,24 @@ NMixMCMC <- function(y0, y1, censor, scale, prior,
   
   ##### double prior:  xi
   ##### ----------------------------------------------------  
-  if (is.na(ixi)) prior$xi <- matrix(rep(zMid, CKmax), nrow=CKmax, ncol=p, byrow=TRUE)
+  if (is.na(ixi)) prior$xi <- matrix(rep(zMid, CKmax), nrow=CKmax, ncol=dd$p, byrow=TRUE)
   if (any(is.na(prior$xi))) stop("NA in prior$xi")  
-  if (p == 1){
+  if (dd$p == 1){
     if (length(prior$xi) == 1) prior$xi <- rep(prior$xi, CKmax)                                                ## common prior$xi for all mixture components
     if (length(prior$xi) != CKmax) stop(paste("prior$xi must be of length ", CKmax, sep=""))
     prior$xi <- as.numeric(prior$xi)
     names(prior$xi) <- paste("xi", 1:CKmax, sep="")    
     Cxi <- prior$xi
   }else{
-    if (length(prior$xi) == p) prior$xi <- matrix(rep(as.numeric(prior$xi), each=CKmax), nrow=CKmax, ncol=p)   ## common prior$xi for all mixture components
+    if (length(prior$xi) == dd$p) prior$xi <- matrix(rep(as.numeric(prior$xi), each=CKmax), nrow=CKmax, ncol=dd$p)   ## common prior$xi for all mixture components
     if (CKmax == 1) prior$xi <- matrix(as.numeric(prior$xi), nrow=1)    
     if (!is.matrix(prior$xi)) stop("prior$xi must be a matrix")
-    if (ncol(prior$xi) != p) stop(paste("prior$xi must have ", p, " columns", sep=""))
+    if (ncol(prior$xi) != dd$p) stop(paste("prior$xi must have ", dd$p, " columns", sep=""))
     if (nrow(prior$xi) != CKmax) stop(paste("prior$xi must have ", CKmax, " rows", sep=""))
     rownames(prior$xi) <- paste("j", 1:CKmax, sep="")
-    colnames(prior$xi) <- paste("m", 1:p, sep="")
+    colnames(prior$xi) <- paste("m", 1:dd$p, sep="")
     Cxi <- as.numeric(t(prior$xi))
-    names(Cxi) <- paste("xi", rep(1:CKmax, each=p), ".", rep(1:p, CKmax), sep="")
+    names(Cxi) <- paste("xi", rep(1:CKmax, each=dd$p), ".", rep(1:dd$p, CKmax), sep="")
   }  
   if (any(is.na(Cxi))) stop("NA in prior$xi")
 
@@ -306,11 +232,11 @@ NMixMCMC <- function(y0, y1, censor, scale, prior,
   ##### ----------------------------------------------------  
   if (CpriormuQ == 1){    ## independent conjugate prior for (mu, Q)
     if (is.na(iD)){
-      if (p == 1) prior$D <- rep(zR^2, CKmax)
-      else        prior$D <- t(matrix(rep(diag(zR^2), CKmax), nrow=p, ncol=CKmax*p))
+      if (dd$p == 1) prior$D <- rep(zR^2, CKmax)
+      else           prior$D <- t(matrix(rep(diag(zR^2), CKmax), nrow=dd$p, ncol=CKmax*dd$p))
     }
     if (any(is.na(prior$D))) stop("NA in prior$D")    
-    if (p == 1){
+    if (dd$p == 1){
       if (length(prior$D) == 1) prior$D <- rep(prior$D, CKmax)
       if (length(prior$D) != CKmax) stop(paste("prior$D must be of length ", CKmax, sep=""))
       prior$D <- as.numeric(prior$D)
@@ -320,19 +246,19 @@ NMixMCMC <- function(y0, y1, censor, scale, prior,
       names(CDinv) <- paste("Dinv", 1:CKmax, sep="")      
     }else{
       if (!is.matrix(prior$D)) stop("prior$D must be a matrix")
-      if (ncol(prior$D) != p) stop(paste("prior$D must have ", p, " columns", sep=""))
-      if (nrow(prior$D) == p){
+      if (ncol(prior$D) != dd$p) stop(paste("prior$D must have ", dd$p, " columns", sep=""))
+      if (nrow(prior$D) == dd$p){
         if (any(prior$D[lower.tri(prior$D)] != t(prior$D)[lower.tri(prior$D)])) stop("prior$D must be a symmetric matrix")
         err <- try(Dinv <- chol(prior$D), silent=TRUE)
         if (class(err) == "try-error") stop("Cholesky decomposition of prior$D failed")
         Dinv <- chol2inv(Dinv)
         CDinv <- rep(Dinv[lower.tri(Dinv, diag=TRUE)], CKmax)        
-        prior$D <- matrix(rep(as.numeric(t(prior$D)), CKmax), nrow=p*CKmax, ncol=p, byrow=TRUE)
+        prior$D <- matrix(rep(as.numeric(t(prior$D)), CKmax), nrow=dd$p*CKmax, ncol=dd$p, byrow=TRUE)
       }else{  
-        if (nrow(prior$D) != CKmax*p) stop(paste("prior$D must have ", CKmax, " times ", p, " rows", sep=""))
+        if (nrow(prior$D) != CKmax*dd$p) stop(paste("prior$D must have ", CKmax, " times ", dd$p, " rows", sep=""))
         CDinv <- numeric(0)
         for (j in 1:CKmax){
-          Dinv <- prior$D[((j-1)*p+1):(j*p),]
+          Dinv <- prior$D[((j-1)*dd$p+1):(j*dd$p),]
           if (any(Dinv[lower.tri(Dinv)] != t(Dinv)[lower.tri(Dinv)])) stop(paste(j, "-th block of prior$D is not symmetric", sep=""))
           err <- try(Dinv <- chol(Dinv), silent=TRUE)
           if (class(err) == "try-error") stop(paste("Cholesky decomposition of the ", j, "-th block of prior$D failed", sep=""))
@@ -340,55 +266,55 @@ NMixMCMC <- function(y0, y1, censor, scale, prior,
           CDinv <- c(CDinv, Dinv[lower.tri(Dinv, diag=TRUE)])
         }  
       }
-      colnames(prior$D) <- paste("m", 1:p, sep="")
-      rownames(prior$D) <- paste("j", rep(1:CKmax, each=p), ".", rep(1:p, CKmax), sep="")
-      names(CDinv) <- paste("Dinv", rep(1:CKmax, each=LTp), rep(naamLTp, CKmax), sep="")
+      colnames(prior$D) <- paste("m", 1:dd$p, sep="")
+      rownames(prior$D) <- paste("j", rep(1:CKmax, each=dd$p), ".", rep(1:dd$p, CKmax), sep="")
+      names(CDinv) <- paste("Dinv", rep(1:CKmax, each=dd$LTp), rep(dd$naamLTp, CKmax), sep="")
     }  
   }else{
-    if (p == 1){
+    if (dd$p == 1){
       prior$D <- rep(1, CKmax)
       names(prior$D) <- paste("D", 1:CKmax, sep="")
       CDinv <- 1/prior$D
       names(CDinv) <- paste("Dinv", 1:CKmax, sep="")      
     }else{
-      prior$D <- matrix(rep(as.numeric(diag(p)), CKmax), nrow=p*CKmax, ncol=p, byrow=TRUE)
-      colnames(prior$D) <- paste("m", 1:p, sep="")
-      rownames(prior$D) <- paste("j", rep(1:CKmax, each=p), ".", rep(1:p, CKmax), sep="")
+      prior$D <- matrix(rep(as.numeric(diag(dd$p)), CKmax), nrow=dd$p*CKmax, ncol=dd$p, byrow=TRUE)
+      colnames(prior$D) <- paste("m", 1:dd$p, sep="")
+      rownames(prior$D) <- paste("j", rep(1:CKmax, each=dd$p), ".", rep(1:dd$p, CKmax), sep="")
 
-      Dinv <- diag(p)
+      Dinv <- diag(dd$p)
       CDinv <- rep(Dinv[lower.tri(Dinv, diag=TRUE)], CKmax)
-      names(CDinv) <- paste("Dinv", rep(1:CKmax, each=LTp), rep(naamLTp, CKmax), sep="")      
+      names(CDinv) <- paste("Dinv", rep(1:CKmax, each=dd$LTp), rep(dd$naamLTp, CKmax), sep="")      
     }  
   }  
 
   ##### double prior:  zeta
   ##### ----------------------------------------------------  
-  if (is.na(izeta)) prior$zeta <- p + 1
+  if (is.na(izeta)) prior$zeta <- dd$p + 1
   if (length(prior$zeta) != 1) stop("prior$zeta must be of length 1")  
   if (is.na(prior$zeta)) stop("NA in prior$zeta")
-  if (prior$zeta <= p - 1) stop(paste("prior$zeta must be higher than ", p - 1, sep=""))
+  if (prior$zeta <= dd$p - 1) stop(paste("prior$zeta must be higher than ", dd$p - 1, sep=""))
   Czeta <- as.numeric(prior$zeta)
   names(Czeta) <- "zeta"
   
   ##### double prior:  g
   ##### ----------------------------------------------------  
-  if (is.na(ig)) prior$g <- rep(0.2, p)
-  if (length(prior$g) == 1) prior$g <- rep(prior$g, p)
-  if (length(prior$g) != p) stop(paste("prior$g must be of length ", p, sep=""))  
+  if (is.na(ig)) prior$g <- rep(0.2, dd$p)
+  if (length(prior$g) == 1) prior$g <- rep(prior$g, dd$p)
+  if (length(prior$g) != dd$p) stop(paste("prior$g must be of length ", dd$p, sep=""))  
   if (any(is.na(prior$g))) stop("NA in prior$g")
   if (any(prior$g <= 0)) stop("prior$g must be positive")
   Cg <- as.numeric(prior$g)
-  names(Cg) <- paste("g", 1:p, sep="")
+  names(Cg) <- paste("g", 1:dd$p, sep="")
   
   ##### double prior:  h
   ##### ----------------------------------------------------
   if (is.na(ih)) prior$h <- 10/(zR^2)
-  if (length(prior$h) == 1) prior$h <- rep(prior$h, p)
-  if (length(prior$h) != p) stop(paste("prior$h must be of length ", p, sep=""))  
+  if (length(prior$h) == 1) prior$h <- rep(prior$h, dd$p)
+  if (length(prior$h) != dd$p) stop(paste("prior$h must be of length ", dd$p, sep=""))  
   if (any(is.na(prior$h))) stop("NA in prior$h")
   if (any(prior$h <= 0)) stop("prior$h must be positive")
   Ch <- as.numeric(prior$h)
-  names(Ch) <- paste("h", 1:p, sep="")
+  names(Ch) <- paste("h", 1:dd$p, sep="")
 
 
   ##### integer, double prior:  concetenate
@@ -427,51 +353,51 @@ NMixMCMC <- function(y0, y1, censor, scale, prior,
   ##### init:  mu
   ##### ----------------------------------------------------  
   if (is.na(imu)){
-    if (p == 1){
+    if (dd$p == 1){
       dist <- zR/(init$K + 1)
       init$mu <- seq(zMin+dist, zMax-dist, length=init$K)
     }else{
       dist <- zR/(init$K + 1)
-      init$mu <- matrix(NA, nrow=init$K, ncol=p)
-      for (j in 1:p) init$mu[,j] <- seq(zMin[j]+dist[j], zMax[j]-dist[j], length=init$K)
+      init$mu <- matrix(NA, nrow=init$K, ncol=dd$p)
+      for (j in 1:dd$p) init$mu[,j] <- seq(zMin[j]+dist[j], zMax[j]-dist[j], length=init$K)
     }  
   }
   if (any(is.na(init$mu))) stop("NA in init$mu")          
-  if (p == 1){
+  if (dd$p == 1){
     init$mu <- as.numeric(init$mu)
     if (length(init$mu) == CKmax & CKmax > init$K) init$mu <- init$mu[1:init$K]          
     if (length(init$mu) != init$K) stop(paste("init$mu must be of length ", init$K, sep=""))
     names(init$mu) <- paste("mu", 1:init$K, sep="")    
   }else{
     if (!is.matrix(init$mu)) stop("init$mu must be a matrix")
-    if (ncol(init$mu) != p) stop(paste("init$mu must have ", p, " columns", sep=""))
+    if (ncol(init$mu) != dd$p) stop(paste("init$mu must have ", dd$p, " columns", sep=""))
     if (nrow(init$mu) != init$K) stop(paste("init$mu must have ", init$K, " rows", sep=""))
     rownames(init$mu) <- paste("j", 1:init$K, sep="")
-    colnames(init$mu) <- paste("m", 1:p, sep="")        
+    colnames(init$mu) <- paste("m", 1:dd$p, sep="")        
   }
   
   ##### init:  Sigma and Li
-  ##### ----------------------------------------------------  
+  ##### ----------------------------------------------------
   if (is.na(iSigma)){    
     if (is.na(iLi)){       ### Sigma and Li are computed from the data
-      if (p == 1){
+      if (dd$p == 1){
         init$Sigma <- rep(zVar, init$K)
         names(init$Sigma) <- paste("Sigma", 1:init$K, sep="")
         init$Li <- sqrt(1 / init$Sigma)
-        names(init$Li) <- paste("Li", 1:init$K, sep="")      
+        names(init$Li) <- paste("Li", 1:init$K, sep="")
       }else{
-        init$Sigma <- matrix(rep(t(zVar), init$K), ncol=p, byrow=TRUE)
+        init$Sigma <- matrix(rep(t(zVar), init$K), ncol=dd$p, byrow=TRUE)       ### initial Sigma matrix put in a big (K*p) x p matrix
         Sigmainv <- chol(zVar)        
         Sigmainv <- chol2inv(Sigmainv)
         Litmp <- t(chol(Sigmainv))
         init$Li <- rep(Litmp[lower.tri(Litmp, diag=TRUE)], init$K)
-        rownames(init$Sigma) <- paste("j", rep(1:init$K, each=p), ".", rep(1:p, init$K), sep="")
-        colnames(init$Sigma) <- paste("m", 1:p, sep="")                
-        names(init$Li) <- paste("Li", rep(1:init$K, each=LTp), rep(naamLTp, init$K), sep="")
+        rownames(init$Sigma) <- paste("j", rep(1:init$K, each=dd$p), ".", rep(1:dd$p, init$K), sep="")
+        colnames(init$Sigma) <- paste("m", 1:dd$p, sep="")                
+        names(init$Li) <- paste("Li", rep(1:init$K, each=dd$LTp), rep(dd$naamLTp, init$K), sep="")
       }        
     }else{                 ### Li is checked and Sigma is computed from Li
       if (any(is.na(init$Li))) stop("NA in init$Li")                    
-      if (p == 1){
+      if (dd$p == 1){
         if (length(init$Li) == 1) init$Li <- rep(init$Li, init$K)
         if (length(init$Li) == CKmax & CKmax > init$K) init$Li <- init$Li[1:init$K]
         if (length(init$Sigma) != init$K) stop(paste("init$Sigma must be of length ", init$K, sep=""))
@@ -481,37 +407,37 @@ NMixMCMC <- function(y0, y1, censor, scale, prior,
         init$Sigma <- (1 / init$Li)^2
         names(init$Sigma) <- paste("Sigma", 1:init$K, sep="")      
       }else{
-        if (length(init$Li) == LTp){
-          tmpSigma <- matrix(0, nrow=p, ncol=p)
+        if (length(init$Li) == dd$LTp){
+          tmpSigma <- matrix(0, nrow=dd$p, ncol=dd$p)
           tmpSigma[lower.tri(tmpSigma, diag=TRUE)] <- init$Li
           tmpSigma <- tmpSigma %*% t(tmpSigma)
           err <- try(tmpSigma <- chol(tmpSigma), silent=TRUE)
           if (class(err) == "try-error") stop("init$Li does not lead to a positive definite matrix")
           tmpSigma <- chol2inv(tmpSigma)
-          init$Sigma <- matrix(rep(t(tmpSigma), init$K), ncol=p, byrow=TRUE)
+          init$Sigma <- matrix(rep(t(tmpSigma), init$K), ncol=dd$p, byrow=TRUE)
           init$Li <- rep(init$Li, init$K)
         }else{
-          if (length(init$Li) == CKmax*LTp & CKmax > init$K) init$Li <- init$Li[1:(init$K*LTp)]
-          if (length(init$Li) != init$K*LTp) stop(paste("init$Li must be of length ", init$K*LTp, sep=""))
-          init$Sigma <- matrix(NA, ncol=p, nrow=p*init$K)
+          if (length(init$Li) == CKmax*dd$LTp & CKmax > init$K) init$Li <- init$Li[1:(init$K*dd$LTp)]
+          if (length(init$Li) != init$K*dd$LTp) stop(paste("init$Li must be of length ", init$K*dd$LTp, sep=""))
+          init$Sigma <- matrix(NA, ncol=dd$p, nrow=dd$p*init$K)
           for (j in 1:init$K){
-            tmpSigma <- matrix(0, nrow=p, ncol=p)
-            tmpSigma[lower.tri(tmpSigma, diag=TRUE)] <- init$Li[((j-1)*LTp+1):(j*LTp)]
+            tmpSigma <- matrix(0, nrow=dd$p, ncol=dd$p)
+            tmpSigma[lower.tri(tmpSigma, diag=TRUE)] <- init$Li[((j-1)*dd$LTp+1):(j*dd$LTp)]
             tmpSigma <- tmpSigma %*% t(tmpSigma)
             err <- try(tmpSigma <- chol(tmpSigma), silent=TRUE)
             if (class(err) == "try-error") stop(paste("the ", j,"-th block of init$Li does not lead to a positive definite matrix", sep=""))
             tmpSigma <- chol2inv(tmpSigma)
-            init$Sigma[((j-1)*p):(j*p),] <- tmpSigma
+            init$Sigma[((j-1)*dd$p):(j*dd$p),] <- tmpSigma
           }  
         }
-        rownames(init$Sigma) <- paste("j", rep(1:init$K, each=p), ".", rep(1:p, init$K), sep="")
-        colnames(init$Sigma) <- paste("m", 1:p, sep="")        
-        names(init$Li) <- paste("Li", rep(1:init$K, each=LTp), rep(naamLTp, init$K), sep="")
+        rownames(init$Sigma) <- paste("j", rep(1:init$K, each=dd$p), ".", rep(1:dd$p, init$K), sep="")
+        colnames(init$Sigma) <- paste("m", 1:dd$p, sep="")        
+        names(init$Li) <- paste("Li", rep(1:init$K, each=dd$LTp), rep(dd$naamLTp, init$K), sep="")
       }  
     }  
   }else{                   ### Sigma is checked and Li is computed from Sigma
     if (any(is.na(init$Sigma))) stop("NA in init$Sigma")              
-    if (p == 1){
+    if (dd$p == 1){
       if (length(init$Sigma) == 1) init$Sigma <- rep(init$Sigma, init$K)
       if (length(init$Sigma) == CKmax & CKmax > init$K) init$Sigma <- init$Sigma[1:init$K]      
       if (length(init$Sigma) != init$K) stop(paste("init$Sigma must be of length ", init$K, sep=""))
@@ -522,8 +448,8 @@ NMixMCMC <- function(y0, y1, censor, scale, prior,
       names(init$Li) <- paste("Li", 1:init$K, sep="")      
     }else{
       if (!is.matrix(init$Sigma)) stop("init$Sigma must be a matrix")
-      if (ncol(init$Sigma) != p) stop(paste("init$Sigma must have ", p, " columns", sep=""))
-      if (nrow(init$Sigma) == p){
+      if (ncol(init$Sigma) != dd$p) stop(paste("init$Sigma must have ", dd$p, " columns", sep=""))
+      if (nrow(init$Sigma) == dd$p){
         if (any(init$Sigma[lower.tri(init$Sigma)] != t(init$Sigma)[lower.tri(init$Sigma)])) stop("init$Sigma must be a symmetric matrix")
         err <- try(Sigmainv <- chol(init$Sigma), silent=TRUE)
         if (class(err) == "try-error") stop("Cholesky decomposition of init$Sigma failed")
@@ -531,11 +457,11 @@ NMixMCMC <- function(y0, y1, censor, scale, prior,
         Litmp <- t(chol(Sigmainv))
         init$Li <- rep(Litmp[lower.tri(Litmp, diag=TRUE)], init$K)
       }else{
-        if (nrow(init$Sigma) == CKmax & CKmax > init$K) init$Sigma <- init$Sigma[1:(init$K*p),]
-        if (nrow(init$Sigma) != init$K*p) stop(paste("init$Sigma must have ", init$K, " times ", p, " rows", sep=""))
+        if (nrow(init$Sigma) == CKmax & CKmax > init$K) init$Sigma <- init$Sigma[1:(init$K*dd$p),]
+        if (nrow(init$Sigma) != init$K*dd$p) stop(paste("init$Sigma must have ", init$K, " times ", dd$p, " rows", sep=""))
         init$Li <- numeric(0)
         for (j in 1:init$K){
-          Sigmainv <- init$Sigma[((j-1)*p+1):(j*p),]
+          Sigmainv <- init$Sigma[((j-1)*dd$p+1):(j*dd$p),]
           if (any(Sigmainv[lower.tri(Sigmainv)] != t(Sigmainv)[lower.tri(Sigmainv)])) stop(paste(j, "-th block of init$Sigma is not symmetric", sep=""))
           err <- try(Sigmainv <- chol(Sigmainv), silent=TRUE)
           if (class(err) == "try-error") stop(paste("Cholesky decomposition of the ", j, "-th block of init$Sigma failed", sep=""))
@@ -544,53 +470,45 @@ NMixMCMC <- function(y0, y1, censor, scale, prior,
           init$Li <- c(init$Li, Litmp[lower.tri(Litmp, diag=TRUE)])
         }
       }
-      rownames(init$Sigma) <- paste("j", rep(1:init$K, each=p), ".", rep(1:p, init$K), sep="")
-      colnames(init$Sigma) <- paste("m", 1:p, sep="")              
-      names(init$Li) <- paste("Li", rep(1:init$K, each=LTp), rep(naamLTp, init$K), sep="")
+      rownames(init$Sigma) <- paste("j", rep(1:init$K, each=dd$p), ".", rep(1:dd$p, init$K), sep="")
+      colnames(init$Sigma) <- paste("m", 1:dd$p, sep="")              
+      names(init$Li) <- paste("Li", rep(1:init$K, each=dd$LTp), rep(dd$naamLTp, init$K), sep="")
     }  
   }    
+
+  ##### init:  add Q to it
+  ##### ----------------------------------------------------  
+  if (dd$p == 1){
+    init$Q <- 1 / init$Sigma
+    names(init$Q) <- paste("Q", 1:init$K, sep="")    
+  }else{
+    init$Q <- numeric(0)
+    for (j in 1:init$K){
+      tmpLi <- diag(dd$p)
+      tmpLi[lower.tri(tmpLi, diag=TRUE)] <- init$Li[((j-1)*dd$LTp + 1):(j*dd$LTp)]
+      tmpQ <- tmpLi %*% t(tmpLi)
+      init$Q <- c(init$Q, tmpQ[lower.tri(tmpQ, diag=TRUE)]) 
+    }
+    names(init$Q) <- paste("Q", rep(1:init$K, each=dd$LTp), rep(dd$naamLTp, init$K), sep="")
+  }  
   
   ##### init:  gammaInv
   ##### ----------------------------------------------------  
   if (is.na(igammaInv)){
-    if (p == 1) init$gammaInv <- Czeta * zVar
-    else        init$gammaInv <- Czeta * diag(zVar)
+    if (dd$p == 1) init$gammaInv <- Czeta * zVar
+    else           init$gammaInv <- Czeta * diag(zVar)
   }
   init$gammaInv <- as.numeric(init$gammaInv)
-  if (length(init$gammaInv) == 1) init$gammaInv <- rep(init$gammaInv, p)
-  if (length(init$gammaInv) != p) stop(paste("init$gammaInv must be of length ", p, sep=""))
+  if (length(init$gammaInv) == 1) init$gammaInv <- rep(init$gammaInv, dd$p)
+  if (length(init$gammaInv) != dd$p) stop(paste("init$gammaInv must be of length ", dd$p, sep=""))
   if (any(is.na(init$gammaInv))) stop("NA in init$gammaInv")
-  names(init$gammaInv) <- paste("gammaInv", 1:p, sep="")
+  names(init$gammaInv) <- paste("gammaInv", 1:dd$p, sep="")
 
   
   ##### init:  r
   ##### ----------------------------------------------------  
-  if (is.na(ir)){
-    if (p == 1){
-      MEANS <- matrix(rep(init$mu, n), ncol=init$K, byrow=TRUE)
-      SDS   <- matrix(rep(sqrt(init$Sigma), n), ncol=init$K, byrow=TRUE)
-      YY    <- matrix(rep(initz, init$K), ncol=init$K)
-      WW    <- matrix(rep(init$w, n), ncol=init$K, byrow=TRUE)
-      PROB  <- WW * dnorm(YY, mean=MEANS, sd=SDS)
-    }else{
-      PROB <- matrix(0, nrow=n, ncol=init$K)
-      for (j in 1:init$K){
-        MEANS <- init$mu[((j-1)*p+1):(j*p)]
-        SIGMA <- init$Sigma[((j-1)*p+1):(j*p),]
-        PROB[,j] <- init$w[j] * dMVN(initz, mean=MEANS, Sigma=SIGMA)        
-      }        
-    }
-    sumPROB <- apply(PROB, 1, sum)
-    sumPROB[sumPROB <= 0] <- 1
-    PROB    <- PROB / matrix(rep(sumPROB, each=init$K), ncol=init$K, byrow=TRUE)
-    init$r <- apply(PROB, 1, which.max)          
-  }
-  init$r <- as.numeric(init$r)
-  if (length(init$r) != n) stop(paste("init$r must be of length ", n, sep=""))
-  if (any(is.na(init$r))) stop("NA in init$r")
-  if (any(init$r < 1) | any(init$r > init$K)) stop(paste("init$r out of the range (must lie between ", 1, " and ", init$K, ")", sep=""))
-  names(init$r) <- paste("r", 1:n, sep="")      
-
+  if (is.na(ir)) init$r <- NMixMCMCinitr(z=initz, K=init$K, w=init$w, mu=init$mu, Sigma=init$Sigma, p=dd$p, n=dd$n)
+  else           init$r <- NMixMCMCinitr(z=initz, K=init$K, w=init$w, mu=init$mu, Sigma=init$Sigma, p=dd$p, n=dd$n, initr=init$r) 
   rm(list="initz")
   
 
@@ -602,52 +520,39 @@ NMixMCMC <- function(y0, y1, censor, scale, prior,
     if (!is.list(init2)) stop("init2 must be a list")
 
     ininit2    <- names(init2)
-    iy2        <- match("y", ininit2, nomatch=NA)    
-    iK2        <- match("K", ininit2, nomatch=NA)
-    iw2        <- match("w", ininit2, nomatch=NA)
-    imu2       <- match("mu", ininit2, nomatch=NA)
-    iSigma2    <- match("Sigma", ininit2, nomatch=NA)
-    iLi2       <- match("Li", ininit2, nomatch=NA)  
+    iy2        <- match("y",        ininit2, nomatch=NA)    
+    iK2        <- match("K",        ininit2, nomatch=NA)
+    iw2        <- match("w",        ininit2, nomatch=NA)
+    imu2       <- match("mu",       ininit2, nomatch=NA)
+    iSigma2    <- match("Sigma",    ininit2, nomatch=NA)
+    iLi2       <- match("Li",       ininit2, nomatch=NA)  
     igammaInv2 <- match("gammaInv", ininit2, nomatch=NA)
-    ir2        <- match("r", ininit2, nomatch=NA)        
+    ir2        <- match("r",        ininit2, nomatch=NA)        
     
     ##### init2:  y
-    ##### ----------------------------------------------------  
-    if (are.Censored){
-      if (is.na(iy2)){
-        init2$y <- y0
-        tmpsd <- matrix(rep(sd(tmpinity), n), nrow=n, ncol=p, byrow=TRUE)
-        if (are.Right) init2$y[censor == 0] <- y0[censor == 0] + abs(rnorm(sum(censor==0), mean=0, sd=tmpsd[censor==0]))
-        if (are.Left) init2$y[censor == 2] <- y0[censor == 2] - abs(rnorm(sum(censor==2), mean=0, sd=tmpsd[censor==2]))
-        if (are.Interval) init2$y[censor == 3] <- runif(sum(censor==3), min=y0[censor == 3], max=y1[censor == 3])
-      }
-      if (any(is.na(init2$y))) stop("NA in init2$y")
-      if (p == 1) init2$y <- matrix(init2$y, ncol=1)
-      if (!is.matrix(init2$y)) stop("init2$y must be a matrix")
-      if (nrow(init2$y) != n | ncol(init2$y) != p) stop("data and init2$y mismatch (dimension)")
-      if (are.Right) if(any(init2$y[censor == 0] <= y0[censor == 0])) stop("init2$y and y0 mismatch (initial value lower than right-censored observation)")
-      if (are.Exact) init2$y[censor == 1] != y0[censor == 1]
-      if (are.Left) if(any(init2$y[censor == 2] >= y0[censor == 2])) stop("init2$y and y0 mismatch (initial value higher than left-censored observation)")
-      if (are.Interval){
-        if(any(init2$y[censor == 3] <= y0[censor == 3])) stop("init2$y and y0 mismatch (initial value lower than the left limit of the interval-censored observation)")
-        if(any(init2$y[censor == 3] >= y1[censor == 3])) stop("init2$y and y1 mismatch (initial value higher than the right limit of the interval-censored observation)")        
-      }    
-    }else{     ### !are.Censored
-      init2$y <- y0  
-    }
+    ##### ----------------------------------------------------
+    if (is.na(iy2)){
+      init2$y <- NMixMCMCinity(y0=dd$y0, y1=dd$y1, censor=dd$censor, sd.init=sd(tmpinity),
+                               are.Censored=dd$are.Censored, are.Right=dd$are.Right, are.Exact=dd$are.Exact, are.Left=dd$are.Left, are.Interval=dd$are.Interval,
+                               p=dd$p, n=dd$n, random=TRUE)    
+    }else{
+      init2$y <- NMixMCMCinity(y0=dd$y0, y1=dd$y1, censor=dd$censor, sd.init=sd(tmpinity),
+                               are.Censored=dd$are.Censored, are.Right=dd$are.Right, are.Exact=dd$are.Exact, are.Left=dd$are.Left, are.Interval=dd$are.Interval,
+                               p=dd$p, n=dd$n, inity=init2$y)    
+    }  
 
 
     ##### init2:  z (shifted and scaled y)
     ##### ----------------------------------------------------    
-    initz2 <- (init2$y - matrix(rep(scale$shift, n), ncol=p, byrow=TRUE))/matrix(rep(scale$scale, n), ncol=p, byrow=TRUE)
+    initz2 <- (init2$y - matrix(rep(scale$shift, dd$n), ncol=dd$p, byrow=TRUE))/matrix(rep(scale$scale, dd$n), ncol=dd$p, byrow=TRUE)
 
-    if (p == 1){
+    if (dd$p == 1){
       initz2 <- (init2$y - scale$shift)/scale$scale
       zBar2 <- mean(initz2)
       zMin2 <- min(initz2)
       zMax2 <- max(initz2)
     }else{
-      initz2 <- (init2$y - matrix(rep(scale$shift, n), ncol=p, byrow=TRUE))/matrix(rep(scale$scale, n), ncol=p, byrow=TRUE)
+      initz2 <- (init2$y - matrix(rep(scale$shift, dd$n), ncol=dd$p, byrow=TRUE))/matrix(rep(scale$scale, dd$n), ncol=dd$p, byrow=TRUE)
       zBar2 <- apply(initz2, 2, mean)    ### will be used to determine prior$xi if this not given by the user
       zMin2 <- apply(initz2, 2, min)     
       zMax2 <- apply(initz2, 2, max)
@@ -688,15 +593,15 @@ NMixMCMC <- function(y0, y1, censor, scale, prior,
     ##### ----------------------------------------------------  
     if (is.na(imu2)){
       tmpsd <- sd(tmpinitz)/init2$K    ## vector of length p      
-      if (p == 1){
+      if (dd$p == 1){
         dist <- (zMax2 - zMin2)/(init2$K + 1)
         tmpxi <- seq(zMin2+dist, zMax2-dist, length=init2$K)
         init2$mu <- rnorm(init2$K, mean=tmpxi, sd=tmpsd)
         init2$mu <- init2$mu[order(init2$mu)]
       }else{
         dist <- (zMax2 - zMin2)/(init2$K + 1)
-        init2$mu <- matrix(NA, nrow=init2$K, ncol=p)
-        for (j in 1:p){
+        init2$mu <- matrix(NA, nrow=init2$K, ncol=dd$p)
+        for (j in 1:dd$p){
           tmpxi <- seq(zMin2[j]+dist[j], zMax2[j]-dist[j], length=init2$K)
           init2$mu[,j] <- rnorm(init2$K, mean=tmpxi, sd=tmpsd[j])
           init2$mu[,j] <- init2$mu[,j][order(init2$mu[,j])]
@@ -704,17 +609,17 @@ NMixMCMC <- function(y0, y1, censor, scale, prior,
       }  
     }
     if (any(is.na(init2$mu))) stop("NA in init2$mu")          
-    if (p == 1){
+    if (dd$p == 1){
       init2$mu <- as.numeric(init2$mu)
       if (length(init2$mu) == CKmax & CKmax > init2$K) init2$mu <- init2$mu[1:init2$K]          
       if (length(init2$mu) != init2$K) stop(paste("init2$mu must be of length ", init2$K, sep=""))
       names(init2$mu) <- paste("mu", 1:init2$K, sep="")    
     }else{
       if (!is.matrix(init2$mu)) stop("init2$mu must be a matrix")
-      if (ncol(init2$mu) != p) stop(paste("init2$mu must have ", p, " columns", sep=""))
+      if (ncol(init2$mu) != dd$p) stop(paste("init2$mu must have ", dd$p, " columns", sep=""))
       if (nrow(init2$mu) != init2$K) stop(paste("init2$mu must have ", init2$K, " rows", sep=""))
       rownames(init2$mu) <- paste("j", 1:init2$K, sep="")
-      colnames(init2$mu) <- paste("m", 1:p, sep="")        
+      colnames(init2$mu) <- paste("m", 1:dd$p, sep="")        
     }
 
     
@@ -723,7 +628,7 @@ NMixMCMC <- function(y0, y1, censor, scale, prior,
     if (is.na(iSigma2)){    
       if (is.na(iLi2)){       ### Sigma and Li are computed from the data
         ctmp <- runif(init2$K, 0.1, 1.1)        
-        if (p == 1){
+        if (dd$p == 1){
           init2$Sigma <- ctmp*zVar2
           names(init2$Sigma) <- paste("Sigma", 1:init2$K, sep="")
           init2$Li <- sqrt(1 / init2$Sigma)
@@ -744,13 +649,13 @@ NMixMCMC <- function(y0, y1, censor, scale, prior,
               init2$Li <- c(init2$Li, Litmp[lower.tri(Litmp, diag=TRUE)])              
             }
           }  
-          rownames(init2$Sigma) <- paste("j", rep(1:init2$K, each=p), ".", rep(1:p, init2$K), sep="")
-          colnames(init2$Sigma) <- paste("m", 1:p, sep="")                
-          names(init2$Li) <- paste("Li", rep(1:init2$K, each=LTp), rep(naamLTp, init2$K), sep="")
+          rownames(init2$Sigma) <- paste("j", rep(1:init2$K, each=dd$p), ".", rep(1:dd$p, init2$K), sep="")
+          colnames(init2$Sigma) <- paste("m", 1:dd$p, sep="")                
+          names(init2$Li) <- paste("Li", rep(1:init2$K, each=dd$LTp), rep(dd$naamLTp, init2$K), sep="")
         }        
       }else{                 ### Li is checked and Sigma is computed from Li
         if (any(is.na(init2$Li))) stop("NA in init2$Li")                    
-        if (p == 1){
+        if (dd$p == 1){
           if (length(init2$Li) == 1) init2$Li <- rep(init2$Li, init2$K)
           if (length(init2$Li) == CKmax & CKmax > init2$K) init2$Li <- init2$Li[1:init2$K]
           if (length(init2$Sigma) != init2$K) stop(paste("init2$Sigma must be of length ", init2$K, sep=""))
@@ -760,37 +665,37 @@ NMixMCMC <- function(y0, y1, censor, scale, prior,
           init2$Sigma <- (1 / init2$Li)^2
           names(init2$Sigma) <- paste("Sigma", 1:init2$K, sep="")      
         }else{
-          if (length(init2$Li) == LTp){
-            tmpSigma <- matrix(0, nrow=p, ncol=p)
+          if (length(init2$Li) == dd$LTp){
+            tmpSigma <- matrix(0, nrow=dd$p, ncol=dd$p)
             tmpSigma[lower.tri(tmpSigma, diag=TRUE)] <- init2$Li
             tmpSigma <- tmpSigma %*% t(tmpSigma)
             err <- try(tmpSigma <- chol(tmpSigma), silent=TRUE)
             if (class(err) == "try-error") stop("init2$Li does not lead to a positive definite matrix")
             tmpSigma <- chol2inv(tmpSigma)
-            init2$Sigma <- matrix(rep(t(tmpSigma), init2$K), ncol=p, byrow=TRUE)
+            init2$Sigma <- matrix(rep(t(tmpSigma), init2$K), ncol=dd$p, byrow=TRUE)
             init2$Li <- rep(init2$Li, init2$K)
           }else{
-            if (length(init2$Li) == CKmax*LTp & CKmax > init2$K) init2$Li <- init2$Li[1:(init2$K*LTp)]
-            if (length(init2$Li) != init2$K*LTp) stop(paste("init2$Li must be of length ", init2$K*LTp, sep=""))
-            init2$Sigma <- matrix(NA, ncol=p, nrow=p*init2$K)
+            if (length(init2$Li) == CKmax*dd$LTp & CKmax > init2$K) init2$Li <- init2$Li[1:(init2$K*dd$LTp)]
+            if (length(init2$Li) != init2$K*dd$LTp) stop(paste("init2$Li must be of length ", init2$K*dd$LTp, sep=""))
+            init2$Sigma <- matrix(NA, ncol=dd$p, nrow=dd$p*init2$K)
             for (j in 1:init2$K){
-              tmpSigma <- matrix(0, nrow=p, ncol=p)
-              tmpSigma[lower.tri(tmpSigma, diag=TRUE)] <- init2$Li[((j-1)*LTp+1):(j*LTp)]
+              tmpSigma <- matrix(0, nrow=dd$p, ncol=dd$p)
+              tmpSigma[lower.tri(tmpSigma, diag=TRUE)] <- init2$Li[((j-1)*dd$LTp+1):(j*dd$LTp)]
               tmpSigma <- tmpSigma %*% t(tmpSigma)
               err <- try(tmpSigma <- chol(tmpSigma), silent=TRUE)
               if (class(err) == "try-error") stop(paste("the ", j,"-th block of init2$Li does not lead to a positive definite matrix", sep=""))
               tmpSigma <- chol2inv(tmpSigma)
-              init2$Sigma[((j-1)*p):(j*p),] <- tmpSigma
+              init2$Sigma[((j-1)*dd$p):(j*dd$p),] <- tmpSigma
             }  
           }
-          rownames(init2$Sigma) <- paste("j", rep(1:init2$K, each=p), ".", rep(1:p, init2$K), sep="")
-          colnames(init2$Sigma) <- paste("m", 1:p, sep="")        
-          names(init2$Li) <- paste("Li", rep(1:init2$K, each=LTp), rep(naamLTp, init2$K), sep="")
+          rownames(init2$Sigma) <- paste("j", rep(1:init2$K, each=dd$p), ".", rep(1:dd$p, init2$K), sep="")
+          colnames(init2$Sigma) <- paste("m", 1:dd$p, sep="")        
+          names(init2$Li) <- paste("Li", rep(1:init2$K, each=dd$LTp), rep(dd$naamLTp, init2$K), sep="")
         }  
       }  
     }else{                   ### Sigma is checked and Li is computed from Sigma
       if (any(is.na(init2$Sigma))) stop("NA in init2$Sigma")              
-      if (p == 1){
+      if (dd$p == 1){
         if (length(init2$Sigma) == 1) init2$Sigma <- rep(init2$Sigma, init2$K)
         if (length(init2$Sigma) == CKmax & CKmax > init2$K) init2$Sigma <- init2$Sigma[1:init2$K]      
         if (length(init2$Sigma) != init2$K) stop(paste("init2$Sigma must be of length ", init2$K, sep=""))
@@ -801,8 +706,8 @@ NMixMCMC <- function(y0, y1, censor, scale, prior,
         names(init2$Li) <- paste("Li", 1:init2$K, sep="")      
       }else{
         if (!is.matrix(init2$Sigma)) stop("init2$Sigma must be a matrix")
-        if (ncol(init2$Sigma) != p) stop(paste("init2$Sigma must have ", p, " columns", sep=""))
-        if (nrow(init2$Sigma) == p){
+        if (ncol(init2$Sigma) != dd$p) stop(paste("init2$Sigma must have ", dd$p, " columns", sep=""))
+        if (nrow(init2$Sigma) == dd$p){
           if (any(init2$Sigma[lower.tri(init2$Sigma)] != t(init2$Sigma)[lower.tri(init2$Sigma)])) stop("init2$Sigma must be a symmetric matrix")
           err <- try(Sigmainv <- chol(init2$Sigma), silent=TRUE)
           if (class(err) == "try-error") stop("Cholesky decomposition of init2$Sigma failed")
@@ -810,11 +715,11 @@ NMixMCMC <- function(y0, y1, censor, scale, prior,
           Litmp <- t(chol(Sigmainv))
           init2$Li <- rep(Litmp[lower.tri(Litmp, diag=TRUE)], init2$K)
         }else{
-          if (nrow(init2$Sigma) == CKmax & CKmax > init2$K) init2$Sigma <- init2$Sigma[1:(init2$K*p),]
-          if (nrow(init2$Sigma) != init2$K*p) stop(paste("init2$Sigma must have ", init2$K, " times ", p, " rows", sep=""))
+          if (nrow(init2$Sigma) == CKmax & CKmax > init2$K) init2$Sigma <- init2$Sigma[1:(init2$K*dd$p),]
+          if (nrow(init2$Sigma) != init2$K*dd$p) stop(paste("init2$Sigma must have ", init2$K, " times ", dd$p, " rows", sep=""))
           init2$Li <- numeric(0)
           for (j in 1:init2$K){
-            Sigmainv <- init2$Sigma[((j-1)*p+1):(j*p),]
+            Sigmainv <- init2$Sigma[((j-1)*dd$p+1):(j*dd$p),]
             if (any(Sigmainv[lower.tri(Sigmainv)] != t(Sigmainv)[lower.tri(Sigmainv)])) stop(paste(j, "-th block of init2$Sigma is not symmetric", sep=""))
             err <- try(Sigmainv <- chol(Sigmainv), silent=TRUE)
             if (class(err) == "try-error") stop(paste("Cholesky decomposition of the ", j, "-th block of init2$Sigma failed", sep=""))
@@ -823,53 +728,29 @@ NMixMCMC <- function(y0, y1, censor, scale, prior,
             init2$Li <- c(init2$Li, Litmp[lower.tri(Litmp, diag=TRUE)])
           }
         }
-        rownames(init2$Sigma) <- paste("j", rep(1:init2$K, each=p), ".", rep(1:p, init2$K), sep="")
-        colnames(init2$Sigma) <- paste("m", 1:p, sep="")              
-        names(init2$Li) <- paste("Li", rep(1:init2$K, each=LTp), rep(naamLTp, init2$K), sep="")
+        rownames(init2$Sigma) <- paste("j", rep(1:init2$K, each=dd$p), ".", rep(1:dd$p, init2$K), sep="")
+        colnames(init2$Sigma) <- paste("m", 1:dd$p, sep="")              
+        names(init2$Li) <- paste("Li", rep(1:init2$K, each=dd$LTp), rep(dd$naamLTp, init2$K), sep="")
       }  
     }    
   
     ##### init2:  gammaInv
     ##### ----------------------------------------------------  
     if (is.na(igammaInv2)){
-      if (p == 1) init2$gammaInv <- Czeta * zVar2 * runif(1, 0, p)
-      else        init2$gammaInv <- Czeta * diag(zVar2) * runif(p, 0, p)
+      if (dd$p == 1) init2$gammaInv <- Czeta * zVar2 * runif(1, 0, dd$p)
+      else           init2$gammaInv <- Czeta * diag(zVar2) * runif(dd$p, 0, dd$p)
     }
     init2$gammaInv <- as.numeric(init2$gammaInv)
-    if (length(init2$gammaInv) == 1) init2$gammaInv <- rep(init2$gammaInv, p)
-    if (length(init2$gammaInv) != p) stop(paste("init2$gammaInv must be of length ", p, sep=""))
+    if (length(init2$gammaInv) == 1) init2$gammaInv <- rep(init2$gammaInv, dd$p)
+    if (length(init2$gammaInv) != dd$p) stop(paste("init2$gammaInv must be of length ", dd$p, sep=""))
     if (any(is.na(init2$gammaInv))) stop("NA in init2$gammaInv")
-    names(init2$gammaInv) <- paste("gammaInv", 1:p, sep="")
+    names(init2$gammaInv) <- paste("gammaInv", 1:dd$p, sep="")
 
   
     ##### init2:  r
-    ##### ----------------------------------------------------  
-    if (is.na(ir2)){
-      if (p == 1){
-        MEANS <- matrix(rep(init2$mu, n), ncol=init2$K, byrow=TRUE)
-        SDS   <- matrix(rep(sqrt(init2$Sigma), n), ncol=init2$K, byrow=TRUE)
-        YY    <- matrix(rep(initz2, init2$K), ncol=init2$K)
-        WW    <- matrix(rep(init2$w, n), ncol=init2$K, byrow=TRUE)
-        PROB  <- WW * dnorm(YY, mean=MEANS, sd=SDS)
-      }else{        
-        PROB <- matrix(0, nrow=n, ncol=init2$K)
-        for (j in 1:init2$K){
-          MEANS <- init2$mu[((j-1)*p+1):(j*p)]
-          SIGMA <- init2$Sigma[((j-1)*p+1):(j*p),]
-          PROB[,j] <- init2$w[j] * dMVN(initz2, mean=MEANS, Sigma=SIGMA)        
-        }        
-      }
-      sumPROB <- apply(PROB, 1, sum)
-      sumPROB[sumPROB <= 0] <- 1
-      PROB    <- PROB / matrix(rep(sumPROB, each=init2$K), ncol=init2$K, byrow=TRUE)
-      init2$r <- apply(PROB, 1, which.max)
-    }
-    init2$r <- as.numeric(init2$r)
-    if (length(init2$r) != n) stop(paste("init2$r must be of length ", n, sep=""))
-    if (any(is.na(init2$r))) stop("NA in init2$r")
-    if (any(init2$r < 1) | any(init2$r > init2$K)) stop(paste("init2$r out of the range (must lie between ", 1, " and ", init2$K, ")", sep=""))
-    names(init2$r) <- paste("r", 1:n, sep="")
-
+    ##### ----------------------------------------------------
+    if (is.na(ir2)) init2$r <- NMixMCMCinitr(z=initz2, K=init2$K, w=init2$w, mu=init2$mu, Sigma=init2$Sigma, p=dd$p, n=dd$n)
+    else            init2$r <- NMixMCMCinitr(z=initz2, K=init2$K, w=init2$w, mu=init2$mu, Sigma=init2$Sigma, p=dd$p, n=dd$n, initr=init2$r) 
     rm(list="initz2")    
       
   }else{  ## end of if (PED)
@@ -884,11 +765,11 @@ NMixMCMC <- function(y0, y1, censor, scale, prior,
 
   inRJMCMC <- names(RJMCMC)
   iPaction <- match("Paction", ininit, nomatch=NA)
-  iPsplit  <- match("Psplit", ininit, nomatch=NA)
-  iPbirth  <- match("Pbirth", ininit, nomatch=NA)
-  ipar.u1  <- match("par.u1", ininit, nomatch=NA)
-  ipar.u2  <- match("par.u2", ininit, nomatch=NA)
-  ipar.u3  <- match("par.u3", ininit, nomatch=NA)  
+  iPsplit  <- match("Psplit",  ininit, nomatch=NA)
+  iPbirth  <- match("Pbirth",  ininit, nomatch=NA)
+  ipar.u1  <- match("par.u1",  ininit, nomatch=NA)
+  ipar.u2  <- match("par.u2",  ininit, nomatch=NA)
+  ipar.u3  <- match("par.u3",  ininit, nomatch=NA)  
 
   ##### RJMCMC:  Paction
   ##### ----------------------------------------------------
@@ -954,44 +835,44 @@ NMixMCMC <- function(y0, y1, censor, scale, prior,
   
   ##### RJMCMC:  par.u2
   ##### ----------------------------------------------------
-  if (p == 1){
-    if (is.na(ipar.u2)) RJMCMC$par.u2 <- c(1, 2*p)
+  if (dd$p == 1){
+    if (is.na(ipar.u2)) RJMCMC$par.u2 <- c(1, 2*dd$p)
     if (length(RJMCMC$par.u2) != 2) stop("RJMCMC$par.u2 must be of length 2")
     if (any(RJMCMC$par.u2 <= 0)) stop("RJMCMC$par.u2 must be all positive")
     Cpar.u2 <- as.numeric(RJMCMC$par.u2)
     names(Cpar.u2) <- names(RJMCMC$par.u2) <- c("u2.1", "u2.2")    
   }else{
-    if (is.na(ipar.u2)) RJMCMC$par.u2 <- rbind(matrix(c(rep(-1, p-1), rep(1, p-1)), ncol=2), c(1, 2*p))
-    if (!is.matrix(RJMCMC$par.u2)) stop("RJMCMC$par.u2 must be a matrix")
-    if (nrow(RJMCMC$par.u2) != p) stop(paste("RJMCMC$par.u2 must have ", p, " rows", sep=""))
-    if (ncol(RJMCMC$par.u2) != 2) stop(paste("RJMCMC$par.u2 must have ", 2, " columns", sep=""))
-    rownames(RJMCMC$par.u2) <- paste("u2.", 1:p, sep="")
+    if (is.na(ipar.u2)) RJMCMC$par.u2 <- rbind(matrix(c(rep(-1, dd$p-1), rep(1, dd$p-1)), ncol=2), c(1, 2*dd$p))
+    if (!is.matrix(RJMCMC$par.u2))   stop("RJMCMC$par.u2 must be a matrix")
+    if (nrow(RJMCMC$par.u2) != dd$p) stop(paste("RJMCMC$par.u2 must have ", dd$p, " rows", sep=""))
+    if (ncol(RJMCMC$par.u2) != 2)    stop(paste("RJMCMC$par.u2 must have ", 2, " columns", sep=""))
+    rownames(RJMCMC$par.u2) <- paste("u2.", 1:dd$p, sep="")
     colnames(RJMCMC$par.u2) <- paste(c(1, 2))
-    if (any(RJMCMC$par.u2[p,] <= 0)) stop(paste("RJMCMC$par.u2[", p, ",] must be all positive", sep=""))    
-    if (any(RJMCMC$par.u2[-p,1] >= RJMCMC$par.u2[-p,2])) stop(paste("The first column of RJMCMC$par.u2[-", p, ",] must be strictly lower than the second column", sep=""))
+    if (any(RJMCMC$par.u2[dd$p,] <= 0)) stop(paste("RJMCMC$par.u2[", dd$p, ",] must be all positive", sep=""))    
+    if (any(RJMCMC$par.u2[-dd$p,1] >= RJMCMC$par.u2[-dd$p,2])) stop(paste("The first column of RJMCMC$par.u2[-", dd$p, ",] must be strictly lower than the second column", sep=""))
     Cpar.u2 <- as.numeric(t(RJMCMC$par.u2))
-    names(Cpar.u2) <- paste("u2.", rep(1:p, each=2), ".", rep(1:2, p), sep="")    
+    names(Cpar.u2) <- paste("u2.", rep(1:dd$p, each=2), ".", rep(1:2, dd$p), sep="")    
   }  
     
   ##### RJMCMC:  par.u3
   ##### ----------------------------------------------------  
-  if (p == 1){
-    if (is.na(ipar.u3)) RJMCMC$par.u3 <- c(1, p)
+  if (dd$p == 1){
+    if (is.na(ipar.u3)) RJMCMC$par.u3 <- c(1, dd$p)
     if (length(RJMCMC$par.u3) != 2) stop("RJMCMC$par.u3 must be of length 2")
-    if (any(RJMCMC$par.u3 <= 0)) stop("RJMCMC$par.u3 must be all positive")
+    if (any(RJMCMC$par.u3 <= 0))    stop("RJMCMC$par.u3 must be all positive")
     Cpar.u3 <- as.numeric(RJMCMC$par.u3)
     names(Cpar.u3) <- names(RJMCMC$par.u3) <- c("u3.1", "u3.2")    
   }else{
-    if (is.na(ipar.u3)) RJMCMC$par.u3 <- rbind(matrix(c(rep(0, p-1), rep(1, p-1)), ncol=2), c(1, p))
+    if (is.na(ipar.u3)) RJMCMC$par.u3 <- rbind(matrix(c(rep(0, dd$p-1), rep(1, dd$p-1)), ncol=2), c(1, dd$p))
     if (!is.matrix(RJMCMC$par.u3)) stop("RJMCMC$par.u3 must be a matrix")
-    if (nrow(RJMCMC$par.u3) != p) stop(paste("RJMCMC$par.u3 must have ", p, " rows", sep=""))
-    if (ncol(RJMCMC$par.u3) != 2) stop(paste("RJMCMC$par.u3 must have ", 2, " columns", sep=""))
-    rownames(RJMCMC$par.u3) <- paste("u3.", 1:p, sep="")
+    if (nrow(RJMCMC$par.u3) != dd$p) stop(paste("RJMCMC$par.u3 must have ", dd$p, " rows", sep=""))
+    if (ncol(RJMCMC$par.u3) != 2)    stop(paste("RJMCMC$par.u3 must have ", 2, " columns", sep=""))
+    rownames(RJMCMC$par.u3) <- paste("u3.", 1:dd$p, sep="")
     colnames(RJMCMC$par.u3) <- paste(c(1, 2))
-    if (any(RJMCMC$par.u3[p,] <= 0)) stop(paste("RJMCMC$par.u3[", p, ",] must be all positive", sep=""))    
-    if (any(RJMCMC$par.u3[-p,1] >= RJMCMC$par.u3[-p,2])) stop(paste("The first column of RJMCMC$par.u3[-", p, ",] must be strictly lower than the second column", sep=""))
+    if (any(RJMCMC$par.u3[dd$p,] <= 0)) stop(paste("RJMCMC$par.u3[", dd$p, ",] must be all positive", sep=""))    
+    if (any(RJMCMC$par.u3[-dd$p,1] >= RJMCMC$par.u3[-dd$p,2])) stop(paste("The first column of RJMCMC$par.u3[-", dd$p, ",] must be strictly lower than the second column", sep=""))
     Cpar.u3 <- as.numeric(t(RJMCMC$par.u3))
-    names(Cpar.u3) <- paste("u3.", rep(1:p, each=2), ".", rep(1:2, p), sep="")    
+    names(Cpar.u3) <- paste("u3.", rep(1:dd$p, each=2), ".", rep(1:2, dd$p), sep="")    
   }  
 
   ##### RJMCMC:  concetenate
@@ -1044,7 +925,7 @@ NMixMCMC <- function(y0, y1, censor, scale, prior,
       
       #sfInit(parallel=TRUE, cpus=2)      
       #RET <- sfLapply(1:2, NMixMCMCwrapper,
-      #                     z0=z0, z1=z1, censor=censor, p=p, n=n,
+      #                     z0=z0, z1=z1, censor=dd$censor, p=dd$p, n=dd$n,
       #                     scale=scale, prior=prior, inits=list(init, init2), RJMCMC=RJMCMC,
       #                     Cinteger=Cinteger, Cdouble=Cdouble, CRJMCMC=CRJMCMC,
       #                     actionAll=actionAll, nMCMC=nMCMC, keep.chains=keep.chains, PED=TRUE,
@@ -1052,7 +933,7 @@ NMixMCMC <- function(y0, y1, censor, scale, prior,
       #sfStop()
     }else{
       RET <- lapply(1:2, NMixMCMCwrapper,
-                         z0=z0, z1=z1, censor=censor, p=p, n=n,
+                         z0=z0, z1=z1, censor=dd$censor, p=dd$p, n=dd$n,
                          scale=scale, prior=prior, inits=list(init, init2), RJMCMC=RJMCMC,
                          Cinteger=Cinteger, Cdouble=Cdouble, CRJMCMC=CRJMCMC,
                          actionAll=actionAll, nMCMC=nMCMC, keep.chains=keep.chains, PED=TRUE,
@@ -1063,19 +944,19 @@ NMixMCMC <- function(y0, y1, censor, scale, prior,
     
     if (prior$priorK == "fixed"){
       resPED <- .C("NMix_PED", PED               = double(5),
-                               pm.indDevObs      = double(n),
-                               pm.indpopt        = double(n),
-                               pm.windpopt       = double(n),
-                               invalid.indDevObs = integer(n),
-                               invalid.indpopt   = integer(n),
-                               invalid.windpopt  = integer(n),                   
-                               sum.ISweight      = double(n),
-                               #ch.ISweight       = double(n*nMCMC["keep"]),                   
+                               pm.indDevObs      = double(dd$n),
+                               pm.indpopt        = double(dd$n),
+                               pm.windpopt       = double(dd$n),
+                               invalid.indDevObs = integer(dd$n),
+                               invalid.indpopt   = integer(dd$n),
+                               invalid.windpopt  = integer(dd$n),                   
+                               sum.ISweight      = double(dd$n),
+                               #ch.ISweight       = double(dd$n*nMCMC["keep"]),                   
                                err               = integer(1),
                                y0                = as.double(t(z0)),
                                y1                = as.double(t(z1)),
-                               censor            = as.integer(t(censor)),
-                               dimy              = as.integer(c(p, n)),
+                               censor            = as.integer(t(dd$censor)),
+                               dimy              = as.integer(c(dd$p, dd$n)),
                                chK1              = as.integer(RET[[1]]$K),
                                chw1              = as.double(t(RET[[1]]$w)),
                                chmu1             = as.double(t(RET[[1]]$mu)),
@@ -1092,19 +973,19 @@ NMixMCMC <- function(y0, y1, censor, scale, prior,
                    PACKAGE = thispackage)
     }else{
       resPED <- .C("NMix_PED", PED               = double(5),
-                               pm.indDevObs      = double(n),
-                               pm.indpopt        = double(n),
-                               pm.windpopt       = double(n),
-                               invalid.indDevObs = integer(n),
-                               invalid.indpopt   = integer(n),
-                               invalid.windpopt  = integer(n),
-                               sum.ISweight      = double(n),
-                               #ch.ISweight       = double(n*nMCMC["keep"]),
+                               pm.indDevObs      = double(dd$n),
+                               pm.indpopt        = double(dd$n),
+                               pm.windpopt       = double(dd$n),
+                               invalid.indDevObs = integer(dd$n),
+                               invalid.indpopt   = integer(dd$n),
+                               invalid.windpopt  = integer(dd$n),
+                               sum.ISweight      = double(dd$n),
+                               #ch.ISweight       = double(dd$n*nMCMC["keep"]),
                                err               = integer(1),
                                y0                = as.double(t(z0)),
                                y1                = as.double(t(z1)),
-                               censor            = as.integer(t(censor)),
-                               dimy              = as.integer(c(p, n)),
+                               censor            = as.integer(t(dd$censor)),
+                               dimy              = as.integer(c(dd$p, dd$n)),
                                chK1              = as.integer(RET[[1]]$K),
                                chw1              = as.double(RET[[1]]$w),
                                chmu1             = as.double(RET[[1]]$mu),
@@ -1131,23 +1012,23 @@ NMixMCMC <- function(y0, y1, censor, scale, prior,
     idetS     <- 1 / detS
     log.idetS <- -log(detS)
 
-    RET$PED["D.expect"] <- RET$PED["D.expect"] - 2*n*log.idetS     ## correction for scale transformation
-    RET$PED["PED"] <- RET$PED["PED"] - 2*n*log.idetS       ## correction for scale transformation
-    RET$PED["wPED"] <- RET$PED["wPED"] - 2*n*log.idetS     ## correction for scale transformation
+    RET$PED["D.expect"] <- RET$PED["D.expect"] - 2*dd$n*log.idetS     ## correction for scale transformation
+    RET$PED["PED"]      <- RET$PED["PED"] - 2*dd$n*log.idetS          ## correction for scale transformation
+    RET$PED["wPED"]     <- RET$PED["wPED"] - 2*dd$n*log.idetS         ## correction for scale transformation
     
-    RET$D <- resPED$pm.indDevObs - 2*log.idetS             ## correction for scale transformation
-    RET$popt <- resPED$pm.indpopt
-    RET$wpopt <- resPED$pm.windpopt
-    RET$inv.D <- resPED$invalid.indDevObs
-    RET$inv.popt <- resPED$invalid.indpopt
+    RET$D         <- resPED$pm.indDevObs - 2*log.idetS                        ## correction for scale transformation
+    RET$popt      <- resPED$pm.indpopt
+    RET$wpopt     <- resPED$pm.windpopt
+    RET$inv.D     <- resPED$invalid.indDevObs
+    RET$inv.popt  <- resPED$invalid.indpopt
     RET$inv.wpopt <- resPED$invalid.windpopt    
-    RET$sumISw <- resPED$sum.ISweight
-    #RET$ISw <- matrix(resPED$ch.ISweight, nrow=n, byrow=TRUE)
+    RET$sumISw    <- resPED$sum.ISweight
+    #RET$ISw       <- matrix(resPED$ch.ISweight, nrow=dd$n, byrow=TRUE)
 
     class(RET) <- "NMixMCMClist"
   }else{
     RET <- NMixMCMCwrapper(chain=1,
-                           z0=z0, z1=z1, censor=censor, p=p, n=n,
+                           z0=z0, z1=z1, censor=dd$censor, p=dd$p, n=dd$n,
                            scale=scale, prior=prior, inits=list(init), RJMCMC=RJMCMC,
                            Cinteger=Cinteger, Cdouble=Cdouble, CRJMCMC=CRJMCMC,
                            actionAll=actionAll, nMCMC=nMCMC, keep.chains=keep.chains,

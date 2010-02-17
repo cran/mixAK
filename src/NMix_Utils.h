@@ -7,31 +7,33 @@
 //  CREATED:   26/11/2007
 //
 //  FUNCTIONS:  
-//     * w2logw             26/11/2007:  
+//     * w2logw                       26/11/2007:  
 //
-//     * wLi2w_dets         08/11/2008:
+//     * Li2log_dets                  10/02/2010:
 //
-//     * Li2Q               26/11/2007:  
+//     * wLi2w_dets                   08/11/2008:
 //
-//     * Li2Sigma           27/11/2007:  
+//     * Li2Q                         26/11/2007:  
 //
-//     * Li2sigma           09/11/2008:
+//     * Li2Sigma                     27/11/2007:  
 //
-//     * muLi2beta_sigmaR2  09/11/2008:
+//     * Li2sigma                     09/11/2008:
 //
-//     * Moments            27/11/2007:
+//     * muLi2beta_sigmaR2            09/11/2008:
 //
-//     * ySum_j             26/11/2007:     
-//                          19/12/2007:  REMOVED
-//     * ySumBar_j          19/12/2007:  CREATED FROM ySum_j
+//     * Moments                      27/11/2007:
 //
-//     * SS_j               26/11/2007:  
+//     * ySum_j                       26/11/2007:     
+//                                    19/12/2007:  REMOVED
+//     * ySumBar_j                    19/12/2007:  CREATED FROM ySum_j
 //
-//     * ySum_SSm_j         13/02/2008:
+//     * SS_j                         26/11/2007:  
 //
-//     * prior_derived      08/07/2009:
+//     * ySum_SSm_j                   13/02/2008:
 //
-//     * init_derived       08/07/2009:
+//     * prior_derived                08/07/2009:
+//
+//     * init_derived                 08/07/2009:
 //
 // ====================================================================================================
 //
@@ -56,6 +58,26 @@ namespace NMix{
 /***** ***************************************************************************************** *****/
 void
 w2logw(double* logw,  const double* w,  const int* K);
+
+
+/***** ***************************************************************************************** *****/
+/***** NMix::Li2log_dets                                                                         *****/
+/***** ***************************************************************************************** *****/
+//
+//  log_dets[2, K]:   INPUT:   whatsever
+//                    OUTPUT:  log_dets[0] = log(|Sigma[0]|^{-1/2}) = sum(log(Li_{0}[i,i]))
+//                             log_dets[2] = log(|Sigma[1]|^{-1/2}) = sum(log(Li_{1}[i,i]))
+//                             ...
+//                             log_dets[1], log_dets[3], ... is unaltered
+//
+//  Li[LT(p), K]
+//
+//  K[1]
+//
+//  p[1]
+//
+void
+Li2log_dets(double* log_dets,  const double* Li,  const int* K,  const int* p);
 
 
 /***** ************************************************************************************ *****/
@@ -330,6 +352,7 @@ init_derived(const int* p,         const int* Kmax,      const int* K,
              double* Mean,      double* Var,                double* Corr,
              double* MeanData,  double* VarData,            double* CorrData,
              double* XiInv,     double* log_sqrt_detXiInv,  int* err);
+
 
 }    /*** end of namespace NMix ***/
 

@@ -34,6 +34,31 @@ w2logw(double* logw,  const double* w,  const int* K)
 }
 
 
+/***** ***************************************************************************************** *****/
+/***** NMix::Li2log_dets                                                                         *****/
+/***** ***************************************************************************************** *****/
+void
+Li2log_dets(double* log_dets,  const double* Li,  const int* K,  const int* p)
+{
+  static int k, i;
+  static double *log_detsP;
+  static const double *LiP;
+
+  log_detsP = log_dets;
+  LiP       = Li;
+  for (k = 0; k < *K; k++){
+    *log_detsP = 0.0;
+    for (i = *p; i > 0; i--){
+      *log_detsP += AK_Basic::log_AK(*LiP);
+      LiP += i;
+    }
+    log_detsP += 2;
+  }
+
+  return;
+}
+
+
 /***** ************************************************************************************ *****/
 /***** NMix::wLi2w_dets                                                                     *****/
 /***** ************************************************************************************ *****/
@@ -703,7 +728,6 @@ init_derived(const int* p,         const int* Kmax,      const int* K,
 
   return;
 }
-
 
 }    /*** end of namespace NMix ***/
 

@@ -462,13 +462,21 @@ NMixMCMC(y0, y1, censor, scale, prior,
   \item{nMCMC}{used value of the argument \code{nMCMC}.}
   \item{dim}{dimension \eqn{p} of the distribution of data}
   \item{prior}{a list containing the used value of the argument \code{prior}.}
-  \item{init}{a list containing the used value of the argument \code{init}.}
-  \item{RJMCMC}{a list containing the used value of the argument \code{RJMCMC}.}  
-  \item{scale}{a list containing the used value of the argument \code{scale}.}
-  \item{state}{a list having the components labeled
+  \item{init}{a list containing the used initial values for the MCMC
+    (the first iteration of the burn-in).
+  }
+  \item{state.first}{a list having the components labeled
+    \code{y}, \code{K}, \code{w}, \code{mu}, \code{Li}, \code{Q}, \code{Sigma},
+    \code{gammaInv}, \code{r} containing the values of
+    generic parameters at the first stored (after burn-in) iteration of the MCMC.
+  }  
+  \item{state.last}{a list having the components labeled
     \code{y}, \code{K}, \code{w}, \code{mu}, \code{Li}, \code{Q}, \code{Sigma},
     \code{gammaInv}, \code{r} containing the last sampled values of
-    generic parameters.}
+    generic parameters.
+  }  
+  \item{RJMCMC}{a list containing the used value of the argument \code{RJMCMC}.}  
+  \item{scale}{a list containing the used value of the argument \code{scale}.}
   \item{freqK}{frequency table of \eqn{K} based on the sampled chain.}
   \item{propK}{posterior distribution of \eqn{K} based on the sampled chain.}
   \item{DIC}{a \code{data.frame} having columns labeled
@@ -505,11 +513,21 @@ NMixMCMC(y0, y1, censor, scale, prior,
     of the hyperparameter \eqn{\boldsymbol{\gamma}}{gamma}.
   }
   \item{order}{numeric vector or matrix with order indeces of mixture
-    components. It is a matrix with \eqn{K} columns when \eqn{K} is
+    components related to artificial identifiability constraint
+    defined by a suitable re-labeling algorithm
+    (by default, simple ordering of the first component of the mixture
+    means is used).
+
+    It is a matrix with \eqn{K} columns when \eqn{K} is
     fixed. Otherwise it is a vector with orders put sequentially after
     each other.}
   \item{rank}{numeric vector or matrix with rank indeces of mixture
-    components. It is a matrix with \eqn{K} columns when \eqn{K} is
+    components. related to artificial identifiability constraint
+    defined by a suitable re-labeling algorithm
+    (by default, simple ordering of the first component of the mixture
+    means is used).
+
+    It is a matrix with \eqn{K} columns when \eqn{K} is
     fixed. Otherwise it is a vector with ranks put sequentially after
     each other.}  
   \item{mixture}{\code{data.frame} with columns labeled
@@ -548,8 +566,14 @@ NMixMCMC(y0, y1, censor, scale, prior,
     rows with estimated posterior component probabilities
     -- posterior means of the components of the underlying 0/1
     allocation vector.
+
+    \bold{WARNING:} By default,
+    the labels of components are based on artificial
+    identifiability constraints based on ordering of the mixture means
+    in the first margin. Very often, such identifiability constraint is
+    not satisfactory!
     
-    These can be used for possible clustering of the subjects.
+    %These can be used for possible clustering of the subjects.
   }
   \item{poster.comp.prob2}{a matrix which is present in the output object
     if the number of mixture components in the distribution of random
@@ -557,8 +581,13 @@ NMixMCMC(y0, y1, censor, scale, prior,
     \code{poster.comp.prob2} is a matrix with \eqn{K} columns and \eqn{n}
     rows  with estimated posterior component probabilities
     -- posterior mean over model parameters.
+
+    \bold{WARNING:} By default, the labels of components are based on artificial
+    identifiability constraints based on ordering of the mixture means
+    in the first margin. Very often, such identifiability constraint is
+    not satisfactory!
     
-    These can also be used for possible clustering of the subjects
+    %These can also be used for possible clustering of the subjects
   }    
   \item{summ.y.Mean}{Posterior summary statistics based on chains stored
     in \code{y.Mean.*} columns of the \code{data.frame} \code{mixture}.}
@@ -572,24 +601,37 @@ NMixMCMC(y0, y1, censor, scale, prior,
   \item{poster.mean.w}{a numeric vector with posterior means of mixture
     weights after re-labeling. It is computed only if \eqn{K} is fixed
     and even then I am not convinced that these are useful posterior
-    summary statistics. In any case, they should be used with care.}  
+    summary statistics (see label switching problem mentioned above).
+    In any case, they should be used with care.}  
   \item{poster.mean.mu}{a matrix with posterior means of mixture
     means after re-labeling. It is computed only if \eqn{K} is fixed
     and even then I am not convinced that these are useful posterior
-    summary statistics. In any case, they should be used with care.}
+    summary statistics (see label switching problem mentioned above).
+    In any case, they should be used with care.}
   \item{poster.mean.Q}{a list with posterior means of mixture inverse
     variances after re-labeling. It is computed only if \eqn{K} is fixed
     and even then I am not convinced that these are useful posterior
-    summary statistics. In any case, they should be used with care.}
+    summary statistics (see label switching problem mentioned above).
+    In any case, they should be used with care.}
   \item{poster.mean.Sigma}{a list with posterior means of mixture
     variances after re-labeling. It is computed only if \eqn{K} is fixed
     and even then I am not convinced that these are useful posterior
-    summary statistics. In any case, they should be used with care.}
+    summary statistics (see label switching problem mentioned above).
+    In any case, they should be used with care.}
   \item{poster.mean.Li}{a list with posterior means of Cholesky
-    decompositions of mixture inverse
-    variances after re-labeling. It is computed only if \eqn{K} is fixed
+    decompositions of mixture inverse variances after re-labeling.
+    It is computed only if \eqn{K} is fixed
     and even then I am not convinced that these are useful posterior
-    summary statistics. In any case, they should be used with care.}
+    summary statistics (see label switching problem mentioned above).
+    In any case, they should be used with care.}
+  \item{relabel}{a list which specifies the algorithm used to re-label
+    the MCMC output to compute \code{order}, \code{rank}, \code{poster.comp.prob1},
+    \code{poster.comp.prob2}, \code{poster.mean.w},
+    \code{poster.mean.mu}, \code{poster.mean.Q},
+    \code{poster.mean.Sigma}, \code{poster.mean.Li}. 
+  }
+  \item{Cpar}{a list with components useful to call underlying C++ functions (not
+    interesting for ordinary users).}
 }
 \section{Object of class NMixMCMClist}{
   Objects of class \code{NMixMCMClist} is the list having two components
@@ -642,6 +684,11 @@ NMixMCMC(y0, y1, censor, scale, prior,
   Estimation of finite mixture distributions through Bayesian sampling.
   \emph{Journal of the Royal Statistical Society, Series B}, \bold{56}, 363--375.
 
+  Jasra, A., Holmes, C. C., and Stephens, D. A. (2005).
+  Markov chain Monte Carlo methods and the label switching problem in
+  Bayesian mixture modelling.
+  \emph{Statistical Science}, \bold{20}, 50--67.
+  
   \eqn{\mbox{Kom\'{a}rek, A.}}{Kom&#225rek, A.} (2009).
   A new R package for Bayesian estimation of multivariate normal mixtures allowing for selection 
   of the number of components and interval-censored data.
@@ -667,6 +714,7 @@ NMixMCMC(y0, y1, censor, scale, prior,
   \eqn{\mbox{Arno\v{s}t Kom\'arek}}{Arno&#353t Kom&#225rek} \email{arnost.komarek[AT]mff.cuni.cz}
 }  
 \examples{
+\dontrun{
 ## See also additional material available in 
 ## YOUR_R_DIR/library/mixAK/doc/
 ## or YOUR_R_DIR/site-library/mixAK/doc/
@@ -772,6 +820,7 @@ apply(p3[51:100,], 2, quantile, prob=seq(0, 1, by=0.1))
 apply(p1[101:150,], 2, quantile, prob=seq(0, 1, by=0.1))
 apply(p2[101:150,], 2, quantile, prob=seq(0, 1, by=0.1))
 apply(p3[101:150,], 2, quantile, prob=seq(0, 1, by=0.1))
+}
 }
 \keyword{multivariate}
 \keyword{survival}

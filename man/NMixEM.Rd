@@ -59,6 +59,7 @@ NMixEM(y, K, weight, mean, Sigma, toler=1e-5, maxiter=500)
   \eqn{\mbox{Arno\v{s}t Kom\'arek}}{Arno&#353t Kom&#225rek} \email{arnost.komarek[AT]mff.cuni.cz}
 }  
 \examples{
+\dontrun{
 ## Estimates for 3-component mixture in  Anderson's iris data
 ## ==========================================================
 data(iris, package="datasets")
@@ -84,5 +85,6 @@ fy <- dMVNmixture(y, weight=fit2$weight, mean=fit2$mean,
 hist(Galaxy, prob=TRUE, breaks=seq(5, 40, by=0.5),
      main="", xlab="Velocity (km/sec)", col="sandybrown")
 lines(y, fy, col="darkblue", lwd=2)
+}
 }
 \keyword{multivariate}

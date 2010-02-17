@@ -16,24 +16,30 @@ namespace NMix{
 /***** NMix::orderComp - version 1 which computes both order and rank                            *****/
 /***** ***************************************************************************************** *****/
 void
-orderComp(int* order,  int* rank,  double* dwork,  const int* K,  const double* mu,  const int* p)
+orderComp(int*    order,  
+          int*    rank,  
+          double* dwork,  
+          const int*    margin,
+          const int*    K,  
+          const double* mu,  
+          const int*    p)
 {
   static int j;
   static int *orderP;
-  static double *muFirstP;
+  static double *dworkP;
   static const double *muP;
 
   /*** Initialize order by 0, ..., K-1               ***/
-  /*** Copy first elements of mixture means to dwork ***/
+  /*** Copy margin-th elements of mixture means to dwork ***/
   orderP = order;
-  muFirstP = dwork;
-  muP      = mu;
+  dworkP = dwork;
+  muP    = mu + *margin;
   for (j = 0; j < *K; j++){
     *orderP = j;
     orderP++;
 
-    *muFirstP = *muP;
-    muFirstP++;
+    *dworkP = *muP;
+    dworkP++;
     muP += *p;
   }
 
@@ -56,24 +62,29 @@ orderComp(int* order,  int* rank,  double* dwork,  const int* K,  const double* 
 /***** NMix::orderComp - version 2 which computes order only                                     *****/
 /***** ***************************************************************************************** *****/
 void
-orderComp(int* order,  double* dwork,  const int* K,  const double* mu,  const int* p)
+orderComp(int*    order,  
+          double* dwork,  
+          const int*    margin,  
+          const int*    K,  
+          const double* mu,  
+          const int*    p)
 {
   static int j;
   static int *orderP;
-  static double *muFirstP;
+  static double *dworkP;
   static const double *muP;
 
   /*** Initialize order by 0, ..., K-1               ***/
-  /*** Copy first elements of mixture means to dwork ***/
+  /*** Copy margin-th elements of mixture means to dwork ***/
   orderP = order;
-  muFirstP = dwork;
-  muP      = mu;
+  dworkP = dwork;
+  muP    = mu + *margin;
   for (j = 0; j < *K; j++){
     *orderP = j;
     orderP++;
 
-    *muFirstP = *muP;
-    muFirstP++;
+    *dworkP = *muP;
+    dworkP++;
     muP += *p;
   }
 
@@ -88,7 +99,12 @@ orderComp(int* order,  double* dwork,  const int* K,  const double* mu,  const i
 /***** NMix::orderComp_add:   Update order and rank after adding one component                   *****/
 /***** ***************************************************************************************** *****/
 void
-orderComp_add(int* order,  int* rank,  const double* mustar,  const int* K,  const double* mu,  const int* p)
+orderComp_add(int* order,  
+              int* rank,  
+              const double* mustar,  
+              const int*    K,  
+              const double* mu,  
+              const int*    p)
 {
   static int j;
   static int *rankstar, *rankP;  
@@ -121,7 +137,10 @@ orderComp_add(int* order,  int* rank,  const double* mustar,  const int* K,  con
 /***** NMix::orderComp_remove:   Update order and rank after removal of one component            *****/
 /***** ***************************************************************************************** *****/
 void
-orderComp_remove(int* order,  int* rank,  const int* jstar,  const int* K)
+orderComp_remove(int* order,  
+                 int* rank,  
+                 const int* jstar,  
+                 const int* K)
 {
   static int j, rankstar;
   static int *rankP;

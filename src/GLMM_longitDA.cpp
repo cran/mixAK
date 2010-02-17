@@ -278,7 +278,7 @@ GLMM_longitDA(double*       Y_c,                       /* it is in fact const, n
     Rprintf((char*)("Iteration  "));
     for (iter_lC = 1; iter_lC <= *keepMCMC_cl; iter_lC++){
 
-      /*** Progress infomation ***/
+      /*** Progress information ***/
       if (!(iter_lC % *info) || iter_lC == *keepMCMC_cl){
         for (i = 0; i < iter_backs; i++) Rprintf((char*)("\b"));
         Rprintf((char*)("%d"), iter_lC);

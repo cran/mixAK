@@ -34,6 +34,7 @@
 #include "NMix_Utils.h"
 #include "NMix_orderComp.h"
 #include "NMix_Deviance.h"
+#include "NMix_update_sum_Ir_and_sum_Pr_y.h"
 
 #include "NMix_updateAlloc.h"
 #include "NMix_updateWeights.h"
@@ -46,6 +47,8 @@
 #include "NMix_RJMCMCcombine.h"
 #include "NMix_RJMCMCbirth.h"
 #include "NMix_RJMCMCdeath.h"
+
+#include "NMix_PosterMeanMixParam.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -138,6 +141,9 @@ extern "C" {
 //                            * must be equal to the observed values if there is no censoring
 //                     OUTPUT:  last sampled value
 //
+// y_first[p, n]       INPUT:   whatsever
+//                     OUTPUT:  value of y corresponding to the first kept (not burn-in, after thinning loop) MCMC iteration
+//
 // K[1]                INPUT: initial number of mixture components
 //                     OUTPUT:  last sampled value
 //
@@ -161,6 +167,9 @@ extern "C" {
 //
 // r[n]                INPUT: initial values for allocations (0,...,K-1)
 //                     OUTPUT:  last sampled value
+//
+// r_first[n]          INPUT:   whatsever
+//                     OUTPUT:  value of r corresponding to the first kept (not burn-in, after thinning loop) MCMC iteration
 //
 // chK[M]              INPUT:  whatsever
 //                     OUTPUT: sampled values of K
@@ -315,7 +324,8 @@ NMix_MCMC(const double* y0,
           const double* priorDouble,  
           const double* priorRJMCMC,  
           const int* priorRJMCMCint,
-          double* y,            
+          double* y,  
+          double* y_first,          
           int* K,               
           double* w,                 
           double* mu,                
@@ -324,6 +334,7 @@ NMix_MCMC(const double* y0,
           double* Li,                
           double* gammaInv,      
           int* r,
+          int* r_first,
           int* chK,             
           double* chw,          
           double* chmu,           

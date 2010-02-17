@@ -72,23 +72,34 @@ NMixMCMCwrapper <- function(chain=1,
   if (prior$priorK == "fixed") lsum_Ir <- n * CK
   else                         lsum_Ir <- 1
 
+  ##### Parameters passed to C++ which will be stored also in the resulting object (to be able to use them in related functions)
+  ##### ========================================================================================================================
+  Cpar <- list(z0          = z0,
+               z1          = z1,
+               censor      = censor,
+               dimy        = c(p=p, n=n),
+               priorInt    = Cinteger,
+               priorDouble = Cdouble)
+  rm(list=c("z0", "z1", "censor", "Cinteger", "Cdouble"))
+  
   
   ########## ========== MCMC sampling ========== ##########
   ########## =================================== ##########
   cat(paste("\nChain number ", chain, "\n==============\n", sep=""))
   cat(paste("MCMC sampling started on ", date(), ".\n", sep=""))
   MCMC <- .C("NMix_MCMC",
-             z0                   = as.double(t(z0)),
-             z1                   = as.double(t(z1)),
-             censor               = as.integer(t(censor)),
-             dimy                 = as.integer(c(p, n)),
+             z0                   = as.double(t(Cpar$z0)),
+             z1                   = as.double(t(Cpar$z1)),
+             censor               = as.integer(t(Cpar$censor)),
+             dimy                 = as.integer(Cpar$dimy),
              shiftScale           = as.double(CshiftScale),             
              nMCMC                = as.integer(nMCMC),
-             priorInt             = as.integer(Cinteger),
-             priorDouble          = as.double(Cdouble),
+             priorInt             = as.integer(Cpar$priorInt),
+             priorDouble          = as.double(Cpar$priorDouble),
              priorRJMCMC          = as.double(CRJMCMC),
              priorRJMCMCint       = as.integer(actionAll),
              z                    = as.double(t(initz)),
+             z_first              = double(p*n),
              K                    = as.integer(CK),             
              w                    = as.double(Cw),
              mu                   = as.double(Cmu),
@@ -97,6 +108,7 @@ NMixMCMCwrapper <- function(chain=1,
              Li                   = as.double(CLi),
              gammaInv             = as.double(CgammaInv),
              r                    = as.integer(Cr),
+             r_first              = integer(n),
              chK                  = integer(nMCMC["keep"]),
              chw                  = double(CKmax * nMCMC["keep"]),
              chmu                 = double(p * CKmax * nMCMC["keep"]),
@@ -136,23 +148,40 @@ NMixMCMCwrapper <- function(chain=1,
   cat(paste("MCMC sampling finished on ", date(), ".\n", sep=""))
   if (MCMC$err) stop("Something went wrong.")
   
-  ########## ========== State of MCMC ========== ##########
-  ########## =================================== ##########  
+  ########## ========== State of MCMC (last and first kept) ========== ##########
+  ########## ========================================================= ##########  
   if (p == 1){
-    state.mu <- as.numeric(MCMC$mu[1:MCMC$K])
-    names(state.mu) <- paste("mu", 1:MCMC$K, sep="")
-    state.Li <- as.numeric(MCMC$Li[1:MCMC$K])
-    names(state.Li) <- paste("Li", 1:MCMC$K, sep="")
-    state.Sigma <- (1 / state.Li)^2
-    names(state.Sigma) <- paste("Sigma", 1:MCMC$K, sep="")
-    state.Q <- as.numeric(MCMC$Q[1:MCMC$K])
-    names(state.Q) <- paste("Q", 1:MCMC$K, sep="")    
+    state.mu       <- as.numeric(MCMC$mu[1:MCMC$K])
+    state_first.mu <- as.numeric(MCMC$chmu[1:MCMC$chK[1]])    
+    names(state.mu)       <- paste("mu", 1:MCMC$K, sep="")
+    names(state_first.mu) <- paste("mu", 1:MCMC$chK[1], sep="")    
+    
+    state.Li       <- as.numeric(MCMC$Li[1:MCMC$K])
+    state_first.Li <- as.numeric(MCMC$chLi[1:MCMC$chK[1]])    
+    names(state.Li)       <- paste("Li", 1:MCMC$K, sep="")
+    names(state_first.Li) <- paste("Li", 1:MCMC$chK[1], sep="")
+    
+    state.Sigma       <- (1 / state.Li)^2
+    state_first.Sigma <- (1 / state_first.Li)^2
+    names(state.Sigma)       <- paste("Sigma", 1:MCMC$K, sep="")
+    names(state_first.Sigma) <- paste("Sigma", 1:MCMC$chK[1], sep="")
+    
+    state.Q       <- as.numeric(MCMC$Q[1:MCMC$K])
+    state_first.Q <- as.numeric(MCMC$chQ[1:MCMC$chK[1]])    
+    names(state.Q)       <- paste("Q", 1:MCMC$K, sep="")
+    names(state_first.Q) <- paste("Q", 1:MCMC$chK[1], sep="")        
   }else{
-    state.mu <- matrix(MCMC$mu[1:(p*MCMC$K)], ncol=p, byrow=TRUE)
-    rownames(state.mu) <- paste("j", 1:MCMC$K, sep="")
-    colnames(state.mu) <- paste("m", 1:p, sep="")
-    state.Li <- as.numeric(MCMC$Li[1:(LTp*MCMC$K)])
-    names(state.Li) <- paste("Li", rep(1:MCMC$K, each=LTp), rep(naamLTp, MCMC$K), sep="")
+    state.mu       <- matrix(MCMC$mu[1:(p*MCMC$K)], ncol=p, byrow=TRUE)
+    state_first.mu <- matrix(MCMC$chmu[1:(p*MCMC$chK[1])], ncol=p, byrow=TRUE)    
+    rownames(state.mu)       <- paste("j", 1:MCMC$K, sep="")
+    rownames(state_first.mu) <- paste("j", 1:MCMC$chK[1], sep="")    
+    colnames(state.mu) <- colnames(state_first.mu) <- paste("m", 1:p, sep="")
+    
+    state.Li       <- as.numeric(MCMC$Li[1:(LTp*MCMC$K)])
+    state_first.Li <- as.numeric(MCMC$chLi[1:(LTp*MCMC$chK[1])])    
+    names(state.Li)       <- paste("Li", rep(1:MCMC$K, each=LTp), rep(naamLTp, MCMC$K), sep="")
+    names(state_first.Li) <- paste("Li", rep(1:MCMC$chK[1], each=LTp), rep(naamLTp, MCMC$chK[1]), sep="")    
+    
     state.Sigma <- matrix(NA, ncol=p, nrow=p*MCMC$K)
     rownames(state.Sigma) <- paste("j", rep(1:MCMC$K, each=p), ".", rep(1:p, MCMC$K), sep="")
     colnames(state.Sigma) <- paste("m", 1:p, sep="")            
@@ -163,15 +192,31 @@ NMixMCMCwrapper <- function(chain=1,
       tmpSigma <- chol2inv(chol(tmpSigma))
       state.Sigma[((j-1)*p+1):(j*p),] <- tmpSigma
     }
-    state.Q <- as.numeric(MCMC$Q[1:(LTp*MCMC$K)])
-    names(state.Q) <- paste("Q", rep(1:MCMC$K, each=LTp), rep(naamLTp, MCMC$K), sep="")    
+
+    state_first.Sigma <- matrix(NA, ncol=p, nrow=p*MCMC$chK[1])
+    rownames(state_first.Sigma) <- paste("j", rep(1:MCMC$chK[1], each=p), ".", rep(1:p, MCMC$chK[1]), sep="")
+    colnames(state_first.Sigma) <- paste("m", 1:p, sep="")            
+    for (j in 1:MCMC$chK[1]){
+      tmpSigma <- matrix(0, nrow=p, ncol=p)
+      tmpSigma[lower.tri(tmpSigma, diag=TRUE)] <- state_first.Li[((j-1)*LTp+1):(j*LTp)]
+      tmpSigma <- tmpSigma %*% t(tmpSigma)
+      tmpSigma <- chol2inv(chol(tmpSigma))
+      state_first.Sigma[((j-1)*p+1):(j*p),] <- tmpSigma
+    }
+    
+    state.Q       <- as.numeric(MCMC$Q[1:(LTp*MCMC$K)])
+    state_first.Q <- as.numeric(MCMC$chQ[1:(LTp*MCMC$chK[1])])    
+    names(state.Q)       <- paste("Q", rep(1:MCMC$K, each=LTp), rep(naamLTp, MCMC$K), sep="")
+    names(state_first.Q) <- paste("Q", rep(1:MCMC$chK[1], each=LTp), rep(naamLTp, MCMC$chK[1]), sep="")        
   }
   nCompTotal <- sum(MCMC$chK)
   freqK <- table(MCMC$chK)
   propK <- prop.table(freqK)
 
-  state.z <- matrix(MCMC$z, ncol=p, byrow=TRUE)
-  state.y <- state.z * matrix(rep(scale$scale, n), ncol=p, byrow=TRUE) + matrix(rep(scale$shift, n), ncol=p, byrow=TRUE)
+  state.z       <- matrix(MCMC$z, ncol=p, byrow=TRUE)
+  state_first.z <- matrix(MCMC$z_first, ncol=p, byrow=TRUE)  
+  state.y       <- state.z       * matrix(rep(scale$scale, n), ncol=p, byrow=TRUE) + matrix(rep(scale$shift, n), ncol=p, byrow=TRUE)
+  state_first.y <- state_first.z * matrix(rep(scale$scale, n), ncol=p, byrow=TRUE) + matrix(rep(scale$shift, n), ncol=p, byrow=TRUE)  
   
   ########## ========== Deviance and DIC's ========== ##########
   ########## ======================================== ##########
@@ -179,7 +224,6 @@ NMixMCMCwrapper <- function(chain=1,
   detS      <- prod(scale$scale)
   idetS     <- 1 / detS
   log.idetS <- -log(detS)
-
 
   REMOVE <- MCMC$chDevObs >= Inf
   D3bar   <- mean(MCMC$chDevObs[!REMOVE]) - 2*n*log.idetS
@@ -226,24 +270,34 @@ NMixMCMCwrapper <- function(chain=1,
               dim           = p,
               prior         = prior,
               init          = inits[[chain]],
-              RJMCMC        = RJMCMC,
-              scale         = scale,
-              state         = list(y        = state.y,
+              state.first   = list(y        = state_first.y,
+                                   K        = as.numeric(MCMC$chK[1]),
+                                   w        = as.numeric(MCMC$chw[1:MCMC$chK[1]]),
+                                   mu       = state_first.mu,
+                                   Li       = state_first.Li,
+                                   Sigma    = state_first.Sigma,
+                                   Q        = state_first.Q,                
+                                   gammaInv = as.numeric(MCMC$chgammaInv[1:p]),
+                                   r        = as.numeric(MCMC$r_first+ 1)),              
+              state.last    = list(y        = state.y,
                                    K        = as.numeric(MCMC$K),
                                    w        = as.numeric(MCMC$w[1:MCMC$K]),
                                    mu       = state.mu,
                                    Li       = state.Li,
-                                   Q        = state.Q,
                                    Sigma    = state.Sigma,
+                                   Q        = state.Q,                
                                    gammaInv = as.numeric(MCMC$gammaInv),
-                                   r        = as.numeric(MCMC$r + 1)),
+                                   r        = as.numeric(MCMC$r + 1)),              
+              RJMCMC        = RJMCMC,
+              scale         = scale,
               freqK         = freqK,
               propK         = propK,
               DIC           = DIC,
               moves         = moves)
-  names(RET$state$w)        <- paste("w", 1:MCMC$K, sep="")
-  names(RET$state$gammaInv) <- paste("gammaInv", 1:p, sep="")
-  names(RET$state$r)        <- paste("r", 1:n, sep="")
+  names(RET$state.last$w)        <- paste("w", 1:MCMC$K, sep="")
+  names(RET$state.first$w)       <- paste("w", 1:MCMC$chK[1], sep="")  
+  names(RET$state.last$gammaInv) <- names(RET$state.first$gammaInv) <- paste("gammaInv", 1:p, sep="")
+  names(RET$state.last$r)        <- names(RET$state.first$r)        <- paste("r", 1:n, sep="")
 
   ########## ========== Chains for basic parameters ========== ##########
   ########## ================================================= ##########
@@ -261,7 +315,24 @@ NMixMCMCwrapper <- function(chain=1,
     MCMC$chLi <- NULL    
   }
 
-  if (keep.chains){    
+  ########## ========== Chains for mixture (overall) means, std. deviations and correlations ========== ##########
+  ########## ========================================================================================== ##########    
+  MCMC$chMean     <- matrix(MCMC$chMean, ncol=p, byrow=TRUE)
+  MCMC$chCorr     <- matrix(MCMC$chCorr, ncol=LTp, byrow=TRUE)
+  MCMC$chMeanData <- matrix(MCMC$chMeanData, ncol=p, byrow=TRUE)
+  MCMC$chCorrData <- matrix(MCMC$chCorrData, ncol=LTp, byrow=TRUE)
+  colnames(MCMC$chMean) <- paste("z.Mean.", 1:p, sep="")
+  colnames(MCMC$chCorr) <- paste("z.Corr", naamLTp, sep="")
+  colnames(MCMC$chCorr)[((0:(p-1))*(2*p - (0:(p-1)) + 1))/2 + 1] <- paste("z.SD.", 1:p, sep="")
+  colnames(MCMC$chMeanData) <- paste("y.Mean.", 1:p, sep="")
+  colnames(MCMC$chCorrData) <- paste("y.Corr", naamLTp, sep="")
+  colnames(MCMC$chCorrData)[((0:(p-1))*(2*p - (0:(p-1)) + 1))/2 + 1] <- paste("y.SD.", 1:p, sep="")  
+
+  ######### =========== Work-out the chains further ========== ##########
+  ######### ================================================== ##########
+  if (keep.chains){
+    RET$mixture <- as.data.frame(cbind(MCMC$chMeanData, MCMC$chCorrData, MCMC$chMean, MCMC$chCorr))
+    
     RET$Q <- as.numeric(MCMC$chQ[1:(LTp*nCompTotal)])
     MCMC$chQ <- NULL
 
@@ -278,21 +349,6 @@ NMixMCMCwrapper <- function(chain=1,
     RET$rank <- as.numeric(MCMC$chrank[1:nCompTotal] + 1)
     MCMC$chrank <- NULL
   
-    ########## ========== Chains for mixture (overall) means, std. deviations and correlations ========== ##########
-    ########## ========================================================================================== ##########    
-    MCMC$chMean     <- matrix(MCMC$chMean, ncol=p, byrow=TRUE)
-    MCMC$chCorr     <- matrix(MCMC$chCorr, ncol=LTp, byrow=TRUE)
-    MCMC$chMeanData <- matrix(MCMC$chMeanData, ncol=p, byrow=TRUE)
-    MCMC$chCorrData <- matrix(MCMC$chCorrData, ncol=LTp, byrow=TRUE)
-    colnames(MCMC$chMean) <- paste("z.Mean.", 1:p, sep="")
-    colnames(MCMC$chCorr) <- paste("z.Corr", naamLTp, sep="")
-    colnames(MCMC$chCorr)[((0:(p-1))*(2*p - (0:(p-1)) + 1))/2 + 1] <- paste("z.SD.", 1:p, sep="")
-    colnames(MCMC$chMeanData) <- paste("y.Mean.", 1:p, sep="")
-    colnames(MCMC$chCorrData) <- paste("y.Corr", naamLTp, sep="")
-    colnames(MCMC$chCorrData)[((0:(p-1))*(2*p - (0:(p-1)) + 1))/2 + 1] <- paste("y.SD.", 1:p, sep="")  
-  
-    RET$mixture <- as.data.frame(cbind(MCMC$chMeanData, MCMC$chCorrData, MCMC$chMean, MCMC$chCorr))
-
     ########## ========== Chains for deviances and related quantities  ========== ##########
     ########## ================================================================== ##########
   ## 06/03/2008:  Do not return DIC4 related quantities as it is not clear to me whether it is correct    
@@ -512,6 +568,11 @@ NMixMCMCwrapper <- function(chain=1,
     names(RET$poster.mean.Q) <- names(RET$poster.mean.Sigma) <- names(RET$poster.mean.Li) <- paste("j", 1:CKmax, sep="")    
   }  
 
+  ########## ========== Additional objects (added on 08/02/2010) ========== ##########
+  ########## ============================================================== ##########
+  RET$relabel <- list(type="mean", par=1)       #### default re-labeling is performed using the first margin of the mixture means
+  RET$Cpar <- Cpar
+      
   class(RET) <- "NMixMCMC"
   return(RET)  
 }  

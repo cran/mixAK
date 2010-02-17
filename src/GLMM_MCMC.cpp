@@ -172,7 +172,7 @@ GLMM_MCMC(double*       Y_c,                               // this is in fact co
   void
   (*NMix_Deviance)(double* indLogL0,     double* indLogL1,   double* indDevCompl,   double* indDevObs,   double* indDevCompl_inHat,
                    double* LogL0,        double* LogL1,      double* DevCompl,      double* DevObs,      double* DevCompl_inHat, 
-                   double* pred_dens,    double* cum_Pr,     double* dwork,         int* err,
+                   double* pred_dens,    double* Pr,         double* cum_Pr,        double* dwork,       int* err,
                    const double* y,      const int* r,           const int* mixN,     const int* p,      const int* n,
                    const int* K,         const double* logw,     const double* mu,    const double* Q,   const double* Li,  const double* log_dets,
                    const double* delta,  const double* c,        const double* xi,    const double* c_xi,  
@@ -569,6 +569,7 @@ GLMM_MCMC(double*       Y_c,                               // this is in fact co
   /***** indDevCompl_inHat_b:   indDevCompl_inHat_b[i] = log(E[w_{r_i}|...] * phi(b_i | E[mu_{r_i}|...], (E[Q_{r_i}|...])^{-1}))  *****/
   /***** ------------------------------------------------------------------------------------------------------------------------ *****/
   /***** pred_dens_b:           pred_dens_b[i]         = sum_{j=1}^K w_j * phi(b_i | mu_j, Sigma_j)                               *****/
+  /***** Pr_b:                  Pr_b[j, i]             = w_j * phi(b_i | mu_j, Sigma_j) / C (to sum-up to one)                    *****/
   /***** cum_Pr_b:              cum_Pr_b[j, i]         = sum_{l=1}^j w_l * phi(b_i | mu_l, Sigma_l)                               *****/
   /***** ------------------------------------------------------------------------------------------------------------------------ *****/
   double chLogL0_bP[1];
@@ -584,6 +585,7 @@ GLMM_MCMC(double*       Y_c,                               // this is in fact co
   double *indDevCompl_inHat_b = NULL;
 
   double *pred_dens_b = NULL;
+  double *Pr_b        = NULL;
   double *cum_Pr_b    = NULL;
 
   const int ldwork_Deviance_b = dim_b + (2 * dim_b + LT_b + 2 + dim_b + 2 * LT_b + 2) * *Kmax_b;
@@ -597,13 +599,14 @@ GLMM_MCMC(double*       Y_c,                               // this is in fact co
     indDevCompl_inHat_b = Calloc(*I, double);
 
     pred_dens_b = Calloc(*I, double);
+    Pr_b        = Calloc(*Kmax_b * *I, double);
     cum_Pr_b    = Calloc(*Kmax_b * *I, double);
 
     dwork_Deviance_b = Calloc(ldwork_Deviance_b, double);
 
     NMix_Deviance(indLogL0_b, indLogL1_b, indDevCompl_b, indDevObs_b, indDevCompl_inHat_b, 
                   chLogL0_bP, chLogL1_bP, chDevCompl_bP, chDevObs_bP, chDevCompl_inHat_bP, 
-                  pred_dens_b, cum_Pr_b, dwork_Deviance_b, err,
+                  pred_dens_b, Pr_b, cum_Pr_b, dwork_Deviance_b, err,
                   bscaled, r_b, mixN_b, &dim_b, I, K_b, logw_b, mu_b, Q_b, Li_b, log_dets_b, 
                   delta_b, c_b, xi_b, c_xi_b, Dinv_b, Dinv_xi_b, zeta_b, XiInv_b);
     if (*err){
@@ -645,7 +648,7 @@ GLMM_MCMC(double*       Y_c,                               // this is in fact co
     order_b = Calloc(*Kmax_b, int);
     rank_b  = Calloc(*Kmax_b, int);
 
-    NMix::orderComp(order_b, rank_b, dwork_orderComp_b, K_b, mu_b, &dim_b);
+    NMix::orderComp(order_b, rank_b, dwork_orderComp_b, &AK_Basic::_ZERO_INT, K_b, mu_b, &dim_b);
     AK_Basic::fillArray(order_b + *K_b, 0, *Kmax_b - *K_b);
     AK_Basic::fillArray(rank_b  + *K_b, 0, *Kmax_b - *K_b);
   }
@@ -659,16 +662,11 @@ GLMM_MCMC(double*       Y_c,                               // this is in fact co
 
 
   /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/
-  /***** Reset pm_*                                                                                         *****/
+  /***** Reset pm_* (except these related to the mixture)                                                   *****/
   /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/
   AK_Basic::fillArray(pm_eta_fixed,  0.0, N);
   AK_Basic::fillArray(pm_eta_random, 0.0, N);
   AK_Basic::fillArray(pm_b,          0.0, dim_b * *I);
-  AK_Basic::fillArray(pm_w_b,        0.0, *Kmax_b);
-  AK_Basic::fillArray(pm_mu_b,       0.0, *Kmax_b * dim_b);
-  AK_Basic::fillArray(pm_Q_b,        0.0, *Kmax_b * LT_b);
-  AK_Basic::fillArray(pm_Sigma_b,    0.0, *Kmax_b * LT_b);
-  AK_Basic::fillArray(pm_Li_b,       0.0, *Kmax_b * LT_b);
   AK_Basic::fillArray(pm_indLogL,    0.0, *I);
   AK_Basic::fillArray(pm_indLogpb,   0.0, *I);
 
@@ -716,19 +714,11 @@ GLMM_MCMC(double*       Y_c,                               // this is in fact co
 
   /***** Pointers to pm_*** used to loop  + related pointers *****/
   double *pm_bP;
-  double *pm_w_bP, *pm_mu_bP, *pm_Q_bP, *pm_Sigma_bP, *pm_Li_bP;
   double *pm_indLogLP, *pm_indLogpbP;
   double *pm_eta_fixedP, *pm_eta_randomP;
 
-  const double *mu_b_ordP, *Q_b_ordP, *Sigma_b_ordP, *Li_b_ordP;
   const double *pred_dens_bP;
   const double *eta_fixedP, *eta_randomP;
-
-  /***** Weights of the full conditional of r (used for clustering) *****/
-  double *Pr_b = NULL;
-  if (dim_b && *priorK_b == NMix::K_FIXED){
-    Pr_b = Calloc(*Kmax_b * *I, double);
-  }
   
   /***** Other pointers used to loop *****/
   int *sum_Ir_bP;
@@ -850,7 +840,6 @@ GLMM_MCMC(double*       Y_c,                               // this is in fact co
 
 
     /***** Copy sampled values to ch* variables             *****/
-    /***** Update some pm_*** quantities                    *****/
     /***** ------------------------------------------------ *****/
     if (dim_b){
 
@@ -866,33 +855,15 @@ GLMM_MCMC(double*       Y_c,                               // this is in fact co
       order_bP = order_b;
       rank_bP  = rank_b;
 
-      pm_w_bP     = pm_w_b;
-      pm_mu_bP    = pm_mu_b;
-      pm_Q_bP     = pm_Q_b;
-      pm_Sigma_bP = pm_Sigma_b;
-      pm_Li_bP    = pm_Li_b;
-
       for (k = 0; k < *K_b; k++){
         *chw_bP = *w_bP;
         chw_bP++;
         w_bP++;
 
-        *pm_w_bP += w_b[*order_bP];
-        pm_w_bP++;
-
-        mu_b_ordP     = mu_b    + (*order_bP * dim_b);
-        Q_b_ordP      = Q_b     + (*order_bP * LT_b);
-        Sigma_b_ordP  = Sigma_b + (*order_bP * LT_b);
-        Li_b_ordP     = Li_b    + (*order_bP * LT_b);
-
         for (j = 0; j < dim_b; j++){
           *chmu_bP = *mu_bP;
           chmu_bP++;
           mu_bP++;
-
-          *pm_mu_bP += *mu_b_ordP;
-          pm_mu_bP++;
-          mu_b_ordP++;
 
           for (i = j; i < dim_b; i++){
             *chQ_bP = *Q_bP;
@@ -906,18 +877,6 @@ GLMM_MCMC(double*       Y_c,                               // this is in fact co
             *chLi_bP = *Li_bP;
             chLi_bP++;
             Li_bP++;
-
-            *pm_Q_bP += *Q_b_ordP;
-            pm_Q_bP++;
-            Q_b_ordP++;
-
-            *pm_Sigma_bP += *Sigma_b_ordP;
-            pm_Sigma_bP++;
-            Sigma_b_ordP++;
-
-            *pm_Li_bP += *Li_b_ordP;
-            pm_Li_bP++;
-            Li_b_ordP++;
           }
         }
 
@@ -956,7 +915,7 @@ GLMM_MCMC(double*       Y_c,                               // this is in fact co
       /*** Compute quantities needed to get DIC_3 and DIC_4 from Celeux, Forbes, Robert, Titterington (2006) ***/
       NMix_Deviance(indLogL0_b, indLogL1_b, indDevCompl_b, indDevObs_b, indDevCompl_inHat_b, 
                     chLogL0_bP, chLogL1_bP, chDevCompl_bP, chDevObs_bP, chDevCompl_inHat_bP, 
-                    pred_dens_b, cum_Pr_b, dwork_Deviance_b, err,
+                    pred_dens_b, Pr_b, cum_Pr_b, dwork_Deviance_b, err,
                     bscaled, r_b, mixN_b, &dim_b, I, K_b, logw_b, mu_b, Q_b, Li_b, log_dets_b, 
                     delta_b, c_b, xi_b, c_xi_b, Dinv_b, Dinv_xi_b, zeta_b, XiInv_b);
       *cum_Pr_done_b = true;
@@ -987,7 +946,7 @@ GLMM_MCMC(double*       Y_c,                               // this is in fact co
       /*** Update sum_Ir_b and sum_Pr_b_b ***/
       if (*priorK_b == NMix::K_FIXED){
 
-	AK_Utils::cum_Pr2Pr(Pr_b, cum_Pr_b, K_b, I);
+	// AK_Utils::cum_Pr2Pr(Pr_b, cum_Pr_b, K_b, I);     // as of 13/02/2010 not needed since Pr_b is calculated in NMix_Deviance
 
         r_bP        = r_b;
         sum_Ir_bP   = sum_Ir_b;
@@ -1065,31 +1024,8 @@ GLMM_MCMC(double*       Y_c,                               // this is in fact co
   /***** Compute posterior means of required quantities                                                     *****/
   /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/ 
   if (dim_b){
-    pm_w_bP     = pm_w_b;
-    pm_mu_bP    = pm_mu_b;
-    pm_Q_bP     = pm_Q_b;
-    pm_Sigma_bP = pm_Sigma_b;
-    pm_Li_bP    = pm_Li_b;
-
-    for (k = 0; k < *Kmax_b; k++){
-      *pm_w_bP /= *Mkeep;
-      pm_w_bP++;
-
-      for (j = 0; j < dim_b; j++){
-        *pm_mu_bP /= *Mkeep;
-        pm_mu_bP++;      
-
-        for (i = j; i < dim_b; i++){
-          *pm_Q_bP /= *Mkeep;
-          pm_Q_bP++;      
-
-          *pm_Sigma_bP /= *Mkeep;
-          pm_Sigma_bP++;      
-
-          *pm_Li_bP /= *Mkeep;
-          pm_Li_bP++;      
-        }
-      }
+    if (*priorK_b == NMix::K_FIXED){
+      NMix::PosterMeanMixParam(pm_w_b, pm_mu_b, pm_Q_b, pm_Sigma_b, pm_Li_b, Kmax_b, chw_b, chmu_b, chQ_b, chSigma_b, chLi_b, chorder_b, &dim_b, Mkeep);
     }
 
     pm_indLogpbP = pm_indLogpb;
@@ -1195,6 +1131,7 @@ GLMM_MCMC(double*       Y_c,                               // this is in fact co
 
     Free(dwork_Deviance_b);
     Free(cum_Pr_b);
+    Free(Pr_b);
     Free(pred_dens_b);
     Free(indDevCompl_inHat_b);
     Free(indDevObs_b);
@@ -1227,8 +1164,6 @@ GLMM_MCMC(double*       Y_c,                               // this is in fact co
     Free(log_c_b);
     Free(c_xi_b);
     Free(logK_b);
-
-    if (*priorK_b == NMix::K_FIXED) Free(Pr_b);
   }
   Free(cumq_ri);
   Free(q_ri);

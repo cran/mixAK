@@ -16,22 +16,49 @@ namespace NMix{
 /***** NMix::Deviance_NC                                                                         *****/
 /***** ***************************************************************************************** *****/
 void
-Deviance_NC(double* indLogL0,     double* indLogL1,   double* indDevCompl,   double* indDevObs,   double* indDevCompl_inHat,
-            double* LogL0,        double* LogL1,      double* DevCompl,      double* DevObs,      double* DevCompl_inHat, 
-            double* pred_dens,    double* cum_Pr,     double* dwork,         int* err,
-            const double* y,      const int* r,           const int* mixN,     const int* p,      const int* n,
-            const int* K,         const double* logw,     const double* mu,    const double* Q,   const double* Li,  const double* log_dets,
-            const double* delta,  const double* c,        const double* xi,    const double* c_xi,  
-            const double* Dinv,   const double* Dinv_xi,  const double* zeta,  const double* XiInv)
+Deviance_NC(double* indLogL0,     
+            double* indLogL1,   
+            double* indDevCompl,   
+            double* indDevObs,   
+            double* indDevCompl_inHat,
+            double* LogL0,        
+            double* LogL1,      
+            double* DevCompl,      
+            double* DevObs,      
+            double* DevCompl_inHat, 
+            double* pred_dens,    
+            double* Pr,         
+            double* cum_Pr,        
+            double* dwork,         
+            int*    err,
+            const double* y,      
+            const int*    r,           
+            const int*    mixN,     
+            const int*    p,      
+            const int*    n,
+            const int*    K,         
+            const double* logw,     
+            const double* mu,    
+            const double* Q,   
+            const double* Li,  
+            const double* log_dets,
+            const double* delta,  
+            const double* c,        
+            const double* xi,    
+            const double* c_xi,  
+            const double* Dinv,   
+            const double* Dinv_xi,  
+            const double* zeta,  
+            const double* XiInv)
 {
   const char *fname = "NMix::Deviance_NC";
   *err = 0;
 
   static int i, j, LTp;
-  static double etemp;
+  static double etemp, sum_Pr;
 
   static double *dwork_misc, *mixSumy, *mixBary, *mixSS, *fcm_weight, *logfcm_weight, *fcm_mu, *ifcm_Q, *ifcm_L, *fcm_log_dets;
-  static double *indLogL0P, *indLogL1P, *indDevComplP, *indDevObsP,  *indDevCompl_inHatP, *pred_densP, *cum_PrP;
+  static double *indLogL0P, *indLogL1P, *indDevComplP, *indDevObsP,  *indDevCompl_inHatP, *pred_densP, *PrP, *Pr_start, *cum_PrP;
   static const int *rP;
   static const double *yP, *logwP, *muP, *LiP, *log_detsP;
 
@@ -70,6 +97,7 @@ Deviance_NC(double* indLogL0,     double* indLogL1,   double* indDevCompl,   dou
   indDevObsP         = indDevObs;
   indDevCompl_inHatP = indDevCompl_inHat;
   pred_densP         = pred_dens;
+  PrP                = Pr;
   cum_PrP            = cum_Pr;
 
   yP = y;
@@ -87,50 +115,52 @@ Deviance_NC(double* indLogL0,     double* indLogL1,   double* indDevCompl,   dou
     LiP       = Li;
     log_detsP = log_dets;    
 
-    /*** indLogL0, indLogL1, indDevCompl, cum_Pr ***/
+    Pr_start  = PrP;
+
+    /*** indLogL0, indLogL1, indDevCompl, Pr (not yet re-scaled) ***/
     *indDevComplP = 0.0;
 
     /* j = 0 */
-    Dist::ldMVN1(cum_PrP, dwork_misc, yP, muP, LiP, log_detsP, p);     // cum_PrP = log(phi(y_i | mu_j, Sigma_j))
+    Dist::ldMVN1(PrP, dwork_misc, yP, muP, LiP, log_detsP, p);         // PrP = log(phi(y_i | mu_j, Sigma_j))
     if (*rP == 0){
-      *indLogL0P = *cum_PrP;
+      *indLogL0P = *PrP;
       *indLogL1P = *logwP;        
     }    
-    *cum_PrP      += *logwP;                                           // cum_PrP = log(phi(y_i | mu_j, Sigma_j) * w_j)
-    etemp         = AK_Basic::exp0_AK(*cum_PrP);                       // etemp   = phi(y_i | mu_j, Sigma_j) * w_j
-    *indDevComplP += etemp * *cum_PrP;                                 // += phi(y_i | mu_j, Sigma_j) * w_j * log(phi(y_i | mu_j, Sigma_j) * w_j)
-    *cum_PrP      = etemp;                                             // cum_PrP = phi(y_i | mu_j, Sigma_j) * w_j
+    *PrP          += *logwP;                                           // PrP = log(phi(y_i | mu_j, Sigma_j) * w_j)
+    etemp         = AK_Basic::exp0_AK(*PrP);                           // etemp = phi(y_i | mu_j, Sigma_j) * w_j
+    *indDevComplP += etemp * *PrP;                                     // += phi(y_i | mu_j, Sigma_j) * w_j * log(phi(y_i | mu_j, Sigma_j) * w_j)
+    sum_Pr        = etemp;
 
     logwP++;
     muP += *p;
     LiP += LTp;
     log_detsP += 2;
-    cum_PrP++;    
+    PrP++;    
 
     /* j = 1, ..., K-1 */
     for (j = 1; j < *K; j++){
-      Dist::ldMVN1(cum_PrP, dwork_misc, yP, muP, LiP, log_detsP, p);     // cum_PrP = log(phi(y_i | mu_j, Sigma_j))
+      Dist::ldMVN1(PrP, dwork_misc, yP, muP, LiP, log_detsP, p);         // PrP = log(phi(y_i | mu_j, Sigma_j))
       if (j == *rP){
-        *indLogL0P = *cum_PrP;
+        *indLogL0P = *PrP;
         *indLogL1P = *logwP;        
       }   
-      *cum_PrP      += *logwP;                                           // cum_PrP = log(phi(y_i | mu_j, Sigma_j) * w_j)
-      etemp         = AK_Basic::exp0_AK(*cum_PrP);                       // etemp   = phi(y_i | mu_j, Sigma_j) * w_j
-      *indDevComplP += etemp * *cum_PrP;                                 // += phi(y_i | mu_j, Sigma_j) * w_j * log(phi(y_i | mu_j, Sigma_j) * w_j)
-      *cum_PrP      = etemp;                                             // cum_PrP = phi(y_i | mu_j, Sigma_j) * w_j
-      *cum_PrP += *(cum_PrP - 1);                                        // cum_PrP = cumsum
+      *PrP          += *logwP;                                           // PrP = log(phi(y_i | mu_j, Sigma_j) * w_j)
+      etemp         = AK_Basic::exp0_AK(*PrP);                           // etemp = phi(y_i | mu_j, Sigma_j) * w_j
+      *indDevComplP += etemp * *PrP;                                     // += phi(y_i | mu_j, Sigma_j) * w_j * log(phi(y_i | mu_j, Sigma_j) * w_j)
+      sum_Pr        += etemp;
 
       logwP++;
       muP += *p;
       LiP += LTp;
       log_detsP += 2;
-      cum_PrP++;
+      PrP++;
     }
   
-    *indDevComplP /= *(cum_PrP - 1);                                   // divide by sum_{j=1}^K phi(y_i | mu_j, Sigma_j) * w_j
+    if (sum_Pr > AK_Basic::_ZERO0) *indDevComplP /= sum_Pr;             // divide by sum_{j=1}^K phi(y_i | mu_j, Sigma_j) * w_j
+    else                           *indDevComplP /= AK_Basic::_ZERO0;
 
     /*** pred_dens ***/
-    *pred_densP = *(cum_PrP - 1);                                      // sum_{j=1}^K phi(y_i | mu_j, Sigma_j) * w_j
+    *pred_densP = sum_Pr;                                               // sum_{j=1}^K phi(y_i | mu_j, Sigma_j) * w_j
 
     /*** indDevObs ***/
     *indDevObsP = AK_Basic::log0_AK(*pred_densP);
@@ -145,6 +175,33 @@ Deviance_NC(double* indLogL0,     double* indLogL1,   double* indDevCompl,   dou
     *DevCompl       += *indDevComplP;
     *DevObs         += *indDevObsP;
     *DevCompl_inHat += *indDevCompl_inHatP;
+
+    /*** Re-scale Pr (it now contains log(Pr)) to have the highest one equal to 0, calculate cum_Pr ***/
+    sum_Pr = AK_Basic::maxArray(Pr_start, *K);
+    PrP    = Pr_start;
+
+    *PrP -= sum_Pr;
+    *PrP = AK_Basic::exp_AK(*PrP);
+    *cum_PrP = *PrP;
+    PrP++;
+    cum_PrP++;
+
+    for (j = 1; j < *K; j++){
+      *PrP -= sum_Pr;
+      *PrP = AK_Basic::exp_AK(*PrP);
+      *cum_PrP = *(cum_PrP - 1) + *PrP;
+      PrP++;
+      cum_PrP++;
+    }
+
+    /***  Rescale Pr_y such that it will sum-up to 1  ***/
+    sum_Pr = *(cum_PrP - 1);
+    PrP  = Pr_start;
+    
+    for (j = 0; j < *K; j++){
+      *PrP /= sum_Pr;
+      PrP++;
+    }
 
     /*** Shift pointers ***/
     yP += *p;
@@ -171,22 +228,49 @@ Deviance_NC(double* indLogL0,     double* indLogL1,   double* indDevCompl,   dou
 /***** NMix::Deviance_IC                                                                         *****/
 /***** ***************************************************************************************** *****/
 void
-Deviance_IC(double* indLogL0,     double* indLogL1,   double* indDevCompl,   double* indDevObs,   double* indDevCompl_inHat,
-            double* LogL0,        double* LogL1,      double* DevCompl,      double* DevObs,      double* DevCompl_inHat, 
-            double* pred_dens,    double* cum_Pr,     double* dwork,         int* err,
-            const double* y,      const int* r,           const int* mixN,     const int* p,      const int* n,
-            const int* K,         const double* logw,     const double* mu,    const double* Q,   const double* Li,  const double* log_dets,
-            const double* delta,  const double* c,        const double* xi,    const double* c_xi,  
-            const double* Dinv,   const double* Dinv_xi,  const double* zeta,  const double* XiInv)
+Deviance_IC(double* indLogL0,     
+            double* indLogL1,   
+            double* indDevCompl,   
+            double* indDevObs,   
+            double* indDevCompl_inHat,
+            double* LogL0,        
+            double* LogL1,      
+            double* DevCompl,      
+            double* DevObs,      
+            double* DevCompl_inHat, 
+            double* pred_dens,    
+            double* Pr,
+            double* cum_Pr,     
+            double* dwork,         
+            int*    err,
+            const double* y,      
+            const int*    r,           
+            const int*    mixN,     
+            const int*    p,      
+            const int*    n,
+            const int*    K,         
+            const double* logw,     
+            const double* mu,    
+            const double* Q,   
+            const double* Li,  
+            const double* log_dets,
+            const double* delta,  
+            const double* c,        
+            const double* xi,    
+            const double* c_xi,  
+            const double* Dinv,   
+            const double* Dinv_xi,  
+            const double* zeta,  
+            const double* XiInv)
 {
   //const char *fname = "NMix::Deviance_IC";
   *err = 0;
 
   static int i, j, LTp;
-  static double etemp;
+  static double etemp, sum_Pr;
 
   static double *dwork_misc; // *mixSumy, *mixBary, *mixSS, *fcm_weight, *logfcm_weight, *fcm_mu, *ifcm_Q, *ifcm_L, *fcm_log_dets;
-  static double *indLogL0P, *indLogL1P, *indDevComplP, *indDevObsP,  *indDevCompl_inHatP, *pred_densP, *cum_PrP;
+  static double *indLogL0P, *indLogL1P, *indDevComplP, *indDevObsP,  *indDevCompl_inHatP, *pred_densP, *PrP, *Pr_start, *cum_PrP;
   static const int *rP;
   static const double *yP, *logwP, *muP, *LiP, *log_detsP;
 
@@ -225,6 +309,7 @@ Deviance_IC(double* indLogL0,     double* indLogL1,   double* indDevCompl,   dou
   indDevObsP         = indDevObs;
   indDevCompl_inHatP = indDevCompl_inHat;
   pred_densP         = pred_dens;
+  PrP                = Pr;
   cum_PrP            = cum_Pr;
 
   yP = y;
@@ -242,50 +327,52 @@ Deviance_IC(double* indLogL0,     double* indLogL1,   double* indDevCompl,   dou
     LiP       = Li;
     log_detsP = log_dets;    
 
-    /*** indLogL0, indLogL1, indDevCompl, cum_Pr ***/
+    Pr_start  = PrP;
+
+    /*** indLogL0, indLogL1, indDevCompl, Pr (not yet re-scaled) ***/
     *indDevComplP = 0.0;
 
     /* j = 0 */
-    Dist::ldMVN1(cum_PrP, dwork_misc, yP, muP, LiP, log_detsP, p);     // cum_PrP = log(phi(y_i | mu_j, Sigma_j))
+    Dist::ldMVN1(PrP, dwork_misc, yP, muP, LiP, log_detsP, p);         // PrP = log(phi(y_i | mu_j, Sigma_j))
     if (*rP == 0){
-      *indLogL0P = *cum_PrP;
+      *indLogL0P = *PrP;
       *indLogL1P = *logwP;        
     }    
-    *cum_PrP      += *logwP;                                           // cum_PrP = log(phi(y_i | mu_j, Sigma_j) * w_j)
-    etemp         = AK_Basic::exp0_AK(*cum_PrP);                       // etemp   = phi(y_i | mu_j, Sigma_j) * w_j
-    *indDevComplP += etemp * *cum_PrP;                                 // += phi(y_i | mu_j, Sigma_j) * w_j * log(phi(y_i | mu_j, Sigma_j) * w_j)
-    *cum_PrP      = etemp;                                             // cum_PrP = phi(y_i | mu_j, Sigma_j) * w_j
+    *PrP          += *logwP;                                           // PrP = log(phi(y_i | mu_j, Sigma_j) * w_j)
+    etemp         = AK_Basic::exp0_AK(*PrP);                           // etemp = phi(y_i | mu_j, Sigma_j) * w_j
+    *indDevComplP += etemp * *PrP;                                     // += phi(y_i | mu_j, Sigma_j) * w_j * log(phi(y_i | mu_j, Sigma_j) * w_j)
+    sum_Pr        = etemp;
 
     logwP++;
     muP += *p;
     LiP += LTp;
     log_detsP += 2;
-    cum_PrP++;    
+    PrP++;    
 
     /* j = 1, ..., K-1 */
     for (j = 1; j < *K; j++){
-      Dist::ldMVN1(cum_PrP, dwork_misc, yP, muP, LiP, log_detsP, p);     // cum_PrP = log(phi(y_i | mu_j, Sigma_j))
-      if (j == *rP){
-        *indLogL0P = *cum_PrP;
+      Dist::ldMVN1(PrP, dwork_misc, yP, muP, LiP, log_detsP, p);       // PrP = log(phi(y_i | mu_j, Sigma_j))
+      if (j == *rP){ 
+        *indLogL0P = *PrP;
         *indLogL1P = *logwP;        
       }   
-      *cum_PrP      += *logwP;                                           // cum_PrP = log(phi(y_i | mu_j, Sigma_j) * w_j)
-      etemp         = AK_Basic::exp0_AK(*cum_PrP);                       // etemp   = phi(y_i | mu_j, Sigma_j) * w_j
-      *indDevComplP += etemp * *cum_PrP;                                 // += phi(y_i | mu_j, Sigma_j) * w_j * log(phi(y_i | mu_j, Sigma_j) * w_j)
-      *cum_PrP      = etemp;                                             // cum_PrP = phi(y_i | mu_j, Sigma_j) * w_j
-      *cum_PrP += *(cum_PrP - 1);                                        // cum_PrP = cumsum
+      *PrP          += *logwP;                                           // PrP = log(phi(y_i | mu_j, Sigma_j) * w_j)
+      etemp         = AK_Basic::exp0_AK(*PrP);                           // etemp   = phi(y_i | mu_j, Sigma_j) * w_j
+      *indDevComplP += etemp * *PrP;                                     // += phi(y_i | mu_j, Sigma_j) * w_j * log(phi(y_i | mu_j, Sigma_j) * w_j)
+      sum_Pr        += etemp;
 
       logwP++;
       muP += *p;
       LiP += LTp;
       log_detsP += 2;
-      cum_PrP++;
+      PrP++;
     }
   
-    *indDevComplP /= *(cum_PrP - 1);                                   // divide by sum_{j=1}^K phi(y_i | mu_j, Sigma_j) * w_j
+    if (sum_Pr > AK_Basic::_ZERO0) *indDevComplP /= sum_Pr;             // divide by sum_{j=1}^K phi(y_i | mu_j, Sigma_j) * w_j
+    else                           *indDevComplP /= AK_Basic::_ZERO0;
 
     /*** pred_dens ***/
-    *pred_densP = *(cum_PrP - 1);                                      // sum_{j=1}^K phi(y_i | mu_j, Sigma_j) * w_j
+    *pred_densP = sum_Pr;                                               // sum_{j=1}^K phi(y_i | mu_j, Sigma_j) * w_j
 
     /*** indDevObs ***/
     *indDevObsP = AK_Basic::log0_AK(*pred_densP);
@@ -301,6 +388,33 @@ Deviance_IC(double* indLogL0,     double* indLogL1,   double* indDevCompl,   dou
     *DevCompl       += *indDevComplP;
     *DevObs         += *indDevObsP;
     *DevCompl_inHat += *indDevCompl_inHatP;
+
+    /*** Re-scale Pr (it now contains log(Pr)) to have the highest one equal to 0, calculate cum_Pr ***/
+    sum_Pr = AK_Basic::maxArray(Pr_start, *K);
+    PrP    = Pr_start;
+
+    *PrP -= sum_Pr;
+    *PrP = AK_Basic::exp_AK(*PrP);
+    *cum_PrP = *PrP;
+    PrP++;
+    cum_PrP++;
+
+    for (j = 1; j < *K; j++){
+      *PrP -= sum_Pr;
+      *PrP = AK_Basic::exp_AK(*PrP);
+      *cum_PrP = *(cum_PrP - 1) + *PrP;
+      PrP++;
+      cum_PrP++;
+    }
+
+    /***  Rescale Pr_y such that it will sum-up to 1  ***/
+    sum_Pr = *(cum_PrP - 1);
+    PrP  = Pr_start;
+    
+    for (j = 0; j < *K; j++){
+      *PrP /= sum_Pr;
+      PrP++;
+    }
 
     /*** Shift pointers ***/
     yP += *p;
