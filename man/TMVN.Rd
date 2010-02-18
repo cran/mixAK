@@ -71,6 +71,7 @@ rTMVN(n, mean=c(0, 0), Sigma=diag(2), a, b, trunc, xinit)
   \eqn{\mbox{Arno\v{s}t Kom\'arek}}{Arno&#353t Kom&#225rek} \email{arnost.komarek[AT]mff.cuni.cz}
 }  
 \examples{
+\dontrun{
 set.seed(1977)
 
 exam2 <- function(n, mu, sigma, rho, a, b, trunc)
@@ -109,6 +110,7 @@ x7 <- exam2(1000, mu=c(-1, 1), sigma=c(1, sqrt(2)), rho=0.7, a=c(-1, 1), trunc=c
 x8 <- exam2(1000, mu=c(-1, 1), sigma=c(1, sqrt(2)), rho=0.7, a=c(-1, 1), trunc=c(1, 2))
 x9 <- exam2(1000, mu=c(-1, 1), sigma=c(1, sqrt(2)), rho=0.7, a=c(-1.5, 0.5), b=c(-0.5, 1.5), trunc=c(3, 3))
 x10 <- exam2(1000, mu=c(-1, 1), sigma=c(1, sqrt(2)), rho=0.7, a=c(-1.5, 0.5), b=c(-0.5, 1.5), trunc=c(4, 3))
+}
 }
 \keyword{distribution}
 \keyword{multivariate}

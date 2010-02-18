@@ -16,17 +16,58 @@
 
   \method{tracePlots}{default}(x, \dots)
 
-  \method{tracePlots}{NMixMCMC}(x, param=c("Emix", "SDmix", "Cormix", "w", "mu", "gammaInv"),
+  \method{tracePlots}{NMixMCMC}(x, param=c("Emix", "SDmix", "Cormix", "w", "mu", "sd", "gammaInv"),
+    relabel=FALSE, order,
     auto.layout=TRUE, xlab="Iteration", ylab, col="slateblue", main="", \dots)
 
-  \method{tracePlots}{GLMM_MCMC}(x, param=c("beta", "Eb", "SDb", "Corb", "sigma_eps",
-    "w_b", "mu_b", "gammaInv_b", "gammaInv_eps"),
+  \method{tracePlots}{GLMM_MCMC}(x, param=c("beta", "Eb", "SDb", "Corb", "sigma_eps", "w_b", "mu_b", "sd_b", "gammaInv_b", "gammaInv_eps"),
+    relabel=FALSE, order,
     auto.layout=TRUE, xlab="Iteration", ylab, col="slateblue", main="", \dots)
 }
 \arguments{
   \item{x}{an object of class \code{NMixMCMC} or \code{GLMM_MCMC}.}
   \item{param}{a character string which specifies which sort of
-    parameters is to be plotted.}
+    parameters is to be plotted.
+   
+    \describe{
+      \item{Emix}{overall means (for each margin) of the normal mixture}
+      \item{SDmix}{overall standard deviations (for each margin) of the
+	normal mixture}
+      \item{Cormix}{overall correlations (each pair) of the normal
+	mixture}
+      \item{w}{weights of each of mixture components}
+      \item{mu}{component means (each margin, each mixture component) of the
+	normal mixture. The mixture means are shifted and scaled using
+	\code{x$scale$shift} and \code{x$scale$scale} before plotting.
+	If not specified by other arguments, means are not re-labeled before plotting}
+      \item{sd}{component standard deviations (each margin, each mixture component) of the
+	normal mixture. The mixture standard deviations are scaled using
+	\code{x$scale$scale} before plotting.
+	If not specified by other arguments, standard deviations are
+	not re-labeled before plotting}
+      \item{gammaInv}{variance hyperparameters}
+      \item{beta}{fixed effects of the fitted GLMM}
+      \item{Eb}{overall means (for each margin) of the random effects of
+        the fitted GLMM}
+      \item{SDb}{overall standard deviations (for each margin) of the random effects of
+        the fitted GLMM}
+      \item{Corb}{overall correlations (each pair) of the distribution
+	of the random effects of the fitted GLMM}
+    }  
+
+
+  }
+  \item{relabel}{logical value. It indicates whether the chains with
+    \code{param} being \code{w}, \code{mu}, \code{sd}, \code{w_b},
+    \code{mu_b}, \code{sd_b} should be re-labeled before
+    plotting. Re-labelling is given by argument \code{order}. If
+    \code{order} is missing then \code{x$order} or \code{x$order_b}
+    determines re-labelling.
+  }
+  \item{order}{a matrix with \eqn{K} columns and \eqn{M} rows where
+    \eqn{M} is the length of MCMC. Each row of \code{order} must be a
+    permutation of \eqn{(1, \ldots, K)}{(1, ..., K)}.
+  }
   \item{auto.layout}{logical value. If \code{TRUE}, the plotting region
     is automatically divided to produce traceplots of all
     parameters. Note that layout must be set up automatically if there
@@ -43,7 +84,7 @@
   \code{invisible(x)}
 }
 \seealso{
-  \code{\link{NMixMCMC}}, \code{\link{GLMM_MCMC}}, \code{\link[coda]{traceplot}}.
+  \code{\link{NMixMCMC}}, \code{\link{GLMM_MCMC}}, \code{\link{NMixRelabel}}, \code{\link[coda]{traceplot}}.
 }
 \author{
   \eqn{\mbox{Arno\v{s}t Kom\'arek}}{Arno&#353t Kom&#225rek} \email{arnost.komarek[AT]mff.cuni.cz}

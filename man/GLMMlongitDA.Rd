@@ -4,11 +4,13 @@
   Discriminant analysis for longitudinal profiles based on fitted GLMM's
 }  
 \description{
-  THIS FUNCTION IS BEING DEVELOPED AND ORDINARY USERS
-  ARE NOT RECOMMENDED TO USE IT.
+  The idea is that we fit (possibly different) GLMM's for data in training 
+  groups using the function \code{\link{GLMM_MCMC}} and then use the fitted 
+  models for discrimination of new observations. For more details we 
+  refer to \eqn{\mbox{Kom\'arek}}{Kom&#225rek} et al. (2010).
 }
 \details{
-  I HOPE TO WRITE A PAPER DESCRIBING ALL THE DETAILS.
+  This function complements a paper \eqn{\mbox{Kom\'arek}}{Kom&#225rek} et al. (2010).
 }  
 \usage{
 GLMM_longitDA(mod, w.prior, y, id, time, x, z, xz.common=TRUE, info)

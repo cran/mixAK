@@ -257,7 +257,7 @@ spevGE(double* A,  int* complexEV,  double* lambda_re,  double* lambda_im,  doub
         V_nextP = V_reP + *p;
         for (i = 0; i < *p; i++){
           *V_imP = *V_nextP;
-          V_imP++;          
+          V_imP++;
           V_nextP++;
           V_reP++;
         }
@@ -269,17 +269,20 @@ spevGE(double* A,  int* complexEV,  double* lambda_re,  double* lambda_im,  doub
           V_reP++;
         }
         j += 2;
+        lambda_reP += 2;
+        lambda_imP += 2;
       }
       else{
-        for (i = 0; i < *p; i++){
+        Rprintf("REAL lambda \n"); 
+        for (i = 0; i < *p; i++){       
           *V_imP = 0.0;
           V_imP++;
           V_reP++;
         }
         j++;
+        lambda_reP++;
+        lambda_imP++;
       }
-      lambda_reP++;
-      lambda_imP++;
     }
   }
 
@@ -376,6 +379,8 @@ spevGE_RL(double* A,      int* complexEV,  double* lambda_re,  double* lambda_im
           VL_reP++;
         }
         j += 2;
+        lambda_reP += 2;
+        lambda_imP += 2;
       }
       else{
         for (i = 0; i < *p; i++){
@@ -387,9 +392,9 @@ spevGE_RL(double* A,      int* complexEV,  double* lambda_re,  double* lambda_im
           VL_reP++;
         }
         j++;
+        lambda_reP++;
+        lambda_imP++;
       }
-      lambda_reP++;
-      lambda_imP++;
     }
   }
 

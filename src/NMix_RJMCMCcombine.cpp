@@ -237,7 +237,7 @@ RJMCMCcombine(int* accept,           double* log_AR,
 
   /***** Proposed weight *****/
   *wstar = *w1 + *w2;
-  *logwstar = AK_Basic::log_AK(*wstar);
+  logwstar[0] = AK_Basic::log_AK(*wstar);
   *u1 = *w1 / *wstar;
   one_u1 = 1 - *u1;
 

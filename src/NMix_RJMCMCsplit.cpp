@@ -188,8 +188,8 @@ RJMCMCsplit(int* accept,           double* log_AR,
   /***** Proposed weights *****/
   *w1 = *u1 * *wstar;
   *w2 = (1 - *u1) * *wstar;
-  *logw1 = AK_Basic::log_AK(*w1);
-  *logw2 = AK_Basic::log_AK(*w2);
+  logw1[0] = AK_Basic::log_AK(*w1);
+  logw2[0] = AK_Basic::log_AK(*w2);
 
   /***** Log-Jacobian, part 1       *****/
   /***** Jacobian = dtheta/dtheta^* *****/

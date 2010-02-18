@@ -1,6 +1,6 @@
 Package: mixAK
-Version: 0.7-2
-Date: 2010-02-17
+Version: 0.8
+Date: 2010-02-18
 Title: Mixture of methods including mixtures
 Author: Arnost Komarek <arnost.komarek@mff.cuni.cz>
 Maintainer: Arnost Komarek <arnost.komarek@mff.cuni.cz>
@@ -9,6 +9,6 @@ Description: This package contains a mixture of statistical methods
         including the MCMC methods to analyze normal mixtures
 License: GPL (>= 2)
 URL: http://www.karlin.mff.cuni.cz/~komarek
-Packaged: 2010-02-17 12:23:26 UTC; komarek
+Packaged: 2010-02-18 18:23:30 UTC; komarek
 Repository: CRAN
-Date/Publication: 2010-02-17 15:24:30
+Date/Publication: 2010-02-18 20:22:47

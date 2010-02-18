@@ -327,8 +327,8 @@ GLMM_MCMC(double*       Y_c,                               // this is in fact co
                        XiInv_b, log_sqrt_detXiInv_b, err);
     if (*err) error("%s:  Something went wrong.\n", fname);
 
-    *sqrt_tune_scale_b     = sqrt(*tune_scale_b);
-    *log_sqrt_tune_scale_b = AK_Basic::log_AK(*sqrt_tune_scale_b);
+    *sqrt_tune_scale_b       = sqrt(*tune_scale_b);
+    log_sqrt_tune_scale_b[0] = AK_Basic::log_AK(*sqrt_tune_scale_b);
   }
 
 

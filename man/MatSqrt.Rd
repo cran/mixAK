@@ -38,7 +38,7 @@ round(sqrtA \%*\% sqrtA - A, 13)
 
 ### The following example crashes on r-devel Windows x64 x86_64,
 ### on r-patched Linux x86_64 
-### due to the error in spevGE2GE subroutine
+### due to failure of LAPACK zgesv routine
 ###
 ### Commented on 16/01/2010
 ###

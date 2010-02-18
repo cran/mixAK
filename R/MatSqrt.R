@@ -26,7 +26,7 @@ MatSqrt <- function(A)
   if (ncol(A) != p) stop("A must be a squared matrix")
 
   ldwork <- p*p
-  
+
   RES <- .C("sqrtGE", Asqrt.re=as.double(A),    Asqrt.im=double(p*p),     Vinv.re=double(p*p),  Vinv.im=double(p*p),  complexRES=integer(1),
                       sqrt.lambda.re=double(p), sqrt.lambda.im=double(p), V.re=double(p*p),     V.im=double(p*p),
                       dwork=double(ldwork),     jpvt=integer(p),

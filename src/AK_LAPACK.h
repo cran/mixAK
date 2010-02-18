@@ -18,8 +18,10 @@
 //
 //
 //     * spevGE                      22/01/2008:  Spectral decomposition of a general matrix (right eigenvectors only)
+//                                   18/02/2010:  Bug fixed (thanks to Brian Ripley)
 //
 //     * spevGE_RL                   22/01/2008:  Spectral decomposition of a general matrix (both right and left eigenvectors)
+//                                   18/02/2010:  Bug fixed (thanks to Brian Ripley)
 //
 //     * spevGE2GE                   23/01/2008:  Compute A = V*Lambda*V^{-1}, where V has unit norm eigenvectors in columns
 //                                                and Lambda is a diagonal matrix with eigenvalues.
