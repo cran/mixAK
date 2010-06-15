@@ -28,6 +28,7 @@
 //       * printMatrixRow4R (OVERLOADED)
 //       * printSP (OVERLOADED)
 //       * printSP4R (OVERLOADED)
+//       * printLT4R
 //
 // ========================================================
 //
@@ -64,6 +65,13 @@ const double _expEMIN = exp(_EMIN);
 const double _EMIN0 = -700;                                          // exp0_AK(-700) will be 0 (= 9.86e-305)
 
 const double _TOL_CHOL = 1e-10;           // tolerance for the Cholesky decomposition
+const double _TOL_QR = 1e-07;             // tolerance for the QR decomposition
+
+/*** identity ***/
+inline double
+ident_AK(const double& x){
+  return(x);
+};
 
 /*** exp(x) ***/
 inline double
@@ -652,6 +660,51 @@ printSP4R(const int* a,  const int& nrow)
     j++;
   }
   Rprintf((char*)("%d), nrow=%d, ncol=%d, byrow=TRUE);\n"), fabs((double)(*aP)) < AK_Basic::_ZERO ? 0 : *aP, nrow, nrow);
+
+  return;
+}
+
+/*** Print a lower triangular matrix stored in a packed form as lower triangle columnwise for R ***/
+inline void
+printLT4R(const double* a,  const int& nrow)
+{
+  static int i, j;
+  static const double *aP, *astartP;
+
+  Rprintf((char*)("matrix(c(\n"));
+  astartP = a;
+  for (i = 0; i < nrow - 1; i++){
+    aP = astartP;
+    j = 0;
+
+    while (j < i){
+      Rprintf((char*)("%g, "), fabs((double)(*aP)) < AK_Basic::_ZERO ? 0 : *aP);
+      aP += nrow - j - 1; 
+      j++;
+    }
+    
+    // j = i
+    Rprintf((char*)("%g, "), fabs((double)(*aP)) < AK_Basic::_ZERO ? 0 : *aP);
+    aP++;
+    j++;
+
+    while (j < nrow){
+      Rprintf((char*)("0, "));
+      j++;
+    }
+    Rprintf((char*)("\n"));
+    astartP++;
+  }
+
+  /** i = nrow - 1 **/
+  aP = astartP;
+  j = 0;
+  while (j < nrow - 1){
+    Rprintf((char*)("%g, "), fabs((double)(*aP)) < AK_Basic::_ZERO ? 0 : *aP);
+    aP += nrow - j - 1; 
+    j++;
+  }
+  Rprintf((char*)("%g), nrow=%d, ncol=%d, byrow=TRUE);\n"), fabs((double)(*aP)) < AK_Basic::_ZERO ? 0 : *aP, nrow, nrow);
 
   return;
 }

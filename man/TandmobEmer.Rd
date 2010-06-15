@@ -21,7 +21,7 @@
   <\code{emmanuel.lesaffre@med.kuleuven.be}>  
 }
 \usage{data(TandmobEmer)}
-\format{a~data frame with 4\,430 rows and the following
+\format{a data frame with 4 430 rows and the following
   variables
   \describe{
   \item{IDNR}{identification number of a child}

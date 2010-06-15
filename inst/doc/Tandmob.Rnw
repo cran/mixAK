@@ -193,6 +193,7 @@ censor[is.na(y1)] <- 0
 colnames(y0) <- colnames(y1) <- colnames(censor) <- Tooth
 rownames(y0) <- rownames(y1) <- rownames(censor) <- Tandmob$IDNR
 @ 
+%$
 
 \Ritem Preparation of the data using the \Rfun{data.frame} \Rvar{TandmobEmer}:
 <<Preparation of the data using the data.frame TandmobEmer>>=
@@ -203,6 +204,7 @@ censor <- TandmobEmer[, paste("CENSOR.", Tooth, sep="")]
 colnames(y0) <- colnames(y1) <- colnames(censor) <- Tooth
 rownames(y0) <- rownames(y1) <- rownames(censor) <- TandmobEmer$IDNR
 @ 
+%$
 
 \Ritem Print part of prepared data:
 \begin{multicols}{2}
@@ -455,6 +457,7 @@ for (tt1 in 1:5){
 }
 dev.off()
 @
+%$
 
 \begin{figure}[p!]\centering
 \rotatebox{270}{
@@ -492,6 +495,7 @@ for (tt1 in 1:5){
 }
 dev.off()
 @
+%$
 Note that package \Rfun{colorspace} is needed to specify the colors in the plot.
 
 \begin{figure}[p!]\centering

@@ -20,7 +20,7 @@
 ##    X[d] = scale$shift[d] + scale$scale[d] * Z[d]
 ##
 
-NMixPredCondDensMarg.default <- function(x, icond, scale, K, w, mu, Li, Krandom=FALSE, ...)
+NMixPredCondDensMarg.default <- function(x, icond, prob, scale, K, w, mu, Li, Krandom=FALSE, ...)
 {
   thispackage <- "mixAK" 
   
@@ -71,30 +71,42 @@ NMixPredCondDensMarg.default <- function(x, icond, scale, K, w, mu, Li, Krandom=
 
   ## Compute needed space
   ldens <- n[icond] + n[icond]*(sum(n[-icond]))
-  lwork <- 2 + LTp + ldens
 
   ## Adjust grids with respect to scaling
   grid <- list()
   for (d in 1:p) grid[[d]] <- (x[[d]] - scale$shift[d])/scale$scale[d]
 
+  ## Pointwise quantiles?
+  if (missing(prob)){
+    nquant <- 0
+    prob <- 0
+  }else{
+    nquant <- length(prob)
+    if (any(prob < 0)) stop("all prob values must be >= 0")
+    if (any(prob > 1)) stop("all prob values must be <= 1")    
+  }  
+  
   if (Krandom) stop("not (yet) implemented for random K")
 
   ## Compute predictive densities
-  RES <- .C("NMix_PredCondDensMarg",
-                dens=double(ldens),
-                dwork=double(lwork),
-                err=integer(1),
-                icond=as.integer(icond-1),
-                y=as.double(unlist(grid)),
-                p=as.integer(p),
-                n=as.integer(n),
-                chK=as.integer(K),
-                chw=as.double(w),
-                chmu=as.double(mu),
-                chLi=as.double(Li),
-                M=as.integer(M),
+  RES <- .C("NMix_PredCondDensCDFMarg",
+            dens      = double(ldens),
+            qdens     = double(ifelse(nquant, ldens * nquant, 1)),
+            err       = integer(1),
+            calc_dens = as.integer(1),
+            nquant    = as.integer(nquant),
+            qprob     = as.double(prob),
+            icond     = as.integer(icond-1),
+            y         = as.double(unlist(grid)),
+            p         = as.integer(p),
+            n         = as.integer(n),
+            chK       = as.integer(K),
+            chw       = as.double(w),
+            chmu      = as.double(mu),
+            chLi      = as.double(Li),
+            M         = as.integer(M),
             PACKAGE=thispackage)
-
+  
   if (RES$err) stop("Something went wrong.")
 
   ## Lengths of grids other than x[[icond]]
@@ -115,7 +127,6 @@ NMixPredCondDensMarg.default <- function(x, icond, scale, K, w, mu, Li, Krandom=
     RET$dens[[t]] <- list()
 
     for (m0 in (1:p)){
-
       if (m0 == icond){
         RET$dens[[t]][[m0]] <- as.numeric(RES$dens[voor[m0] + t])/scale$scale[m0]
         next
@@ -127,6 +138,31 @@ NMixPredCondDensMarg.default <- function(x, icond, scale, K, w, mu, Li, Krandom=
     names(RET$dens[[t]]) <- paste(1:p)    
   }  
 
+  ## Pointwise quantiles
+  if (nquant){
+    RET$prob <- prob
+    for (i in 1:nquant){
+
+      qnaam <- paste("q", prob[i]*100, "%", sep="")
+      RET[[qnaam]] <- list()
+      for (t in 1:length(x[[icond]])){
+        RET[[qnaam]][[t]] <- list()
+
+        for (m0 in (1:p)){
+          if (m0 == icond){
+            RET[[qnaam]][[t]][[m0]] <- as.numeric(RES$qdens[(i-1)*ldens + voor[m0] + t])/scale$scale[m0]
+            next
+          }  
+      
+          RET[[qnaam]][[t]][[m0]] <- as.numeric(RES$qdens[((i-1)*ldens + voor[m0] + (t-1)*n[m0] + 1):((i-1)*ldens + voor[m0] + t*n[m0])])/scale$scale[m0]
+        }
+
+        names(RET[[qnaam]][[t]]) <- paste(1:p)    
+      }
+      
+    }      
+  }  
+  
   class(RET) <- "NMixPredCondDensMarg"
   return(RET)    
 }  

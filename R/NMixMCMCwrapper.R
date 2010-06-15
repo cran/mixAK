@@ -387,7 +387,7 @@ NMixMCMCwrapper <- function(chain=1,
     MCMC$chDevCompl.inHat <- NULL        
   }  
 
-  ########## ========== Clustering based on posterior P(alloc = k | y) or on P(alloc = k | theta, b, y)    ========== ##########
+  ########## ========== Clustering based on posterior P(alloc = k | y) or on P(alloc = k | theta, y)       ========== ##########
   ########## ======================================================================================================== ##########
   if (prior$priorK == "fixed"){
     if (CK == 1){
@@ -562,7 +562,6 @@ NMixMCMCwrapper <- function(chain=1,
       
       tmpLi <- matrix(0, nrow=p, ncol=p)
       tmpLi[lower.tri(tmpLi, diag=TRUE)] <- MCMC$pm.Li[((j-1)*LTp+1):(j*LTp)]
-      tmpLi[upper.tri(tmpLi, diag=FALSE)] <- t(tmpLi)[upper.tri(t(tmpLi), diag=FALSE)]
       RET$poster.mean.Li[[j]] <- tmpLi      
     }
     names(RET$poster.mean.Q) <- names(RET$poster.mean.Sigma) <- names(RET$poster.mean.Li) <- paste("j", 1:CKmax, sep="")    

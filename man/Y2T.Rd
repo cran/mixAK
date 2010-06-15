@@ -7,6 +7,7 @@
 \alias{Y2T.NMixPlugDensJoint2}
 \alias{Y2T.NMixPredCondDensMarg}
 \alias{Y2T.NMixPlugCondDensMarg}
+\alias{Y2T.NMixPredCondCDFMarg}
 \alias{Y2T.NMixPredCondDensJoint2}
 \alias{Y2T.NMixPlugCondDensJoint2}
 \title{
@@ -35,6 +36,8 @@ Y2T(x, \dots)
 
 \method{Y2T}{NMixPlugCondDensMarg}(x, itrans=exp, dtrans=function(x){return(1 / x)}, \dots)
 
+\method{Y2T}{NMixPredCondCDFMarg}(x, itrans=exp, dtrans=function(x){return(1 / x)}, \dots)
+
 \method{Y2T}{NMixPredCondDensJoint2}(x, itrans=exp, dtrans=function(x){return(1 / x)}, \dots)
 
 \method{Y2T}{NMixPlugCondDensJoint2}(x, itrans=exp, dtrans=function(x){return(1 / x)}, \dots)
@@ -55,9 +58,11 @@ Y2T(x, \dots)
   An object of the same class as argument \code{x}.
 }
 \seealso{
-  \code{\link{NMixPredDensMarg}}, \code{\link{NMixPlugDensMarg}}, \code{\link{NMixPredCDFMarg}},
+  \code{\link{NMixPredDensMarg}}, \code{\link{NMixPlugDensMarg}},
+  \code{\link{NMixPredCDFMarg}},
   \code{\link{NMixPredDensJoint2}}, \code{\link{NMixPlugDensJoint2}},
   \code{\link{NMixPredCondDensMarg}}, \code{\link{NMixPlugCondDensMarg}},
+  \code{\link{NMixPredCondCDFMarg}},
   \code{\link{NMixPredCondDensJoint2}}, \code{\link{NMixPlugCondDensJoint2}}.
 }
 \author{

@@ -219,15 +219,24 @@ GLMM_MCMC(y, dist="gaussian", id, x, z, random.intercept,
     argument \code{init.b}.}
   \item{init.eps}{a list containing the used value of the
     argument \code{init.eps}.}
-  \item{state.beta}{a numeric vector with the last sampled value
+  \item{state.first.beta}{a numeric vector with the first stored (after burn-in) value
+    of fixed effects \eqn{\beta}{beta}.}
+  \item{state.last.beta}{a numeric vector with the last sampled value
     of fixed effects \eqn{\beta}{beta}. It can be used as argument
     \code{init.beta} to restart MCMC.}
-  \item{state.b}{a list with the last sampled values of parameters
+  \item{state.first.b}{a list with the first stored (after burn-in) values of parameters
+    related to the distribution of random effects. It has components
+    named \code{b}, \code{K}, \code{w}, \code{mu}, \code{Sigma}, \code{Li}, \code{Q},
+    \code{gammaInv}, \code{r}.}
+  \item{state.last.b}{a list with the last sampled values of parameters
     related to the distribution of random effects. It has components
     named \code{b}, \code{K}, \code{w}, \code{mu}, \code{Sigma}, \code{Li}, \code{Q},
     \code{gammaInv}, \code{r}. It can be used as argument
     \code{init.b} to restart MCMC.}
-  \item{state.eps}{a list with the last sampled values of parameters
+  \item{state.first.eps}{a list with the first stored (after burn-in) values of parameters
+    related to the distribution of residuals of continuous responses. It
+    has components named \code{sigma}, \code{gammaInv}.}
+  \item{state.last.eps}{a list with the last sampled values of parameters
     related to the distribution of residuals of continuous responses. It
     has components named \code{sigma}, \code{gammaInv}. It can be used as argument
     \code{init.eps} to restart MCMC.}
@@ -243,7 +252,10 @@ GLMM_MCMC(y, dist="gaussian", id, x, z, random.intercept,
     since the Gibbs algorithm is used there.}  
   \item{scale.b}{a list containing the used value of the argument
     \code{scale.b}.}
-  \item{summ.beta}{a matrix with posterior summary statistics for fixed effects.}
+  \item{summ.Deviance}{a \code{data.frame} with posterior summary
+    statistics for the deviance (approximated using the Laplacian
+    approximation) and conditional (given random effects) devience.}
+  \item{summ.beta}{a \code{data.frame} with posterior summary statistics for fixed effects.}
   \item{summ.b.Mean}{a matrix with posterior summary statistics for
     means of random effects.}
   \item{summ.b.SDCorr}{a matrix with posterior summary statistics for
@@ -261,7 +273,7 @@ GLMM_MCMC(y, dist="gaussian", id, x, z, random.intercept,
     -- posterior means of the components of the underlying 0/1
     allocation vector.
 
-    \bold{WARNING:} The labels of components are based on artificial
+    \bold{WARNING:} By default, the labels of components are based on artificial
     identifiability constraints based on ordering of the mixture means
     in the first margin. Very often, such identifiability constraint is
     not satisfactory!
@@ -278,7 +290,7 @@ GLMM_MCMC(y, dist="gaussian", id, x, z, random.intercept,
     with estimated posterior component probabilities
     -- posterior mean over model parameters including random effects.
 
-    \bold{WARNING:} The labels of components are based on artificial
+    \bold{WARNING:} By default, the labels of components are based on artificial
     identifiability constraints based on ordering of the mixture means
     in the first margin. Very often, such identifiability constraint is
     not satisfactory!
@@ -290,16 +302,28 @@ GLMM_MCMC(y, dist="gaussian", id, x, z, random.intercept,
     mixture components in the distribution of the random effects.}
   \item{propK_b}{posterior probabilities for the numbers of mixture
     components in the distribution of random effects.}
-  \item{poster.mean.eta}{a \code{data.frame} with columns labeled
-    \code{fixed} and \code{random} holding posterior means for fixed
-    effect part of the linear predictor and the random effect part of
+  \item{poster.mean.y}{a list with \code{data.frame}s, one
+    \code{data.frame} per response profile. Each \code{data.frame}
+    with columns labeled \code{id}, \code{observed},
+    \code{fitted}, \code{stres},
+    \code{eta.fixed} and \code{eta.random} holding
+    identifier for clusters of grouped observations,
+    observed values and
+    posterior means for fitted values (response expectation given fixed and random effects),
+    standardized residuals (derived from fitted values),
+    fixed effect part of the linear predictor and the random effect part of
     the linear predictor. In each column, there are first all values for
     the first response, then all values for the second response etc.}
   \item{poster.mean.profile}{a \code{data.frame} with columns labeled
-    \code{b1}, \ldots, \code{bq}, \code{LogL}, \code{Logpb} with
-    posterior means of random effects for each cluster and posterior
-    means of \eqn{\log(L)}{log(L)} (log-likelihood given random effects)
-    and \eqn{\log\bigl\{p(\boldsymbol{b})\bigr\}}{log(p(b))} for each cluster.}
+    \code{b1}, \ldots, \code{bq}, \code{Logpb}, \code{Cond.Deviance}, \code{Deviance} with
+    posterior means of random effects for each cluster, posterior
+    means of \eqn{\log\bigl\{p(\boldsymbol{b})\bigr\}}{log(p(b))},
+    conditional deviances, i.e., minus twice the conditional (given
+    random effects) log-likelihood for each cluster
+    and GLMM deviances, i.e., minus twice the marginal (random effects
+    integrated out) log-likelihoods for each cluster. The value of the
+    marginal (random effects integrated out) log-likelihood at each MCMC
+    iteration is obtained using the Laplacian approximation.}
   \item{poster.mean.w_b}{a numeric vector with posterior means of mixture
     weights after re-labeling. It is computed only if \eqn{K_b}{K[b]} is fixed
     and even then I am not convinced that these are useful posterior
@@ -325,7 +349,16 @@ GLMM_MCMC(y, dist="gaussian", id, x, z, random.intercept,
     variances after re-labeling. It is computed only if \eqn{K_b}{K[b]} is fixed
     and even then I am not convinced that these are useful posterior
     summary statistics (see label switching problem mentioned above).
-    In any case, they should be used with care.}  
+    In any case, they should be used with care.}
+  \item{Deviance}{numeric vector with a chain for the GLMM deviances,
+    i.e., twice the marginal (random effects integrated out)
+    log-likelihoods of the GLMM. The marginal log-likelihood is obtained
+    using the Laplacian approximation at each iteration of MCMC.
+  }
+  \item{Cond.Deviance}{numeric vector with a chain for the conditional deviances,
+    i.e., twice the conditional (given random effects)
+    log-likelihoods.
+  }  
   \item{K_b}{numeric vector with a chain for \eqn{K_b}{K[b]} (number of
     mixture components in the distribution of random effects).}
   \item{w_b}{numeric vector or matrix with a chain for \eqn{w_b}{w[b]} (mixture
@@ -379,6 +412,15 @@ GLMM_MCMC(y, dist="gaussian", id, x, z, random.intercept,
     continuous responses.}
   \item{gammaInv_eps}{matrix with \eqn{dimb} columns with MCMC chain(s) for inverses
     of the hyperparameter \eqn{\boldsymbol{\gamma}_b}{gamma[b]}.}
+  \item{relabel_b}{a list which specifies the algorithm used to re-label
+    the MCMC output to compute \code{order_b}, \code{rank_b}, \code{poster.comp.prob1},
+    \code{poster.comp.prob2}, \code{poster.mean.w_b},
+    \code{poster.mean.mu_b}, \code{poster.mean.Q_b},
+    \code{poster.mean.Sigma_b}, \code{poster.mean.Li_b}. 
+  }
+  \item{Cpar}{a list with components useful to call underlying C++ functions (not
+    interesting for ordinary users).
+  }  
 }
 \references{
   \eqn{\mbox{Kom\'{a}rek, A.}}{Kom&#225rek, A.}, Hansen, B. E., Kuiper,

@@ -47,6 +47,22 @@ Y2T.NMixPredCondDensMarg <- function(x, itrans=exp, dtrans=function(x){return (1
       }  
     }              
   }  
+
+  ### Multiply each pointwise posterior quantile by appropriate jacobian (t^{-1})
+  if (!is.null(x$prob)){
+    for (j in 1:length(x$prob)){
+      qnaam <- paste("q", x$prob[j]*100, "%", sep="")
+      for (i in 1:length(x[[qnaam]])){           ## loop over values by which we condition
+        for (k in 1:length(x[[qnaam]][[i]])){    ## loop over margins
+          if (k == x$icond){                 ## margin by which we condition
+            x[[qnaam]][[i]][[k]] <- x[[qnaam]][[i]][[k]] * dx[[k]][i]       ## marginal density of margin by which we condition
+          }else{
+            x[[qnaam]][[i]][[k]] <- x[[qnaam]][[i]][[k]] * dx[[k]]          ## k-th conditional density
+          }  
+        }              
+      }        
+    }  
+  }  
   
   return(x)
 }  

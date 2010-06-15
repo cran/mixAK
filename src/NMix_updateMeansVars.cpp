@@ -61,7 +61,6 @@ updateMeansVars_NC(double* mu,
   XiInv4Q       = log_dets4mu + 2;                 // To store (Xi^{-1} + S_j + ((c_j*n_j)/(c_j + n_j))*(yBar_j - xi_j)*t(yBar_j - xi_j))^{-1}
   work4rWishart = XiInv4Q + LTp;                   // Working space for Dist::rWishart (needs 2*p*p)
                                                    //           and for NMix::SS_j (needs p)
-                                                   //           and for Dist::rMVN1 (needs p)
   work_orderComp = work4rWishart + 2 * *p * *p;    // Working space for NMix::orderComp
   // next = work_orderComp + *K;
   
@@ -215,7 +214,7 @@ updateMeansVars_NC(double* mu,
     //AK_Basic::printArray(yBar_xi_OR_m, *p);           // DEBUG CODE
     
     /*** Sample new component mean from multivariate normal ***/
-    Dist::rMVN1(muP, &log_dens, work4rWishart, yBar_xi_OR_m,  Li4mu, log_dets4mu, p,  &AK_Basic::_ONE_INT);
+    Dist::rMVN1(muP, &log_dens, yBar_xi_OR_m,  Li4mu, log_dets4mu, p,  &AK_Basic::_ONE_INT);
 
     // printf("mu[%d]:  ", j);                            // DEBUG CODE
     // AK_Basic::printArray(muP, *p);                     // DEBUG CODE
@@ -278,7 +277,6 @@ updateMeansVars_IC(double* mu,
   canon_m        = mixSSm + LTp * *K;               // To store canonical mean of the full conditional for mu_j
   log_dets4mu    = canon_m + *p;                    // To store log_dets[,j] of the full conditional distribution of mu
   work4rWishart  = log_dets4mu + 2;                 // Working space for Dist::rWishart (needs 2*p*p)
-                                                    //           and for Dist::rMVN2 (needs p)
   work_orderComp = work4rWishart + 2 * *p * *p;     // Working space for NMix::orderComp
   // next = work_orderComp + *K;
 
@@ -428,7 +426,7 @@ updateMeansVars_IC(double* mu,
     //AK_Basic::printArray(canon_m, *p);                                    // DEBUG CODE
 
     /*** Sample new component mean from multivariate normal ***/
-    Dist::rMVN2(muP, canon_m, &log_dens, work4rWishart, XiInv4Q_OR_Li4mu, log_dets4mu, p);
+    Dist::rMVN2(muP, canon_m, &log_dens, XiInv4Q_OR_Li4mu, log_dets4mu, p);
     //Rprintf((char*)("Sampled mu[%d]|... (log-dens=%g): "), j, log_dens);                         // DEBUG CODE
     //AK_Basic::printArray(muP, *p);                                                               // DEBUG CODE
 
@@ -489,7 +487,6 @@ updateMeansVars_IC_homoscedastic(double* mu,
   canon_m        = mixSSm + LTp * *K;               // To store canonical mean of the full conditional for mu_j
   log_dets4mu    = canon_m + *p;                    // To store log_dets[,j] of the full conditional distribution of mu
   work4rWishart  = log_dets4mu + 2;                 // Working space for Dist::rWishart (needs 2*p*p)
-                                                    //           and for Dist::rMVN2 (needs p)
   work_orderComp = work4rWishart + 2 * *p * *p;     // Working space for NMix::orderComp
   // next = work_orderComp + *K;
 
@@ -649,7 +646,7 @@ updateMeansVars_IC_homoscedastic(double* mu,
     mixSumyP += *p;
 
     /*** Sample new component mean from multivariate normal ***/
-    Dist::rMVN2(muP, canon_m, &log_dens, work4rWishart, XiInv4Q_OR_Li4mu, log_dets4mu, p);
+    Dist::rMVN2(muP, canon_m, &log_dens, XiInv4Q_OR_Li4mu, log_dets4mu, p);
 
     mixNP++;
     muP += *p;

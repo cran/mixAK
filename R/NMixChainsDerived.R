@@ -34,7 +34,7 @@ NMixChainsDerived <- function(object)
       M <- length(obj1$K)
       RES <- matrix(
                .C("NMix_ChainsDerived",
-                       chEexpY    = double(M),
+                       chEexpY    = double(M * obj1$dim),
                        dwork      = double(LTp),
                        err        = integer(1),
                        p          = as.integer(obj1$dim),
@@ -49,9 +49,10 @@ NMixChainsDerived <- function(object)
                  ncol = obj1$dim, byrow=TRUE)
     }else{      
       M <- length(obj1$w) / obj1$K[1]
+      
       RES <- matrix(
                .C("NMix_ChainsDerived",
-                      chEexpY    = double(M),
+                      chEexpY    = double(M * obj1$dim),
                       dwork      = double(LTp),
                       err        = integer(1),
                       p          = as.integer(obj1$dim),

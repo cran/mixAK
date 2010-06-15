@@ -14,7 +14,7 @@
 ## *************************************************************
 ## tracePlots.NMixMCMC
 ## *************************************************************
-tracePlots.NMixMCMC <- function(x, param=c("Emix", "SDmix", "Cormix", "w", "mu", "sd", "gammaInv"),
+tracePlots.NMixMCMC <- function(x, param=c("Emix", "SDmix", "Cormix", "K", "w", "mu", "sd", "gammaInv"),
                                 relabel=FALSE, order,
                                 auto.layout=TRUE, xlab="Iteration", ylab, col="slateblue", main="", ...)
 {
@@ -30,9 +30,10 @@ tracePlots.NMixMCMC <- function(x, param=c("Emix", "SDmix", "Cormix", "w", "mu",
   ### Number of parameters to plot
   if (param %in% c("Emix", "SDmix")) nparam <- x$dim
   else if (param == "Cormix") nparam <- (x$dim * (x$dim + 1)) / 2 - x$dim
-       else if (param == "w") nparam <- x$K[1]
-            else if (param %in% c("mu", "sd")) nparam <- x$K[1] * x$dim
-                 else if (param == "gammaInv") nparam <- x$dim
+       else if (param == "K") nparam <- 1
+            else if (param == "w") nparam <- x$K[1]
+                 else if (param %in% c("mu", "sd")) nparam <- x$K[1] * x$dim
+                      else if (param == "gammaInv") nparam <- x$dim
   if (!nparam){
     cat("\nNothing to plot.\n")
     return(invisible(x))    
@@ -82,7 +83,7 @@ tracePlots.NMixMCMC <- function(x, param=c("Emix", "SDmix", "Cormix", "w", "mu",
   else{
 
     ### Traceplots of mixture weights, means or standard deviations (possibly re-labeled)
-    if (param %in% c("w", "mu", "sd")){
+    if (param %in% c("w", "mu", "sd")){###%%%
       if (!relabel) order <- matrix(rep(1:x$K[1], nrow(x[[obj]])), ncol=x$K[1], byrow=TRUE)
       if (relabel & missing(order)) order <- x$order
       if (nrow(order) != nrow(x[[obj]])) stop("order has incompatible number of rows")
@@ -130,13 +131,22 @@ tracePlots.NMixMCMC <- function(x, param=c("Emix", "SDmix", "Cormix", "w", "mu",
       }  
     }
 
-    ### Traceplots of all other parameters
     else{
-      if (missing(ylab)) ylab <- colnames(x[[obj]])
-      
-      for (i in 1:nparam){
-        plot(itIndex, x[[obj]][, i], type="l", xlab=xlab[i], ylab=ylab[i], col=col[i], main=main[i], ...)
+
+      ### Traceplot for the number of mixture components
+      if (param == "K"){
+        if (missing(ylab)) ylab <- "K"
+        plot(itIndex, x[[obj]], type="l", xlab=xlab[1], ylab=ylab[1], col=col[1], main=main[1], ...)
       }
+      
+      ### Traceplots of all other parameters
+      else{
+        if (missing(ylab)) ylab <- colnames(x[[obj]])
+      
+        for (i in 1:nparam){
+          plot(itIndex, x[[obj]][, i], type="l", xlab=xlab[i], ylab=ylab[i], col=col[i], main=main[i], ...)
+        }
+      }      
     }  
   }    
   

@@ -57,6 +57,11 @@ updateVars_eps(double* sigma,
     *sigmaP = rgamma(shape, scale);
     *sigmaP = 1 / sqrt(*sigmaP);
 
+    //if (*sigmaP < 1e-100){
+    //  Rprintf((char*)("\nSampled sigma = %g\n"), *sigmaP);
+    //  Rprintf((char*)("Params. of the full conditional distribution: %g, %g\n"), shape, scale);
+    //}
+
     sigmaP++;
     zetaP++;
     gammaInvP++;

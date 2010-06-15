@@ -4,7 +4,7 @@
 \description{
   This is the dataset resulting from a longitudinal prospective dental
   study performed in Flanders (North of Belgium) in 1996 -- 2001. The
-  cohort of 4\,468 randomly sampled children who attended the first year
+  cohort of 4 468 randomly sampled children who attended the first year
   of the basic school at the beginning of the study was annualy dental
   examined by one of 16 trained dentists.
   The original dataset consists thus of at most 6 dental observations
@@ -35,7 +35,7 @@
   <\code{emmanuel.lesaffre@med.kuleuven.be}>  
 }
 \usage{data(Tandmob)}
-\format{a~data frame with 4\,430 rows (38 sampled children did not come
+\format{a data frame with 4 430 rows (38 sampled children did not come
   to any of the designed dental examinations) and the following
   variables
   \describe{

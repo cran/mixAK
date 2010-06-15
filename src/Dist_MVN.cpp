@@ -63,7 +63,7 @@ dMVN1(double* log_dens,  double* work,
 /***** Dist::rMVN1                                                                               *****/
 /***** ***************************************************************************************** *****/
 void
-rMVN1(double* x,         double* log_dens,      double* work,
+rMVN1(double* x,         double* log_dens,
       const double *mu,  const double *Li,      const double *log_dets,           
       const int* nx,     const int* mu_nonZERO)
 {
@@ -111,7 +111,7 @@ rMVN1(double* x,         double* log_dens,      double* work,
 /***** Dist::rMVN2                                                                               *****/
 /***** ***************************************************************************************** *****/
 void
-rMVN2(double* x,         double* mu,              double* log_dens,  double* work,
+rMVN2(double* x,         double* mu,              double* log_dens,
       const double *Li,  const double *log_dets,  const int* nx)
 {
   static int i;
@@ -166,7 +166,7 @@ rMVN2(double* x,         double* mu,              double* log_dens,  double* wor
 /***** Dist::rMVN3                                                                               *****/
 /***** ***************************************************************************************** *****/
 void
-rMVN3(double* x,         double* mu,              double* log_dens,           double* work,
+rMVN3(double* x,         double* mu,              double* log_dens,
       const double *Li,  const double *log_dets,  const double *sqrt_scale,   const double *log_sqrt_scale,
       const int* nx)
 {
@@ -198,6 +198,57 @@ rMVN3(double* x,         double* mu,              double* log_dens,           do
   /*** Store the solution in x                                        ***/
   AK_LAPACK::chol_solve_backward(x, Li, nx);
 
+  /*** Compute x = mu + sqrt(scale)*v, then x = mu + scale^{1/2}L^{-1}z ~ N(mu, scale*Q^{-1}) ***/
+  cdP = mu;
+  dP = x;
+  for (i = 0; i < *nx; i++){
+    *dP *= *sqrt_scale;
+    *dP += *cdP;
+    cdP++;
+    dP++;
+  }
+
+  /*** Add + log(scale^{-1/2}) + sum(log(Li[j,j])) - (n/2)*log(2*pi) to the log of the density ***/
+  *log_dens -= *nx * *log_sqrt_scale;
+  cdP = log_dets;
+  *log_dens += *cdP;
+  cdP++;
+  *log_dens += *cdP;
+
+  PutRNGstate();
+
+  return;
+}
+
+
+/***** ***************************************************************************************** *****/
+/***** Dist::rMVN4                                                                               *****/
+/***** ***************************************************************************************** *****/
+void
+rMVN4(double* x,         double* log_dens,
+      const double* mu,  const double *Li,  const double *log_dets,  const double *sqrt_scale,   const double *log_sqrt_scale,
+      const int* nx)
+{
+  GetRNGstate();
+
+  static int i;
+  static double *dP;
+  static const double *cdP;
+
+  /*** Sample z ~ N(0, I) ***/
+  dP = x;
+  for (i = 0; i < *nx; i++){
+    *dP = norm_rand();
+    dP++;
+  }
+
+  /*** Compute -0.5 * t(z) %*% z to get the -0.5 * t(x - mu) %*% Q %*% (x - mu) part of the log-density ***/
+  AK_BLAS::ddot2(log_dens, x, *nx);
+  *log_dens *= -0.5;
+
+  /*** Solve t(L) %*% v = z,  then v = t(L)^{-1} %*% z ~ N(0, Q^{-1}) ***/
+  /*** Store the solution in x                                        ***/
+  AK_LAPACK::chol_solve_backward(x, Li, nx);
 
   /*** Compute x = mu + sqrt(scale)*v, then x = mu + scale^{1/2}L^{-1}z ~ N(mu, scale*Q^{-1}) ***/
   cdP = mu;
@@ -397,7 +448,7 @@ dMVN1_R(double* log_dens,  double* Q,              double* work,       int* err,
 /***** Dist::rMVN1_R                                                                           *****/
 /***** ***************************************************************************************** *****/
 void
-rMVN1_R(double* x,         double* log_dens,  double* Q,              double* work,        int* err,
+rMVN1_R(double* x,         double* log_dens,  double* Q,              int* err,
         const double *mu,  const int* nx,     const int* mu_nonZERO,  const int* npoints)
 {
   /*** Cholesky decomposition of Q, i.e., Q = Li %*% t(Li) ***/
@@ -427,7 +478,7 @@ rMVN1_R(double* x,         double* log_dens,  double* Q,              double* wo
   dP1 = log_dens;
   dP2 = x;
   for (i = 0; i < *npoints; i++){
-    Dist::rMVN1(dP2, dP1, work, mu, Q, log_dets, nx, mu_nonZERO);
+    Dist::rMVN1(dP2, dP1, mu, Q, log_dets, nx, mu_nonZERO);
     dP1++;
     dP2 += *nx;
   }
@@ -442,7 +493,7 @@ rMVN1_R(double* x,         double* log_dens,  double* Q,              double* wo
 /***** ************************************************************************************************* *****/
 void
 rMVN2_R(double* x,      double* mu,         double* log_dens,       
-        double* Q,      double* work,       int* err,
+        double* Q,      int* err,
         const int* nx,  const int* npoints)
 {
   /*** Cholesky decomposition of Q, i.e., Q = Li %*% t(Li) ***/
@@ -479,7 +530,7 @@ rMVN2_R(double* x,      double* mu,         double* log_dens,
   dP1 = log_dens;
   dP2 = x;
   for (i = 0; i < *npoints; i++){
-    Dist::rMVN1(dP2, dP1, work, mu, Q, log_dets, nx, &AK_Basic::_ONE_INT);
+    Dist::rMVN1(dP2, dP1, mu, Q, log_dets, nx, &AK_Basic::_ONE_INT);
     dP1++;
     dP2 += *nx;
   }

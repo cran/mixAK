@@ -16,9 +16,15 @@ namespace GLMM{
 /***** GLMM::create_ZiS                                                                          *****/
 /***** ***************************************************************************************** *****/
 void
-create_ZiS(double* ZiS,     double** ZrespP,
-           double** Zresp,  const double* scale_b,  const int* q,  const int* randIntcpt,
-           const int* R,    const int* I,           const int* n)
+create_ZiS(double*  ZiS,     
+           double** ZrespP,
+           double** Zresp,  
+           const double* scale_b,  
+           const int*    q,  
+           const int*    randIntcpt,
+           const int*    R,    
+           const int*    I,           
+           const int*    n)
 {
   int s, i, j, k, l;
 

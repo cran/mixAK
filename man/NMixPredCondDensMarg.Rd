@@ -9,18 +9,16 @@
 \description{
   This function serves as an inference tool for the MCMC output
   obtained using the function \code{\link{NMixMCMC}}. It computes
-  estimates of univariate conditional densities obtained by using posterior
-  summary statistics (e.g., posterior means) of mixture weights, means
-  and variances (plug-in estimate).
+  (posterior predictive) estimates of univariate conditional densities.
 }
 \usage{
 NMixPredCondDensMarg(x, \dots)
 
-\method{NMixPredCondDensMarg}{default}(x, icond, scale, K, w, mu, Li, Krandom=FALSE, ...)
+\method{NMixPredCondDensMarg}{default}(x, icond, prob, scale, K, w, mu, Li, Krandom=FALSE, ...)
 
-\method{NMixPredCondDensMarg}{NMixMCMC}(x, icond, grid, lgrid=50, scaled=FALSE, \dots)
+\method{NMixPredCondDensMarg}{NMixMCMC}(x, icond, prob, grid, lgrid=50, scaled=FALSE, \dots)
 
-\method{NMixPredCondDensMarg}{GLMM_MCMC}(x, icond, grid, lgrid=50, scaled=FALSE, \dots)
+\method{NMixPredCondDensMarg}{GLMM_MCMC}(x, icond, prob, grid, lgrid=50, scaled=FALSE, \dots)
 }
 \arguments{
   \item{x}{an object of class \code{NMixMCMC} for
@@ -33,7 +31,12 @@ NMixPredCondDensMarg(x, \dots)
     \code{NMixPredCondDensMarg.default} function.
   }
   \item{icond}{index of the margin by which we want to condition
-  } 
+  }
+  \item{prob}{a numeric vector. If given then also the posterior
+    pointwise quantiles of the conditional densities are computed for
+    probabilities given by \code{prob}. These can be used to draw
+    pointwise credible intervals.
+  }  
   \item{scale}{a two component list giving the \code{shift} and the
     \code{scale}. If not given, shift is equal to zero and scale is
     equal to one.
@@ -79,7 +82,15 @@ NMixPredCondDensMarg(x, \dots)
     \code{icond} equal to \code{x[[icond]][j]}.
     The value of \code{dens[[j]][[imargin]]} gives a value
     of a marginal density of the \code{imargin}-th margin at \code{x[[icond]][j]}.
-  }    
+  }
+  \item{prob}{a value of the argument \code{prob}.
+  }
+  \item{\dQuote{qXX\%}}{if \code{prob} is given then there is one
+    additional component named \dQuote{qXX\%}, e.g., \dQuote{q50\%} for
+    each value of \code{prob} which has the same structure as the
+    component \code{dens} and keeps computed posterior pointwise
+    quantiles.
+  }  
   There is also a \code{plot} method implemented for the resulting object.
 }
 \seealso{

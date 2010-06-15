@@ -47,7 +47,6 @@ NMix_NMixRelabel(const int*    type,
                  int*    nchange,
                  int*    err)
 {
-  const int debug = 0;
   const char *fname = "NMix_NMixRelabel";
 
   *err = 0;
@@ -66,27 +65,6 @@ NMix_NMixRelabel(const int*    type,
 
   const int ly = *p * *n;
   const int LTp = (*p * (*p + 1))/2;
-
-  /***** Pointers to sampled values *****/
-  const double *chwP     = chw;
-  const double *chmuP    = chmu;
-  //const double *chQP     = chQ;
-  const double *chSigmaP = chSigma;
-  const double *chLiP    = chLi;
-  
-  int    *chorderP = chorder;
-  int    *chrankP  = chrank;
-
-  /***** Are there any censored observations? *****/
-  int anyCensor = 0;
-  const int *censorP = censor;
-  for (i = 0; i < ly; i++){
-    if (*censorP != 1){
-      anyCensor = 1;
-      break;
-    }
-    censorP++;
-  }
 
   /***** Some input checks *****/
   switch (*type){
@@ -122,6 +100,27 @@ NMix_NMixRelabel(const int*    type,
   default:
     *err = 1;
     error("%s:  Unimplemented type of the re-labeling algorithm.\n", fname);
+  }
+
+  /***** Pointers to sampled values *****/
+  const double *chwP     = chw;
+  const double *chmuP    = chmu;
+  //const double *chQP     = chQ;
+  const double *chSigmaP = chSigma;
+  const double *chLiP    = chLi;
+  
+  int    *chorderP = chorder;
+  int    *chrankP  = chrank;
+
+  /***** Are there any censored observations? *****/
+  int anyCensor = 0;
+  const int *censorP = censor;
+  for (i = 0; i < ly; i++){
+    if (*censorP != 1){
+      anyCensor = 1;
+      break;
+    }
+    censorP++;
   }
 
   /***** logw:  Space to store log-weights                                 *****/
@@ -314,7 +313,6 @@ NMix_NMixRelabel(const int*    type,
 
     /***** Arguments passed to NMix::orderComp function          *****/
     /***** corresponding to the initial re-labeling algorithm    *****/
-    /***** Arguments passed to NMix::orderComp function *****/
     switch (iparam[0]){
     case NMix::IDENTITY:
       margin4orderComp = 0;
@@ -343,7 +341,7 @@ NMix_NMixRelabel(const int*    type,
     Pr_yP = Pr_y;
 
     GetRNGstate();  
-    Rprintf((char*)("MCMC iteration "));
+    Rprintf((char*)("MCMC iteration (initial re-labelling) "));
     for (iter = 1; iter <= *keepMCMC; iter++){
 
       /***** Progress information *****/

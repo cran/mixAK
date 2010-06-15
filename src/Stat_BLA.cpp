@@ -21,8 +21,13 @@ extern "C" {
 /***** Stat::BLA                                                                                 *****/
 /***** ***************************************************************************************** *****/
 void
-BLA(double* beta,      double* sigmaR2,      double* L,     int* err,  
-    const double* mu,  const double* Sigma,  const int* p)
+BLA(double* beta,      
+    double* sigmaR2,      
+    double* L,     
+    int*    err,  
+    const double* mu,  
+    const double* Sigma,  
+    const int*    p)
 {
   static int i, j, p_1;
   static double betaVbeta;

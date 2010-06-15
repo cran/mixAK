@@ -62,7 +62,6 @@ RJMCMCbirth(int* accept,              double* log_AR,
 
   /*** Components of dwork ***/
   dwork_misc      = dwork;                                  /** working array for Dist::rWishart_diagS (needs LTp)                       **/
-                                                            /**               for Dist::rMVN1 (needs p)                                  **/
   Li4mu           = dwork_misc + LTp;                       /** Cholesky decomposition of c*Qstar                                        **/
   dwork_orderComp = Li4mu + LTp;                            /** working array for NMix::orderComp (needs at most Kmax)                   **/
   // next = dwork_orderComp + *Kmax;
@@ -134,11 +133,11 @@ RJMCMCbirth(int* accept,              double* log_AR,
     log_dets4mu[0] = log_detsstar[0] + (*p / 2) * log_c[*K];
     log_dets4mu[1] = log_detsstar[1];
 
-    Dist::rMVN1(mustar, log_prior_mustar, dwork_misc, xi + *K * *p, Li4mu, log_dets4mu, p, &AK_Basic::_ONE_INT);
+    Dist::rMVN1(mustar, log_prior_mustar, xi + *K * *p, Li4mu, log_dets4mu, p, &AK_Basic::_ONE_INT);
     break;
 
   case NMix::MUQ_IC:
-    Dist::rMVN1(mustar, log_prior_mustar, dwork_misc, xi + *K * *p, D_Li + *K * LTp, log_dets_D + *K * 2, p, &AK_Basic::_ONE_INT);
+    Dist::rMVN1(mustar, log_prior_mustar, xi + *K * *p, D_Li + *K * LTp, log_dets_D + *K * 2, p, &AK_Basic::_ONE_INT);
     break;
   }    
 

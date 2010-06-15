@@ -4,12 +4,13 @@
   Plot computed univariate conditional predictive densities
 }
 \description{
-  This is a basic plotting tool to visualize computed plug-in estimates
+  This is a basic plotting tool to visualize computed posterior predictive estimates
   of univariate conditional densities, see \code{\link{NMixPredCondDensMarg}}.
 }
 \usage{
-\method{plot}{NMixPredCondDensMarg}(x, ixcond, imargin, over=FALSE,
-    auto.layout=TRUE, type="l", lwd=1, lty, col, main, xlab, ylab, ylim,
+\method{plot}{NMixPredCondDensMarg}(x, ixcond, imargin, prob, over=FALSE,
+    auto.layout=TRUE, type="l", lwd=1, lty, col, qlwd=1, qlty, qcol,
+    main, xlab, ylab, ylim,
     annot=TRUE, \dots)
 }
 \arguments{
@@ -20,6 +21,11 @@
   \item{imargin}{if given then conditional densities of the \code{imargin}-th margin given all values of \code{x[[icond]]}
     are plotted - either separately or all in one plot.
   }
+  \item{prob}{probabilities of pointwise posterior quantiles which
+    should be added to the plot. Computed values of requested posterior
+    quantiles must be present in the object \code{x} (see argument
+    \code{prob} of \code{\link{NMixPredCondDensMarg}}).
+  }  
   \item{over}{logical. If \code{TRUE} and \code{imargin} is given then
     all conditional densities are drawn in one plot.
   }  
@@ -27,11 +33,14 @@
     how to divide the plotting region to draw the computed densities.
   }
   \item{type}{type of the plot.}
-  \item{lwd}{line width.}  
+  \item{lwd}{line width.}
+  \item{lty}{type of the line. It can be a vector in which
+    case different lines are drawn in different types.}  
   \item{col}{color used to draw the lines. It can be a vector in which
     case different lines are drawn in different colors.}
-  \item{lty}{type of the line. It can be a vector in which
-    case different lines are drawn in different types.}
+  \item{qlwd}{line width for pointwise posterior quantiles.}
+  \item{qlty}{type of the line for pointwise posterior quantiles.}
+  \item{qcol}{color used to draw pointwise posterior quantiles.}  
   \item{main}{main title of the plot. Either character which is
     replicated or a vector of characters.}
   \item{xlab}{label for the x-axis. Either character which is

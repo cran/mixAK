@@ -65,11 +65,11 @@ NMixPredCDFMarg(x, \dots)
     mixture components) in the MCMC chain.}
   \item{propK}{proportions derived from \code{freqK}.}
   \item{MCMC.length}{the length of the MCMC used to compute the
-    predictive densities.}
+    predictive cdf's.}
   \item{cdf}{a list with the computed predictive CDF's for each
     margin. The components of the list are named \code{1}, \ldots, i.e.,
     \code{cdf[[1]]}\eqn{=}\code{cdf[["1"]]} is the predictive
-    density for margin 1 etc.}
+    cdf for margin 1 etc.}
   \item{cdfK}{a list with the computed predictive CDF's for each
     margin, conditioned further by \eqn{K}. The components of the list
     are named \code{1}, \ldots. That is,

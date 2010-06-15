@@ -23,6 +23,12 @@ print.GLMM_MCMC <- function(x, ...)
   cat(paste("     Generalized linear mixed model for ", R, " responses estimated using MCMC\n", sep=""))
   cat("     ====================================================================\n")
 
+  cat("\nDeviance posterior summary statistics:")
+  cat("\n-----------------------------------------------\n")
+  pr.Dev <- x$summ.Deviance[, "Deviance"]
+  names(pr.Dev) <- rownames(x$summ.Deviance)
+  print(pr.Dev)
+    
   if (x$lbeta){
     cat("\nPosterior summary statistics for fixed effects:")
     cat("\n-----------------------------------------------\n")

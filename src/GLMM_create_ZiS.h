@@ -1,6 +1,6 @@
 //
 //  PURPOSE:   Prediction based on (multivariate) GLMM, create matrices Zi %*% S
-//             * mainly used as a part of GLMM_longitClust function
+//             * mainly used as a part of GLMM_longitDA function
 //             
 //
 //  AUTHOR:    Arnost Komarek (LaTeX: Arno\v{s}t Kom\'arek)
@@ -55,9 +55,16 @@ namespace GLMM{
 //                       ASSUMPTION:  the number of observations is the same for each longitudinal profile
 //
 void
-create_ZiS(double* ZiS,     double** ZrespP,
-           double** Zresp,  const double* scale_b,  const int* q,  const int* randIntcpt,
-           const int* R,    const int* I,           const int* n);
+create_ZiS(double*  ZiS,     
+           double** ZrespP,
+           double** Zresp,  
+           const double* scale_b,  
+           const int*    q,  
+           const int*    randIntcpt,
+           const int*    R,    
+           const int*    I,           
+           const int*    n);
+
 }
 
 #endif

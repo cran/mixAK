@@ -14,7 +14,7 @@
 ## *************************************************************
 ## NMixPredCondDensMarg.NMixMCMC
 ## *************************************************************
-NMixPredCondDensMarg.NMixMCMC <- function(x, icond, grid, lgrid=50, scaled=FALSE, ...)
+NMixPredCondDensMarg.NMixMCMC <- function(x, icond, prob, grid, lgrid=50, scaled=FALSE, ...)
 {
   if (missing(icond)) stop("icond must be given")
   if (x$dim == 1) stop("not applicable for univariate mixtures")  
@@ -41,8 +41,8 @@ NMixPredCondDensMarg.NMixMCMC <- function(x, icond, grid, lgrid=50, scaled=FALSE
   else        scale <- x$scale
 
   if (x$prior$priorK == "fixed"){  
-    return(NMixPredCondDensMarg.default(x=grid, icond=icond, scale=scale, K=x$K, w=as.numeric(t(x$w)), mu=as.numeric(t(x$mu)), Li=as.numeric(t(x$Li)), Krandom=FALSE))
+    return(NMixPredCondDensMarg.default(x=grid, icond=icond, prob=prob, scale=scale, K=x$K, w=as.numeric(t(x$w)), mu=as.numeric(t(x$mu)), Li=as.numeric(t(x$Li)), Krandom=FALSE))
   }else{
-    return(NMixPredCondDensMarg.default(x=grid, icond=icond, scale=scale, K=x$K, w=x$w, mu=x$mu, Li=x$Li, Krandom=TRUE))    
+    return(NMixPredCondDensMarg.default(x=grid, icond=icond, prob=prob, scale=scale, K=x$K, w=x$w, mu=x$mu, Li=x$Li, Krandom=TRUE))    
   }  
 }  

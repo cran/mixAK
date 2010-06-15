@@ -55,7 +55,7 @@ print.NMixEM <- function(x, ...)
   }  
 
   cat("\n")
-  cat("Log-likelihood: ", x$loglik, "\n")
+  cat("Log-likelihood: ", x$loglik, ",  AIC: ", x$aic, ", BIC: ", x$bic, "\n", sep="")
   cat("EM iterations:  ", x$iter, "\n")
   cat("\n")
   

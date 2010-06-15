@@ -142,6 +142,107 @@ linear_predictors(double* eta_fixed,
 
 
 /***** ***************************************************************************************** *****/
+/***** GLMM::linear_predictors_fixed_updated                                                     *****/
+/***** ***************************************************************************************** *****/
+void
+linear_predictors_fixed_updated(double* eta_fixed,  
+                                double* eta,      
+                                double* meanY,
+                                const double* eta_random,
+                                const double* X,    
+                                const double* beta,      
+                                const int*    p,       
+                                const int*    fixedIntcpt,  
+                                const int*    dist,
+                                const int*    n,       
+                                const int*    R,            
+                                const int*    I)
+{
+  static int s, i, j, k;
+
+  static double *eta_fixedP, *etaP, *meanYP;
+
+  static const double *eta_randomP;
+  static const double *xP;
+  static const double *beta_resp, *betaP;
+  static const int *pP, *fixedIntcptP, *distP;  
+  static const int *nP;
+  
+  double
+  (*meanFun)(const double&);            // declaration of the mean function (inverse link)
+
+  eta_fixedP  = eta_fixed;
+  etaP        = eta;
+  meanYP      = meanY;
+  eta_randomP = eta_random;
+
+  distP = dist;
+
+  xP = X;
+  beta_resp = beta;
+
+  pP           = p;
+  fixedIntcptP = fixedIntcpt;
+
+  nP = n;
+
+  for (s = 0; s < *R; s++){                /* loop over responses                   */
+
+    switch (*distP){
+      case GLMM::GAUSS_IDENTITY:
+        meanFun = AK_Basic::ident_AK;
+	break;
+
+      case GLMM::BERNOULLI_LOGIT:
+        meanFun = AK_Basic::invlogit_AK;
+        break;
+
+      case GLMM::POISSON_LOG:
+        meanFun = AK_Basic::exp_AK;
+	break;
+
+      default:
+        error("GLMM::linear_predictors_fixed_updated: Unimplemented distributional type (%d).\n", *distP);
+    }
+
+    for (i = 0; i < *I; i++){                 /* loop over clusters */
+
+      for (j = 0; j < *nP; j++){                /* loop over observations within cluster */
+        betaP = beta_resp;  
+        *eta_fixedP = 0.0;
+        if (*fixedIntcptP){
+          *eta_fixedP += *betaP;    
+          betaP++;
+        }
+        for (k = 0; k < *pP; k++){                /* loop over fixed effects covariates */
+          *eta_fixedP += *betaP * *xP;
+          betaP++;
+          xP++;
+        }
+
+        *etaP = *eta_fixedP + *eta_randomP;
+        *meanYP = meanFun(*etaP);
+
+        meanYP++;
+        eta_fixedP++;
+        eta_randomP++;
+        etaP++;
+      }                                         /* end of loop over observations within cluster */
+
+      nP++;
+    }                                         /* end of loop over clusters */
+                                            
+    distP++;
+    pP++;
+    fixedIntcptP++;
+    beta_resp = betaP;
+  }
+
+  return;
+}
+
+
+/***** ***************************************************************************************** *****/
 /***** GLMM::linear_predictor_fixed                                                              *****/
 /***** ***************************************************************************************** *****/
 void
@@ -308,6 +409,99 @@ linear_predictor_zs(double* eta_zs,
     cumq_riP++;
     randIntcptP++;
     shift_b_resp = shift_bP; 
+  }
+
+  return;
+}
+
+
+/***** ***************************************************************************************** *****/
+/***** GLMM::linear_predictor_b_random_meanY                                                     *****/
+/***** ***************************************************************************************** *****/
+void
+linear_predictor_gauss_b_random_meanY(double*  b,
+                                      double** eta_randomresp,
+                                      double** etaresp,
+                                      double** meanYresp,
+                                      double** eta_fixedresp,      // this is in fact const
+                                      double** Zresp,              // this is in fact const
+                                      int**    nresp,              // this is in fact const
+                                      const double* bscaled, 
+                                      const double* shift_b,
+                                      const double* scale_b,
+                                      const int*    q,
+                                      const int*    randIntcpt,
+                                      const int*    R_c)
+{
+  static int s, i, j;
+  static double *b_s, *bP, *eta_fixedP, *zP, *eta_randomP, *etaP, *meanYP;
+  static const double *bscaled_s, *shift_b_s, *scale_b_s;
+  static const int *q_s, *randIntcpt_s;
+
+  bscaled_s    = bscaled;
+  shift_b_s    = shift_b;
+  scale_b_s    = scale_b;
+  b_s          = b;
+  q_s          = q;
+  randIntcpt_s = randIntcpt;
+  for (s = 0; s < *R_c; s++){
+    
+    /*** Calculate new b ***/
+    bP = b_s;
+    if (*randIntcpt_s){
+      *bP = *shift_b_s + *scale_b_s * *bscaled_s;
+      bscaled_s++;
+      shift_b_s++;
+      scale_b_s++;
+      bP++;
+    }
+    for (j = 0; j < *q_s; j++){
+      *bP = *shift_b_s + *scale_b_s * *bscaled_s;
+      bscaled_s++;
+      shift_b_s++;
+      scale_b_s++;
+      bP++;
+    }
+
+    /*** Update eta_random, eta, meanY ***/    
+    eta_fixedP  = eta_fixedresp[s];
+    eta_randomP = eta_randomresp[s];
+    etaP        = etaresp[s];
+    meanYP      = meanYresp[s];
+    zP          = Zresp[s];
+    for (i = 0; i < *nresp[s]; i++){
+      bP = b_s;
+      *eta_randomP = 0.0;
+      if (*randIntcpt_s){
+        *eta_randomP += *bP;
+        bP++;
+      }
+      for (j = 0; j < *q_s; j++){              /* loop over random effects covariates */
+        *eta_randomP += *bP * *zP;
+        bP++;
+        zP++;
+      }
+
+      *etaP = *eta_fixedP + *eta_randomP;
+      *meanYP = *etaP;
+
+      eta_fixedP++;
+      eta_randomP++;
+      etaP++;
+      meanYP++;      
+    }
+
+    /*** Shift double pointers (except nresp[s]) ***/
+    eta_randomresp[s] = eta_randomP;
+    eta_fixedresp[s]  = eta_fixedP;
+    etaresp[s]        = etaP;
+    meanYresp[s]      = meanYP;
+    Zresp[s]          = zP;
+
+    /*** Shift pointers ***/
+    b_s += (*q_s + *randIntcpt_s);
+    q_s++;
+    randIntcpt_s++;
   }
 
   return;

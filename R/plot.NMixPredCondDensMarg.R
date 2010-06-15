@@ -14,7 +14,7 @@
 ## plot.NMixPredCondDensMarg
 ## *************************************************************
 ##
-plot.NMixPredCondDensMarg <- function(x, ixcond, imargin, over=FALSE, auto.layout=TRUE, type="l", lwd=1, lty, col, main, xlab, ylab, ylim, annot=TRUE, ...)
+plot.NMixPredCondDensMarg <- function(x, ixcond, imargin, prob, over=FALSE, auto.layout=TRUE, type="l", lwd=1, lty, col, qlwd=1, qlty, qcol, main, xlab, ylab, ylim, annot=TRUE, ...)
 {  
   if (missing(ixcond) & missing(imargin)) stop("either ixcond or imargin must be given")
 
@@ -89,7 +89,10 @@ plot.NMixPredCondDensMarg <- function(x, ixcond, imargin, over=FALSE, auto.layou
         col <- col[length(col):1]
       }  
       else      col <- rep("darkblue", length(xcond))
-    }  
+    }
+    #
+    if (missing(qcol)) qcol <- col
+    #    
     if (length(col) != 1 & length(col) != length(xcond)) stop("incorrect col")
     if (length(col) == 1) col <- rep(col, length(xcond))    
     #
@@ -99,14 +102,37 @@ plot.NMixPredCondDensMarg <- function(x, ixcond, imargin, over=FALSE, auto.layou
     #    
     if (length(lwd) != 1 & length(lwd) != length(xcond)) stop("incorrect lwd")
     if (length(lwd) == 1) lwd <- rep(lwd, length(xcond))    
+    #
+    if (length(qcol) != 1 & length(qcol) != length(xcond)) stop("incorrect qcol")
+    if (length(qcol) == 1) qcol <- rep(qcol, length(xcond))    
+    #
+    if (missing(qlty)) qlty <- rep(2, length(xcond))
+    if (length(qlty) != 1 & length(qlty) != length(xcond)) stop("incorrect qlty")
+    if (length(qlty) == 1) qlty <- rep(qlty, length(xcond))    
+    #    
+    if (length(qlwd) != 1 & length(qlwd) != length(xcond)) stop("incorrect qlwd")
+    if (length(qlwd) == 1) qlwd <- rep(qlwd, length(xcond))            
     
     if (over){
       yy <- x$dens[[ixcond[1]]][[imargin]]
       if (length(xcond) > 1) for (i in 2:length(xcond)) yy <- c(yy, x$dens[[ixcond[i]]][[imargin]])
       if (input.miss.ylim) ylim <- range(yy)
       plot(x$x[[imargin]], x$dens[[ixcond[1]]][[imargin]], type=type, col=col[1], lty=lty[1], lwd=lwd[1], main=main, xlab=xlab, ylab=ylab, ylim=ylim)
+      if (!missing(prob)){
+        for (j in 1:length(prob)){
+          qnaam <- paste("q", prob[j]*100, "%", sep="")
+          if (qnaam %in% names(x)) lines(x$x[[imargin]], x[[qnaam]][[ixcond[1]]][[imargin]], col=qcol[1], lty=qlty[1], lwd=qlwd[1])
+        }  
+      }  
+      
       if (length(xcond) > 1) for (i in 2:length(xcond)){
         lines(x$x[[imargin]], x$dens[[ixcond[i]]][[imargin]], col=col[i], lty=lty[i], lwd=lwd[i])
+        if (!missing(prob)){
+          for (j in 1:length(prob)){
+            qnaam <- paste("q", prob[j]*100, "%", sep="")
+            if (qnaam %in% names(x)) lines(x$x[[imargin]], x[[qnaam]][[ixcond[i]]][[imargin]], col=qcol[i], lty=qlty[i], lwd=qlwd[i])
+          }  
+        }          
       }
       if (annot){
         LEG <- paste(M2, "=", round(xcond, 2))
@@ -116,6 +142,12 @@ plot.NMixPredCondDensMarg <- function(x, ixcond, imargin, over=FALSE, auto.layou
       for (i in 1:length(xcond)){
         if (input.miss.ylim) ylim <- range(x$dens[[ixcond[i]]][[imargin]])
         plot(x$x[[imargin]], x$dens[[ixcond[i]]][[imargin]], type=type, col=col[i], lty=lty[i], lwd=lwd[i], main=main[i], xlab=xlab, ylab=ylab, ylim=ylim)
+        if (!missing(prob)){
+          for (j in 1:length(prob)){
+            qnaam <- paste("q", prob[j]*100, "%", sep="")
+            if (qnaam %in% names(x)) lines(x$x[[imargin]], x[[qnaam]][[ixcond[i]]][[imargin]], col=qcol[i], lty=qlty[i], lwd=qlwd[i])
+          }  
+        }                  
       }  
     }  
   }  
@@ -159,9 +191,26 @@ plot.NMixPredCondDensMarg <- function(x, ixcond, imargin, over=FALSE, auto.layou
     #
     if (length(lwd) != 1 & length(lwd) != p) stop("incorrect lwd")    
     if (length(lwd) == 1) lwd <- rep(lwd, p)    
+    #
+    if (missing(qcol)) qcol <- col
+    if (length(qcol) != 1 & length(qcol) != p) stop("incorrect qcol")
+    if (length(qcol) == 1) qcol <- rep(qcol, p)    
+    #
+    if (missing(qlty)) qlty <- 1
+    if (length(qlty) != 1 & length(qlty) != p) stop("incorrect qlty")
+    if (length(qlty) == 1) qlty <- rep(qlty, p)
+    #
+    if (length(qlwd) != 1 & length(qlwd) != p) stop("incorrect qlwd")    
+    if (length(qlwd) == 1) qlwd <- rep(qlwd, p)        
     
     for (i in (1:p)[-x$icond]){
       plot(x$x[[i]], x$dens[[ixcond]][[i]], type=type, col=col[i], lty=lty[i], lwd=lwd[i], main=main[i], xlab=xlab[i], ylab=ylab[i])
+      if (!missing(prob)){
+        for (j in 1:length(prob)){
+          qnaam <- paste("q", prob[j]*100, "%", sep="")
+          if (qnaam %in% names(x)) lines(x$x[[i]], x[[qnaam]][[ixcond]][[i]], col=qcol[i], lty=qlty[i], lwd=qlwd[i])
+        }  
+      }                        
     }      
   }  
 

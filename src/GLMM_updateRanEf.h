@@ -1,13 +1,13 @@
 //
 //  PURPOSE:   (Multivariate) GLMM, update of random effects in the case
-//             of all response variables being gaussian and
-//             random effects having a normal mixture as distribution
+//             of random effects having a normal mixture as distribution
 //             
 //
 //  AUTHOR:    Arnost Komarek (LaTeX: Arno\v{s}t Kom\'arek)
 //             arnost.komarek[AT]mff.cuni.cz
 //
 //  CREATED:   11/07/2009
+//             29/03/2010  (validated in R, bug in shifting scale_resp pointer corrected)
 //
 //  FUNCTIONS:  
 //     * updateRanEf_nmix_gauss                             13/07/2009
@@ -32,6 +32,7 @@
 #include "LogLik_Bernoulli_Logit.h"
 #include "LogLik_Poisson_Log.h"
 
+#include "MCMC.h"
 #include "MCMC_Moments_NormalApprox.h"
 
 namespace GLMM{
@@ -49,7 +50,10 @@ namespace GLMM{
 //  eta_randomresp[R_c + R_d]:   INPUT:  pointers to places where eta_random for each response starts
 //                              OUTPUT:  values to which it points are updated according to new values of random effects
 //
-//  mean_Y_dresp[R_d]:           INPUT:  pointers to places where mean_Y_d for each response stars
+//  etaresp[R_c + R_d]:          INPUT:  pointers to places where eta for each response starts
+//                              OUTPUT:  values to which it points are updated according to new values of random effects
+//
+//  meanYresp[R_c + R_d]:        INPUT:  pointers to places where meanY for each response starts
 //                              OUTPUT:  values to which it points are updated according to new values of random effects
 //
 //  log_dets_full[2]:            INPUT:  log_dets_full[0]: whatsever
@@ -58,10 +62,8 @@ namespace GLMM{
 //                                       where Q_full[I-1] is the precision matrix of the full conditional distribution of b[I-1]
 //                                       log_dets_full[1]: unaltered
 //
-//  Qmu[dim_b*K]:                INPUT:  whatsever
-//                              OUTPUT:  Q[k]*mu[k], k=0,...,K=1 for mixture components
-//
-//  dwork[5*dim_b + 3*LT_b + 2*max(N_i)]:  working array for     
+//  dwork[K*dim_b + 5*dim_b + 3*LT_b + 2*max(N_i) + dim_b*dim_b]:  working array for     
+//                         * Q[k] %*% mu[k], k=0,...,K-1 
 //                         * Dist::rMVN2
 //                         * (canonical) mean of the full conditional distribution
 //                         * (canonical) mean of the reversal proposal distribution
@@ -70,6 +72,8 @@ namespace GLMM{
 //                         * information matrix given response
 //                         * proposed values of bscaled
 //                         * proposed values of b
+//                         * backup of the full conditional (inverse) variance
+//                           (stored in full matrix)
 //                         * proposed values of eta_random
 //                         * proposed values of mean_Y_d (for this, in fact, less than N_i slots are usually needed)
 //
@@ -77,7 +81,7 @@ namespace GLMM{
 //
 //  Y_drespP[R_d]:               working array           
 //
-//  dY_drespP[R_d]:              working array           
+//  dYrespP[R_c + R_d]:          working array           
 //
 //  eta_fixedrespP[R_c + R_d]:   working array
 //
@@ -85,7 +89,9 @@ namespace GLMM{
 //
 //  eta_zsrespP[R_c]:            working array (needed only for continuous responses)
 //
-//  mean_Y_drespP[R_d]:          working array           
+//  etarespP[R_c + R_d]:         working array
+//
+//  meanYrespP[R_c + R_d]:       working array           
 //
 //  ZrespP[R_c + R_d]:           working array
 //
@@ -102,7 +108,7 @@ namespace GLMM{
 // 
 //  Y_dresp[R_d]:             pointers to Y_d where Y_d for each response starts
 //
-//  dY_dresp[R_d]:            pointers to dY_d where dY_d for each response starts
+//  dYresp[R_c + R_d]:        pointers to dY where dY for each response starts
 //
 //  eta_fixedresp[R_c + R_d]: pointers to eta_fixedresp where eta_fixed for each response starts      
 //
@@ -163,28 +169,30 @@ namespace GLMM{
 //
 //  log_sqrt_tune_scale[1]:   log(sqrt_tune_scale)
 //
+// ***************************************************************************************************************************
 void
 updateRanEf(double*  b,                 
-            double*  bscaled,           
+            double*  bscaled,         
             double** eta_randomresp,  
-	    double** mean_Y_dresp,
+            double** etaresp,    
+	    double** meanYresp,
             double*  log_dets_full,     
-            double*  Qmu,               
             double*  dwork,
             double** Y_crespP,         
             int**    Y_drespP,     
-            double** dY_drespP,   
+            double** dYrespP,   
             double** eta_fixedrespP,   
             double** eta_randomrespP,    
             double** eta_zsrespP,
-            double** mean_Y_drespP,
+            double** etarespP,
+            double** meanYrespP,
             double** ZrespP,           
             int**    nrespP,
             int*     naccept,
             int*     err,
             double** Y_cresp,                      // this is in fact const
             int**    Y_dresp,                      // this is in fact const
-            double** dY_dresp,                     // this is in fact const
+            double** dYresp,                       // this is in fact const
             double** eta_fixedresp,                // this is in fact const
             double** eta_zsresp,                   // this is in fact const
             double** Zresp,                        // this is in fact const

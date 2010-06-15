@@ -34,7 +34,7 @@ NMix_ChainsDerived(double* chEexpY,
   double muMix, sigma2Mix;
   double *chEexpYP, *chEexpYPP;
   double *dP;
-  double *Sigma;
+  double *Sigma, *SigmaP;
   const int *K;
   const double *w, *mu, *Li;
   const double *shift, *scale;
@@ -96,10 +96,10 @@ NMix_ChainsDerived(double* chEexpY,
       for (j = 0; j < *K; j++){                         /** loop j **/
 
         /*** Compute Sigma_j, shift Li to the next mixture component at the same time ***/
-        dP = Sigma;
+        SigmaP = Sigma;
         for (i = 0; i < LTp; i++){
-          *dP = *Li;
-          dP++;
+          *SigmaP = *Li;
+          SigmaP++;
           Li++;
         }
         F77_CALL(dpptri)("L", p, Sigma, err);
@@ -109,10 +109,11 @@ NMix_ChainsDerived(double* chEexpY,
         chEexpYPP = chEexpYP;
         shiftP    = shift;
         scaleP    = scale;
+        SigmaP    = Sigma;
         for (m0 = 0; m0 < *p; m0++){                  /** loop m0 **/
 
           /** Compute scaled mixture variance in margin m0 **/
-          sigma2Mix = *Sigma * *scaleP * *scaleP;
+          sigma2Mix = *SigmaP * *scaleP * *scaleP;
 
           /** Compute shifted and scaled mixture mean in margin m0 **/
           muMix = *shiftP + *scaleP * *mu;
@@ -121,7 +122,7 @@ NMix_ChainsDerived(double* chEexpY,
           *chEexpYPP += *w * AK_Basic::exp_AK(muMix + 0.5*sigma2Mix);
 
           mu++;
-          Sigma += *p - m0;    /** move to the next diagional element of Sigma **/
+          SigmaP += (*p - m0);    /** move to the next diagional element of Sigma **/
           chEexpYPP++;
           shiftP++;
           scaleP++;
@@ -133,6 +134,7 @@ NMix_ChainsDerived(double* chEexpY,
       chEexpYP = chEexpYPP;
       if (*Krandom) K++;
     }                                                 /** end of loop t **/
+
   }
 
   return;

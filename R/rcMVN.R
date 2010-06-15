@@ -39,7 +39,6 @@ rcMVN <- function(n, b=0, Q=1, Sigma)
                           mu=as.double(b),
                           log.dens=double(n),
                           Q=as.double(Q),
-                          work=double(nx),
                           err=integer(1),
                           nx=as.integer(nx),
                           npoints=as.integer(n),

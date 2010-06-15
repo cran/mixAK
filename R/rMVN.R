@@ -39,7 +39,6 @@ rMVN <- function(n, mean=0, Q=1, Sigma)
   SAMPLE <- .C("rMVN1_R", x=double(nx*n),
                           log.dens=double(n),
                           Q=as.double(Q),
-                          work=double(nx),
                           err=integer(1),
                           mu=as.double(mean),
                           nx=as.integer(nx),

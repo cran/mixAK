@@ -16,11 +16,13 @@
 
   \method{tracePlots}{default}(x, \dots)
 
-  \method{tracePlots}{NMixMCMC}(x, param=c("Emix", "SDmix", "Cormix", "w", "mu", "sd", "gammaInv"),
+  \method{tracePlots}{NMixMCMC}(x, param=c("Emix", "SDmix", "Cormix", "K", "w", "mu", "sd", "gammaInv"),
     relabel=FALSE, order,
     auto.layout=TRUE, xlab="Iteration", ylab, col="slateblue", main="", \dots)
 
-  \method{tracePlots}{GLMM_MCMC}(x, param=c("beta", "Eb", "SDb", "Corb", "sigma_eps", "w_b", "mu_b", "sd_b", "gammaInv_b", "gammaInv_eps"),
+  \method{tracePlots}{GLMM_MCMC}(x, param=c("Deviance", "Cond.Deviance",
+    "beta", "Eb", "SDb", "Corb", "sigma_eps",
+    "w_b", "mu_b", "sd_b", "gammaInv_b", "gammaInv_eps"),
     relabel=FALSE, order,
     auto.layout=TRUE, xlab="Iteration", ylab, col="slateblue", main="", \dots)
 }
@@ -30,32 +32,39 @@
     parameters is to be plotted.
    
     \describe{
-      \item{Emix}{overall means (for each margin) of the normal mixture}
+      \item{Emix}{overall means (for each margin) of the normal mixture;}
       \item{SDmix}{overall standard deviations (for each margin) of the
-	normal mixture}
+	normal mixture;}
       \item{Cormix}{overall correlations (each pair) of the normal
-	mixture}
-      \item{w}{weights of each of mixture components}
-      \item{mu}{component means (each margin, each mixture component) of the
+	mixture;}
+      \item{K}{number of mixture components;}
+      \item{w, w_b}{weights of each of mixture components.
+        If \code{relabel} is \code{FALSE}, weights are not re-labeled before plotting;}
+      \item{mu, mu_b}{component means (each margin, each mixture component) of the
 	normal mixture. The mixture means are shifted and scaled using
 	\code{x$scale$shift} and \code{x$scale$scale} before plotting.
-	If not specified by other arguments, means are not re-labeled before plotting}
-      \item{sd}{component standard deviations (each margin, each mixture component) of the
-	normal mixture. The mixture standard deviations are scaled using
+	If \code{relabel} is \code{FALSE}, means are not re-labeled before plotting;}
+      \item{sd, sd_b}{component standard deviations (each margin, each mixture
+	component) of the normal mixture. The mixture standard deviations are scaled using
 	\code{x$scale$scale} before plotting.
-	If not specified by other arguments, standard deviations are
-	not re-labeled before plotting}
-      \item{gammaInv}{variance hyperparameters}
-      \item{beta}{fixed effects of the fitted GLMM}
+	If \code{relabel} is \code{FALSE}, standard deviations are
+	not re-labeled before plotting;}
+      \item{gammaInv, gammaInv_b, gammaInv_eps}{variance
+	hyperparameters;}
+      \item{Deviance}{deviance (marginal, with random effects integrated
+        out) of the GLMM;}
+      \item{Cond.Deviance}{conditional deviance (given random effects)
+	of the GLMM;}
+      \item{beta}{fixed effects of the fitted GLMM;}
       \item{Eb}{overall means (for each margin) of the random effects of
-        the fitted GLMM}
+        the fitted GLMM;}
       \item{SDb}{overall standard deviations (for each margin) of the random effects of
-        the fitted GLMM}
+        the fitted GLMM;}
       \item{Corb}{overall correlations (each pair) of the distribution
-	of the random effects of the fitted GLMM}
+	of the random effects of the fitted GLMM.}
+      \item{sigma_eps}{standard deviations of the error terms in the
+	(mixed) models for continuous responses.}
     }  
-
-
   }
   \item{relabel}{logical value. It indicates whether the chains with
     \code{param} being \code{w}, \code{mu}, \code{sd}, \code{w_b},

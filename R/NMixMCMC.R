@@ -457,7 +457,7 @@ NMixMCMC <- function(y0, y1, censor, scale, prior,
         Litmp <- t(chol(Sigmainv))
         init$Li <- rep(Litmp[lower.tri(Litmp, diag=TRUE)], init$K)
       }else{
-        if (nrow(init$Sigma) == CKmax & CKmax > init$K) init$Sigma <- init$Sigma[1:(init$K*dd$p),]
+        if (nrow(init$Sigma) == CKmax*dd$p & CKmax > init$K) init$Sigma <- init$Sigma[1:(init$K*dd$p),]
         if (nrow(init$Sigma) != init$K*dd$p) stop(paste("init$Sigma must have ", init$K, " times ", dd$p, " rows", sep=""))
         init$Li <- numeric(0)
         for (j in 1:init$K){
@@ -715,7 +715,7 @@ NMixMCMC <- function(y0, y1, censor, scale, prior,
           Litmp <- t(chol(Sigmainv))
           init2$Li <- rep(Litmp[lower.tri(Litmp, diag=TRUE)], init2$K)
         }else{
-          if (nrow(init2$Sigma) == CKmax & CKmax > init2$K) init2$Sigma <- init2$Sigma[1:(init2$K*dd$p),]
+          if (nrow(init2$Sigma) == CKmax*dd$p & CKmax > init2$K) init2$Sigma <- init2$Sigma[1:(init2$K*dd$p),]
           if (nrow(init2$Sigma) != init2$K*dd$p) stop(paste("init2$Sigma must have ", init2$K, " times ", dd$p, " rows", sep=""))
           init2$Li <- numeric(0)
           for (j in 1:init2$K){

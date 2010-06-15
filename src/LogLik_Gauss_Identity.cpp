@@ -12,25 +12,323 @@
 
 namespace LogLik{
 
+
 /***** ***************************************************************************************** *****/
-/***** LogLik::Gauss_Identity (PROTOTYPE 1)                                                      *****/
+/***** LogLik::Gauss_Identity1                                                                   *****/
 /***** ***************************************************************************************** *****/
 void
 Gauss_Identity1(double* ll,
-                double* U,
-                double* I,
-                double* eta,
-                double* mu,
                 const double* offset,
                 const double* theta,
-                const double* y,
                 const double* sigma,
-                const double* scale,
+                const double* y,
+                const double* null,
                 const double* x,
-                const double* SxxS,
-                const int* n,
-                const int* p,
-                const int* Intcpt)
+                const int*    n,
+                const int*    p,
+                const int*    Intcpt)
+{
+  static const double *yP;
+  static const double *offsetP, *xP, *thetaP, *log_y_factorP;
+  static double eta, mu, stres;  
+
+  static int i, j;
+
+
+  /* Set log-likelihood to a common factor */
+  /*****************************************/
+  *ll = -(*n) * (M_LN_SQRT_2PI + AK_Basic::log_AK(*sigma));
+
+
+  /* Loop over observations */
+  /**************************/
+  yP            = y;
+  offsetP       = offset;
+  xP            = x;
+  for (i = 0; i < *n; i++){
+    
+    /* Calculate eta */
+    /*****************/
+    thetaP = theta;
+
+    if (*Intcpt){
+      eta = *thetaP;
+      thetaP++;
+    }
+    else{
+      eta = 0.0;
+    }
+    for (j = 0; j < *p; j++){
+      eta += *thetaP * *xP;
+      thetaP++;
+      xP++;
+    }
+
+    /* Calculate mu */
+    /****************/
+    mu = eta + *offsetP;
+
+
+    /* Calculate stres   */
+    /*********************/
+    stres = (*yP - mu) / *sigma;
+
+
+    /* Log-likelihood contribution */
+    /*******************************/
+    *ll -= 0.5 * stres * stres;
+    
+    yP++;
+    offsetP++;
+  }                /** end of for (i = 0; i < *n; i++) **/
+
+  return;  
+}
+
+
+/***** ***************************************************************************************** *****/
+/***** LogLik::Gauss_Identity_sqrt_w_phi1                                                        *****/
+/***** ***************************************************************************************** *****/
+void
+Gauss_Identity_sqrt_w_phi1(double* ll,
+                           double* sqrt_w_phi,
+                           const double* offset,
+                           const double* theta,
+                           const double* sigma,
+                           const double* y,
+                           const double* null,
+                           const double* x,
+                           const int*    n,
+                           const int*    p,
+                           const int*    Intcpt)
+{
+  static const double *yP;
+  static const double *offsetP, *xP, *thetaP, *log_y_factorP;
+  static double *sqrt_w_phiP;
+  static double eta, mu, stres, isigma;  
+
+  static int i, j;
+
+  isigma = 1 / *sigma;
+
+  /* Set log-likelihood to a common factor */
+  /*****************************************/
+  *ll = -(*n) * (M_LN_SQRT_2PI + AK_Basic::log_AK(*sigma));
+
+
+  /* Loop over observations */
+  /**************************/
+  yP            = y;
+  offsetP       = offset;
+  xP            = x;
+  sqrt_w_phiP   = sqrt_w_phi;
+  for (i = 0; i < *n; i++){
+    
+    /* Calculate eta */
+    /*****************/
+    thetaP = theta;
+
+    if (*Intcpt){
+      eta = *thetaP;
+      thetaP++;
+    }
+    else{
+      eta = 0.0;
+    }
+    for (j = 0; j < *p; j++){
+      eta += *thetaP * *xP;
+      thetaP++;
+      xP++;
+    }
+
+    /* Calculate mu */
+    /****************/
+    mu = eta + *offsetP;
+
+
+    /* Calculate sqrt_w_phi, stres   */
+    /*********************************/
+    *sqrt_w_phiP = isigma;
+    stres = (*yP - mu) / *sigma;
+
+
+    /* Log-likelihood contribution */
+    /*******************************/
+    *ll -= 0.5 * stres * stres;
+    
+    yP++;
+    offsetP++;
+    sqrt_w_phiP++;
+  }                /** end of for (i = 0; i < *n; i++) **/
+
+  return;  
+}
+
+
+/***** ***************************************************************************************** *****/
+/***** LogLik::Gauss_Identity_sqrt_w_phi_stres1                                                  *****/
+/***** ***************************************************************************************** *****/
+void
+Gauss_Identity_sqrt_w_phi_stres1(double* ll,
+                                 double* sqrt_w_phi,
+                                 double* stres,
+                                 double* eta,
+                                 double* mu,
+                                 const double* offset,
+                                 const double* theta,
+                                 const double* sigma,
+                                 const double* y,
+                                 const double* null,
+                                 const double* x,
+                                 const int*    n,
+                                 const int*    p,
+                                 const int*    Intcpt)
+{
+  static const double *yP;
+  static const double *offsetP, *xP, *thetaP, *log_y_factorP;
+  static double *etaP, *muP, *sqrt_w_phiP, *stresP;
+  static double isigma;  
+
+  static int i, j;
+
+  isigma = 1 / *sigma;
+
+  /* Set log-likelihood to a common factor */
+  /*****************************************/
+  *ll = -(*n) * (M_LN_SQRT_2PI + AK_Basic::log_AK(*sigma));
+
+
+  /* Loop over observations */
+  /**************************/
+  yP            = y;
+  offsetP       = offset;
+  xP            = x;
+  etaP          = eta;
+  muP           = mu;
+  sqrt_w_phiP   = sqrt_w_phi;
+  stresP        = stres;
+  for (i = 0; i < *n; i++){
+    
+    /* Update eta */
+    /**************/
+    thetaP = theta;
+
+    if (*Intcpt){
+      *etaP = *thetaP;
+      thetaP++;
+    }
+    else{
+      *etaP = 0.0;
+    }
+    for (j = 0; j < *p; j++){
+      *etaP += *thetaP * *xP;
+      thetaP++;
+      xP++;
+    }
+
+    /* Update mu */
+    /*****************/
+    *muP = *etaP + *offsetP;
+
+
+    /* Update stres, sqrt_phi_w    */
+    /*******************************/
+    *sqrt_w_phiP = isigma;
+    *stresP      = (*yP - *muP) / *sigma;
+
+
+    /* Log-likelihood contribution */
+    /*******************************/
+    *ll -= 0.5 * *stresP * *stresP;
+    
+    yP++;
+    offsetP++;
+    etaP++;
+    muP++;
+    sqrt_w_phiP++;
+    stresP++;
+  }                /** end of for (i = 0; i < *n; i++) **/
+
+  return;  
+}
+
+
+/***** ***************************************************************************************** *****/
+/***** LogLik::Gauss_Identity_sqrt_w_phi_stres2                                                  *****/
+/***** ***************************************************************************************** *****/
+void
+Gauss_Identity_sqrt_w_phi_stres2(double* ll,
+                                 double* sqrt_w_phi,
+                                 double* stres,
+                                 const double* eta,
+                                 const double* offset,
+                                 const double* mu,
+                                 const double* sigma,
+                                 const double* y,
+                                 const double* null,
+                                 const int*    n)
+{
+  static const double *yP;
+  static const double *muP;
+  static double *sqrt_w_phiP, *stresP;
+  static double isigma;  
+
+  static int i;
+
+  isigma = 1 / *sigma;
+
+  /* Set log-likelihood to a common factor */
+  /*****************************************/
+  *ll = -(*n) * (M_LN_SQRT_2PI + AK_Basic::log_AK(*sigma));
+
+
+  /* Loop over observations */
+  /**************************/
+  yP            = y;
+  muP           = mu;
+  sqrt_w_phiP   = sqrt_w_phi;
+  stresP        = stres;
+  for (i = 0; i < *n; i++){
+    
+    /* Update stres, sqrt_phi_w    */
+    /*******************************/
+    *sqrt_w_phiP = isigma;
+    *stresP      = (*yP - *muP) / *sigma;
+
+
+    /* Log-likelihood contribution */
+    /*******************************/
+    *ll -= 0.5 * *stresP * *stresP;
+    
+    yP++;
+    muP++;
+    sqrt_w_phiP++;
+    stresP++;
+  }                /** end of for (i = 0; i < *n; i++) **/
+
+  return;  
+}
+
+
+/***** ***************************************************************************************** *****/
+/***** LogLik::Gauss_IdentityUI1                                                                 *****/
+/***** ***************************************************************************************** *****/
+void
+Gauss_IdentityUI1(double* ll,
+                  double* U,
+                  double* I,
+                  double* eta,
+                  double* mu,
+                  const double* offset,
+                  const double* theta,
+                  const double* y,
+                  const double* sigma,
+                  const double* scale,
+                  const double* x,
+                  const double* SxxS,
+                  const int* n,
+                  const int* p,
+                  const int* Intcpt)
 {
   int LTp_int = ((*p + *Intcpt) * (*p + *Intcpt + 1)) / 2;
 
@@ -141,7 +439,7 @@ Gauss_Identity1(double* ll,
 
 
 /***** ***************************************************************************************** *****/
-/***** LogLik::Gauss_Identity (PROTOTYPE 3)                                                      *****/
+/***** LogLik::Gauss_Identity3                                                                    *****/
 /***** ***************************************************************************************** *****/
 void
 Gauss_Identity3(double* ll,
@@ -210,7 +508,7 @@ Gauss_Identity3(double* ll,
 
 
 /***** ***************************************************************************************** *****/
-/***** LogLik::Gauss_Identity (PROTOTYPE 4)                                                      *****/
+/***** LogLik::Gauss_Identity4                                                                    *****/
 /***** ***************************************************************************************** *****/
 void
 Gauss_Identity4(double* ll,

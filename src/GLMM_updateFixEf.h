@@ -9,6 +9,7 @@
 //             21/10/2009 changed to GLMM_updateFixEf.h
 //             26/10/2009 version which allows non-gaussian response as well
 //                        (using Metropolis-Hastings with proposal obtained using one Newton-Raphson/Fisher scoring step)
+//             29/03/2010 bug in shifting x_resp corrected
 //
 //  FUNCTIONS:  
 //     * updateFixEf_gauss  11/07/2009:  CHANGED ON 21/10/2009 to updateFixEf
@@ -33,6 +34,7 @@
 #include "LogLik_Bernoulli_Logit.h"
 #include "LogLik_Poisson_Log.h"
 
+#include "MCMC.h"
 #include "MCMC_Moments_NormalApprox.h"
 
 namespace GLMM{
@@ -47,9 +49,11 @@ namespace GLMM{
 //  eta_fixed[sum(n)]:         INPUT:  current values of linear predictors based on fixed effects
 //                            OUTPUT:  updated values of linear predictors based on fixed effects
 //
-//  mean_Y_d[]:                INPUT:  current values of means of discrete responses
-//                                     length = number of discrete observations
-//                            OUTPUT:  updated means of the discrete responses
+//  eta[sum(n)]:               INPUT:  current values of linear predictors
+//                            OUTPUT:  updated values of linear predictors
+//
+//  meanY[sum(n)]:             INPUT:  current values of response means
+//                            OUTPUT:  updated response means
 //
 //  log_dets[2*(R_c + R_d)]:   INPUT:  log_dets[0,2,...]: whatsever
 //                                     log_dets[1,3,...]: -p_fi[s]*log(sqrt(2pi))
@@ -136,14 +140,15 @@ namespace GLMM{
 void
 updateFixEf(double* beta,              
             double* eta_fixed,       
-            double* mean_Y_d,
+            double* eta,  
+            double* meanY,
             double* log_dets,            
             double* dwork,
             int*    naccept,
             int*    err,
             const double* Y_c,         
             const int*    Y_d,          
-            const double* dY_d,
+            const double* dY,
             const double* eta_random,  
             const double* scale,
             const double* X,         

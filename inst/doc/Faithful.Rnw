@@ -354,6 +354,7 @@ for (CH in 1:2){
 }  
 dev.off()
 @
+%$
 
 \begin{figure}[p!]\centering
 \includegraphics[width=1.0\textwidth, height=0.9\textheight]{\FIGDIR/figFaithful04.ps}
@@ -385,6 +386,7 @@ for (CH in 1:2){
 }  
 dev.off()
 @ 
+%$
 Note that package \Rfun{colorspace} is needed to specify the colors in the plot.
 
 \begin{figure}[p!]\centering
@@ -427,6 +429,7 @@ if (RUN.ALLOUT){
   chdeviance2 <- mcmc(Model0[[CH]]$deviance[titers,], start=tstart, end=tend)
 }
 @ 
+%$
 
 <<Model0: Traceplots, keep.source=TRUE, results=hide>>=
 if (RUN.ALLOUT){
@@ -631,6 +634,7 @@ if (RUN.ALLOUT){
   dev.off()
 }  
 @ 
+%$
 
 \begin{figure}[p!]\centering
 \includegraphics[width=\textwidth, height=0.9\textheight]{\FIGKEEPDIR/figFaithful16.ps}
@@ -706,6 +710,7 @@ if (RUN.TIMECONSUMING.CODE){
   }
 }  
 @ 
+%$
 
 
 % --------------------------------------
@@ -839,6 +844,7 @@ for (k in 1:10){
 }  
 dev.off()
 @
+%$
 
 \Ritem Plots of the joint predictive density (image plots) for different values of $K$,
 densities computed from chain~1 (see Figure~\ref{fig19}):
@@ -858,6 +864,7 @@ for (k in 1:10){
 }  
 dev.off()
 @
+%$
 
 % --------------------------------------
 \begin{figure}[p!]\centering

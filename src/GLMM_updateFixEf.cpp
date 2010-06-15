@@ -18,15 +18,16 @@ namespace GLMM{
 /***** ***************************************************************************************** *****/
 void
 updateFixEf(double* beta,              
-            double* eta_fixed,       
-            double* mean_Y_d,
+            double* eta_fixed, 
+            double* eta,  
+            double* meanY,
             double* log_dets,            
             double* dwork,
             int*    naccept,
             int*    err,
             const double* Y_c,         
             const int*    Y_d,          
-            const double* dY_d,
+            const double* dY,
             const double* eta_random,  
             const double* scale,
             const double* X,         
@@ -52,21 +53,20 @@ updateFixEf(double* beta,
   static int s, i, j, k;
   static int LT_p_fi;
   static int accept;
-  static double resid, log_prop_ratio, loglik, loglik_prop, logprior, logprior_prop, logq, logq_prop, erand;
+  static double resid, log_prop_ratio, loglik, loglik_prop, logprior, logprior_prop, logq, logq_prop;
 
   static int *nacceptP;
   static double *betaP, *beta_resp, *log_detsP;
-  static double *eta_fixed_resp;
+  static double *eta_fixed_resp, *eta_resp, *meanY_resp;
   static const double *scaleP;
-  static const double *eta_randomP, *xP, *x_resp, *XtXP;
+  static const double *eta_randomP, *eta_random_resp, *xP, *x_resp, *XtXP;
   static const double *MbetaP, *PbetaP, *Pbeta_MbetaP;
   static const double *sqrt_tune_scaleP, *log_sqrt_tune_scaleP;
   static const int *pP, *fixedIntcptP, *p_fiP, *nP, *n_resp, *N_sP, *distP;
   
   static const double *Y_cP, *sigmaP;;
   static const int *Y_d_resp;
-  static const double *dY_d_resp;
-  static double *mean_Y_d_resp;
+  static const double *dY_resp;
 
   static double *mu_fullP, *Li_fullP, *dworkP, *beta_propP;
 
@@ -77,14 +77,17 @@ updateFixEf(double* beta,
   log_detsP      = log_dets;
 
   eta_fixed_resp = eta_fixed;
+  eta_resp       = eta;
+  meanY_resp     = meanY;
+  dY_resp        = dY;
 
   beta_resp      = beta;
   nacceptP       = naccept;
 
-  eta_randomP    = eta_random;
-  scaleP         = scale;
-  x_resp         = X;
-  XtXP           = XtX;
+  eta_random_resp = eta_random;
+  scaleP          = scale;
+  x_resp          = X;
+  XtXP            = XtX;
 
   MbetaP         = Mbeta;
   PbetaP         = Pbeta;
@@ -97,7 +100,6 @@ updateFixEf(double* beta,
   N_sP           = N_s;
   distP          = dist;
 
-  
   /***** ++++++++++++++++++++++++++++++++++++++ *****/
   /***** ----- Gaussian response profiles ----- *****/
   /***** ++++++++++++++++++++++++++++++++++++++ *****/
@@ -117,8 +119,9 @@ updateFixEf(double* beta,
       /*** = sum[observations] x[s,i,j]*(y[s,i,j] - eta_random[s,i,j])                 ***/
       AK_Basic::fillArray(mu_full, 0.0, *p_fiP);
 
-      xP = x_resp;
-      nP = n_resp;
+      xP          = x_resp;
+      nP          = n_resp;
+      eta_randomP = eta_random_resp;
       for (i = 0; i < *I; i++){      /** loop over clusters                    **/
         for (j = 0; j < *nP; j++){     /** loop over observations within clusters **/
           mu_fullP = mu_full;
@@ -179,7 +182,7 @@ updateFixEf(double* beta,
       }
 
       /*** Sample new beta[s] ***/
-      Dist::rMVN2(beta_resp, mu_full, &log_prop_ratio, dwork_MVN, Li_full, log_detsP, p_fiP);
+      Dist::rMVN2(beta_resp, mu_full, &log_prop_ratio, Li_full, log_detsP, p_fiP);
       
       /*** Update values of linear predictors ***/
       xP = x_resp;
@@ -197,19 +200,32 @@ updateFixEf(double* beta,
             betaP++;
             xP++;
           }
+
+          *eta_resp   = *eta_fixed_resp + *eta_random_resp;
+          *meanY_resp = *eta_resp;
+          
           eta_fixed_resp++;
+          eta_random_resp++;
+          eta_resp++;
+          meanY_resp++;
         }
         nP++;
       }
 
       *nacceptP += 1;
+       
+      x_resp = xP;
     }
     else{          /*** There were no beta's for particular response ***/
       Y_cP            += *N_sP;
-      eta_randomP     += *N_sP;      
-      eta_fixed_resp  += *N_sP;    
+      eta_fixed_resp  += *N_sP;
+      eta_random_resp += *N_sP;
+      eta_resp        += *N_sP;
+      meanY_resp      += *N_sP;
       nP              = n_resp + *I;  
     }
+
+    dY_resp += *N_sP;
     
     nacceptP++;
 
@@ -217,7 +233,6 @@ updateFixEf(double* beta,
     beta_resp += *p_fiP;
 
     scaleP += *p_fiP;
-    x_resp = xP;
     n_resp = nP;
 
     log_detsP += 2;
@@ -250,14 +265,13 @@ updateFixEf(double* beta,
   sqrt_tune_scaleP     = sqrt_tune_scale;
   log_sqrt_tune_scaleP = log_sqrt_tune_scale;
 
-  mean_Y_d_resp = mean_Y_d;
   Y_d_resp      = Y_d;  
-  dY_d_resp     = dY_d;
+
   for (s = 0; s < *R_d; s++){      /*** loop over s ***/
 
     LT_p_fi = (*p_fiP * (1 + *p_fiP)) / 2;
 
-    if (*p_fiP){      
+    if (*p_fiP){     
 
       /*** Pointers inside dwork ***/
       dwork_MVN      = dwork;                        /*** general working array                                                 ***/
@@ -271,13 +285,13 @@ updateFixEf(double* beta,
       /*** Determine the right log-likelihood function ***/
       switch (*distP){
       case GLMM::BERNOULLI_LOGIT:
-        LogLik1 = LogLik::Bernoulli_Logit1; 
-        LogLik2 = LogLik::Bernoulli_Logit2; 
+        LogLik1 = LogLik::Bernoulli_LogitUI1; 
+        LogLik2 = LogLik::Bernoulli_LogitUI2; 
         break;
 
       case GLMM::POISSON_LOG:
-        LogLik1 = LogLik::Poisson_Log1;
-        LogLik2 = LogLik::Poisson_Log2;
+        LogLik1 = LogLik::Poisson_LogUI1;
+        LogLik2 = LogLik::Poisson_LogUI2;
         break;
  
       default:
@@ -288,8 +302,9 @@ updateFixEf(double* beta,
       /*** Compute log-likelihood, score and information matrix for current estimates ***/    
       /*** Score will be stored in mu_full.                                           ***/
       /*** Information matrix will be stored in Li_full.                              ***/
-      LogLik2(&loglik, mu_full, Li_full, eta_fixed_resp, eta_randomP, mean_Y_d_resp, 
-              Y_d_resp, dY_d_resp, scaleP, x_resp, XtXP, N_sP, pP, fixedIntcptP);
+      LogLik2(&loglik, mu_full, Li_full, eta_fixed_resp, eta_random_resp, meanY_resp, 
+              Y_d_resp, dY_resp, scaleP, x_resp, XtXP, N_sP, pP, fixedIntcptP);
+      //Rprintf((char*)("\nLoglik: %g"), loglik);
       if (!R_finite(loglik)){
         *err = 1;
         error("%s: TRAP, infinite log-likelihood for response profile %d.\n", fname, s + *R_c + 1);
@@ -300,13 +315,14 @@ updateFixEf(double* beta,
 
       /*** Sample proposal beta[s]                                                                               ***/
       /*** Compute the first part of the propsal ratio: log-q(beta, beta[proposed]) --> stored in logq  ***/
-      Dist::rMVN3(beta_prop, mu_full, &logq, dwork_MVN, Li_full, log_detsP, sqrt_tune_scaleP, log_sqrt_tune_scaleP, p_fiP);
+      Dist::rMVN3(beta_prop, mu_full, &logq, Li_full, log_detsP, sqrt_tune_scaleP, log_sqrt_tune_scaleP, p_fiP);
 
       /*** Log-likelihood, score and information matrix evaluated at beta_prop ***/
       /*** Score will be stored in mu_full.                                    ***/
       /*** Information matrix will be stored in Li_full.                       ***/
       LogLik1(&loglik_prop, mu_full, Li_full, eta_fixed_prop, mean_Y_d_prop, 
-              eta_randomP, beta_prop, Y_d_resp, dY_d_resp, scaleP, x_resp, XtXP, N_sP, pP, fixedIntcptP);
+              eta_random_resp, beta_prop, Y_d_resp, dY_resp, scaleP, x_resp, XtXP, N_sP, pP, fixedIntcptP);
+      //Rprintf((char*)(",  Loglik(proposal): %g"), loglik_prop);
 
       if (R_finite(loglik_prop)){   /*** Proposal has a chance to be accepted ***/
 
@@ -343,21 +359,11 @@ updateFixEf(double* beta,
         logprior      *= -0.5;
         logprior_prop *= -0.5;
 
-        /*** Logarithm of the proposal ratio ***/
+        /*** Logarithm of the proposal ratio and acceptance test ***/
         log_prop_ratio = loglik_prop + logprior_prop + logq_prop - loglik - logprior - logq;
+        //Rprintf((char*)(",  log_prop_ratio: %g = %g + %g + %g - (%g + %g + %g)"), log_prop_ratio, loglik_prop, logprior_prop, logq_prop, loglik, logprior, logq);
+        accept = MCMC::accept_Metropolis_Hastings(log_prop_ratio);
 
-        if (log_prop_ratio < AK_Basic::_EMIN){
-          accept = 0;
-        }
-        else{
-          if (log_prop_ratio >= 0){
-            accept = 1;
-          }
-          else{             /*** decide by sampling from Exp(1) ***/
-            erand = exp_rand();
-            accept = (erand > -log_prop_ratio ? 1 : 0);
-          }
-        }
       }    /*** end of "Proposal has a chance to be accepted" ***/
       else{
         accept = 0;
@@ -378,33 +384,41 @@ updateFixEf(double* beta,
           beta_prop++;
         }
 
-        /** Change eta_fixed, mean_Y_d, move eta_fixed_resp and mean_Y_d_resp **/
+        /** Change eta_fixed, eta, meanY, move eta_fixed_resp, eta_resp, meanY_resp, eta_random_resp **/
         for (i = 0; i < *N_sP; i++){
           *eta_fixed_resp = *eta_fixed_prop;
-          eta_fixed_resp++;
-          eta_fixed_prop++;
+          *eta_resp       = *eta_fixed_resp + *eta_random_resp;           
+          *meanY_resp     = *mean_Y_d_prop;
 
-          *mean_Y_d_resp = *mean_Y_d_prop;
-          mean_Y_d_resp++;
+          eta_fixed_prop++;
           mean_Y_d_prop++;
+
+          eta_fixed_resp++;
+          eta_random_resp++;
+          eta_resp++;
+          meanY_resp++;
+
         }
       }
       else{      /** else (accept) **/
-        beta_resp      += *p_fiP;
-        eta_fixed_resp += *N_sP;
-        mean_Y_d_resp  += *N_sP;
+        beta_resp       += *p_fiP;
+        eta_fixed_resp  += *N_sP;
+        eta_random_resp += *N_sP;
+        eta_resp        += *N_sP;
+        meanY_resp      += *N_sP;
       }
     }
     else{          /*** There were no beta's for particular response ***/
-      eta_fixed_resp += *N_sP;
-      mean_Y_d_resp  += *N_sP;
+      eta_fixed_resp  += *N_sP;
+      eta_random_resp += *N_sP;
+      eta_resp        += *N_sP;
+      meanY_resp      += *N_sP;
     }
 
     nacceptP++;
 
-    Y_d_resp    += *N_sP;
-    dY_d_resp   += *N_sP;
-    eta_randomP += *N_sP;
+    Y_d_resp  += *N_sP;
+    dY_resp   += *N_sP;
 
     scaleP += *p_fiP;
     x_resp += *N_sP * *pP;

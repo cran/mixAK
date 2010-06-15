@@ -14,33 +14,36 @@
 ## *************************************************************
 ## tracePlots.GLMM_MCMC
 ## *************************************************************
-tracePlots.GLMM_MCMC <- function(x, param=c("beta", "Eb", "SDb", "Corb", "sigma_eps", "w_b", "mu_b", "sd_b", "gammaInv_b", "gammaInv_eps"),
+tracePlots.GLMM_MCMC <- function(x, param=c("Deviance", "Cond.Deviance", "beta", "Eb", "SDb", "Corb", "sigma_eps", "w_b", "mu_b", "sd_b", "gammaInv_b", "gammaInv_eps"),
                                  relabel=FALSE, order,                                 
                                  auto.layout=TRUE, xlab="Iteration", ylab, col="slateblue", main="", ...)
 {
   param <- match.arg(param)
 
-  ### Determine component in x where to look for required chains  
-  if (param %in% c("Eb", "SDb", "Corb")) obj <- "mixture_b"
-  else if (param == "sd") obj <- "Sigma_b"
-       else               obj <- param
+  ### Determine component in x where to look for required chains
+  if (param == "Deviance") obj <- "Deviance"
+  else if (param == "Cond.Deviance") obj <- "Cond.Deviance"
+       else if (param %in% c("Eb", "SDb", "Corb")) obj <- "mixture_b"
+            else if (param == "sd_b") obj <- "Sigma_b"
+                 else                 obj <- param
 
   if (param %in% c("w_b", "mu_b", "sd_b") & x$prior.b$priorK != "fixed") stop("Not implemented for this value of param.")
   
   ### Number of parameters to plot
-  if (param == "beta") nparam <- sum(x$p)
-  else if (param %in% c("Eb", "SDb")) nparam <- x$dimb
-       else if (param == "Corb") nparam <- (x$dimb * (x$dimb + 1)) / 2 - x$dimb
-            else if (param == "sigma_eps") nparam <- x$R["Rc"]
-                 else if (param == "w_b") nparam <- x$K_b[1]
-                      else if (param %in% c("mu_b", "sd_b")) nparam <- x$K_b[1] * x$dimb
-                           else if (param == "gammaInv_b") nparam <- x$dimb
-                                else if (param == "gammaInv_eps") nparam <- x$R["Rc"]
+  if (param %in% c("Deviance", "Cond.Deviance")) nparam <- 1
+  else if (param == "beta") nparam <- sum(x$p) + sum(x$fixed.intercept)
+       else if (param %in% c("Eb", "SDb")) nparam <- x$dimb
+            else if (param == "Corb") nparam <- (x$dimb * (x$dimb + 1)) / 2 - x$dimb
+                 else if (param == "sigma_eps") nparam <- x$R["Rc"]
+                      else if (param == "w_b") nparam <- x$K_b[1]
+                           else if (param %in% c("mu_b", "sd_b")) nparam <- x$K_b[1] * x$dimb
+                                else if (param == "gammaInv_b") nparam <- x$dimb
+                                     else if (param == "gammaInv_eps") nparam <- x$R["Rc"]
   if (!nparam){
     cat("\nNothing to plot.\n")
     return(invisible(x))    
   }  
-    
+  
   ### Plotting arguments
   if (length(col) == 1)  col <- rep(col, nparam)
   if (length(xlab) == 1) xlab <- rep(xlab, nparam)
@@ -133,15 +136,26 @@ tracePlots.GLMM_MCMC <- function(x, param=c("beta", "Eb", "SDb", "Corb", "sigma_
       }              
     }
 
-    ### Traceplots of all other parameters
     else{
-      if (missing(ylab)) ylab <- colnames(x[[obj]])
-    
-      for (i in 1:nparam){
-        plot(itIndex, x[[obj]][, i], type="l", xlab=xlab[i], ylab=ylab[i], col=col[i], main=main[i], ...)
+
+      ### Traceplots for deviances
+      if (param %in% c("Deviance", "Cond.Deviance")){
+        
+        if (missing(ylab)) ylab <- ifelse(param == "Deviance", "Deviance", "Conditional Deviance")
+        plot(itIndex, x[[obj]], type="l", xlab=xlab[1], ylab=ylab, col=col[1], main=main[1], ...)
       }
-    }  
-  }
+
+      ### Traceplots of all other parameters
+      else{
+      
+        if (missing(ylab)) ylab <- colnames(x[[obj]])
+    
+        for (i in 1:nparam){
+          plot(itIndex, x[[obj]][, i], type="l", xlab=xlab[i], ylab=ylab[i], col=col[i], main=main[i], ...)
+        }
+      }  
+    }
+  }  
       
   return(invisible(x))
 }

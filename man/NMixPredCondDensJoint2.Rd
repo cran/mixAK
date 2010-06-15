@@ -9,9 +9,8 @@
 \description{
   This function serves as an inference tool for the MCMC output
   obtained using the function \code{\link{NMixMCMC}}. It computes
-  estimates of pairwise bivariate conditional densities (given one margin)
-  obtained by using posterior summary statistics (e.g., posterior means)
-  of mixture weights, means and variances (plug-in estimate).
+  (posterior predictive) estimates of pairwise bivariate conditional
+  densities (given one margin).
 }
 \usage{
 NMixPredCondDensJoint2(x, \dots)

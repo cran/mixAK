@@ -1,3 +1,12 @@
+14/06/2010 TO DO:
+  In GLMM_Deviance.cpp
+       Commands:  *marg_ll_iP += *w_k * AK_Basic::exp0_AK(loglik_k);  (around line 239)
+                  *marg_ll_iP = AK_Basic::log0_AK(*marg_ll_iP); (around line 252)
+       In the case of the poisson response, it would be desirable to add log(y!) to loglik_k before exp-it    
+       and subtract it again after log the mixture sum. With higher counts, loglik_k is quite considerably negative
+       which leads to exp(-Inf) = 0 and then upon log again, we get -Inf log-likelihood where
+       -Inf is artificial due to imprecise calculation with numbers close to zero.
+
 08/12/2009
 bug in computation of weights for the EB estimate of random effects in GLMM_longitPred_nmix_gauss.cpp fixed
 

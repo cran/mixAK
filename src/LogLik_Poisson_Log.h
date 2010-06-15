@@ -11,8 +11,11 @@
 //  PART OF CODE TAKEN FROM:   R package glmmAK, ll_poisson.{cpp,h}
 //
 //  FUNCTIONS:  
-//     *   19/10/2009:  LogLik::Poisson_Log (PROTOTYPE 1)
-//     *   19/10/2009:  LogLik::Poisson_Log (PROTOTYPE 2)
+//     *   14/04/2010:  Poisson_Log1
+//     *   09/04/2010:  Poisson_Log_sqrt_w_phi_stres1
+//     *   09/04/2010:  Poisson_Log_sqrt_w_phi_stres2
+//     *   19/10/2009:  LogLik::Poisson_LogUI1
+//     *   19/10/2009:  LogLik::Poisson_LogUI1
 //
 // =================================================================================
 //
@@ -27,13 +30,131 @@
 namespace LogLik{
 
 /***** ***************************************************************************************** *****/
-/***** LogLik::Poisson_Log (PROTOTYPE 1)                                                         *****/
+//
+//  ll[1]:                 INPUT:  whatsever
+//                        OUTPUT:  computed value of the log-likelihood
+//
+//  sqrt_w_phi[n]:         INPUT:  whatsever
+//                        OUTPUT:  1 * sqrt(lambda)
+//             
+//  stres[n]:              INPUT:  whatsever
+//                        OUTPUT:  (y[i] - lambda[i]) / sqrt(lambda[i])
+//
+//  eta[n]:                
+//
+//  lambda[n]:
+//
+//  offset[n]:
+//
+//  theta[p + Intcpt]:
+//
+//  sqrt_phi[0]:           not used here (it is constantly equal to 1)
+//
+//  y[n]:
+//
+//  log_y_factor[n]:       log(y!) = lgamma(y + 1) for each observation
+//
+//  x[p, n]:
+//
+//  n[1]:
+//
+//  p[1]:
+//
+//  Intcpt[1]:
+//
+/***** ***************************************************************************************** *****/
+
+/***** ***************************************************************************************** *****/
+/***** LogLik::Poisson_Log1                                                                      *****/
 /***** ***************************************************************************************** *****/
 //
-// This prototype
-//   * updates the linear predictor
-//   * updates the Poisson means
-//   * computes log-likelihood, score and information matrix
+// This version computes only the log-likelihood from offset, x, theta.
+//
+void
+Poisson_Log1(double* ll,
+             const double* offset,
+             const double* theta,
+             const double* sqrt_phi,
+             const int*    y,
+             const double* log_y_factor,
+             const double* x,
+             const int*    n,
+             const int*    p,
+             const int*    Intcpt);
+
+
+/***** ***************************************************************************************** *****/
+/***** LogLik::Poisson_Log_sqrt_w_phi1                                                           *****/
+/***** ***************************************************************************************** *****/
+//
+//  This version computes log-likelihood and
+//  sqrt_w_phi = phi^{-1} * sqrt(var(y | eta)) = 1 * sqrt(lambda).
+//  
+void
+Poisson_Log_sqrt_w_phi1(double* ll,
+                        double* sqrt_w_phi,
+                        const double* offset,
+                        const double* theta,
+                        const double* sqrt_phi,
+                        const int*    y,
+                        const double* log_y_factor,
+                        const double* x,
+                        const int*    n,
+                        const int*    p,
+                        const int*    Intcpt);
+
+
+/***** ***************************************************************************************** *****/
+/***** LogLik::Poisson_Log_sqrt_w_phi_stres1                                                     *****/
+/***** ***************************************************************************************** *****/
+//
+// This version computes: 1) eta from x and theta
+//                        2) pi from eta and offset
+//                        3) ll (log-likelihood)
+//                        4) sqrt_w_phi = phi^{-1} * sqrt(var(y | eta)) = 1 * sqrt(lambda)
+//                        5) stres = (y - lambda) / sqrt(var(y | eta))
+//
+void
+Poisson_Log_sqrt_w_phi_stres1(double* ll,
+                              double* sqrt_w_phi,
+                              double* stres,
+                              double* eta,
+                              double* lambda,                       
+                              const double* offset,
+                              const double* theta,
+                              const double* sqrt_phi,
+                              const int*    y,
+                              const double* log_y_factor,
+                              const double* x,
+                              const int*    n,
+                              const int*    p,
+                              const int*    Intcpt);
+
+
+/***** ***************************************************************************************** *****/
+/***** LogLik::Poisson_Log_sqrt_w_phi_stres2                                                     *****/
+/***** ***************************************************************************************** *****/
+//
+// This version computes: 1) ll (log-likelihood)
+//                        2) sqrt_w_phi = phi^{-1} * sqrt(var(y | eta)) = 1 * sqrt(lambda)
+//                        3) stres = (y - lambda) / sqrt(var(y | eta))
+//
+// For this version: eta, offset, sqrt_phi can be NULL
+//         
+void
+Poisson_Log_sqrt_w_phi_stres2(double* ll,
+                              double* sqrt_w_phi,
+                              double* stres,
+                              const double* eta,
+                              const double* offset,
+                              const double* lambda,
+                              const double* sqrt_phi,
+                              const int*    y,
+                              const double* log_y_factor,
+                              const int*    n);
+
+
+/***** ***************************************************************************************** *****/
 //
 //  In the case that we have random effects b = shift + scale * b^*
 //  and theta = b
@@ -87,48 +208,59 @@ namespace LogLik{
 //
 //  Intcpt[1]:                 0/1 indicating whether intercept is included in the model
 //
-void
-Poisson_Log1(double* ll,
-             double* U,
-             double* I,
-             double* eta,
-             double* lambda,
-             const double* offset,
-             const double* theta,
-             const int* y,
-             const double* log_y_factor,
-             const double* scale,
-             const double* x,
-             const double* SxxS,
-             const int* n,
-             const int* p,
-             const int* Intcpt);
-
+/***** ***************************************************************************************** *****/
 
 /***** ***************************************************************************************** *****/
-/***** LogLik::Poisson_Log (PROTOTYPE 2)                                                         *****/
+/***** LogLik::Poisson_LogUI1                                                                    *****/
 /***** ***************************************************************************************** *****/
 //
-// This prototype only computes log-likelihood, score and information matrix
+// This version
+//   * updates the linear predictor
+//   * updates the Poisson means
+//   * computes log-likelihood, score and information matrix
+//
+void
+Poisson_LogUI1(double* ll,
+               double* U,
+               double* I,
+               double* eta,
+               double* lambda,
+               const double* offset,
+               const double* theta,
+               const int* y,
+               const double* log_y_factor,
+               const double* scale,
+               const double* x,
+               const double* SxxS,
+               const int* n,
+               const int* p,
+               const int* Intcpt);
+
+
+/***** ***************************************************************************************** *****/
+/***** LogLik::Poisson_LogUI2                                                                    *****/
+/***** ***************************************************************************************** *****/
+//
+// This version only computes log-likelihood, score and information matrix
 // from supplied eta, offset, lambda
 //
 // It is assumed that log(lambda) = eta + offset
 //
 void
-Poisson_Log2(double* ll,
-             double* U,
-             double* I,
-             const double* eta,
-             const double* offset,
-             const double* lambda,
-             const int* y,
-             const double* log_y_factor,
-             const double* scale,
-             const double* x,
-             const double* SxxS,
-             const int* n,
-             const int* p,
-             const int* Intcpt);
+Poisson_LogUI2(double* ll,
+               double* U,
+               double* I,
+               const double* eta,
+               const double* offset,
+               const double* lambda,
+               const int* y,
+               const double* log_y_factor,
+               const double* scale,
+               const double* x,
+               const double* SxxS,
+               const int* n,
+               const int* p,
+               const int* Intcpt);
 
 }
 

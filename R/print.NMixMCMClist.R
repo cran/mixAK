@@ -93,9 +93,9 @@ print.NMixMCMClist <- function(x, ped, dic, ...)
       print(xsummexpyMean, ...)
     }else{
       cat("\nChain 1:\n")
-      print(x[[1]]$summ.y.Mean, ...)
+      print(x[[1]]$summ.expy.Mean, ...)
       cat("\nChain 2:\n")
-      print(x[[2]]$summ.y.Mean, ...)
+      print(x[[2]]$summ.expy.Mean, ...)
     }  
   }
     

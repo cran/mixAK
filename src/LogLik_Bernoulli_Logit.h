@@ -9,8 +9,12 @@
 //  CREATED:   19/10/2009
 //
 //  FUNCTIONS:  
-//     *   19/10/2009:  LogLik::Bernoulli_Logit (PROTOTYPE 1)
-//     *   19/10/2009:  LogLik::Bernoulli_Logit (PROTOTYPE 2)
+//     *   14/04/2010:  LogLik::Bernoulli_Logit1
+//     *   14/04/2010:  LogLik::Bernoulli_Logit_sqrt_w_phi1
+//     *   09/04/2010:  LogLik::Bernoulli_Logit_sqrt_w_phi_stres1
+//     *   09/04/2010:  LogLik::Bernoulli_Logit_sqrt_w_phi_stres2
+//     *   19/10/2009:  LogLik::Bernoulli_LogitUI1
+//     *   19/10/2009:  LogLik::Bernoulli_LogitUI2
 //
 // =================================================================================
 //
@@ -25,14 +29,130 @@
 namespace LogLik{
 
 /***** ***************************************************************************************** *****/
-/***** LogLik::Bernoulli_Logit (PROTOTYPE 1)                                                     *****/
+//
+//  ll[1]:                 INPUT:  whatsever
+//                        OUTPUT:  computed value of the log-likelihood
+//
+//  sqrt_w_phi[n]:         INPUT:  whatsever
+//                        OUTPUT:  1 * sqrt(pi[i] * (1 - pi[i]))
+//             
+//  stres[n]:              INPUT:  whatsever
+//                        OUTPUT:  (y[i] - pi[i]) / sqrt(pi[i] * (1 - pi[i]))
+//
+//  eta[n]:                
+//
+//  pi[n]:
+//
+//  offset[n]:
+//
+//  theta[p + Intcpt]:
+//
+//  sqrt_phi[0]:           not used here (it is constantly equal to 1)
+//
+//  y[n]:
+//
+//  null[0]:               not used here
+//
+//  x[p, n]:
+//
+//  n[1]:
+//
+//  p[1]:
+//
+//  Intcpt[1]:
+//
+/***** ***************************************************************************************** *****/
+
+/***** ***************************************************************************************** *****/
+/***** LogLik::Bernoulli_Logit1                                                                  *****/
 /***** ***************************************************************************************** *****/
 //
-// This prototype
-//   * updates the linear predictor
-//   * updates the Bernoulli means (probabilities of success)
-//   * computes log-likelihood, score and information matrix
+// This version computes only the log-likelihood from offset, x, theta.
 //
+void
+Bernoulli_Logit1(double* ll,
+                 const double* offset,
+                 const double* theta,
+                 const double* sqrt_phi,
+                 const int*    y,
+                 const double* null,
+                 const double* x,
+                 const int*    n,
+                 const int*    p,
+                 const int*    Intcpt);
+
+
+/***** ***************************************************************************************** *****/
+/***** LogLik::Bernoulli_Logit_sqrt_w_phi1                                                       *****/
+/***** ***************************************************************************************** *****/
+//
+//  This version computes log-likelihood and
+//  sqrt_w_phi = phi^{-1} * sqrt(var(y | eta)) = 1 * sqrt(pi * (1 - pi)).
+//  
+void
+Bernoulli_Logit_sqrt_w_phi1(double* ll,
+                            double* sqrt_w_phi,
+                            const double* offset,
+                            const double* theta,
+                            const double* sqrt_phi,
+                            const int*    y,
+                            const double* null,
+                            const double* x,
+                            const int*    n,
+                            const int*    p,
+                            const int*    Intcpt);
+
+
+/***** ***************************************************************************************** *****/
+/***** LogLik::Bernoulli_Logit_sqrt_w_phi_stres1                                                 *****/
+/***** ***************************************************************************************** *****/
+//
+// This version computes: 1) eta from x and theta
+//                        2) pi from eta and offset
+//                        3) ll (log-likelihood)
+//                        4) sqrt_w_phi = phi^{-1} * sqrt(var(y | eta)) = 1 * sqrt(pi * (1 - pi))
+//                        5) stres = (y - pi) / sqrt(var(y | eta))
+void
+Bernoulli_Logit_sqrt_phi_stres1(double* ll,
+                                double* sqrt_w_phi,
+                                double* stres,
+                                double* eta,
+                                double* pi,
+                                const double* offset,
+                                const double* theta,
+                                const double* sqrt_phi,
+                                const int*    y,
+                                const double* null,
+                                const double* x,
+                                const int*    n,
+                                const int*    p,
+                                const int*    Intcpt);
+
+
+/***** ***************************************************************************************** *****/
+/***** LogLik::Bernoulli_Logit_sqrt_w_phi_stres2                                                 *****/
+/***** ***************************************************************************************** *****/
+//
+// This version computes: 1) ll (log-likelihood)
+//                        2) sqrt_w_phi = phi^{-1} * sqrt(var(y | eta)) = 1 * sqrt(pi * (1 - pi))
+//                        3) stres = (y - pi) / sqrt(var(y | eta))
+//
+// For this version: eta, offset, sqrt_phi, null can be NULL
+//         
+void
+Bernoulli_Logit_sqrt_phi_stres2(double* ll,
+                                double* sqrt_w_phi,
+                                double* stres,
+                                const double* eta,
+                                const double* offset,
+                                const double* pi,
+                                const double* sqrt_phi,
+                                const int*    y,
+                                const double* null,
+                                const int*    n);
+
+
+/***** ***************************************************************************************** *****/
 //  In the case that we have random effects b = shift + scale * b^*
 //  and theta = b
 //  then the score vector and the information matrix are computed as derivatives
@@ -86,48 +206,59 @@ namespace LogLik{
 //
 //  Intcpt[1]:                 0/1 indicating whether intercept is included in the model
 //  
-void
-Bernoulli_Logit1(double* ll,
-                 double* U,
-                 double* I,
-                 double* eta,
-                 double* pi,
-                 const double* offset,
-                 const double* theta,
-                 const int* y,
-                 const double* null,
-                 const double* scale,
-                 const double* x,
-                 const double* SxxS,
-                 const int* n,
-                 const int* p,
-                 const int* Intcpt);
-
+/***** ***************************************************************************************** *****/
 
 /***** ***************************************************************************************** *****/
-/***** LogLik::Bernoulli_Logit (PROTOTYPE 2)                                                     *****/
+/***** LogLik::Bernoulli_LogitUI1                                                                *****/
 /***** ***************************************************************************************** *****/
 //
-// This prototype only computes log-likelihood, score and information matrix
+// This version
+//   * updates the linear predictor
+//   * updates the Bernoulli means (probabilities of success)
+//   * computes log-likelihood, score and information matrix
+//
+void
+Bernoulli_LogitUI1(double* ll,
+                   double* U,
+                   double* I,
+                   double* eta,
+                   double* pi,
+                   const double* offset,
+                   const double* theta,
+                   const int* y,
+                   const double* null,
+                   const double* scale,
+                   const double* x,
+                   const double* SxxS,
+                   const int* n,
+                   const int* p,
+                   const int* Intcpt);
+
+
+/***** ***************************************************************************************** *****/
+/***** LogLik::Bernoulli_LogitUI2                                                                *****/
+/***** ***************************************************************************************** *****/
+//
+// This version only computes log-likelihood, score and information matrix
 // from supplied eta, offset, pi
 //
 // It is assumed that logit(pi) = eta + offset
 //
 void
-Bernoulli_Logit2(double* ll,
-                 double* U,
-                 double* I,
-                 const double* eta,
-                 const double* offset,
-                 const double* pi,
-                 const int* y,
-                 const double* null,
-                 const double* scale,
-                 const double* x,
-                 const double* SxxS,
-                 const int* n,
-                 const int* p,
-                 const int* Intcpt);
+Bernoulli_LogitUI2(double* ll,
+                   double* U,
+                   double* I,
+                   const double* eta,
+                   const double* offset,
+                   const double* pi,
+                   const int* y,
+                   const double* null,
+                   const double* scale,
+                   const double* x,
+                   const double* SxxS,
+                   const int* n,
+                   const int* p,
+                   const int* Intcpt);
 
 }
 

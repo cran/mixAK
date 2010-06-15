@@ -10,6 +10,10 @@
 //
 #include "GLMM_updateRanEf.h"
 
+extern int clus_show;
+//extern int iter_show;
+//extern int iteration;
+
 namespace GLMM{
 
 /***** ***************************************************************************************** *****/
@@ -17,26 +21,27 @@ namespace GLMM{
 /***** ***************************************************************************************** *****/
 void
 updateRanEf(double*  b,                 
-            double*  bscaled,           
+            double*  bscaled,         
             double** eta_randomresp,  
-	    double** mean_Y_dresp,
+            double** etaresp,    
+	    double** meanYresp,
             double*  log_dets_full,     
-            double*  Qmu,               
             double*  dwork,
             double** Y_crespP,         
             int**    Y_drespP,     
-            double** dY_drespP,   
+            double** dYrespP,   
             double** eta_fixedrespP,   
             double** eta_randomrespP,    
             double** eta_zsrespP,
-            double** mean_Y_drespP,
+            double** etarespP,
+            double** meanYrespP,
             double** ZrespP,           
             int**    nrespP,
             int*     naccept,
             int*     err,
             double** Y_cresp,                      // this is in fact const
             int**    Y_dresp,                      // this is in fact const
-            double** dY_dresp,                     // this is in fact const
+            double** dYresp,                       // this is in fact const
             double** eta_fixedresp,                // this is in fact const
             double** eta_zsresp,                   // this is in fact const
             double** Zresp,                        // this is in fact const
@@ -67,13 +72,13 @@ updateRanEf(double*  b,
 {
   const char *fname = "GLMM::updateRanEf";
 
-  static int s, i, j, k, itmp;
+  static int s, i, j, k, itmp, row, col;
   static int accept;
   static double resid;
-  static double log_prop_ratio, loglik, loglik_prop, logprior, logprior_prop, logq, logq_prop, erand;
+  static double log_prop_ratio, loglik, loglik_prop, logprior, logprior_prop, logq, logq_prop;
   static double loglik_s;
 
-  static double *bP, *bscaledP, *bscaled_i, *b_i, *eta_random_propP, *mean_Y_d_propP;
+  static double *bP, *bscaledP, *bscaled_i, *b_i, *eta_random_propP, *mean_Y_d_propP, *Li_full_backupP, *Li_fullP;
   static double *mu_fullP, *mu_full_resp, *Li_full_resp, *mu_full2_resp, *Li_full2_resp;
   static double *bscaled_resp, *b_resp;
   static int *naccept_i;
@@ -94,17 +99,19 @@ updateRanEf(double*  b,
 
   /*** Parts of dwork ***/
   /*** ============== ***/
-  static double *dwork_MVN, *mu_full, *mu_full2, *Li_full, *Li_full2, *Imat, *bscaled_prop, *b_prop, *eta_random_prop, *mean_Y_d_prop;
-  dwork_MVN    = dwork;
-  mu_full      = dwork_MVN + *dim_b;     // (canonical) mean of the proposal distribution
-  mu_full2     = mu_full + *dim_b;       // (canonical) mean of the reversal proposal distribution
-  Li_full      = mu_full2 + *dim_b;      // precision/Cholesky decomposition of the proposal distribution
-  Li_full2     = Li_full + *LT_b;        // precision/Cholesky decomposition of the reversal proposal distribution
-  Imat         = Li_full2 + *LT_b;       // information matrix given response
-  bscaled_prop = Imat + *LT_b;           // proposed bscaled
-  b_prop       = bscaled_prop + *dim_b;  // proposed b
+  static double *Qmu, *dwork_MVN, *mu_full, *mu_full2, *Li_full, *Li_full2, *Imat, *bscaled_prop, *b_prop, *Li_full_backup, *eta_random_prop, *mean_Y_d_prop;
+  Qmu            = dwork;
+  dwork_MVN      = Qmu + *dim_b * *K;      // place to store Q %*% mu
+  mu_full        = dwork_MVN + *dim_b;     // (canonical) mean of the proposal distribution
+  mu_full2       = mu_full + *dim_b;       // (canonical) mean of the reversal proposal distribution
+  Li_full        = mu_full2 + *dim_b;      // precision/Cholesky decomposition of the proposal distribution
+  Li_full2       = Li_full + *LT_b;        // precision/Cholesky decomposition of the reversal proposal distribution
+  Imat           = Li_full2 + *LT_b;       // information matrix given response
+  bscaled_prop   = Imat + *LT_b;           // proposed bscaled
+  b_prop         = bscaled_prop + *dim_b;  // proposed b
+  Li_full_backup = b_prop + *dim_b;        // backup of the full conditional (inverse) variance
+                                           // (stored in the lower triangle of the full matrix, upper triangle filled arbitrarily)
      /*** eta_random_prop and mean_Y_d_prop are set-up inside the loop below ***/
-
 
   /*** Compute Qmu[k] = Q[k] * mu[k] ***/
   /*** ============================= ***/
@@ -118,6 +125,24 @@ updateRanEf(double*  b,
     mu_resp  += *dim_b;
   }
 
+  /***** DEBUG CODE *****/
+  //if (iteration == iter_show){
+  //  Rprintf((char*)("\nsigma <- %g"), *sigma);
+  //  Rprintf((char*)("\nmu <- "));
+  //  AK_Basic::printMatrix4R(mu, *dim_b, *K);
+  //  for (k = 0; k < *K; k++){
+  //    Rprintf((char*)("Q[[%d]] <- "), k+1);
+  //    AK_Basic::printSP4R(Q + k * *LT_b, *dim_b);    
+  //  }
+  //  Rprintf((char*)("\nQmu <- "));
+  //  AK_Basic::printMatrix4R(Qmu, *dim_b, *K);
+  //  Rprintf((char*)("\nr <- %d\n"), r[clus_show] + 1);
+  //  Rprintf((char*)("\nbstar <- "));
+  //  AK_Basic::printVec4R(bscaled + clus_show * *dim_b, *dim_b);
+  //  Rprintf((char*)("b <- "));
+  //  AK_Basic::printVec4R(b + clus_show * *dim_b, *dim_b);
+  //}
+  /***** END DEBUG CODE *****/
 
   /*** Init for some pointers ***/
   /*** ====================== ***/
@@ -125,27 +150,30 @@ updateRanEf(double*  b,
     eta_fixedrespP[s]  = eta_fixedresp[s];
     eta_randomrespP[s] = eta_randomresp[s];
     eta_zsrespP[s]     = eta_zsresp[s];
+    etarespP[s]        = etaresp[s];
+    meanYrespP[s]      = meanYresp[s];
+    dYrespP[s]         = dYresp[s];
     ZrespP[s]          = Zresp[s];
     nrespP[s]          = nresp[s];
 
     Y_crespP[s]        = Y_cresp[s];
   }
-
-  for (s = *R_c; s < *R_c + *R_d; s++){
+  for (s; s < *R_c + *R_d; s++){
     eta_fixedrespP[s]  = eta_fixedresp[s];
     eta_randomrespP[s] = eta_randomresp[s];
     // do not set eta_zsresp[s] for discrete responses (they are not needed)
+    etarespP[s]        = etaresp[s];
+    meanYrespP[s]      = meanYresp[s];
+    dYrespP[s]         = dYresp[s];
     ZrespP[s]          = Zresp[s];
     nrespP[s]          = nresp[s];    
 
-    Y_drespP[s - *R_c]      = Y_dresp[s - *R_c];
-    mean_Y_drespP[s - *R_c] = mean_Y_dresp[s - *R_c];   
-    dY_drespP[s - *R_c]     = dY_dresp[s - *R_c];
+    Y_drespP[s - *R_c] = Y_dresp[s - *R_c];
   }
 
 
-  /*** Declaration of function to compute log-likelihood, score and information matrix ***/
-  /*** =============================================================================== ***/
+  /*** Declaration of functions to compute log-likelihood, score and information matrix ***/
+  /*** ================================================================================ ***/
   void 
   (*LogLik1)(double*, double*, double*, double*, double*,
              const double*, const double*, 
@@ -248,7 +276,6 @@ updateRanEf(double*  b,
         if (!(*R_d)){     /** shift the following pointers only when there is no discrete response                                               **/
                           /** otherwise, do not shift them as we will need them once more to calculate the proposed value of the log-likelihood  **/
           Y_crespP[s]       = Y_cP;
-          eta_fixedrespP[s] = eta_fixedP;
         }
         eta_zsrespP[s]    = eta_zsP;
       }   /** end of if (*nrespP[s]) **/
@@ -308,7 +335,6 @@ updateRanEf(double*  b,
       s++;
     }    /** end of loop s over continuous response variables */
 
-
     /*** Loop over discrete response types     ***/
     /*** +++++++++++++++++++++++++++++++++++++ ***/
     while (s < *R_c + *R_d){
@@ -316,11 +342,11 @@ updateRanEf(double*  b,
       /*** Determine the right log-likelihood function ***/
       switch (*distP){
       case GLMM::BERNOULLI_LOGIT:
-        LogLik2 = LogLik::Bernoulli_Logit2; 
+        LogLik2 = LogLik::Bernoulli_LogitUI2; 
         break;
 
       case GLMM::POISSON_LOG:
-        LogLik2 = LogLik::Poisson_Log2;
+        LogLik2 = LogLik::Poisson_LogUI2;
         break;
  
       default:
@@ -331,10 +357,22 @@ updateRanEf(double*  b,
       /*** Compute log-likelihood, score and information matrix for current estimates. ***/    
       /*** Score will be stored in mu_full_resp.                                       ***/
       /*** Information matrix will be stored in Imat.                                  ***/
-      LogLik2(&loglik_s, mu_full_resp, Imat, eta_randomrespP[s], eta_fixedrespP[s], mean_Y_drespP[s - *R_c], 
-              Y_drespP[s - *R_c], dY_drespP[s - *R_c], scale_resp, ZrespP[s], SZitZiS_resp, nrespP[s], qP, randIntcptP);
+      LogLik2(&loglik_s, mu_full_resp, Imat, eta_randomrespP[s], eta_fixedrespP[s], meanYrespP[s], 
+              Y_drespP[s - *R_c], dYrespP[s], scale_resp, ZrespP[s], SZitZiS_resp, nrespP[s], qP, randIntcptP);
+  
       if (!R_finite(loglik_s)){
         *err = 1;
+        /***** DEBUG CODE *****/
+        //Rprintf((char*)("\nResponse profile %d, cluster %d:\n"), s + 1, i + 1);
+        //Rprintf((char*)("Y <- "));
+	//AK_Basic::printVec4R(Y_drespP[s - *R_c], *nrespP[s]);
+        //Rprintf((char*)("Yhat <- "));
+	//AK_Basic::printVec4R(mean_Y_drespP[s - *R_c], *nrespP[s]);
+        //Rprintf((char*)("eta.random <- "));
+	//AK_Basic::printVec4R(eta_randomrespP[s], *nrespP[s]);
+        //Rprintf((char*)("eta.fixed <- "));
+	//AK_Basic::printVec4R(eta_fixedrespP[s], *nrespP[s]);        
+        /***** END DEBUG CODE *****/
         error("%s: TRAP, infinite log-likelihood for response profile %d, cluster %d.\n", fname, s + 1, i + 1);
       }
       loglik += loglik_s;
@@ -368,7 +406,7 @@ updateRanEf(double*  b,
       bscaled_resp += *q_riP;
       mu_full_resp += *q_riP;
       Qmu_resp     += *q_riP;
-      scale_resp++;
+      scale_resp   += *q_riP;
       SZitZiS_resp += ((*q_riP * (1 + *q_riP)) / 2) * (*(nrespP[s])); 
 
       qP++;
@@ -380,11 +418,53 @@ updateRanEf(double*  b,
       s++;
     }
 
+    /*** Backup of Li_full in the lower triangle of Li_full_backup (which is full matrix) ***/
+    /*** ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ ***/
+    /*** BACKUP CANCELED ON 24/03/2010                                                                          ***/
+    /*** When dpptrf fails then there are serious numerical problems which leads to failure of anything else    ***/
+    /*** (only slightly later on).                                                                              ***/
+    //Li_fullP        = Li_full;
+    //Li_full_backupP = Li_full_backup;
+    //for (col = 0; col < *dim_b; col++){
+    //  Li_full_backupP += col;
+    //  for (row = col; row < *dim_b; row++){
+    //    *Li_full_backupP = *Li_fullP;
+    //    Li_full_backupP++;
+    //    Li_fullP++;
+    //  }
+    //}
+
+    /***** DEBUG CODE *****/
+    //if (i == clus_show && iteration == iter_show){
+    //  Rprintf((char*)("\nm <- "));
+    //  AK_Basic::printVec4R(mu_full, *dim_b);
+    //  Rprintf((char*)("\nM <- "));
+    //  AK_Basic::printSP4R(Li_full, *dim_b);
+    //}
+    /***** END DEBUG CODE *****/
+
     /*** Cholesky decomposition of precision matrix Q_full of full conditional/proposal distribution of bscaled[i]   ***/
     /*** +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ ***/
     F77_CALL(dpptrf)("L", dim_b, Li_full, err);                 /** this should never fail... **/
     if (*err){
-      error("%s:  Cholesky decomposition of the precision matrix of full conditional distribution failed (cluster %d).\n", fname, i + 1);
+     
+      /*** Try dpotrf, it happens sometimes that dpptrf fails but dpotrf not ***/
+      /*** +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ ***/
+      //F77_CALL(dpotrf)("L", dim_b, Li_full_backup, dim_b, err);            
+      if (*err) error("%s:  Cholesky decomposition of the precision matrix of full conditional distribution failed (cluster %d).\n", fname, i + 1);
+      
+      /*** Copy lower triangle of Li_full_backup back to Li_full ***/
+      /*** +++++++++++++++++++++++++++++++++++++++++++++++++++++ ***/
+      //Li_fullP        = Li_full;
+      //Li_full_backupP = Li_full_backup;
+      //for (col = 0; col < *dim_b; col++){
+      //  Li_full_backupP += col;
+      //  for (row = col; row < *dim_b; row++){
+      //    *Li_fullP = *Li_full_backupP;
+      //    Li_full_backupP++;
+      //    Li_fullP++;
+      //  }
+      //}
     }
 
     /*** Compute log(|Q_full|^{1/2}) = sum(log(Li_full[j,j])) ***/
@@ -396,6 +476,19 @@ updateRanEf(double*  b,
       Li_full_resp += j;
     }
 
+    /***** DEBUG CODE *****/
+    //if (i == clus_show){
+    //  Rprintf("\nCluster %d (loglik=%g):\n", clus_show + 1, loglik);
+    //  Rprintf("cmu <- ");
+    //  AK_Basic::printVec4R(mu_full, *dim_b);      
+    //  Rprintf("Li <- ");
+    //  AK_Basic::printLT4R(Li_full, *dim_b);
+    //  Rprintf("iD <- Li %%*%% t(Li)\n");
+    //  Rprintf("muf <- solve(iD, cmu)\n");
+    //  Rprintf("log_det <- %g\n", *log_dets_full);
+    //}
+    /***** END DEBUG CODE *****/
+
     /*** +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ ***/
     /*** Further, if there are no discrete responses, then we can directly sample a new value of random effect             ***/
     /*** which is automatically accepted. If there are also discrete responses, then we have to propose a new value,       ***/
@@ -405,7 +498,7 @@ updateRanEf(double*  b,
     if (*R_d){
       /*** Sample proposal b[i] (if there are only continuous responses then this is directly a new value of b) ***/
       /*** ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ ***/
-      Dist::rMVN3(bscaled_prop, mu_full, &logq, dwork_MVN, Li_full, log_dets_full, sqrt_tune_scale, log_sqrt_tune_scale, dim_b);
+      Dist::rMVN3(bscaled_prop, mu_full, &logq, Li_full, log_dets_full, sqrt_tune_scale, log_sqrt_tune_scale, dim_b);
 
       /*** Construct reversal proposal                                                                       ***/
       /*** REMARK:  canonical mean and block of the precision matrix corresponding to continuous responses   ***/
@@ -416,7 +509,7 @@ updateRanEf(double*  b,
       accept = 1;       /** proposal still has a chance to be accepted **/
 
       /*** Additional pointers in dwork ***/
-      eta_random_prop = b_prop + *dim_b;
+      eta_random_prop = Li_full_backup + *dim_b * *dim_b;
       mean_Y_d_prop   = eta_random_prop + *N_iP;
 
       /*** Init pointers ***/
@@ -488,11 +581,11 @@ updateRanEf(double*  b,
         /*** Determine the right log-likelihood function ***/
         switch (*distP){
         case GLMM::BERNOULLI_LOGIT:
-          LogLik1 = LogLik::Bernoulli_Logit1; 
+          LogLik1 = LogLik::Bernoulli_LogitUI1; 
           break;
 
         case GLMM::POISSON_LOG:
-          LogLik1 = LogLik::Poisson_Log1;
+          LogLik1 = LogLik::Poisson_LogUI1;
           break;
  
         default:
@@ -518,7 +611,7 @@ updateRanEf(double*  b,
 	/*** Compute proposed values of the random effect linear predictor.               ***/        
         /*** Compute proposed value of the response mean.                                 ***/
         LogLik1(&loglik_s, mu_full2_resp, Imat, eta_random_propP, mean_Y_d_propP, 
-                eta_fixedrespP[s], b_resp, Y_drespP[s - *R_c], dY_drespP[s - *R_c], scale_resp, ZrespP[s], SZitZiS_resp, nrespP[s], qP, randIntcptP);
+                eta_fixedrespP[s], b_resp, Y_drespP[s - *R_c], dYrespP[s], scale_resp, ZrespP[s], SZitZiS_resp, nrespP[s], qP, randIntcptP);
         if (!R_finite(loglik_s)){  /*** Proposal does not have a chance to be accepted ***/                              
           accept = 0;
           //Rprintf((char*)("\n### i = %d: infinite proposal likelihood\n "), i);
@@ -560,8 +653,8 @@ updateRanEf(double*  b,
         }
 
         /*** Shift pointers (not yet shifted in the code above)                                      ***/
-        Qmu_resp += *q_riP;
-        scale_resp++;
+        Qmu_resp   += *q_riP;
+        scale_resp += *q_riP;
 
         b_resp            += *q_riP;
         bscaled_resp      += *q_riP;
@@ -581,6 +674,13 @@ updateRanEf(double*  b,
       }                            /** end of loop over discrete response variables **/
 
       if (accept){      /** if there is still a chance to be accepted **/
+
+        /***** DEBUG CODE *****/
+        //if (i == clus_show && iteration == iter_show){
+        //  Rprintf((char*)("\nM2 <- "));
+        //  AK_Basic::printSP4R(Li_full2, *dim_b);
+        //}
+        /***** END DEBUG CODE *****/
 
         /*** Cholesky decomposition of precision matrix of the reversal proposal distribution of bscaled[i]   ***/
         F77_CALL(dpptrf)("L", dim_b, Li_full2, err);                 /** this should never fail... **/
@@ -611,21 +711,24 @@ updateRanEf(double*  b,
 	Dist::ldMVN1(&logprior, dwork_MVN, bscaled_i, mu_i, Li_i, log_dets_i, dim_b);
 	Dist::ldMVN1(&logprior_prop, dwork_MVN, bscaled_prop, mu_i, Li_i, log_dets_i, dim_b);
         
-        /*** Logarithm of the proposal ratio ***/
+        /*** Logarithm of the proposal ratio and acceptance test ***/
         log_prop_ratio = loglik_prop + logprior_prop + logq_prop - loglik - logprior - logq;
+        accept = MCMC::accept_Metropolis_Hastings(log_prop_ratio);
 
-        if (log_prop_ratio < AK_Basic::_EMIN){
-          accept = 0;
-        }
-        else{
-          if (log_prop_ratio >= 0){
-            accept = 1;
-          }
-          else{             /*** decide by sampling from Exp(1) ***/
-            erand = exp_rand();
-            accept = (erand > -log_prop_ratio ? 1 : 0);
-          }
-        }
+        /***** DEBUG CODE *****/
+        //if (i == clus_show){
+        //  Rprintf("\nCluster %d:\n", clus_show + 1);
+	//  Rprintf((char*)("bstar_prop <- "));
+        //  AK_Basic::printVec4R(bscaled_prop, *dim_b);
+        //  Rprintf("loglik <- %g\n", loglik);
+        //  Rprintf("loglik_prop <- %g\n", loglik_prop);
+        //  Rprintf("logq <- %g\n", logq);
+        //  Rprintf("logq_prop <- %g\n", logq_prop);
+        //  Rprintf("logprior <- %g\n", logprior);
+        //  Rprintf("logprior_prop <- %g\n", logprior_prop);
+        //  Rprintf((char*)("prat <- %g\n"), exp(log_prop_ratio));
+        //}
+        /***** END DEBUG CODE *****/
       }                 /** end of if there is still a chance to be accepted **/
 
 
@@ -646,9 +749,9 @@ updateRanEf(double*  b,
           bscaledP++;
         }
 
-        /*** Copy proposed values of eta_random and mean_Y_d                                         ***/
-        /*** Shift eta_randomrespP[s], mean_Y_drespP[s]                                              ***/
-        /*** Shift eta_fixedrespP[s], ZrespP[s], nrespP[s], Y_crespP[s], Y_drespP[s], dY_drespP[s]   ***/
+        /*** Copy proposed values of eta_random and meanY                                            ***/
+        /*** Shift eta_randomrespP[s], mean_YrespP[s], etarespP[s]                                   ***/
+        /*** Shift eta_fixedrespP[s], ZrespP[s], nrespP[s], Y_crespP[s], Y_drespP[s], dYrespP[s]     ***/
         eta_random_propP = eta_random_prop;
         mean_Y_d_propP   = mean_Y_d_prop;
 
@@ -658,11 +761,18 @@ updateRanEf(double*  b,
         while (s < *R_c){
           for (j = 0; j < *(nrespP[s]); j++){
             *(eta_randomrespP[s]) = *eta_random_propP;
-            eta_randomrespP[s]++;
+            *(etarespP[s])        = *eta_random_propP + *(eta_fixedrespP[s]);
+            *(meanYrespP[s])      = *(etarespP[s]); 
+
             eta_random_propP++;
+
+            eta_fixedrespP[s]++;
+            eta_randomrespP[s]++;
+            etarespP[s]++;
+            meanYrespP[s]++;
           }
 
-          eta_fixedrespP[s] += *(nrespP[s]);
+          dYrespP[s]        += *(nrespP[s]);
           ZrespP[s]         += *(nrespP[s]) * *qP;
           Y_crespP[s]       += *(nrespP[s]);
           
@@ -674,18 +784,21 @@ updateRanEf(double*  b,
         while (s < *R_c + *R_d){
           for (j = 0; j < *(nrespP[s]); j++){
             *(eta_randomrespP[s]) = *eta_random_propP;
-            eta_randomrespP[s]++;
-            eta_random_propP++;
+            *(etarespP[s])        = *eta_random_propP + *(eta_fixedrespP[s]);
+            *(meanYrespP[s])      = *mean_Y_d_propP;
 
-            *(mean_Y_drespP[s - *R_c]) = *mean_Y_d_propP;
-            mean_Y_drespP[s - *R_c]++;
+            eta_random_propP++;            
             mean_Y_d_propP++;
+
+            eta_fixedrespP[s]++;
+            eta_randomrespP[s]++;
+            etarespP[s]++;
+            meanYrespP[s]++;
           }
 
-          eta_fixedrespP[s]   += *(nrespP[s]);
+          dYrespP[s]          += *(nrespP[s]);
           ZrespP[s]           += *(nrespP[s]) * *qP;
           Y_drespP[s - *R_c]  += *(nrespP[s]);
-          dY_drespP[s - *R_c] += *(nrespP[s]);
           
           nrespP[s]++;
 
@@ -704,8 +817,11 @@ updateRanEf(double*  b,
         s = 0;
         while (s < *R_c){
           eta_randomrespP[s] += *(nrespP[s]);
+          eta_fixedrespP[s]  += *(nrespP[s]);
+          etarespP[s]        += *(nrespP[s]);
+          meanYrespP[s]      += *(nrespP[s]);
 
-          eta_fixedrespP[s] += *(nrespP[s]);
+          dYrespP[s]        += *(nrespP[s]);
           ZrespP[s]         += *(nrespP[s]) * *qP;
           Y_crespP[s]       += *(nrespP[s]);
           
@@ -715,13 +831,14 @@ updateRanEf(double*  b,
           s++;
         }
         while (s < *R_c + *R_d){
-          eta_randomrespP[s]      += *(nrespP[s]);
-          mean_Y_drespP[s - *R_c] += *(nrespP[s]);
+          eta_randomrespP[s] += *(nrespP[s]);
+          eta_fixedrespP[s]  += *(nrespP[s]);
+          etarespP[s]        += *(nrespP[s]);
+          meanYrespP[s]      += *(nrespP[s]);
 
-          eta_fixedrespP[s]   += *(nrespP[s]);
-          ZrespP[s]           += *(nrespP[s]) * *qP;
-          Y_drespP[s - *R_c]  += *(nrespP[s]);
-          dY_drespP[s - *R_c] += *(nrespP[s]);
+          dYrespP[s]         += *(nrespP[s]);
+          ZrespP[s]          += *(nrespP[s]) * *qP;
+          Y_drespP[s - *R_c] += *(nrespP[s]);
           
           nrespP[s]++;
 
@@ -735,7 +852,7 @@ updateRanEf(double*  b,
 
       /*** Sample new bscaled[i] ***/
       /*** +++++++++++++++++++++ ***/
-      Dist::rMVN2(bscaled_i, mu_full, &logq, dwork_MVN, Li_full, log_dets_full, dim_b);
+      Dist::rMVN2(bscaled_i, mu_full, &logq, Li_full, log_dets_full, dim_b);
       *naccept_i += 1;
 
       /*** Update values of linear predictors                                              ***/
@@ -764,7 +881,7 @@ updateRanEf(double*  b,
           scale_resp++;
         }
 
-        /*** The code below shifts: b_i, eta_randomrespP[s], ZrespP[s] ***/
+        /*** The code below shifts: b_i, eta_randomrespP[s], eta_fixedrespP, etarespP[s], meanYrespP[s], ZrespP[s] ***/
         if (*(nrespP[s])){
           for (j = 0; j < *(nrespP[s]); j++){    /** loop over observations within clusters **/
             bP                    = b_i;
@@ -778,7 +895,14 @@ updateRanEf(double*  b,
               bP++;               
               ZrespP[s]++;
             }
+
+            *(etarespP[s])   = *(eta_randomrespP[s]) + *(eta_fixedrespP[s]);
+            *(meanYrespP[s]) = *(etarespP[s]);
+
+            eta_fixedrespP[s]++;
             eta_randomrespP[s]++;
+            etarespP[s]++;
+            meanYrespP[s]++;
           }
           b_i = bP;      
         }

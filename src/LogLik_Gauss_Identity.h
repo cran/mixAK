@@ -9,9 +9,13 @@
 //  CREATED:   19/10/2009
 //
 //  FUNCTIONS:  
-//     *   19/10/2009:  LogLik::Gauss_Identity (PROTOTYPE 1)
-//     *   03/11/2009:  LogLik::Gauss_Identity (PROTOTYPE 3)
-//     *   27/10/2009:  LogLik::Gauss_Identity (PROTOTYPE 4)
+//     *   14/04/2010:  LogLik::Gauss_Identity1
+//     *   14/04/2010:  LogLik::Gauss_Identity_sqrt_w_phi1
+//     *   09/04/2010:  LogLik::Gauss_Identity_sqrt_w_phi_stres1
+//     *   09/04/2010:  LogLik::Gauss_Identity_sqrt_w_phi_stres2
+//     *   19/10/2009:  LogLik::Gauss_IdentityUI1
+//     *   03/11/2009:  LogLik::Gauss_Identity3
+//     *   27/10/2009:  LogLik::Gauss_Identity4
 //
 // =================================================================================
 //
@@ -26,13 +30,130 @@
 namespace LogLik{
 
 /***** ***************************************************************************************** *****/
-/***** LogLik::Gauss_Identity (PROTOTYPE 1)                                                      *****/
+//
+// This version computes: 1) eta from x and theta
+//                        2) mu from eta and offset
+//                        3) ll (log-likelihood)
+//                        4) sqrt_w_phi = phi^{-1} * sqrt(var(y | eta)) = sigma^{-2} * sigma = sigma^{-1}
+//                        5) stres = (y - mu) / sqrt(var(y | eta))
+//
+//  ll[1]:                 INPUT:  whatsever
+//                        OUTPUT:  computed value of the log-likelihood
+//
+//  sqrt_w_phi[n]:         INPUT:  whatsever
+//                        OUTPUT:  1 / sigma
+//             
+//  stres[n]:              INPUT:  whatsever
+//                        OUTPUT:  (y[i] - mu[i]) / sigma
+//
+//  eta[n]:                
+//
+//  mu[n]:
+//
+//  offset[n]:
+//
+//  theta[p + Intcpt]:
+//
+//  sigma[1]:              standard deviation of the normal distribution           
+//
+//  y[n]:
+//
+//  null[0]:               not used here
+//
+//  x[p, n]:
+//
+//  n[1]:
+//
+//  p[1]:
+//
+//  Intcpt[1]:
+//
+/***** ***************************************************************************************** *****/
+
+/***** ***************************************************************************************** *****/
+/***** LogLik::Gauss_Identity1                                                                   *****/
 /***** ***************************************************************************************** *****/
 //
-// This prototype
-//   * updates the linear predictor
-//   * computes log-likelihood, score and information matrix
+// This version computes only the log-likelihood from offset, x, theta.
 //
+void
+Gauss_Identity1(double* ll,
+                const double* offset,
+                const double* theta,
+                const double* sigma,
+                const double* y,
+                const double* null,
+                const double* x,
+                const int*    n,
+                const int*    p,
+                const int*    Intcpt);
+
+
+/***** ***************************************************************************************** *****/
+/***** LogLik::Gauss_Identity_sqrt_w_phi1                                                        *****/
+/***** ***************************************************************************************** *****/
+//
+//  This version computes log-likelihood and
+//  sqrt_w_phi = phi^{-1} * sqrt(var(y | eta)) = sigma^{-2}  * sqrt(sigma^2) = sigma^{-1}.
+//  
+void
+Gauss_Identity_sqrt_w_phi1(double* ll,
+                           double* sqrt_w_phi,
+                           const double* offset,
+                           const double* theta,
+                           const double* sigma,
+                           const double* y,
+                           const double* null,
+                           const double* x,
+                           const int*    n,
+                           const int*    p,
+                           const int*    Intcpt);
+
+
+/***** ***************************************************************************************** *****/
+/***** LogLik::Gauss_Identity_sqrt_w_phi_stres1                                                  *****/
+/***** ***************************************************************************************** *****/
+void
+Gauss_Identity_sqrt_w_phi_stres1(double* ll,
+                                 double* sqrt_w_phi,
+                                 double* stres,
+                                 double* eta,
+                                 double* mu,
+                                 const double* offset,
+                                 const double* theta,
+                                 const double* sigma,
+                                 const double* y,
+                                 const double* null,
+                                 const double* x,
+                                 const int*    n,
+                                 const int*    p,
+                                 const int*    Intcpt);
+
+
+/***** ***************************************************************************************** *****/
+/***** LogLik::Gauss_Identity_sqrt_w_phi_stres2                                                  *****/
+/***** ***************************************************************************************** *****/
+//
+// This version computes: 1) ll (log-likelihood)
+//                        4) sqrt_w_phi = phi^{-1} * sqrt(var(y | eta)) = sigma^{-2} * sigma = sigma^{-1}
+//                        5) stres = (y - mu) / sqrt(var(y | eta))
+//
+// For this version: eta, offset, null can be NULL
+//         
+void
+Gauss_Identity_sqrt_w_phi_stres2(double* ll,
+                                 double* sqrt_w_phi,
+                                 double* stres,
+                                 const double* eta,
+                                 const double* offset,
+                                 const double* mu,
+                                 const double* sigma,
+                                 const double* y,
+                                 const double* null,
+                                 const int*    n);
+
+
+/***** ***************************************************************************************** *****/
 //  In the case that we have random effects b = shift + scale * b^*
 //  and theta = b
 //  then the score vector and the information matrix are computed as derivatives
@@ -85,22 +206,32 @@ namespace LogLik{
 //
 //  Intcpt[1]:                 0/1 indicating whether intercept is included in the model
 //  
+/***** ***************************************************************************************** *****/
+
+/***** ***************************************************************************************** *****/
+/***** LogLik::Gauss_IdentityUI1                                                                 *****/
+/***** ***************************************************************************************** *****/
+//
+// This version
+//   * updates the linear predictor
+//   * computes log-likelihood, score and information matrix
+//
 void
-Gauss_Identity1(double* ll,
-                double* U,
-                double* I,
-                double* eta,
-                double* mu,
-                const double* offset,
-                const double* theta,
-                const double* y,
-                const double* sigma,
-                const double* scale,
-                const double* x,
-                const double* SxxS,
-                const int* n,
-                const int* p,
-                const int* Intcpt);
+Gauss_IdentityUI1(double* ll,
+                  double* U,
+                  double* I,
+                  double* eta,
+                  double* mu,
+                  const double* offset,
+                  const double* theta,
+                  const double* y,
+                  const double* sigma,
+                  const double* scale,
+                  const double* x,
+                  const double* SxxS,
+                  const int* n,
+                  const int* p,
+                  const int* Intcpt);
 
 
 /***** ***************************************************************************************** *****/

@@ -20,69 +20,14 @@ NMixRelabel.NMixMCMC <- function(object, type=c("mean", "weight", "stephens"), p
 
   LTp <- object$dim * (object$dim + 1)/2
   n <- object$Cpar$dimy["n"]
+
   
   ##### Determine re-labeling algorithm to use and additional parameters
   ##### +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  type <- match.arg(type)
-  if (type == "mean"){
-    Ctype <- 1
-    if (missing(par)) par <- 1
-    if (!is.numeric(par)) stop("par must be a number")
-    par <- par[1]
-    iparam <- par
-    if (iparam <= 0 | iparam > object$dim) stop(paste("par must be between 1 and ", object$dim, sep=""))
-
-    object$relabel <- list(type=type, par=iparam)    ## resulting re-labeling
-    iparam <- iparam - 1                             ## R -> C indexing
-  }else{
-    if (type == "weight"){
-      Ctype <- 2
-      par <- 1
-      iparam <- 0
-      object$relabel <- list(type=type, par=0)       ## resulting re-labeling
-    }
-    else{
-      if (type == "stephens"){
-        Ctype <- 3
-        if (missing(par)) par <- list(type.init = "identity", par = 0, maxiter = 50)
-        if (!is.list(par)) stop("par must be a list")
-        inpar <- names(par)
-        ind_type.init  <- match("type.init", inpar, nomatch=NA)
-        ind_par        <- match("par",       inpar, nomatch=NA)
-        ind_maxiter    <- match("maxiter",   inpar, nomatch=NA)
-
-        if (is.na(ind_type.init)) par$type.init <- "identity"
-        Ctype.init <- pmatch(par$type.init, table=c("identity", "mean", "weight"), nomatch=NA) - 1
-        if (is.na(Ctype.init)) stop("unknown par$type.init option supplied")
-
-        if (Ctype.init == 0){               ### par$init == identity
-          par$par <- 1
-        }else{
-          if (Ctype.init == 1){             ### par$init == mean
-            if (is.na(ind_par)) par$par <- 1
-            if (!is.numeric(par$par)) stop("par$par must be a number")
-            par$par <- par$par[1]
-            if (par$par <= 0 | par$par > object$dim) stop(paste("par$par must be between 1 and ", object$dim, sep=""))            
-          }else{
-            if (Ctype.init == 2){           ### par$init == weight
-              par$par <- 1
-            }  
-          }  
-        }
-
-        if (is.na(ind_maxiter)) par$maxiter <- 50
-        if (!is.numeric(par$maxiter)) stop("par$maxiter must be a number")        
-        par$maxiter <- par$maxiter[1]
-        if (par$maxiter <= 0) stop("par$maxiter must be positive")
-
-        iparam <- c(Ctype.init, par$par - 1, par$maxiter, 1)              ### iparam[4] determines whether search or transportation problem should
-                                                                          ### be used in step2 (0 = transportation problem, 1 = search)
-        names(iparam) <- c("type.init", "par", "maxiter", "type.step2")
-      }  
-    }
-  }
-
-
+  RAlg <- NMixRelabelAlgorithm(type=type, par=par, dim=object$dim)
+  object$relabel <- RAlg$relabel                                     ## resulting re-labeling
+  
+  
   ##### Parameters of MCMC
   ##### ++++++++++++++++++++++++++++++++++++++++++++++
   if (is.null(object$K) | is.null(object$w) | is.null(object$mu) | is.null(object$Li) | is.null(object$Q) | is.null(object$Sigma)){
@@ -106,11 +51,11 @@ NMixRelabel.NMixMCMC <- function(object, type=c("mean", "weight", "stephens"), p
   
   ##### Perform re-labeling
   ##### ++++++++++++++++++++++++++++++++++++++++++++++
-  l_nchange <- ifelse(Ctype <= 2, 1, par$maxiter)
+  l_nchange <- ifelse(RAlg$Ctype <= 2, 1, RAlg$relabel$par$maxiter)
   
   MCMC <- .C("NMix_NMixRelabel",
-             type         = as.integer(Ctype),
-             iparam       = as.integer(iparam),
+             type         = as.integer(RAlg$Ctype),
+             iparam       = as.integer(RAlg$iparam),
              y0           = as.double(t(object$Cpar$z0)),
              y1           = as.double(t(object$Cpar$z1)),
              censor       = as.integer(t(object$Cpar$censor)),
@@ -152,7 +97,7 @@ NMixRelabel.NMixMCMC <- function(object, type=c("mean", "weight", "stephens"), p
   MCMC$chrank <- NULL
 
 
-  ##### Clustering based on posterior P(alloc = k | y) or on P(alloc = k | theta, b, y) 
+  ##### Clustering based on posterior P(alloc = k | y) or on P(alloc = k | theta, y) 
   ##### +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   if (object$K[1] == 1){
     object$poster.comp.prob1 <- object$poster.comp.prob2 <- matrix(1, nrow = n, ncol = 1)
@@ -191,7 +136,6 @@ NMixRelabel.NMixMCMC <- function(object, type=c("mean", "weight", "stephens"), p
     
     tmpLi <- matrix(0, nrow=object$dim, ncol=object$dim)
     tmpLi[lower.tri(tmpLi, diag=TRUE)] <- MCMC$pm_Li[((j-1)*LTp+1):(j*LTp)]
-    tmpLi[upper.tri(tmpLi, diag=FALSE)] <- t(tmpLi)[upper.tri(t(tmpLi), diag=FALSE)]
     object$poster.mean.Li[[j]] <- tmpLi      
   }
   names(object$poster.mean.Q) <- names(object$poster.mean.Sigma) <- names(object$poster.mean.Li) <- paste("j", 1:object$K[1], sep="")    

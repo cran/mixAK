@@ -29,11 +29,16 @@
 //                             and a canonical mean b is given, i.e., the mean mu = Q^{-1}*b
 //                             * function also returns log-density evaluated at sampled value
 //
-//     * ldMVN1  03/12/2007:    Log-density of the multivariate normal distribution N(mu, Q^{-1})
+//     * rMVN4  12/04/2010:    Random number generation from multivariate normal distribution N(mu, scale^{-1}*Q^{-1}),
+//                             where a factorization Li of the precision matrix is given, i.e., Q = Li %*% t(Li),
+//                             and a mean mu is given
+//                             * function also returns log-density evaluated at sampled value
 //
-//     * ldMVN2  03/12/2007:    Log-density of the multivariate normal distribution N(mu, Sigma)
+//     * ldMVN1   03/12/2007:    Log-density of the multivariate normal distribution N(mu, Q^{-1})
 //
-//     * ldMVN3  10/11/2009:    Log-density of the multivariate normal distribution N(mu, scale^{-1}*Q^{-1})
+//     * ldMVN2   03/12/2007:    Log-density of the multivariate normal distribution N(mu, Sigma)
+//
+//     * ldMVN3   10/11/2009:    Log-density of the multivariate normal distribution N(mu, scale^{-1}*Q^{-1})
 //
 //     * dMVN1_R  05/11/2007:    R wrapper for dMVN1 which allows to evaluate a density for several x points in a loop
 //
@@ -97,7 +102,7 @@ dMVN1(double* log_dens,  double* work,
       const int* nx,     const int* mu_nonZERO);
 
 void
-rMVN1(double* x,         double* log_dens,      double* work,
+rMVN1(double* x,         double* log_dens,
       const double *mu,  const double *Li,      const double *log_dets,           
       const int* nx,     const int* mu_nonZERO);
 
@@ -126,7 +131,7 @@ rMVN1(double* x,         double* log_dens,      double* work,
 // nx[1]          Dimension of the normal distribution
 //
 void
-rMVN2(double* x,         double* mu,              double* log_dens,  double* work,
+rMVN2(double* x,         double* mu,              double* log_dens,
       const double *Li,  const double *log_dets,  const int* nx);
 
 
@@ -158,8 +163,40 @@ rMVN2(double* x,         double* mu,              double* log_dens,  double* wor
 // nx[1]        Dimension of the normal distribution
 //
 void
-rMVN3(double* x,         double* mu,              double* log_dens,           double* work,
+rMVN3(double* x,         double* mu,              double* log_dens,
       const double *Li,  const double *log_dets,  const double *sqrt_scale,   const double *log_sqrt_scale,
+      const int* nx);
+
+
+/***** ***************************************************************************************** *****/
+/***** Dist::rMVN4                                                                               *****/
+/***** ***************************************************************************************** *****/
+//
+// Random number generation from multivariate normal distribution N(mu, scale^{-1}*Q^{-1}),
+//
+// x[nx]        OUTPUT:  Generated random number
+//
+// log_dens[1]  Value of the (log-)density evaluated at x
+// 
+// work[nx]     Working array
+//
+// mu[nx]       Mean of the normal distribution
+//
+// Li[LT(nx)]   Cholesky (or other) decomposition of the precision matrix Q (lower triangle only), i.e., Q = Li %*% t(Li)
+//              * array of length nx*(nx+1)/2
+//
+// log_dets[2]  log_dets[0] = log(|Q|^{1/2}) = sum(log(Li[j,j]))
+//              log_dets[1] = -nx*log(sqrt(2pi)) 
+//
+// sqrt_scale[1]          square root of the factor to scale the covariance matrix
+//
+// log_sqrt_scale[1]      log(sqrt(scale))
+//
+// nx[1]        Dimension of the normal distribution
+//
+void
+rMVN4(double* x,         double* log_dens,
+      const double* mu,  const double *Li,  const double *log_dets,  const double *sqrt_scale,   const double *log_sqrt_scale,
       const int* nx);
 
 
@@ -282,7 +319,7 @@ dMVN1_R(double* log_dens,  double* Q,              double* work,        int* err
         const int* nx,     const int* mu_nonZERO,  const int* npoints);
 
 void
-rMVN1_R(double* x,         double* log_dens,  double* Q,              double* work,        int* err,
+rMVN1_R(double* x,         double* log_dens,  double* Q,              int* err,
         const double*mu,   const int* nx,     const int* mu_nonZERO,  const int* npoints);
 
 #ifdef __cplusplus
@@ -327,7 +364,7 @@ extern "C" {
 
 void
 rMVN2_R(double* x,      double* mu,         double* log_dens,       
-        double* Q,      double* work,       int* err,
+        double* Q,      int* err,
         const int* nx,  const int* npoints);
 
 #ifdef __cplusplus

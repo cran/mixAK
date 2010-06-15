@@ -42,6 +42,17 @@ NMixEM(y, K, weight, mean, Sigma, toler=1e-5, maxiter=500)
   \item{mean}{estimated mixture means}
   \item{Sigma}{estimated covariance matrix}
   \item{loglik}{log-likelihood value at fitted values}
+  \item{aic}{Akaike information criterion
+    (\eqn{-2\hat{\ell} + 2\nu}{-2*loglik + 2*nu}), where
+    \eqn{\hat{\ell}}{loglik} stands for the log-likelihood value at
+    fitted values and \eqn{\nu}{nu} for the number of free model parameters
+  }
+  \item{bic}{Bayesian (Schwarz) information criterion
+    (\eqn{-2\hat{\ell} + \log(n)\,\nu}{-2*loglik + log(n)*nu}), where
+    \eqn{\hat{\ell}}{loglik} stands for the log-likelihood value at
+    fitted values and \eqn{\nu}{nu} for the number of free model
+    parameters, and \eqn{n} for the sample size    
+  }  
   \item{iter}{number of iterations of the EM algorithm used to get the solution}
   \item{iter.loglik}{values of the log-likelihood at iterations of the
     EM algorithm}

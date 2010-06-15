@@ -61,8 +61,13 @@ extern "C" {
 // p[1]               Dimension of the random vector (it should be >= 2 -> NOT CHECKED)
 //
 void
-BLA(double* beta,      double* sigmaR2,      double* L,   int* err,  
-    const double* mu,  const double* Sigma,  const int* p);
+BLA(double* beta,      
+    double* sigmaR2,      
+    double* L,     
+    int*    err,  
+    const double* mu,  
+    const double* Sigma,  
+    const int*    p);
 
 #ifdef __cplusplus
 }

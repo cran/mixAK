@@ -2,6 +2,7 @@
 \alias{NMixRelabel}
 \alias{NMixRelabel.default}
 \alias{NMixRelabel.NMixMCMC}
+\alias{NMixRelabel.GLMM_MCMC}
 \title{
   Re-labeling the MCMC output of the mixture model
 }
@@ -23,10 +24,11 @@ NMixRelabel(object, type=c("mean", "weight", "stephens"), par, \dots)
 \method{NMixRelabel}{default}(object, type=c("mean", "weight", "stephens"), par, \dots)
 
 \method{NMixRelabel}{NMixMCMC}(object, type=c("mean", "weight", "stephens"), par, info, \dots)
+
+\method{NMixRelabel}{GLMM_MCMC}(object, type=c("mean", "weight", "stephens"), par, info, \dots)
 }
 \arguments{
-  \item{object}{an object of apropriate class (currently only class
-    \code{NMixMCMC} is implemented).}
+  \item{object}{an object of apropriate class.}
   \item{type}{character string which specifies the type of the
     re-labeling algorithm.}
   \item{par}{additional parameters for particular re-labeling
@@ -76,6 +78,23 @@ NMixRelabel(object, type=c("mean", "weight", "stephens"), par, \dots)
     \item{poster.mean.Li}{see \code{\link{NMixMCMC}}}
     \item{poster.comp.prob1}{see \code{\link{NMixMCMC}}}
     \item{poster.comp.prob2}{see \code{\link{NMixMCMC}}}
+  }
+}  
+\section{Value for GLMM_MCMC object}{
+  When the argument \code{object} is of class \code{GLMM_MCMC}, the
+  resulting object is equal to \code{object} with the following
+  components being modified:
+  \describe{
+    \item{relabel_b}{see \code{\link{GLMM_MCMC}}}
+    \item{order_b}{see \code{\link{GLMM_MCMC}}}
+    \item{rank_b}{see \code{\link{GLMM_MCMC}}}
+    \item{poster.mean.w_b}{see \code{\link{GLMM_MCMC}}}
+    \item{poster.mean.mu_b}{see \code{\link{GLMM_MCMC}}}
+    \item{poster.mean.Q_b}{see \code{\link{GLMM_MCMC}}}
+    \item{poster.mean.Sigma_b}{see \code{\link{GLMM_MCMC}}}
+    \item{poster.mean.Li_b}{see \code{\link{GLMM_MCMC}}}
+    \item{poster.comp.prob1}{see \code{\link{GLMM_MCMC}}}
+    \item{poster.comp.prob2}{see \code{\link{GLMM_MCMC}}}
   }
 }  
 \references{
