@@ -82,11 +82,16 @@ and Starzl, T. E. (1989).
 Efficacy of liver-transplantation in patients with primary biliary-cirrhosis.
 \emph{New England Journal of Medicine,} \bold{320}, 1709--1713.
 
+Murtaugh, P. A., Dickson, E. R., Van Dam, G. M., Malinchoc, M.,
+Grambsch, P. M., Langworthy, A. L., and Gips, C. H. (1994).
+Primary biliary cirrhosis: Prediction of short-term survival based on repeated patient visits.
+\emph{Hepatology,} \bold{20}, 126-134.
+
 Therneau, T. M. and Grambsch, P. M. (2000).
 \emph{Modeling Survival Data: Extending the Cox Model.}
 New York: Springer-Verlag.
 }
-\seealso{\code{\link[survival]{pbcseq}}, \code{\link[survival]{pbcseq}}}
+\seealso{\code{\link[survival]{pbc}}, \code{\link[survival]{pbcseq}}}
 \examples{
 data(PBCseq)
 summary(PBCseq)

@@ -8,7 +8,7 @@
 ##
 ##  CREATED:   17/06/2010
 ##
-##  FUNCTION:  NMixSummComp 
+##  FUNCTION:  NMixSummComp.default
 ##             
 ##
 ## ======================================================================
@@ -16,7 +16,7 @@
 ## *************************************************************
 ## NMixSummComp
 ## *************************************************************
-NMixSummComp <- function(x)
+NMixSummComp.default <- function(x)
 {
-  UseMethod("NMixSummComp") 
+  stop("There is no default NMixSummComp method.")  
 }
