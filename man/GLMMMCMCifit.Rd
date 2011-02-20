@@ -13,7 +13,7 @@
 \usage{
 GLMM_MCMCifit(do.init, na.complete,
     y, dist, id, time, x, z, random.intercept,
-    xempty, zempty, Rc, Rd, p, p_fi, q, q_ri, lbeta, dimb)
+    xempty, zempty, Rc, Rd, p, p_fi, q, q_ri, lalpha, dimb)
 }
 \arguments{
   \item{do.init}{logical value indicating whether initial (RE)ML fits
@@ -53,7 +53,7 @@ GLMM_MCMCifit(do.init, na.complete,
     function}
   \item{q_ri}{see output element \code{q_ri} of \code{\link{GLMM_MCMCdata}}
     function}
-  \item{lbeta}{see output element \code{lbeta} of \code{\link{GLMM_MCMCdata}}
+  \item{lalpha}{see output element \code{lalpha} of \code{\link{GLMM_MCMCdata}}
     function}
   \item{dimb}{see output element \code{dimb} of \code{\link{GLMM_MCMCdata}}
     function}  
@@ -84,7 +84,7 @@ GLMM_MCMCifit(do.init, na.complete,
      to be passed to C++, equal to 0 if there are no Z matrices}
 %  \item{CXtX}{vector containing lower triangles of X[s]'X[s] for each response to be passed to C++,
 %     where X[s] contains also column of ones if there is a fixed intercept in the model,
-%     equal to 0 if there are no beta coefficients in the model}
+%     equal to 0 if there are no alpha coefficients in the model}
 %  \item{CZitZi}{vector containig lower triangles of matrices Z[i,s]'Z[i,s] for each cluster and each response
 %     to be passed to C++, where Z[i,s] contains also column of ones if there is a random intercept in the model,
 %     Remark:   for cluster without any observations of response s, Z[i,s] is considered
@@ -113,12 +113,12 @@ GLMM_MCMCifit(do.init, na.complete,
   \item{iEranefVec}{vector with estimated means of random effects}
   \item{iSEranefVec}{vector with standard errors of estimated means of random effects}
   \item{iSDranefVec}{vector with estimated standard deviations of random effects}
-  \item{ibeta}{vector with initial values of beta's (including fixed intercepts)}
+  \item{ialpha}{vector with initial values of alpha's (including fixed intercepts)}
 }
 \seealso{
   \code{\link{GLMM_MCMC}}.
 }
 \author{
-  \eqn{\mbox{Arno\v{s}t Kom\'arek}}{Arno&#353t Kom&#225rek} \email{arnost.komarek[AT]mff.cuni.cz}
+  Arnošt Komárek \email{arnost.komarek[AT]mff.cuni.cz}
 }  
 \keyword{internal}

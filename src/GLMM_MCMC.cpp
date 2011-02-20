@@ -14,9 +14,9 @@
 extern "C" {
 #endif
 
-  int clus_show = 8;     /** global variable for debugging purposes **/
-  int iter_show = 51132;
-  int iteration = 0;
+  //int clus_show = 8;     /** global variable for debugging purposes **/
+  //int iter_show = 51132;
+  //int iteration = 0;
 
 /***** ***************************************************************************************** *****/
 /***** GLMM_MCMC                                                                                 *****/
@@ -375,19 +375,24 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
   }
 
 
-  /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/
-  /***** Additional data dependent parameters                                                               *****/
-  /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/ 
+  /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/
+  /***** Additional data dependent parameters                                                                *****/
+  /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/ 
 
-  /***** N_s:                         Total number of observations for each response                        *****/
-  /***** max_N_s:                     Maximal number of observations per response                           *****/
-  /***** N_i:                         Total number of observations for each cluster                         *****/
-  /***** max_N_i:                     Maximal number of observations per cluster                            *****/
-  /***** eta_fixed, eta_random, eta:  Fixed, random effects, total values of linear predictor               *****/
-  /***** eta_zs:                      Values of z'shift_b for each response (z including intercept)         *****/
-  /***** meanY:                       Values of E(Y | eta)                                                  *****/
-  /***** dY:                          Data dependent, parameter constant values needed to calculate         *****/
-  /*****                              the log-likelihood (e.g., log(y!) for Poisson response)               *****/ 
+  /***** N_s:                         Total number of observations for each response                         *****/
+  /***** max_N_s:                     Maximal number of observations per response                            *****/
+  /***** N_i:                         Total number of observations for each cluster                          *****/
+  /***** max_N_i:                     Maximal number of observations per cluster                             *****/
+  /***** eta_fixed, eta_random, eta:  Fixed, random effects, total values of linear predictor                *****/
+  /***** eta_zs:                      Values of z'shift_b for each response (z including intercept)          *****/
+  /***** meanY:                       Values of E(Y | eta)                                                   *****/
+  /***** dY:                          Data dependent, parameter constant values needed to calculate          *****/
+  /*****                              the log-likelihood (e.g., log(y!) for Poisson response)                *****/ 
+  /***** sum_dY_i:                    sum(dY) for each cluster                                               *****/
+  /***** sum_dY:                      total sum(dY)
+  /*****                              --> used inside GLMM::Deviance to avoid exp(-Inf) for Poisson response *****/
+  /*****                                  since then loglik = SOMETHING - sum log(y!) which might be very    *****/
+  /*****                                  negative leading to exp(-Inf)                                      *****/  
   int *N_s           = Calloc(R, int);
   int *N_i           = Calloc(*I, int);
   double *eta_fixed  = Calloc(N, double); 
@@ -396,9 +401,11 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
   double *eta_zs     = Calloc(N, double);
   double *meanY      = Calloc(N, double);  
   double *dY         = Calloc(N, double);  
+  double *sum_dY_i   = Calloc(*I, double);
+  double sum_dY[1] = {0.0};
   GLMM::linear_predictors(eta_fixed, eta_random, eta, eta_zs, N_s, N_i,
                           X, beta, Z, b, shift_b, p, fixedIntcpt, q, randIntcpt, n, &R, I, &dim_b, cumq_ri);
-  GLMM::dY_meanY(dY, meanY, err, Y_c, Y_d, eta, dist, N_s, R_c, R_d);
+  GLMM::dY_meanY(dY, sum_dY_i, sum_dY, meanY, err, Y_c, Y_d, eta, dist, n, I, R_c, R_d);
   
   int max_N_s = AK_Basic::maxArray(N_s, R);  
   int max_N_i = AK_Basic::maxArray(N_i, *I);  
@@ -562,7 +569,8 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
   //          * to simplify the code which computes pm_stres, we define double pointer stresclus
   //            which will provide starts of stres for each cluster and working double pointer stresclusP
   //
-  double *marg_ll_i = Calloc(*I, double);
+  double *pi_ik      = Calloc(*Kmax_b * *I, double);
+  double *marg_ll_i  = Calloc(*I, double);
   double *marg_ll_iP;
   double *cond_ll_i = Calloc(*I, double);
   double *cond_ll_iP;
@@ -858,7 +866,7 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
   Rprintf((char*)("Iteration "));
   while (*iter < lastIter){
     (*iter)++;
-    iteration = *iter;                       // iteration is a global variable defined for debugging purposes
+    //iteration = *iter;                       // iteration is a global variable defined for debugging purposes
     AK_Utils::printIterInfo(writeAll, backs, *iter, *Minfo, lastIter);
 
     /***** Thinning loop *****/
@@ -910,12 +918,12 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
     /***** ------------------------------------------------ *****/
 
     /*** GLMM log-likelihood, marginal and conditional ***/
-    GLMM::Deviance(chGLMMLogLP, marg_ll_i, chLogLP, cond_ll_i, stres, sqrt_w_phi, 
+    GLMM::Deviance(chGLMMLogLP, marg_ll_i, pi_ik, chLogLP, cond_ll_i, stres, sqrt_w_phi, 
                    Y_crespP, Y_drespP, dYrespP, eta_fixedrespP, eta_randomrespP, meanYrespP, ZrespP, nrespP,
                    iwork_GLMM_Deviance, dwork_GLMM_Deviance, err,
                    Y_cresp,  Y_dresp,  dYresp,  eta_fixedresp,  eta_randomresp,  meanYresp , Zresp,  nresp,
                    ZS, shift_b, scale_b, q, randIntcpt, q_ri, &dim_b, &LT_b, R_c, R_d, dist, I, N_i, &max_N_i, l_ZS,
-                   sigma_eps, K_b, w_b, mu_b, Li_b, log_dets_b, bscaled);
+                   sigma_eps, K_b, w_b, logw_b, mu_b, Li_b, log_dets_b, bscaled);
     //if (*iter > 110 & *iter < 113){
     //  Rprintf("\nchGLMMLogLP=%g\n, mll <- ", *chGLMMLogLP);
     //  AK_Basic::printVec4R(marg_ll_i, *I);
@@ -1242,6 +1250,7 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
   Free(eta);  
   Free(meanY);
   Free(dY);
+  Free(sum_dY_i);
 
   if (l_beta){ 
     Free(sqrt_tune_scale_beta);
@@ -1261,8 +1270,9 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
   Free(stres);
   Free(sqrt_w_phi);
 
-  Free(marg_ll_i);
   Free(cond_ll_i);
+  Free(marg_ll_i);
+  Free(pi_ik);
 
   Free(dwork_GLMM_Deviance);
   Free(iwork_GLMM_Deviance);

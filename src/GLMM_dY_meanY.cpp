@@ -18,62 +18,81 @@ namespace GLMM{
 /***** ***************************************************************************************** *****/
 void
 dY_meanY(double* dY,
+         double* sum_dY_i,
+         double* sum_dY,
          double* meanY,
          int*    err,
          const double* Y_c,
          const int*    Y_d,
          const double* eta,
          const int*    dist,
-         const int*    N_s,
+         const int*    n,
+         const int*    I,
          const int*    R_c,
          const int*    R_d)
 {
-  int s, i;
+  int s, i, j;
 
   const double *Y_cP  = Y_c;
   const int    *Y_dP  = Y_d;
   const double *etaP  = eta;
   const int    *distP = dist;
-  const int    *N_sP  = N_s;
+  const int    *nP    = n;
 
   double *dYP    = dY;
   double *meanYP = meanY;
 
+  double *sum_dY_iP;
+
+  AK_Basic::fillArray(sum_dY_i, 0.0, *I);
+
   for (s = 0; s < (*R_c + *R_d); s++){
     switch (*distP){
     case GLMM::GAUSS_IDENTITY:
-      for (i = 0; i < *N_sP; i++){
-        *dYP    = 0;
-        *meanYP = *etaP;
+      for (i = 0; i < *I; i++){
+        for (j = 0; j < *nP; j++){
+          *dYP    = 0;
+          *meanYP = *etaP;
 
-        Y_cP++;
-        dYP++;
-        meanYP++;
-        etaP++;
+          Y_cP++;
+          dYP++;
+          meanYP++;
+          etaP++;
+        }
+        nP++;
       }
       break;
 
     case GLMM::BERNOULLI_LOGIT:
-      for (i = 0; i < *N_sP; i++){
-        *dYP    = 0;
-        *meanYP = AK_Basic::invlogit_AK(*etaP);
+      for (i = 0; i < *I; i++){
+        for (j = 0; j < *nP; j++){
+          *dYP    = 0;
+          *meanYP = AK_Basic::invlogit_AK(*etaP);
 
-        Y_dP++;
-        dYP++;
-        meanYP++;
-        etaP++;
+          Y_dP++;
+          dYP++;
+          meanYP++;
+          etaP++;
+        }
+        nP++;
       }
       break;
 
     case GLMM::POISSON_LOG:
-      for (i = 0; i < *N_sP; i++){
-        *dYP    = lgamma1p(double(*Y_dP));    /* = log(Gamma(1 + Y_d)) = log(Y_d!) */
-        *meanYP = AK_Basic::exp_AK(*etaP);
+      sum_dY_iP = sum_dY_i;
+      for (i = 0; i < *I; i++){
+        for (j = 0; j < *nP; j++){
+          *dYP    = lgamma1p(double(*Y_dP));    /* = log(Gamma(1 + Y_d)) = log(Y_d!) */
+          *meanYP = AK_Basic::exp_AK(*etaP);          
+          *sum_dY_iP += *dYP;  
 
-        Y_dP++;
-        dYP++;
-        meanYP++;
-        etaP++;
+          Y_dP++;
+          dYP++;
+          meanYP++;
+          etaP++;
+        }
+        sum_dY_iP++;
+        nP++;
       }     
       break;
 
@@ -82,10 +101,10 @@ dY_meanY(double* dY,
       error("GLMM::dY_meanY: Unimplemented distributional type.\n", *distP);
     }
 
-    N_sP++;
     distP++;
   }  
 
+  *sum_dY = AK_Basic::sum(sum_dY_i, *I);
 
   return;
 }

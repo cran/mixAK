@@ -14,7 +14,8 @@
 ## *************************************************************
 ## NMixRelabel.NMixMCMC
 ## *************************************************************
-NMixRelabel.NMixMCMC <- function(object, type=c("mean", "weight", "stephens"), par, info, ...)
+NMixRelabel.NMixMCMC <- function(object, type=c("mean", "weight", "stephens"), par,
+                                 prob=c(0.025, 0.5, 0.975), keep.comp.prob=FALSE, info, ...)
 {
   thispackage <- "mixAK"
 
@@ -48,6 +49,9 @@ NMixRelabel.NMixMCMC <- function(object, type=c("mean", "weight", "stephens"), p
   ##### ++++++++++++++++++++++++++++++++++++++++++++++
   zinit <- (object$state.first$y - matrix(rep(object$scale$shift, n), ncol=object$dim, byrow=TRUE)) / matrix(rep(object$scale$scale, n), ncol=object$dim, byrow=TRUE)
 
+  ##### Needed length or Pr_y
+  ##### ++++++++++++++++++++++++++++++++++++++++++++++
+  lPr_y <- object$Cpar$dimy[2] * object$K[1] * keepMCMC  
   
   ##### Perform re-labeling
   ##### ++++++++++++++++++++++++++++++++++++++++++++++
@@ -79,6 +83,7 @@ NMixRelabel.NMixMCMC <- function(object, type=c("mean", "weight", "stephens"), p
              pm_Li        = double(LTp * object$K[1]),
              sum_Ir       = integer(n * object$K[1]),
              hatPr_y      = double(n * object$K[1]),
+             Pr_y         = double(lPr_y),
              iter_relabel = as.integer(0),
              nchange      = integer(l_nchange),
              err          = as.integer(0),
@@ -112,6 +117,27 @@ NMixRelabel.NMixMCMC <- function(object, type=c("mean", "weight", "stephens"), p
     object$poster.comp.prob2 <- matrix(MCMC$hatPr_y, ncol = object$K[1], nrow = n, byrow = TRUE)
   }  
 
+  
+  ##### Individual sampled values of P(alloc = k | theta, y)
+  ##### and related quantiles
+  ##### ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  object$comp.prob2 <- matrix(MCMC$Pr_y, ncol = object$K[1] * object$Cpar$dimy[2], nrow=keepMCMC, byrow=TRUE)
+  colnames(object$comp.prob2) <- paste("P(", rep(1:object$Cpar$dimy[2], each=object$K[1]), ",", rep(1:object$K[1], object$Cpar$dimy[2]), ")", sep="")
+  
+  if (length(prob)){
+    qq <- apply(object$comp.prob2, 2, quantile, prob=prob)
+    if (length(prob) == 1){
+      object$quant.comp.prob2 <- list(matrix(qq, ncol=object$K[1], byrow=TRUE))      
+    }else{
+      object$quant.comp.prob2 <- list()
+      for (i in 1:length(prob)){
+        object$quant.comp.prob2[[i]] <- matrix(qq[i,], ncol=object$K[1], byrow=TRUE)
+      }  
+    }  
+    names(object$quant.comp.prob2) <- paste(prob*100, "%", sep="")
+  }
+  if (!keep.comp.prob) object$comp.prob2 <- NULL
+  
                         
   ##### Posterior means for mixture components
   ##### ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

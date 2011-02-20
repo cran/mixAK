@@ -4,7 +4,7 @@
 \description{
 This data is a continuation of the PBC data set (\code{\link[survival]{pbc}}),
 and contains the follow-up laboratory data for each study patient.
-An analysis based on the data can be found in Murtagh et al. (1989).
+An analysis based on the data can be found in Murtagh et al. (1994).
   
 The primary PBC data set contains only baseline measurements 
 of the laboratory 

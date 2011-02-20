@@ -23,7 +23,7 @@
   R package MASS
 }
 \references{
-  \eqn{\mbox{H\"ardle, W.}}{H&#228rdle, W.} (1991).
+  \eqn{\mbox{H\"ardle, W.}}{Haerdle, W.} (1991).
   \emph{Smoothing Techniques with Implementation in S}.
   New York: Springer.
 

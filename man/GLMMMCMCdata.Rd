@@ -43,7 +43,7 @@ GLMM_MCMCdata(y, dist, id, time, x, z, random.intercept)
   \item{dimb}{dimension of random effects (random intercepts included)}
   \item{LTb}{length of lower triangle of matrix dimb x dimb}
   \item{naamLTb}{names (indices) for elements of a lower triangle of matrix dimb x dimb}  
-  \item{lbeta}{length of beta vector (fixed intercepts included)}
+  \item{lalpha}{length of alpha vector (fixed intercepts included)}
   \item{p_fi}{numeric vector of length R}
   \item{q_ri}{numeric vector of length R}   
 }
@@ -51,6 +51,6 @@ GLMM_MCMCdata(y, dist, id, time, x, z, random.intercept)
   \code{\link{GLMM_MCMC}}.
 }
 \author{
-  \eqn{\mbox{Arno\v{s}t Kom\'arek}}{Arno&#353t Kom&#225rek} \email{arnost.komarek[AT]mff.cuni.cz}
+  Arnošt Komárek \email{arnost.komarek[AT]mff.cuni.cz}
 }  
 \keyword{internal}

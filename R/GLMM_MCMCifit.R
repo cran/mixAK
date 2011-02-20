@@ -20,7 +20,7 @@
 ##
 GLMM_MCMCifit <- function(do.init, na.complete,
                           y, dist, id, time, x, z, random.intercept,
-                          xempty, zempty, Rc, Rd, p, p_fi, q, q_ri, lbeta, dimb)
+                          xempty, zempty, Rc, Rd, p, p_fi, q, q_ri, lalpha, dimb)
 {
 ##### Variables in the resulting object:
 #####             Y                 a list of length R with observations really used in fitting process
@@ -52,7 +52,7 @@ GLMM_MCMCifit <- function(do.init, na.complete,
 #####                               to be passed to C++, equal to 0 if there are no Z matrices
 #####             CXtX              vector containing lower triangles of X[s]'X[s] for each response to be passed to C++,
 #####                               where X[s] contains also column of ones if there is a fixed intercept in the model,
-#####                               equal to 0 if there are no beta coefficients in the model
+#####                               equal to 0 if there are no alpha coefficients in the model
 #####                        AS OF 21/10/2009, CXtX IS NO MORE COMPUTED
 #####                        AND NOT INCLUDED IN THE RESULTING OBJECT  
 #####                       
@@ -94,7 +94,7 @@ GLMM_MCMCifit <- function(do.init, na.complete,
 #####             iEranefVec     vector with estimated means of random effects
 #####             iSEranefVec    vector with standard errors of estimated means of random effects
 #####             iSDranefVec    vector with estimated standard deviations of random effects
-#####             ibeta          vector with initial values of beta's (including fixed intercepts)
+#####             ialpha         vector with initial values of alpha's (including fixed intercepts)
 #####  
 ##### ------------------------------------------------------------------------------------------------------------------------------------
 #####  
@@ -531,7 +531,7 @@ GLMM_MCMCifit <- function(do.init, na.complete,
 
     ########## ========== Unlist moments of random effects from ML fits                          ========= ##########
     ########## ========== Create a matrix with possible initial values of b                      ========= ##########  
-    ########## ========== Create a vector of possible initial values of beta                     ========= ##########
+    ########## ========== Create a vector of possible initial values of alpha                    ========= ##########
     ########## =========================================================================================== ##########
     if (dimb){
       iEranefVec <- iSEranefVec <- iSDranefVec <- numeric(0)
@@ -548,26 +548,28 @@ GLMM_MCMCifit <- function(do.init, na.complete,
             ibMat <- cbind(ibMat, ib[[s]])
           }  
         }  
-      }    
+      }
+      rownames(ibMat) <- paste(1:nrow(ibMat))
+      colnames(ibMat) <- paste("b", 1:dimb, sep="")
     }else{
       iEranefVec <- iSEranefVec <- iSDranefVec <- ibMat <- 0
-    }    
-
-    if (lbeta){
-      ibeta <- numeric(0)
+    }        
+    
+    if (lalpha){
+      ialpha <- numeric(0)
       for (s in 1:R){
-        if (is.intcpt[s]) ibeta <- c(ibeta, iintcpt[s, "Est"])
-        if (is.fixef[s])  ibeta <- c(ibeta, ifixef[[s]][, "Est"])
+        if (is.intcpt[s]) ialpha <- c(ialpha, iintcpt[s, "Est"])
+        if (is.fixef[s])  ialpha <- c(ialpha, ifixef[[s]][, "Est"])
       }  
     }else{
-      ibeta <- 0
+      ialpha <- 0
     }  
 
     RET$ibMat       <- ibMat
     RET$iEranefVec  <- iEranefVec
     RET$iSEranefVec <- iSEranefVec
     RET$iSDranefVec <- iSDranefVec
-    RET$ibeta       <- ibeta    
+    RET$ialpha      <- ialpha    
   }              
 
   return(RET)  

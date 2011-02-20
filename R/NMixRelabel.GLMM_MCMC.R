@@ -14,14 +14,15 @@
 ## *************************************************************
 ## NMixRelabel.GLMM_MCMC
 ## *************************************************************
-NMixRelabel.GLMM_MCMC <- function(object, type=c("mean", "weight", "stephens"), par, info, ...)
+NMixRelabel.GLMM_MCMC <- function(object, type=c("mean", "weight", "stephens"), par,
+                                  prob=c(0.025, 0.5, 0.975), keep.comp.prob=FALSE, info, ...)
 {
   thispackage <- "mixAK"
 
   if (!object$dimb) stop("No random effects in object, nothing to re-label.")
   LTp <- object$dimb * (object$dimb + 1)/2
   I   <- object$Cpar$I
-  l_beta <- sum(object$p) + sum(object$fixed.intercept)
+  l_alpha <- sum(object$p) + sum(object$fixed.intercept)
   
   
   ##### Determine re-labeling algorithm to use and additional parameters
@@ -38,7 +39,7 @@ NMixRelabel.GLMM_MCMC <- function(object, type=c("mean", "weight", "stephens"), 
   if (object$R["Rc"] & is.null(object$sigma_eps)){
     stop("object does not contain sampled values of sigma(eps)")
   }
-  if (l_beta & is.null(object$beta)){
+  if (l_alpha & is.null(object$alpha)){
     stop("object does not contain sampled values of fixed effects")
   }  
   
@@ -52,6 +53,10 @@ NMixRelabel.GLMM_MCMC <- function(object, type=c("mean", "weight", "stephens"), 
   if (object$prior.b$priorK != "fixed") stop("only implemented for models with a fixed number of mixture components")
 
 
+  ##### Needed length or Pr_b_b
+  ##### ++++++++++++++++++++++++++++++++++++++++++++++
+  lPr_b <- object$Cpar$I * object$K_b[1] * keepMCMC
+  
   ##### Perform re-labeling
   ##### ++++++++++++++++++++++++++++++++++++++++++++++
   l_nchange <- ifelse(RAlg$Ctype <= 2, 1, RAlg$relabel$par$maxiter)
@@ -79,7 +84,7 @@ NMixRelabel.GLMM_MCMC <- function(object, type=c("mean", "weight", "stephens"), 
              chQ_b        = as.double(t(object$Q_b)),
              chSigma_b    = as.double(t(object$Sigma_b)),
              chLi_b       = as.double(t(object$Li_b)),
-             chbeta       = if (l_beta) as.double(t(object$beta)) else as.double(0),
+             chalpha      = if (l_alpha) as.double(t(object$alpha)) else as.double(0),
              chorder_b    = integer(object$K_b[1] * keepMCMC),
              chrank_b     = integer(object$K_b[1] * keepMCMC),
              b            = as.double(t(object$state.first.b$b)),
@@ -92,6 +97,9 @@ NMixRelabel.GLMM_MCMC <- function(object, type=c("mean", "weight", "stephens"), 
              pm_Li_b      = double(LTp * object$K_b[1]),
              sum_Ir_b     = integer(object$Cpar$I * object$K_b[1]),
              hatPr_b_b    = double(object$Cpar$I * object$K_b[1]),
+             Pr_b_b       = double(lPr_b),
+             hatPr_obs    = double(object$Cpar$I * object$K_b[1]),
+             Pr_obs       = double(lPr_b),             
              iter_relabel = as.integer(0),
              nchange      = integer(l_nchange),
              err          = as.integer(0),
@@ -113,7 +121,7 @@ NMixRelabel.GLMM_MCMC <- function(object, type=c("mean", "weight", "stephens"), 
   ##### Clustering based on posterior P(alloc = k | y) or on P(alloc = k | theta, b, y) 
   ##### +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   if (object$K_b[1] == 1){
-    object$poster.comp.prob1 <- object$poster.comp.prob2 <- matrix(1, nrow = object$Cpar$I, ncol = 1)
+    object$poster.comp.prob1 <- object$poster.comp.prob2 <- object$poster.comp.prob3 <- matrix(1, nrow = object$Cpar$I, ncol = 1)
   }else{
 
     ### Using mean(I(r=k))
@@ -123,9 +131,51 @@ NMixRelabel.GLMM_MCMC <- function(object, type=c("mean", "weight", "stephens"), 
 
     ### Using mean(P(r=k | theta, b, y))
     object$poster.comp.prob2 <- matrix(MCMC$hatPr_b_b, ncol = object$K_b[1], nrow = object$Cpar$I, byrow = TRUE)
+
+    ### Using mean(P(r=k | theta, y))
+    object$poster.comp.prob3 <- matrix(MCMC$hatPr_obs, ncol = object$K_b[1], nrow = object$Cpar$I, byrow = TRUE)    
   }  
 
-
+  ##### Individual sampled values of P(alloc = k | theta, b, y)
+  ##### and related quantiles
+  ##### ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  object$comp.prob2 <- matrix(MCMC$Pr_b_b, ncol = object$K_b[1] * object$Cpar$I, nrow=keepMCMC, byrow=TRUE)
+  colnames(object$comp.prob2) <- paste("P(", rep(1:object$Cpar$I, each=object$K_b[1]), ",", rep(1:object$K_b[1], object$Cpar$I), ")", sep="")
+  
+  if (length(prob)){
+    qq <- apply(object$comp.prob2, 2, quantile, prob=prob)
+    if (length(prob) == 1){
+      object$quant.comp.prob2 <- list(matrix(qq, ncol=object$K_b[1], byrow=TRUE))      
+    }else{
+      object$quant.comp.prob2 <- list()
+      for (i in 1:length(prob)){
+        object$quant.comp.prob2[[i]] <- matrix(qq[i,], ncol=object$K_b[1], byrow=TRUE)
+      }  
+    }  
+    names(object$quant.comp.prob2) <- paste(prob*100, "%", sep="")
+  }
+  if (!keep.comp.prob) object$comp.prob2 <- NULL
+    
+  ##### Individual sampled values of P(alloc = k | theta, y), i.e., random effects directly integrated out
+  ##### and related quantiles
+  ##### ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  object$comp.prob3 <- matrix(MCMC$Pr_obs, ncol = object$K_b[1] * object$Cpar$I, nrow=keepMCMC, byrow=TRUE)
+  colnames(object$comp.prob3) <- paste("P(", rep(1:object$Cpar$I, each=object$K_b[1]), ",", rep(1:object$K_b[1], object$Cpar$I), ")", sep="")
+  
+  if (length(prob)){
+    qq <- apply(object$comp.prob3, 2, quantile, prob=prob)
+    if (length(prob) == 1){
+      object$quant.comp.prob3 <- list(matrix(qq, ncol=object$K_b[1], byrow=TRUE))      
+    }else{
+      object$quant.comp.prob3 <- list()
+      for (i in 1:length(prob)){
+        object$quant.comp.prob3[[i]] <- matrix(qq[i,], ncol=object$K_b[1], byrow=TRUE)
+      }  
+    }  
+    names(object$quant.comp.prob3) <- paste(prob*100, "%", sep="")
+  }
+  if (!keep.comp.prob) object$comp.prob3 <- NULL
+  
   ##### Posterior means for mixture components
   ##### ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   object$poster.mean.w_b <- as.numeric(MCMC$pm_w_b)

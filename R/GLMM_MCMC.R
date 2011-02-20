@@ -8,6 +8,7 @@
 ##  CREATED:    06/07/2009
 ##              03/08/2009:  version for continuous responses working
 ##              10/11/2009:  version for combined discrete and continuous responses working
+##              20/01/2011:  beta variables have been re-named to alpha variables
 ##
 ##  FUNCTIONS:  GLMM_MCMC
 ##
@@ -18,11 +19,11 @@
 ## *************************************************************
 ##
 GLMM_MCMC <- function(y, dist="gaussian", id, x, z, random.intercept,
-                      prior.beta, init.beta,                      
-                      scale.b,    prior.b,   init.b,
-                      prior.eps,  init.eps,
+                      prior.alpha, init.alpha,                      
+                      scale.b,     prior.b,   init.b,
+                      prior.eps,   init.eps,
                       nMCMC=c(burn=10, keep=10, thin=1, info=10),
-                      tuneMCMC=list(beta=1, b=1),
+                      tuneMCMC=list(alpha=1, b=1),
                       store=c(b=FALSE), keep.chains=TRUE)
 {
   require("lme4")
@@ -47,18 +48,18 @@ GLMM_MCMC <- function(y, dist="gaussian", id, x, z, random.intercept,
   ifit <- GLMM_MCMCifit(do.init=TRUE, na.complete=FALSE,
                         y=dd$y, dist=dd$dist, id=dd$id, time=dd$time, x=dd$x, z=dd$z, random.intercept=dd$random.intercept,
                         xempty=dd$xempty, zempty=dd$zempty, Rc=dd$Rc, Rd=dd$Rd,
-                        p=dd$p, p_fi=dd$p_fi, q=dd$q, q_ri=dd$q_ri, lbeta=dd$lbeta, dimb=dd$dimb)
+                        p=dd$p, p_fi=dd$p_fi, q=dd$q, q_ri=dd$q_ri, lalpha=dd$lalpha, dimb=dd$dimb)
   dd$x <- NULL
   dd$z <- NULL
      ### use ifit$x, ifit$z instead
      ### REMARK:  ifit$x, ifit$z contain intercept columns as well
 
 
-########## ========== Prior distribution for fixed effects (beta) ========== ##########
+########## ========== Prior distribution for fixed effects (alpha) ========== ##########
 ########## ================================================================= ##########
-  pbeta <- GLMM_MCMCprior.beta(prior.beta=prior.beta, lbeta=dd$lbeta)
-  prior.beta <- pbeta$prior.beta
-  pbeta$prior.beta <- NULL
+  palpha <- GLMM_MCMCprior.alpha(prior.alpha=prior.alpha, lalpha=dd$lalpha)
+  prior.alpha <- palpha$prior.alpha
+  palpha$prior.alpha <- NULL
 
 
 ########## ========== Prior distribution for error terms of gaussian responses ========== ##########
@@ -82,16 +83,16 @@ GLMM_MCMC <- function(y, dist="gaussian", id, x, z, random.intercept,
   pbb$prior.b <- NULL
      
   
-########## ========== Initial values for fixed effects (beta) ============== ##########
+########## ========== Initial values for fixed effects (alpha) ============== ##########
 ########## ================================================================= ##########  
-  if (dd$lbeta){
-    if (missing(init.beta)) init.beta <- ifit$ibeta
-    if (!is.numeric(init.beta)) stop("init.beta must be numeric")
-    if (length(init.beta) == 1) init.beta <- rep(init.beta, dd$lbeta)
-    if (length(init.beta) != dd$lbeta) stop(paste("init.beta must be of length", dd$lbeta))
-    if (is.null(names(init.beta))) names(init.beta) <- paste("beta", 1:dd$lbeta, sep="")
+  if (dd$lalpha){
+    if (missing(init.alpha)) init.alpha <- ifit$ialpha
+    if (!is.numeric(init.alpha)) stop("init.alpha must be numeric")
+    if (length(init.alpha) == 1) init.alpha <- rep(init.alpha, dd$lalpha)
+    if (length(init.alpha) != dd$lalpha) stop(paste("init.alpha must be of length", dd$lalpha))
+    if (is.null(names(init.alpha))) names(init.alpha) <- paste("alpha", 1:dd$lalpha, sep="")
   }else{
-    init.beta <- 0
+    init.alpha <- 0
   }  
   
   
@@ -152,6 +153,7 @@ GLMM_MCMC <- function(y, dist="gaussian", id, x, z, random.intercept,
     if (ncol(init.b$b) != dd$dimb) stop(paste("init.b$b must have ", dd$dimb, " columns", sep=""))
     if (nrow(init.b$b) != ifit$I) stop(paste("init.b$b must have ", ifit$I, " rows", sep=""))
     if (is.null(rownames(init.b$b))) rownames(init.b$b) <- unique(dd$id)
+    if (is.null(colnames(init.b$b))) colnames(init.b$b) <- paste("b", 1:dd$dimb, sep="")
     if (any(is.na(init.b$b))) stop("NA in init.b$b")
     
     ##### init.b:  K
@@ -384,7 +386,7 @@ GLMM_MCMC <- function(y, dist="gaussian", id, x, z, random.intercept,
     Cr_b        <- 0
     Cbb         <- 0
   }  
-  Cbeta <- init.beta
+  Calpha <- init.alpha
 
 
 ########## ========== nMCMC ========== ##########
@@ -412,17 +414,17 @@ GLMM_MCMC <- function(y, dist="gaussian", id, x, z, random.intercept,
 ########## ============================== ##########
   if (!is.list(tuneMCMC)) stop("tuneMCMC must be a list")
   intuneMCMC <- names(tuneMCMC)
-  itune.beta <- match("beta", intuneMCMC, nomatch=NA)
+  itune.alpha <- match("alpha", intuneMCMC, nomatch=NA)
   itune.b    <- match("b", intuneMCMC, nomatch=NA)
   
   if (dd$Rd){
-    if (is.na(itune.beta)) tuneMCMC$beta <- rep(1, dd$Rd)
-    if (length(tuneMCMC$beta) == 1) tuneMCMC$beta <- rep(tuneMCMC$beta, dd$Rd)
-    if (length(tuneMCMC$beta) != dd$Rd) stop(paste("tuneMCMC$beta must be of length ", dd$Rd, sep=""))
-    if (any(is.na(tuneMCMC$beta))) stop("NA in tuneMCMC$beta")        
-    if (any(tuneMCMC$beta <= 0)) stop("tuneMCMC$beta must be all positive")            
+    if (is.na(itune.alpha)) tuneMCMC$alpha <- rep(1, dd$Rd)
+    if (length(tuneMCMC$alpha) == 1) tuneMCMC$alpha <- rep(tuneMCMC$alpha, dd$Rd)
+    if (length(tuneMCMC$alpha) != dd$Rd) stop(paste("tuneMCMC$alpha must be of length ", dd$Rd, sep=""))
+    if (any(is.na(tuneMCMC$alpha))) stop("NA in tuneMCMC$alpha")        
+    if (any(tuneMCMC$alpha <= 0)) stop("tuneMCMC$alpha must be all positive")            
   }else{
-    tuneMCMC$beta <- 1
+    tuneMCMC$alpha <- 1
   }  
   
   if (dd$dimb){
@@ -472,8 +474,8 @@ GLMM_MCMC <- function(y, dist="gaussian", id, x, z, random.intercept,
                priorDouble_eps  = peps$CpriorDouble_eps,
                priorInt_b       = pbb$CpriorInt_b,
                priorDouble_b    = pbb$CpriorDouble_b,
-               priorDouble_beta = pbeta$CpriorDouble_beta,
-               tune_scale_beta  = tuneMCMC$beta,
+               priorDouble_alpha = palpha$CpriorDouble_alpha,
+               tune_scale_alpha  = tuneMCMC$alpha,
                tune_scale_b     = tuneMCMC$b)
   ifit$Cy_c <- NULL
   ifit$Cy_d <- NULL
@@ -486,7 +488,7 @@ GLMM_MCMC <- function(y, dist="gaussian", id, x, z, random.intercept,
   #            CK_b=CK_b, Cw_b=Cw_b, Cmu_b=Cmu_b,
   #            dd=dd, prior.b=prior.b,
   #            CLi_b=CLi_b, CgammaInv_b=CgammaInv_b, Cr_b=Cr_b,
-  #            ifit=ifit, Cbeta=Cbeta, Cbb=Cbb, lsum_Ir_b=lsum_Ir_b))
+  #            ifit=ifit, Calpha=Calpha, Cbb=Cbb, lsum_Ir_b=lsum_Ir_b))
     
 ########## ========== MCMC simulation                              ========== ##########
 ########## ================================================================== ##########
@@ -505,8 +507,8 @@ GLMM_MCMC <- function(y, dist="gaussian", id, x, z, random.intercept,
              priorDouble_eps           = as.double(Cpar$priorDouble_eps),
              priorInt_b                = as.integer(Cpar$priorInt_b),
              priorDouble_b             = as.double(Cpar$priorDouble_b),
-             priorDouble_beta          = as.double(Cpar$priorDouble_beta),
-             tune_scale_beta           = as.double(Cpar$tune_scale_beta),
+             priorDouble_alpha          = as.double(Cpar$priorDouble_alpha),
+             tune_scale_alpha           = as.double(Cpar$tune_scale_alpha),
              tune_scale_b              = as.double(Cpar$tune_scale_b),             
              sigma_eps                 = as.double(Csigma_eps),
              gammaInv_eps              = as.double(CgammaInv_eps),
@@ -519,7 +521,7 @@ GLMM_MCMC <- function(y, dist="gaussian", id, x, z, random.intercept,
              gammaInv_b                = as.double(CgammaInv_b),
              r_b                       = as.integer(Cr_b),
              r_b_first                 = integer(ifit$I),
-             beta                      = as.double(Cbeta),
+             alpha                      = as.double(Calpha),
              b                         = as.double(Cbb),
              b_first                   = double(length(Cbb)),
              chsigma_eps               = double(ifelse(dd$Rc, dd$Rc * nMCMC["keep"], 1)),
@@ -535,11 +537,11 @@ GLMM_MCMC <- function(y, dist="gaussian", id, x, z, random.intercept,
              chrank_b                  = integer(ifelse(dd$dimb, prior.b$Kmax * nMCMC["keep"], 1)),
              chMeanData_b              = double(ifelse(dd$dimb, dd$dimb * nMCMC["keep"], 1)),
              chCorrData_b              = double(ifelse(dd$dimb, dd$LTb * nMCMC["keep"], 1)),
-             chbeta                    = double(ifelse(dd$lbeta, dd$lbeta * nMCMC["keep"], 1)),
+             chalpha                    = double(ifelse(dd$lalpha, dd$lalpha * nMCMC["keep"], 1)),
              chb                       = double(ifelse(dd$dimb, ifelse(store["b"], ifit$I * dd$dimb * nMCMC["keep"], ifit$I * dd$dimb), 1)),
              chGLMMLogL                = double(nMCMC["keep"]),
              chLogL                    = double(nMCMC["keep"]),
-             naccept_beta              = integer(dd$Rc + dd$Rd),
+             naccept_alpha              = integer(dd$Rc + dd$Rd),
              naccept_b                 = integer(ifit$I),
              pm_eta_fixed              = double(ifit$sumCn),
              pm_eta_random             = double(ifit$sumCn),
@@ -656,12 +658,12 @@ GLMM_MCMC <- function(y, dist="gaussian", id, x, z, random.intercept,
     state_first.w_b <- state_first.r_b <- state_first.gamma_b <- state_first.mu_b <- state_first.Li_b <- state_first.Sigma_b <- state_first.Q_b <- state_first.b <- 0    
   }  
 
-  if (dd$lbeta){
-    state.beta       <- as.numeric(MCMC$beta)
-    state_first.beta <- as.numeric(MCMC$chbeta[1:dd$lbeta])    
-    names(state.beta) <- names(state_first.beta) <- paste("beta", 1:dd$lbeta, sep="")
+  if (dd$lalpha){
+    state.alpha       <- as.numeric(MCMC$alpha)
+    state_first.alpha <- as.numeric(MCMC$chalpha[1:dd$lalpha])    
+    names(state.alpha) <- names(state_first.alpha) <- paste("alpha", 1:dd$lalpha, sep="")
   }else{
-    state.beta <- state_first.beta <- 0
+    state.alpha <- state_first.alpha <- 0
   }  
 
   if (dd$Rc){
@@ -680,8 +682,8 @@ GLMM_MCMC <- function(y, dist="gaussian", id, x, z, random.intercept,
   
   ########## ========== Performance of MCMC ========== ##########
   ########## ========================================= ##########
-  prop.accept.beta <- MCMC$naccept_beta / (nMCMC["keep"] * nMCMC["thin"])
-  if (dd$R > 1) names(prop.accept.beta) <- NAAM.RESP
+  prop.accept.alpha <- MCMC$naccept_alpha / (nMCMC["keep"] * nMCMC["thin"])
+  if (dd$R > 1) names(prop.accept.alpha) <- NAAM.RESP
   prop.accept.b <- MCMC$naccept_b / (nMCMC["keep"] * nMCMC["thin"])  
     
   
@@ -695,19 +697,19 @@ GLMM_MCMC <- function(y, dist="gaussian", id, x, z, random.intercept,
               q                = dd$q,
               fixed.intercept  = dd$fixed.intercept,
               random.intercept = dd$random.intercept,
-              lbeta            = dd$lbeta,
+              lalpha            = dd$lalpha,
               dimb             = dd$dimb,
-              prior.beta       = prior.beta,
+              prior.alpha       = prior.alpha,
               prior.b          = prior.b,
               prior.eps        = prior.eps,
               init.eps         = init.eps)
 
 
-  if (dd$lbeta){
-    RET$init.beta        <- init.beta
-    RET$state.first.beta <- state_first.beta    
-    RET$state.last.beta  <- state.beta
-    RET$prop.accept.beta <- prop.accept.beta    
+  if (dd$lalpha){
+    RET$init.alpha        <- init.alpha
+    RET$state.first.alpha <- state_first.alpha    
+    RET$state.last.alpha  <- state.alpha
+    RET$prop.accept.alpha <- prop.accept.alpha    
   }  
   
   if (dd$dimb){
@@ -860,23 +862,23 @@ GLMM_MCMC <- function(y, dist="gaussian", id, x, z, random.intercept,
   RET$summ.Deviance <- data.frame(Deviance = summ.Deviance, Cond.Deviance = summ.Cond.Deviance)
   rownames(RET$summ.Deviance) <- nSumm
     
-  if (dd$lbeta){
-    MCMC$chbeta <- matrix(MCMC$chbeta, ncol=dd$lbeta, byrow=TRUE)
-    colnames(MCMC$chbeta) <- paste("beta", 1:dd$lbeta, sep="")
+  if (dd$lalpha){
+    MCMC$chalpha <- matrix(MCMC$chalpha, ncol=dd$lalpha, byrow=TRUE)
+    colnames(MCMC$chalpha) <- paste("alpha", 1:dd$lalpha, sep="")
     
-    if (dd$lbeta == 1){
-      mean.beta  <- mean(MCMC$chbeta, na.rm=TRUE)
-      quant.beta <- quantile(MCMC$chbeta, prob=qProbs, na.rm=TRUE)
-      sd.beta    <- sd(MCMC$chbeta, na.rm=TRUE)
-      RET$summ.beta     <- c(mean.beta, sd.beta, quant.beta)
-      names(RET$summ.beta) <- nSumm      
+    if (dd$lalpha == 1){
+      mean.alpha  <- mean(MCMC$chalpha, na.rm=TRUE)
+      quant.alpha <- quantile(MCMC$chalpha, prob=qProbs, na.rm=TRUE)
+      sd.alpha    <- sd(MCMC$chalpha, na.rm=TRUE)
+      RET$summ.alpha     <- c(mean.alpha, sd.alpha, quant.alpha)
+      names(RET$summ.alpha) <- nSumm      
     }else{
-      mean.beta  <- apply(MCMC$chbeta, 2, mean, na.rm=TRUE)
-      quant.beta <- apply(MCMC$chbeta, 2, quantile, prob=qProbs, na.rm=TRUE)
-      sd.beta    <- apply(MCMC$chbeta, 2, sd, na.rm=TRUE)
-      RET$summ.beta <- rbind(mean.beta, sd.beta, quant.beta)
-      RET$summ.beta <- as.data.frame(RET$summ.beta) 
-      rownames(RET$summ.beta) <- nSumm            
+      mean.alpha  <- apply(MCMC$chalpha, 2, mean, na.rm=TRUE)
+      quant.alpha <- apply(MCMC$chalpha, 2, quantile, prob=qProbs, na.rm=TRUE)
+      sd.alpha    <- apply(MCMC$chalpha, 2, sd, na.rm=TRUE)
+      RET$summ.alpha <- rbind(mean.alpha, sd.alpha, quant.alpha)
+      RET$summ.alpha <- as.data.frame(RET$summ.alpha) 
+      rownames(RET$summ.alpha) <- nSumm            
     }
   }  
 
@@ -1009,11 +1011,11 @@ GLMM_MCMC <- function(y, dist="gaussian", id, x, z, random.intercept,
       }        
     }
 
-    if (dd$lbeta){
-      ##### Chains for regression coefficients beta
+    if (dd$lalpha){
+      ##### Chains for regression coefficients alpha
       ##### ------------------------------------------
-      RET$beta <- MCMC$chbeta
-      MCMC$chbeta <- NULL      
+      RET$alpha <- MCMC$chalpha
+      MCMC$chalpha <- NULL      
     }
 
     if (dd$Rc){

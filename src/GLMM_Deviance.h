@@ -13,6 +13,8 @@
 //                       14/06/2010:  log_AK changed to log0_AK and exp_AK changed to exp0_AK
 //                                    when calculating the log-likelihood
 //                                    -> it leads to finite likelihood even with likelihood of 1e-305
+//                       02/12/2010:  arguments sum_Yd_i and sum_Yd (typically containing sum(log(y!)) for Poisson response)
+//                                    added to make corrections to log-likelihoods before exp to avoid exp(-Inf)
 //
 //     * TO DO:  
 //       Commands:  *marg_ll_iP += *w_k * AK_Basic::exp0_AK(loglik_k);  (around line 239)
@@ -58,12 +60,18 @@ const int use_Hessian_in_bhat = 1;     // 0 --> in the Laplacian approximation, 
 //
 /***** ********************************************************************** *****/
 //
-//  marg_ll[1]:       INPUT:  whatsever
-//                   OUTPUT:  calculated value of the marginal log-likelihood
-//                            = sum(marg_ll_i)
+//  marg_ll[1]:        INPUT:  whatsever
+//                    OUTPUT:  calculated value of the marginal log-likelihood
+//                             = sum(marg_ll_i)
 //
-//  marg_ll_i[I]:     INPUT:  whatsever
-//                   OUTPUT:  calculated value of the marginal log-likelihood for each cluster of grouped observations
+//  marg_ll_i[I]:      INPUT:  whatsever
+//                    OUTPUT:  calculated value of the marginal log-likelihood for each cluster of grouped observations
+//                             marg_ll_i[i] = log(sum(w[k] * marg_L_ik[i, k]))
+//
+//  pi_ik[K, I]:       INPUT:  whatsever
+//                    OUTPUT:  calculated value of the marginal likelihood for each cluster of grouped observations
+//                             given the mixture component times mixture weight, i.e.,
+//                             pi_ik[k, i] = w[k] * marg_L_ik[K, i]
 //
 //  cond_ll[1]:       INPUT:  whatsever
 //                   OUTPUT:  calculated value of the conditional log-likelihood
@@ -85,6 +93,7 @@ const int use_Hessian_in_bhat = 1;     // 0 --> in the Laplacian approximation, 
 void
 Deviance(double* marg_ll,
          double* marg_ll_i,
+         double* pi_ik,
          double* cond_ll,
          double* cond_ll_i,
          double* stres,
@@ -126,6 +135,7 @@ Deviance(double* marg_ll,
          const double* sigma,
          const int*    K,              
          const double* w,
+         const double* logw,
          const double* mu,         
          const double* Li,
          const double* log_dets,

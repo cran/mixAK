@@ -10,6 +10,10 @@
 //
 #include "GLMM_Deviance.h"
 
+extern int iteration;
+//extern int iter_show;
+//extern int clus_show;
+
 namespace GLMM{
 
 /***** ********************************************************************** *****/
@@ -18,6 +22,7 @@ namespace GLMM{
 void
 Deviance(double* marg_ll,
          double* marg_ll_i,
+         double* pi_ik,
          double* cond_ll,
          double* cond_ll_i,
          double* stres,
@@ -59,6 +64,7 @@ Deviance(double* marg_ll,
          const double* sigma,
          const int*    K,              
          const double* w,
+         const double* logw,
          const double* mu,         
          const double* Li,
          const double* log_dets,
@@ -68,15 +74,15 @@ Deviance(double* marg_ll,
 
   static int s, i, k, j;
 
-  static const double *w_k, *mu_k, *Li_k, *log_dets_k;
+  static const double *w_k, *logw_k, *mu_k, *Li_k, *log_dets_k;
   static const double *ZS_i, *bscaled_i;
   static const int *N_iP, *l_ZS_i;
   static const int *q_s;
 
-  static double *marg_ll_iP, *cond_ll_iP;
+  static double *marg_ll_iP, *pi_ikP, *cond_ll_iP;
   static double *stres_i, *sqrt_w_phi_i;
 
-  static double log_det_R, loglik_k, bDb;
+  static double log_det_R, bDb, loglik_ik, max_log_pi_ik, marg_L_i;
   static int rank;
 
 
@@ -131,6 +137,9 @@ Deviance(double* marg_ll,
   l_ZS_i    = l_ZS;
 
   marg_ll_iP   = marg_ll_i;
+  pi_ikP       = pi_ik;        // in the first half of the loop below, it will store log(w_k) + loglik_ik,
+                               // then I shift it to have maximum equal to zero and then exponentiate to get
+                               // pi_ik = w_k*marg_L_ik / sum(w_l*marg_L_il) 
   cond_ll_iP   = cond_ll_i;
   *marg_ll     = 0.0;
   *cond_ll     = 0.0;
@@ -156,11 +165,13 @@ Deviance(double* marg_ll,
     if (*dim_b){                      // if there are random effects
 
       w_k        = w;
+      logw_k     = logw;
       mu_k       = mu;
       Li_k       = Li;
       log_dets_k = log_dets;    
 
-      *marg_ll_iP = 0.0;
+      max_log_pi_ik = GLMM::LL_MIN;
+      marg_L_i      = 0.0;
 
       for (k = 0; k < *K; k++){
 
@@ -177,12 +188,18 @@ Deviance(double* marg_ll,
           /*** Calculate the upper part of the Z matrix entering the LS solver (corresponding to bscaled_hat)      ***/
           /*** Calculate the value of the (conditional given random effects) likelihood evaluated in bscaled_hat.  ***/
           /*** +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ ***/
-          MCMC::loglik_Zwork1(&loglik_k, b_hat, Zwork1, sqrt_w_phi_hat, err,
+          MCMC::loglik_Zwork1(&loglik_ik, b_hat, Zwork1, sqrt_w_phi_hat, err,
                               eta_fixedrespP, dYrespP, Y_crespP, Y_drespP, nrespP, ZrespP,
                               bscaled_hat, ZS_i, sigma, shift, scale, q, randIntcpt, q_ri, dist, R_c, R_d);
-          if (*err){    // loglik_k = -Inf -> k-th component likelihood = 0
+          if (*err){    // loglik_ik = -Inf -> k-th component likelihood = 0
+            //Rprintf("\n === Likelihood is zero (iteration=%d, i=%d, k=%d) ===\n", iteration, i, k);
             *err = 0;
+
+            *pi_ikP = GLMM::LL_MIN;
+            pi_ikP++;
+
             w_k++;
+            logw_k++;
             mu_k       += *dim_b;
             Li_k       += *LT_b;
             log_dets_k += 2;
@@ -200,12 +217,18 @@ Deviance(double* marg_ll,
           /*** Calculate the values of the linear predictor etc. corresponding to bscaled_hat                      ***/
           /*** Calculate the value of the (conditional given random effects) likelihood evaluated in bscaled_hat.  ***/
           /*** +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ ***/
-          MCMC::loglik(&loglik_k, b_hat, err,
+          MCMC::loglik(&loglik_ik, b_hat, err,
                        eta_fixedrespP, dYrespP, Y_crespP, Y_drespP, nrespP, ZrespP,
                        bscaled_hat, sigma, shift, scale, q, randIntcpt, q_ri, dist, R_c, R_d);
-          if (*err){    // loglik_k = -Inf -> k-th component likelihood = 0
+          if (*err){    // loglik_ik = -Inf -> k-th component likelihood = 0
+            //Rprintf("\n === Likelihood is zero (iteration=%d, i=%d, k=%d) ===\n", iteration, i, k);
             *err = 0;
+
+            *pi_ikP = GLMM::LL_MIN;
+            pi_ikP++;
+
             w_k++;
+            logw_k++;
             mu_k       += *dim_b;
             Li_k       += *LT_b;
             log_dets_k += 2;
@@ -214,7 +237,7 @@ Deviance(double* marg_ll,
         }
 
       
-        /*** Calculate g_k(b_hat; theta) = loglik_k - 0.5 * (bscaled_hat - mu_k)' %*% Li_k %*% Li_k' %*% (bscaled_hat - mu_k) ***/
+        /*** Calculate g_k(b_hat; theta) = loglik_ik - 0.5 * (bscaled_hat - mu_k)' %*% Li_k %*% Li_k' %*% (bscaled_hat - mu_k) ***/
         /*** * shift mu_k at the same time                                                                                    ***/
         /*** ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ ***/
         bscaled_hatP = bscaled_hat;
@@ -225,34 +248,75 @@ Deviance(double* marg_ll,
         }
         F77_CALL(dtpmv)("L", "T", "N", dim_b, Li_k, bscaled_hat, &AK_Basic::_ONE_INT);  // bscaled_hat = t(Li_k) %*% 
         AK_BLAS::ddot2(&bDb, bscaled_hat, *dim_b);
-        loglik_k -= 0.5 * bDb;
+        loglik_ik -= 0.5 * bDb;
           
 
         /*** Finalize calculation of the approximate marginal log-likelihood in the k-th component ***/
-        /*** = loglik_k + log|Li| - log|R|                                                         ***/
+        /*** = loglik_ik + log|Li| - log|R|                                                        ***/
         /*** +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ ***/
-        loglik_k += (*log_dets_k - log_det_R);
+        loglik_ik += (*log_dets_k - log_det_R);
 
 
         /*** Contribution of the k-th component to the likelihood ***/
         /*** ++++++++++++++++++++++++++++++++++++++++++++++++++++ ***/
-        *marg_ll_iP += *w_k * AK_Basic::exp0_AK(loglik_k);
+        *pi_ikP = *logw_k + loglik_ik;
+        if (*pi_ikP > max_log_pi_ik) max_log_pi_ik = *pi_ikP;
+
+        marg_L_i += AK_Basic::exp0_AK(*pi_ikP);
 
 
         /*** Shift pointers (mu_k has already been shifted) ***/
         /*** ++++++++++++++++++++++++++++++++++++++++++++++ ***/
+        pi_ikP++;
         w_k++;
+        logw_k++;
         Li_k       += *LT_b;
         log_dets_k += 2;
       }
 
-      *marg_ll_iP = AK_Basic::log0_AK(*marg_ll_iP);           // likelihood --> log(likelihood)
+      /*** Contribution of the i-th subject to the total loglikelihood     ***/
+      /*** +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ ***/
+      *marg_ll_iP = AK_Basic::log0_AK_bound(marg_L_i);                        // likelihood --> log(likelihood)
+
+
+      /*** Shift log(pi_ik) (stored in pi_ik) to have the maximal value equal to zero, exponentiate it and calculate the sum ***/
+      /*** Sum will be stored in marg_L_i                                                                                    ***/
+      /*** +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ ***/
+      pi_ikP -= *K;
+      marg_L_i = 0.0;
+      for (k = 0; k < *K; k++){
+        *pi_ikP = exp(*pi_ikP - max_log_pi_ik);
+	marg_L_i += *pi_ikP;    
+        pi_ikP++;
+      }
+    
+      
+      /*** Re-scale pi_ik to sum-up to one, make pi_ik uniform if sum(pi_ik) = 0 which happens only in cases   ***/
+      /*** when the marginal likelihood is zero for all mixture components                                     ***/
+      /*** +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ ***/
+      pi_ikP -= *K;
+      if (marg_L_i > 0){
+        for (k = 0; k < *K; k++){
+          *pi_ikP /= marg_L_i;
+          pi_ikP++;
+        }
+      }else{
+        for (k = 0; k < *K; k++){
+          *pi_ikP = 1 / *K;
+          pi_ikP++;
+        }
+      } 
     }
     else{               // there are no random effects
       *marg_ll_iP = *cond_ll_iP;
+      *pi_ikP     = 1.0;
+      pi_ikP++;
     }
-    *marg_ll += *marg_ll_iP;
 
+
+    /*** Add contribution of the i-th subject to the total loglikelihood ***/
+    /*** +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ ***/
+    *marg_ll += *marg_ll_iP;
 
     /*** Shift pointers                                   ***/
     /*** ++++++++++++++++++++++++++++++++++++++++++++++++ ***/
@@ -289,7 +353,8 @@ Deviance(double* marg_ll,
     ZS_i      += *l_ZS_i;
     N_iP++;
     l_ZS_i++;
-  }
+
+  }        // end of loop over grouped observations
 
   return;
 }

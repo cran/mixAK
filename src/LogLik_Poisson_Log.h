@@ -1,7 +1,6 @@
 //
 //  PURPOSE:   Log-likelihood, score vector, information matrix (in this case, observed = expected)
 //             for Poisson GLM with log link
-//             
 //
 //  AUTHOR:    Arnost Komarek (LaTeX: Arno\v{s}t Kom\'arek)
 //             arnost.komarek[AT]mff.cuni.cz
@@ -52,7 +51,7 @@ namespace LogLik{
 //
 //  y[n]:
 //
-//  log_y_factor[n]:       log(y!) = lgamma(y + 1) for each observation
+//  log_y_factor[n]:       log(y!) = lgamma(y + 1) for each observation                      
 //
 //  x[p, n]:
 //

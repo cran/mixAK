@@ -25,14 +25,14 @@ BLA(mean=c(0, 0),  Sigma=diag(2))
     \item{sigmaR2}{residual variances}
 }
 \references{
-  \eqn{\mbox{And\v{e}l, J.}}{And&#283l, J.} (2007, odd. 2.5).
-  \eqn{\mbox{Z\'aklady matematick\'e statistiky}}{Z&#225klady matematick&#233 statistiky}.
+  Anděl, J. (2007, odd. 2.5).
+  \emph{Základy matematické statistiky}.
   Praha: MATFYZPRESS.  
 }
 %\seealso{
 %}
 \author{
-  \eqn{\mbox{Arno\v{s}t Kom\'arek}}{Arno&#353t Kom&#225rek} \email{arnost.komarek[AT]mff.cuni.cz}
+  Arnošt Komárek \email{arnost.komarek[AT]mff.cuni.cz}
 }  
 \examples{
 ##### X = (U(1), U(2), U(3))'

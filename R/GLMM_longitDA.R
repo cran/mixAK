@@ -62,7 +62,7 @@ GLMM_longitDA <- function(mod, w.prior, y, id, time, x, z, xz.common=TRUE, info)
   Kmax_b <- numeric()
   chK_b <- chw_b <- chmu_b <- chLi_b <- numeric()
   chsigma_eps <- numeric()
-  chbeta <- numeric()
+  chalpha <- numeric()
   
   for (cl in 1:nClust){
     if (xz.common){
@@ -74,7 +74,7 @@ GLMM_longitDA <- function(mod, w.prior, y, id, time, x, z, xz.common=TRUE, info)
     ifit <- GLMM_MCMCifit(do.init=FALSE, na.complete=TRUE,
                           y=dd$y, dist=dd$dist, id=dd$id, time=dd$time, x=dd$x, z=dd$z, random.intercept=dd$random.intercept,
                           xempty=dd$xempty, zempty=dd$zempty, Rc=dd$Rc, Rd=dd$Rd,
-                          p=dd$p, p_fi=dd$p_fi, q=dd$q, q_ri=dd$q_ri, lbeta=dd$lbeta, dimb=dd$dimb)
+                          p=dd$p, p_fi=dd$p_fi, q=dd$q, q_ri=dd$q_ri, lalpha=dd$lalpha, dimb=dd$dimb)
     ## ifit$x[[s]], ifit$z[[s]] now contains also intercept columns if these should be included
     ## * also rows corresponding to missing values are removed
     ## * there is the same number of observations for each cluster
@@ -168,11 +168,11 @@ GLMM_longitDA <- function(mod, w.prior, y, id, time, x, z, xz.common=TRUE, info)
       stop("not implemented for variable K")
     }  
     
-    if (mod[[cl]]$lbeta)   chbeta <- c(chbeta, t(mod[[cl]]$beta))
+    if (mod[[cl]]$lalpha)   chalpha <- c(chalpha, t(mod[[cl]]$alpha))
     if (mod[[cl]]$R["Rc"]) chsigma_eps <- c(chsigma_eps, t(mod[[cl]]$sigma_eps))
   }
 
-  if (!length(chbeta))      chbeta <- 0
+  if (!length(chalpha))      chalpha <- 0
   if (!length(chsigma_eps)) chsigma_eps <- 0  
   
   ### !!! CZ, CXtX, CZ, CZitZi contain one 0 when there is no such matrix
@@ -200,14 +200,14 @@ GLMM_longitDA <- function(mod, w.prior, y, id, time, x, z, xz.common=TRUE, info)
     ifit <- GLMM_MCMCifit(do.init=FALSE, na.complete=TRUE,
                           y=dd$y, dist=dd$dist, id=dd$id, time=dd$time, x=dd$x, z=dd$z, random.intercept=dd$random.intercept,
                           xempty=dd$xempty, zempty=dd$zempty, Rc=dd$Rc, Rd=dd$Rd,
-                          p=dd$p, p_fi=dd$p_fi, q=dd$q, q_ri=dd$q_ri, lbeta=dd$lbeta, dimb=dd$dimb)    
+                          p=dd$p, p_fi=dd$p_fi, q=dd$q, q_ri=dd$q_ri, lalpha=dd$lalpha, dimb=dd$dimb)    
     
     LLTb <- (mod[[cl]]$dimb * (mod[[cl]]$dim + 1)) / 2
     
     ss <- mod[[cl]]$scale.b$shift
     SS <- diag(mod[[cl]]$scale.b$scale)
 
-    bbeta <- mod[[cl]]$beta[iter,]
+    balpha <- mod[[cl]]$alpha[iter,]
     
     KK  <- mod[[cl]]$K_b[iter]
     ww  <- mod[[cl]]$w_b[iter,]
@@ -273,13 +273,13 @@ GLMM_longitDA <- function(mod, w.prior, y, id, time, x, z, xz.common=TRUE, info)
     ### Precisions, canonical means and means of full conditional distributions    
     AA <- list()
     cc <- bbhat <- bbhat2 <- matrix(0, nrow=KK, ncol=mod[[cl]]$dimb)
-    mmu_full_part <- as.numeric(t(SS) %*% t(ZZ) %*% iSSigma %*% (YYi - XX %*% bbeta - ZZ %*% ss))
+    mmu_full_part <- as.numeric(t(SS) %*% t(ZZ) %*% iSSigma %*% (YYi - XX %*% balpha - ZZ %*% ss))
 
     llog_w_EB_ij <- numeric(KK)
     for (k in 1:KK){
       tmp <- t(SS) %*% t(ZZ) %*% iSSigma
       AA[[k]] <- tmp %*% ZZ %*% SS + QQ[[k]]
-      cc[k,] <- as.numeric(tmp %*% (YYi - XX %*% bbeta - ZZ %*% ss) + QQ[[k]] %*% mmu[k,])
+      cc[k,] <- as.numeric(tmp %*% (YYi - XX %*% balpha - ZZ %*% ss) + QQ[[k]] %*% mmu[k,])
       bbhat[k,] <- solve(AA[[k]], cc[k,])
       chAA <- chol(AA[[k]])      
       bbhat2[k,] <- forwardsolve(t(chAA), cc[k,])
@@ -303,11 +303,11 @@ GLMM_longitDA <- function(mod, w.prior, y, id, time, x, z, xz.common=TRUE, info)
     for (k in 1:KK){
       ff_b <- ff_b + ww[k] * dMVN(EEBscaled, mean=mmu[k,], Sigma=DD[[k]])
       VV[[k]] <- ZZ %*% SS %*% DD[[k]] %*% t(SS) %*% t(ZZ) + SSigma
-      mm_marg[k,] <- as.numeric(XX %*% bbeta + ZZ %*% ss + ZZ %*% SS %*% mmu[k,])
+      mm_marg[k,] <- as.numeric(XX %*% balpha + ZZ %*% ss + ZZ %*% SS %*% mmu[k,])
       ff_y <- ff_y + ww[k] * dMVN(YYi, mean=mm_marg[k,], Sigma=VV[[k]])      
     }
     names(VV) <- rownames(mm_marg) <- paste("k=", 1:KK, sep="")
-    Ey_b <- as.numeric(XX %*% bbeta + ZZ %*% EEB)
+    Ey_b <- as.numeric(XX %*% balpha + ZZ %*% EEB)
     ff_y_b <- dMVN(YYi, mean=Ey_b, Sigma=SSigma)
     
     #cat("Mixture precision matrices (Q matrices):\n")
@@ -413,7 +413,7 @@ GLMM_longitDA <- function(mod, w.prior, y, id, time, x, z, xz.common=TRUE, info)
             chw_b        = as.double(chw_b),
             chmu_b       = as.double(chmu_b),
             chLi_b       = as.double(chLi_b),
-            chbeta       = as.double(chbeta),
+            chalpha      = as.double(chalpha),
             pi_marg      = double(nrow_pi * nClust),
             pi_cond      = double(nrow_pi * nClust),
             pi_ranef     = double(nrow_pi * nClust),

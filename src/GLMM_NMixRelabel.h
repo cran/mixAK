@@ -8,6 +8,7 @@
 //
 //  FUNCTIONS:  
 //     * GLMM_NMixRelabel  26/02/2010:  
+//                         27/11/2010:  argument Pr_b_b added and all P(u_i=k | b, theta, y) over all iterations are stored 
 //
 // ======================================================================
 //
@@ -33,13 +34,19 @@
 #include "NMix_Stephens_step1.h"
 #include "NMix_Stephens_step2_search.h"
 #include "NMix_Stephens_step2_transport.h"
+#include "NMix_reorder_Pr_y.h"
 
 #include "NMix_updateAlloc.h"
 #include "GLMM_updateRanEf.h"
+#include "GLMM_updateRanEf_QR.h"
 
 #include "GLMM_linear_predictors.h"
 #include "GLMM_create_SZitZiS.h"
 #include "GLMM_dY_meanY.h"
+
+#include "GLMM_create_ZS.h"
+#include "GLMM_Deviance.h"
+#include "GLMM_Deviance2Pr_obs.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -148,17 +155,33 @@ extern "C" {
 //                                        OUTPUT: posterior mean of Cholesky decompositions of mixture inverse variances
 //                                                * before the posterior mean is computed, components are (internally) re-labeled
 //
-//  sum_Ir_b[I, K_b]:                     INPUT:  whatsever
+//  sum_Ir_b[K_b, I]:                     INPUT:  whatsever
 //                                        OUTPUT: for each group of correlated observations and each mixture component: sum(r_b[i] = k),
 //                                                i = 0, ..., I-1, j = 0, ..., K_b - 1
 //                                                * components are (internally) re-labeled before sum(r_b[i] = k) is computed
 //
-//  hatPr_b_b[I, K_b]:                    INPUT:  whatsever
+//  hatPr_b_b[K_b, I]:                    INPUT:  whatsever
 //                                        OUTPUT: for each observation and each mixture component: (1/M) * sum(P(r_b[i] = k | theta, b, y))
 //                                                i = 0, ..., I-1, j = 0, ..., K_b - 1,
 //                                                where M is the number of MCMC iterations
 //                                                * components are (internally) re-labeled before sum(P(r_b[i] = k | theta, b, y)) is computed
 //
+//  Pr_b_b[K_b, I, keepMCMC]:              INPUT:  whatsever
+//                                        OUTPUT:  posterior sample of P(r_b[i] = k | theta, b, y)
+//                                                 * columns are re-shuffled to correspond to final re-labelling
+//                                                                                                 
+//  hatPr_obs[K_b, I]:                    INPUT:  whatsever
+//                                        OUTPUT: for each observation and each mixture component: (1/M) * sum(P(r_b[i] = k | theta, y)),
+//                                                i.e., random effects are (numerically) integrated out
+//                                                i = 0, ..., I-1, j = 0, ..., K_b - 1,
+//                                                where M is the number of MCMC iterations
+//                                                * components are (internally) re-labeled before sum(P(r_b[i] = k | theta, y)) is computed
+//
+//  Pr_obs[K_b, I, keepMCMC]:              INPUT:  whatsever
+//                                        OUTPUT:  posterior sample of P(r_b[i] = k | theta, y),
+//                                                 i.e., random effects are (numerically) integrated out
+//                                                 * columns are re-shuffled to correspond to final re-labelling
+//                                                                                                 
 //  iter_relabel[1]                       INPUT:   whatsever
 //                                        OUTPUT:  unaltered for simple re-labeling algorithms
 //                                                 For Stephens' algorithm, it gives the number of re-labeling iterations
@@ -209,6 +232,9 @@ GLMM_NMixRelabel(const int*    type,
                  double* pm_Li_b,
                  int*    sum_Ir_b,
                  double* hatPr_b_b,
+                 double* Pr_b,
+                 double* hatPr_obs,
+                 double* Pr_obs,
                  int*    iter_relabel,
                  int*    nchange,
                  int*    err);

@@ -21,7 +21,7 @@
     auto.layout=TRUE, xlab="Iteration", ylab, col="slateblue", main="", \dots)
 
   \method{tracePlots}{GLMM_MCMC}(x, param=c("Deviance", "Cond.Deviance",
-    "beta", "Eb", "SDb", "Corb", "sigma_eps",
+    "alpha", "Eb", "SDb", "Corb", "sigma_eps",
     "w_b", "mu_b", "sd_b", "gammaInv_b", "gammaInv_eps"),
     relabel=FALSE, order,
     auto.layout=TRUE, xlab="Iteration", ylab, col="slateblue", main="", \dots)
@@ -55,7 +55,7 @@
         out) of the GLMM;}
       \item{Cond.Deviance}{conditional deviance (given random effects)
 	of the GLMM;}
-      \item{beta}{fixed effects of the fitted GLMM;}
+      \item{alpha}{fixed effects of the fitted GLMM;}
       \item{Eb}{overall means (for each margin) of the random effects of
         the fitted GLMM;}
       \item{SDb}{overall standard deviations (for each margin) of the random effects of
@@ -96,6 +96,6 @@
   \code{\link{NMixMCMC}}, \code{\link{GLMM_MCMC}}, \code{\link{NMixRelabel}}, \code{\link[coda]{traceplot}}.
 }
 \author{
-  \eqn{\mbox{Arno\v{s}t Kom\'arek}}{Arno&#353t Kom&#225rek} \email{arnost.komarek[AT]mff.cuni.cz}
+  Arnošt Komárek \email{arnost.komarek[AT]mff.cuni.cz}
 }  
 \keyword{dplot}

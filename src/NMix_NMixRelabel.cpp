@@ -43,6 +43,7 @@ NMix_NMixRelabel(const int*    type,
                  double* pm_Li,
                  int*    sum_Ir,
                  double* hatPr_y,
+                 double* Pr_y,
                  int*    iter_relabel,
                  int*    nchange,
                  int*    err)
@@ -136,14 +137,12 @@ NMix_NMixRelabel(const int*    type,
   double *dwork_MVN = Calloc(*p, double);
   AK_Basic::fillArray(dwork_MVN, 0.0, *p);
 
-  /***** Declare cum_Pr_y, Pr_y                                                               *****/
-  /***** Pr_y[j, i]     = w_j * phi(y_i | mu_j, Sigma_j) (for simple re-labeling algorithms)  *****/
+  /***** Declare cum_Pr_y                                                                     *****/
+  /***** Pr_y[j, i] = w_j * phi(y_i | mu_j, Sigma_j) (for simple re-labeling algorithms)      *****/
   /*****     * all iterations must be stored at once for Stephens' algorithm                  *****/
+  /*****     * as of November 2010, all are always stored                                     *****/
   /***** cum_Pr_y[j, i] = sum_{l=1}^j w_l * phi(y_i | mu_l, Sigma_l)                          *****/
   /***** Reset sum_Ir, hatPr_y, declare some additional needed quantities                     *****/  
-  int length_Pr_y = *K * *n;
-  if (*type == NMix::STEPHENS) length_Pr_y *= *keepMCMC;
-  double *Pr_y     = Calloc(length_Pr_y, double);
   double *cum_Pr_y = Calloc(*K * *n, double);
 
   NMix::Pr_y_and_cum_Pr_y(Pr_y, cum_Pr_y, dwork_MVN, y, p, n, logw, chmu, chLi, log_dets, K);
@@ -190,13 +189,14 @@ NMix_NMixRelabel(const int*    type,
   int iter;
   int iter_backs = 0;        /*** used to move MCMC iteration counter ***/
 
+  int simpleType;
   int margin4orderComp;
   int dim4orderComp;
 
   /***** Declarations of variables used only by simple algorithms *****/  
   double *hatPr_yP = NULL;
 
-  /***** Declarations of variables used only by Stephens' algorithm *****/
+  /***** Declarations of some variables used below *****/
   int    *rAll  = NULL;
   int    *rAllP = NULL;
 
@@ -227,8 +227,10 @@ NMix_NMixRelabel(const int*    type,
   case NMix::MEAN:
   case NMix::WEIGHT:
 
+    simpleType = *type;
+
     /***** Arguments passed to NMix::orderComp function *****/
-    switch (*type){
+    switch (simpleType){
     case NMix::MEAN:
       margin4orderComp = *iparam;
       dim4orderComp    = *p;
@@ -240,80 +242,16 @@ NMix_NMixRelabel(const int*    type,
       break;   
     }
 
-    /***** Loop over MCMC iterations *****/
-    GetRNGstate();  
-    Rprintf((char*)("MCMC Iteration "));
-    for (iter = 1; iter <= *keepMCMC; iter++){
-
-      /***** Progress information *****/
-      if (!(iter % *info) || iter == *keepMCMC){
-        for (i = 0; i < iter_backs; i++) Rprintf((char*)("\b"));
-        Rprintf((char*)("%d"), iter);
-        iter_backs = int(log10(double(iter))) + 1;
-      }
-
-      /***** Calculate parameter values derived from mixture parameters *****/
-      NMix::w2logw(logw, chwP, K);  
-      NMix::Li2log_dets(log_dets, chLiP, K, p);
-
-      /***** Sample new y (if there are censored observations) *****/
-      if (anyCensor){
-        NMix::updateCensObs(y, beta, sigmaR2, dwork_updateCensObs, err,          
-                            y0, y1, censor, r, chmuP, chSigmaP, K, p, n);
-      }
-
-      /***** Compute new Pr_y and cum_Pr_y             *****/
-      NMix::Pr_y_and_cum_Pr_y(Pr_y, cum_Pr_y, dwork_MVN, y, p, n, logw, chmuP, chLiP, log_dets, K);
-
-      /***** Sample new component allocations *****/
-      NMix::updateAlloc(r, mixN, rInv, cum_Pr_y, dwork_MVN,
-                        y, p, n, logw, chmuP, chLiP, log_dets, K, cum_Pr_done);
-
-      /***** Determine order and rank of components according to required re-labeling algorithm *****/
-      switch (*type){
-      case NMix::MEAN:
-        NMix::orderComp(chorderP, chrankP, dwork_orderComp, &margin4orderComp, K, chmuP, &dim4orderComp);
-        break;
-
-      case NMix::WEIGHT:    
-        NMix::orderComp(chorderP, chrankP, dwork_orderComp, &margin4orderComp, K, chwP, &dim4orderComp);
-        break;
-      }
-
-      /***** Update sum_Ir, hatPr_y *****/
-      NMix::update_sum_Ir_and_sum_Pr_y(sum_Ir, hatPr_y, Pr_y, r, chrankP, K, n);
-
-      /***** Shift pointers in chains *****/
-      chwP     += *K;
-      chmuP    += *p * *K;
-      chLiP    += LTp * *K;
-      chSigmaP += LTp * *K;
-      //chQP     += LTp * *K;
-      chorderP += *K;
-      chrankP  += *K; 
-    }
-    Rprintf((char*)("\n"));
-    PutRNGstate();
-
-    /***** Calculate hatPr_y (we have to divide current values by keepMCMC) *****/
-    hatPr_yP = hatPr_y;
-    for (i = 0; i < *n * *K; i++){
-      *hatPr_yP /= *keepMCMC;
-      hatPr_yP++;      
-    }
-    
     break;
 
-
-/***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/
-/***** Main computation for Stephens' algorithm                                                           *****/
-/***** (Matthew Stephens, 2000, JRSS-B, 795-809, Section 4.1)                                             *****/
-/***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/ 
-  case NMix::STEPHENS:
+  case NMix::STEPHENS:          // Stephens' algorithm 
+                                // Matthew Stephens, 2000, JRSS-B, 795-809, Section 4.1
 
     /***** Arguments passed to NMix::orderComp function          *****/
     /***** corresponding to the initial re-labeling algorithm    *****/
-    switch (iparam[0]){
+    simpleType = iparam[0];
+
+    switch (simpleType){
     case NMix::IDENTITY:
       margin4orderComp = 0;
       dim4orderComp    = 1;
@@ -330,87 +268,92 @@ NMix_NMixRelabel(const int*    type,
       break;   
     }
 
-    /***** Space to store component allocations from all iterations of MCMC  *****/
-    /***** * initialize by -1                                                *****/
-    rAll = Calloc(*n * *keepMCMC, int);
-    AK_Basic::fillArray(rAll, -1, *n * *keepMCMC);
+    break;
+  }                 /** end of main switch type **/  
 
-    /***** Loop over MCMC iterations to calculate Pr_y and rAll.                                   *****/
-    /***** Ititialize re-labeling by one of simple algorithms based on mixture weights or means.   *****/
-    rAllP = rAll;
-    Pr_yP = Pr_y;
 
-    GetRNGstate();  
-    Rprintf((char*)("MCMC iteration (initial re-labelling) "));
-    for (iter = 1; iter <= *keepMCMC; iter++){
+  /***** Space to store component allocations from all iterations of MCMC  *****/
+  /***** * initialize by -1                                                *****/
+  rAll = Calloc(*n * *keepMCMC, int);
+  AK_Basic::fillArray(rAll, -1, *n * *keepMCMC);
 
-      /***** Progress information *****/
-      if (!(iter % *info) || iter == *keepMCMC){
-        for (i = 0; i < iter_backs; i++) Rprintf((char*)("\b"));
-        Rprintf((char*)("%d"), iter);
-        iter_backs = int(log10(double(iter))) + 1;
-      }
+  /***** Loop over MCMC iterations to calculate Pr_y and rAll.                                   *****/
+  /***** Ititialize re-labeling by one of simple algorithms based on mixture weights or means.   *****/
+  rAllP = rAll;
+  Pr_yP = Pr_y;
 
-      /***** Calculate parameter values derived from mixture parameters *****/
-      NMix::w2logw(logw, chwP, K);  
-      NMix::Li2log_dets(log_dets, chLiP, K, p);
+  GetRNGstate();  
+  Rprintf((char*)("MCMC iteration (simple re-labelling) "));
+  for (iter = 1; iter <= *keepMCMC; iter++){
 
-      /***** Sample new y (if there are censored observations) *****/
-      if (anyCensor){
-        NMix::updateCensObs(y, beta, sigmaR2, dwork_updateCensObs, err,          
-                            y0, y1, censor, r, chmuP, chSigmaP, K, p, n);
-      }
-
-      /***** Compute new Pr_y and cum_Pr_y             *****/
-      NMix::Pr_y_and_cum_Pr_y(Pr_yP, cum_Pr_y, dwork_MVN, y, p, n, logw, chmuP, chLiP, log_dets, K);
-
-      /***** Sample new component allocations *****/
-      NMix::updateAlloc(r, mixN, rInv, cum_Pr_y, dwork_MVN,
-                        y, p, n, logw, chmuP, chLiP, log_dets, K, cum_Pr_done);
-
-      /***** Determine order and rank of components according to initial re-labeling algorithm *****/
-      switch (iparam[0]){
-      case NMix::IDENTITY:
-        for (j = 0; j < *K; j++){
-          *chorderP = j;
-          *chrankP  = j;
-          chorderP++;
-          chrankP++;
-        }
-        break;
-
-      case NMix::MEAN:
-        NMix::orderComp(chorderP, chrankP, dwork_orderComp, &margin4orderComp, K, chmuP, &dim4orderComp);
-        chorderP += *K;
-        chrankP  += *K; 
-        break;
-
-      case NMix::WEIGHT:    
-        NMix::orderComp(chorderP, chrankP, dwork_orderComp, &margin4orderComp, K, chwP, &dim4orderComp);
-        chorderP += *K;
-        chrankP  += *K; 
-        break;
-      }
-
-      /***** Keep component allocations in rAll *****/
-      AK_Basic::copyArray(rAllP, r, *n);
-
-      /***** Shift pointers in chains (these not yet shifted) *****/
-      chwP     += *K;
-      chmuP    += *p * *K;
-      chLiP    += LTp * *K;
-      chSigmaP += LTp * *K;
-      //chQP     += LTp * *K;
-
-      /***** Shift pointers in rAll and Pr_y  *****/
-      rAllP += *n;
-      Pr_yP += (*n * *K); 
+    /***** Progress information *****/
+    if (!(iter % *info) || iter == *keepMCMC){
+      for (i = 0; i < iter_backs; i++) Rprintf((char*)("\b"));
+      Rprintf((char*)("%d"), iter);
+      iter_backs = int(log10(double(iter))) + 1;
     }
-    Rprintf((char*)("\n"));
-    PutRNGstate();
+
+    /***** Calculate parameter values derived from mixture parameters *****/
+    NMix::w2logw(logw, chwP, K);  
+    NMix::Li2log_dets(log_dets, chLiP, K, p);
+
+    /***** Sample new y (if there are censored observations) *****/
+    if (anyCensor){
+      NMix::updateCensObs(y, beta, sigmaR2, dwork_updateCensObs, err,          
+                          y0, y1, censor, r, chmuP, chSigmaP, K, p, n);
+    }
+
+    /***** Compute new Pr_y and cum_Pr_y             *****/
+    NMix::Pr_y_and_cum_Pr_y(Pr_yP, cum_Pr_y, dwork_MVN, y, p, n, logw, chmuP, chLiP, log_dets, K);
+
+    /***** Sample new component allocations *****/
+    NMix::updateAlloc(r, mixN, rInv, cum_Pr_y, dwork_MVN,
+                      y, p, n, logw, chmuP, chLiP, log_dets, K, cum_Pr_done);
+
+    /***** Determine order and rank of components according to initial re-labeling algorithm *****/
+    switch (simpleType){
+    case NMix::IDENTITY:
+      for (j = 0; j < *K; j++){
+        *chorderP = j;
+        *chrankP  = j;
+        chorderP++;
+        chrankP++;
+      }
+      break;
+
+    case NMix::MEAN:
+      NMix::orderComp(chorderP, chrankP, dwork_orderComp, &margin4orderComp, K, chmuP, &dim4orderComp);
+      chorderP += *K;
+      chrankP  += *K; 
+      break;
+
+    case NMix::WEIGHT:    
+      NMix::orderComp(chorderP, chrankP, dwork_orderComp, &margin4orderComp, K, chwP, &dim4orderComp);
+      chorderP += *K;
+      chrankP  += *K; 
+      break;
+    }
+
+    /***** Keep component allocations in rAll *****/
+    AK_Basic::copyArray(rAllP, r, *n);
+
+    /***** Shift pointers in chains (these not yet shifted) *****/
+    chwP     += *K;
+    chmuP    += *p * *K;
+    chLiP    += LTp * *K;
+    chSigmaP += LTp * *K;
+    //chQP     += LTp * *K;
+
+    /***** Shift pointers in rAll and Pr_y  *****/
+    rAllP += *n;
+    Pr_yP += (*n * *K); 
+  }
+  Rprintf((char*)("\n"));
+  PutRNGstate();
 
 
-    /***** Main Re-labeling (Algorithm 2, p. 802 of Stephens, 2000) *****/
+  /***** Stephens' Re-labeling (Algorithm 2, p. 802 of Stephens, 2000) *****/
+  if (*type == NMix::STEPHENS){
     *iter_relabel = 0;
     nchanges      = 1;
     nchangeP      = nchange;
@@ -475,7 +418,7 @@ NMix_NMixRelabel(const int*    type,
       /***** Generate set of all possible permutations and related variables  *****/
       Kfact = 1;
       for (j = 2; j <= *K; j++) Kfact *= j;
-    
+  
       order_perm    = Calloc(Kfact * *K, int);
       tmporder_perm = Calloc(Kfact * *K, int);
       rank_perm     = Calloc(Kfact * *K, int);
@@ -518,27 +461,32 @@ NMix_NMixRelabel(const int*    type,
 
     /***** Re-calculate hatPr_y if there is no convergence to ensure that it corresponds to returned values of chorder and chrank *****/
     if (*iter_relabel == iparam[2] && nchanges){
-      NMix::Stephens_step1(hatPr_y, Pr_y, chrank, keepMCMC, n, K);
+     NMix::Stephens_step1(hatPr_y, Pr_y, chrank, keepMCMC, n, K);
     }
-
-    /***** Calculate sum_Ir which corresponds to final re-labeling *****/
-    NMix::sum_Ir(sum_Ir, rAll, chrank, K, n, keepMCMC);
-
-    /***** Cleaning of the space allocated for Stephens' algorithm *****/
-    Free(rAll);
-    break;
-  }    /** end of main switch (*type)  **/
+  }
 
 
-/***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/
-/***** Calculate posterior means of model parameters (using re-labeled sample)                            *****/
-/***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/ 
+  /***** Re-calculate hatPr_b_b if simple algorithm was used to correspond to returned values of chorder and chrank *****/
+  if (*type == NMix::MEAN || *type == NMix::WEIGHT){
+    NMix::Stephens_step1(hatPr_y, Pr_y, chrank, keepMCMC, n, K);
+  }
+
+  /***** Calculate sum_Ir which corresponds to final re-labeling *****/
+  NMix::sum_Ir(sum_Ir, rAll, chrank, K, n, keepMCMC);
+
+  /***** Re-shuffle columns in Pr_y *****/
+  double *work_reorder = Calloc(*K, double);
+  NMix::reorder_Pr_y(Pr_y, work_reorder, chorder, keepMCMC, n, K);  
+  Free(work_reorder);
+
+  /***** Calculate posterior means of model parameters (using re-labeled sample)                            *****/
   NMix::PosterMeanMixParam(pm_w, pm_mu, pm_Q, pm_Sigma, pm_Li, K, chw, chmu, chQ, chSigma, chLi, chorder, p, keepMCMC);
 
 
 /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/
 /***** Cleaning                                                                                           *****/
 /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/ 
+  Free(rAll);
   Free(dwork_orderComp);
   Free(dwork_updateCensObs);
   Free(beta);
@@ -551,7 +499,6 @@ NMix_NMixRelabel(const int*    type,
   Free(rInv);
   Free(mixN);
   Free(cum_Pr_y);
-  Free(Pr_y);
   Free(dwork_MVN);
   Free(log_dets);
   Free(logw);

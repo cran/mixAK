@@ -8,6 +8,7 @@
 //
 //  FUNCTIONS:  
 //     * NMix_NMixRelabel  10/02/2010:  
+//                         29/11/2010:  argument Pr_b_b added and all P(u_i=k | b, theta, y) over all iterations are stored 
 //
 // ======================================================================
 //
@@ -32,6 +33,7 @@
 #include "NMix_Stephens_step1.h"
 #include "NMix_Stephens_step2_search.h"
 #include "NMix_Stephens_step2_transport.h"
+#include "NMix_reorder_Pr_y.h"
 
 #include "NMix_updateCensObs.h"
 #include "NMix_updateAlloc.h"
@@ -124,16 +126,21 @@ extern "C" {
 //                               OUTPUT: posterior mean of Cholesky decompositions of mixture inverse variances
 //                                       * before the posterior mean is computed, components are (internally) re-labeled
 //
-//  sum_Ir[n, K]:                INPUT:  whatsever
+//  sum_Ir[K, n]:                INPUT:  whatsever
 //                               OUTPUT: for each observation and each mixture component: sum(r[i] = k),
 //                                       i = 0, ..., n-1, j = 0, ..., K - 1
 //                                       * components are (internally) re-labeled before sum(r[i] = k) is computed
 //
-//  hatPr_y[n, K]:                INPUT: whatsever
+//  hatPr_y[K, n]:                INPUT: whatsever
 //                               OUTPUT: for each observation and each mixture component: (1/M) * sum(P(r[i] = k | theta, y))
 //                                       i = 0, ..., n-1, j = 0, ..., K - 1,
 //                                       where M is the number of MCMC iterations
 //                                       * components are (internally) re-labeled before sum(P(r[i] = k | theta, y)) is computed
+//
+//  Pr_y[K, n, keepMCMC]:         INPUT:  whatsever
+//                               OUTPUT:  posterior sample of P(r[i] = k | theta, y)
+//                                        * columns are re-shuffled to correspond to final re-labelling
+//                                                                                                 
 //
 //  iter_relabel[1]              INPUT:   whatsever
 //                               OUTPUT:  unaltered for simple re-labeling algorithms
@@ -175,6 +182,7 @@ NMix_NMixRelabel(const int*    type,
                  double* pm_Li,
                  int*    sum_Ir,
                  double* hatPr_y,
+                 double* Pr_y,
                  int*    iter_relabel,
                  int*    nchange,
                  int*    err);

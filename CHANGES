@@ -1,3 +1,9 @@
+TO DO LIST:
+-----------
+
+26/11/2010 TO DO:
+  fitted.GLMM_MCMC not yet implemented for situations when there are only fixed effects in the model
+
 14/06/2010 TO DO:
   In GLMM_Deviance.cpp
        Commands:  *marg_ll_iP += *w_k * AK_Basic::exp0_AK(loglik_k);  (around line 239)
@@ -6,6 +12,16 @@
        and subtract it again after log the mixture sum. With higher counts, loglik_k is quite considerably negative
        which leads to exp(-Inf) = 0 and then upon log again, we get -Inf log-likelihood where
        -Inf is artificial due to imprecise calculation with numbers close to zero.
+
+  --> more or less solved on 03/12/2010
+
+======================================================================================================================
+20/01/2011:
+beta in GLMM_MCMC function (and all related) was renamed to alpha to be in agreement with papers
+
+29/11/2010:
+calculation of posterior quantiles for estimated component probabilities added to NMixRelabel functions
+(both NMixMCMC and GLMM_MCMC version)
 
 08/12/2009
 bug in computation of weights for the EB estimate of random effects in GLMM_longitPred_nmix_gauss.cpp fixed

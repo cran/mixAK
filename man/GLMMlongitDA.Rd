@@ -7,10 +7,10 @@
   The idea is that we fit (possibly different) GLMM's for data in training 
   groups using the function \code{\link{GLMM_MCMC}} and then use the fitted 
   models for discrimination of new observations. For more details we 
-  refer to \eqn{\mbox{Kom\'arek}}{Kom&#225rek} et al. (2010).
+  refer to Komárek et al. (2010).
 }
 \details{
-  This function complements a paper \eqn{\mbox{Kom\'arek}}{Kom&#225rek} et al. (2010).
+  This function complements a paper Komárek et al. (2010).
 }  
 \usage{
 GLMM_longitDA(mod, w.prior, y, id, time, x, z, xz.common=TRUE, info)
@@ -61,17 +61,17 @@ GLMM_longitDA(mod, w.prior, y, id, time, x, z, xz.common=TRUE, info)
   \item{ranef}{ADD DESCRIPTION}
 }
 \references{
-  \eqn{\mbox{Kom\'{a}rek, A.}}{Kom&#225rek, A.}, Hansen, B. E., Kuiper,
+  Komárek, A., Hansen, B. E., Kuiper,
   E. M. M., van Buuren, H. R., and Lesaffre, E. (2010).
   Discriminant analysis using a multivariate linear mixed model with a
   normal mixture in the random effects distribution.
-  \emph{Statistics in Medicine}. To appear. %\bold{XX}, XXX-XXX.
+  \emph{Statistics in Medicine}, \bold{29}, 3267-3283.
 }  
 \seealso{
   \code{\link{GLMM_MCMC}}.
 }
 \author{
-  \eqn{\mbox{Arno\v{s}t Kom\'arek}}{Arno&#353t Kom&#225rek} \email{arnost.komarek[AT]mff.cuni.cz}
+  Arnošt Komárek \email{arnost.komarek[AT]mff.cuni.cz}
 }  
 \examples{
 ### WILL BE ADDED.

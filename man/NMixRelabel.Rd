@@ -23,9 +23,11 @@ NMixRelabel(object, type=c("mean", "weight", "stephens"), par, \dots)
 
 \method{NMixRelabel}{default}(object, type=c("mean", "weight", "stephens"), par, \dots)
 
-\method{NMixRelabel}{NMixMCMC}(object, type=c("mean", "weight", "stephens"), par, info, \dots)
+\method{NMixRelabel}{NMixMCMC}(object, type=c("mean", "weight","stephens"), par,
+   prob=c(0.025, 0.5, 0.975), keep.comp.prob=FALSE, info, \dots)
 
-\method{NMixRelabel}{GLMM_MCMC}(object, type=c("mean", "weight", "stephens"), par, info, \dots)
+\method{NMixRelabel}{GLMM_MCMC}(object, type=c("mean", "weight", "stephens"), par,
+   prob=c(0.025, 0.5, 0.975), keep.comp.prob=FALSE, info, \dots)
 }
 \arguments{
   \item{object}{an object of apropriate class.}
@@ -53,6 +55,11 @@ NMixRelabel(object, type=c("mean", "weight", "stephens"), par, \dots)
       }
     }  
   }
+  \item{prob}{probabilities for which the posterior quantiles
+     of component allocation probabilities are computed.
+  }
+  \item{keep.comp.prob}{logical. If \code{TRUE}, posterior sample of
+    component allocation probabilities (for each subject) is kept in the resulting object.}
   \item{info}{number which specifies frequency used to re-display the
     iteration counter during the computation.
   }
@@ -79,6 +86,20 @@ NMixRelabel(object, type=c("mean", "weight", "stephens"), par, \dots)
     \item{poster.comp.prob1}{see \code{\link{NMixMCMC}}}
     \item{poster.comp.prob2}{see \code{\link{NMixMCMC}}}
   }
+  Additionally, new components are added, namely
+  \describe{
+    \item{quant.comp.prob2}{a list with the posterior quantiles of
+      component probabilities. One \code{list} component for each
+      quantile specified by \code{prob} argument.}
+    \item{comp.prob2}{posterior sample of individual component
+      probabilities (also given random effects). It is an \eqn{M \times
+	n\cdot K}{M x n*K} matrix where \eqn{M} is the length of the
+      posterior sample, \eqn{n} is the number of subjects, and \eqn{K}
+      is the number of mixture components. Component labels correspond
+      to the re-labelled sample. It is included in the
+      resulting object only if \code{keep.comp.prob} argument is
+      \code{TRUE}.}
+  }      
 }  
 \section{Value for GLMM_MCMC object}{
   When the argument \code{object} is of class \code{GLMM_MCMC}, the
@@ -96,6 +117,38 @@ NMixRelabel(object, type=c("mean", "weight", "stephens"), par, \dots)
     \item{poster.comp.prob1}{see \code{\link{GLMM_MCMC}}}
     \item{poster.comp.prob2}{see \code{\link{GLMM_MCMC}}}
   }
+  Additionally, new components are added, namely
+  \describe{
+    \item{quant.comp.prob2}{a list with the posterior quantiles of
+      component probabilities. One \code{list} component for each
+      quantile specified by \code{prob} argument.}
+    \item{comp.prob2}{posterior sample of individual component
+      probabilities (also given random effects). It is an \eqn{M \times
+	I\cdot K}{M x I*K} matrix where \eqn{M} is the length of the
+      posterior sample, \eqn{I} is the number of subjects, and \eqn{K}
+      is the number of mixture components. Component labels correspond
+      to the re-labelled sample. It is included in the
+      resulting object only if \code{keep.comp.prob} argument is
+      \code{TRUE}.}
+    \item{poster.comp.prob3}{a matrix with the posterior means of
+      component probabilities which are calculated with random effects
+      integrated out.}
+    \item{quant.comp.prob3}{a list with the posterior quantiles of
+      component probabilities. One \code{list} component for each
+      quantile specified by \code{prob} argument.}
+    \item{comp.prob3}{posterior sample of individual component
+      probabilities (with random effects integrated out). It is an \eqn{M \times
+	I\cdot K}{M x I*K} matrix where \eqn{M} is the length of the
+      posterior sample, \eqn{I} is the number of subjects, and \eqn{K}
+      is the number of mixture components. Component labels correspond
+      to the re-labelled sample. It is included in the
+      resulting object only if \code{keep.comp.prob} argument is
+      \code{TRUE}.
+
+      \bold{Remark.} These are the component probabilities which should
+      normally be used for clustering purposes.
+    }    
+  }    
 }  
 \references{
   Celeux, G. (1998).
@@ -111,8 +164,9 @@ NMixRelabel(object, type=c("mean", "weight", "stephens"), par, \dots)
   Stephens, M. (1997).
   \emph{Bayesian methods for mixtures of normal distributions. DPhil Thesis.}
   Oxford: University of Oxford.
-  (Available from (as of 08/02/2010):
-  \url{http://www.stat.washington.edu/stephens/papers.html}).
+  (Available from:
+  \url{http://www.stat.washington.edu/stephens/papers.html}  (accessed
+  on 08/02/2010)).
   
   Stephens, M. (2000).
   Dealing with label switching in mixture models.
@@ -122,7 +176,7 @@ NMixRelabel(object, type=c("mean", "weight", "stephens"), par, \dots)
   \code{\link{NMixMCMC}}, \code{\link{GLMM_MCMC}}.
 }
 \author{
-  \eqn{\mbox{Arno\v{s}t Kom\'arek}}{Arno&#353t Kom&#225rek} \email{arnost.komarek[AT]mff.cuni.cz}
+  Arnošt Komárek \email{arnost.komarek[AT]mff.cuni.cz}
 }  
 \examples{
 ## TO BE ADDED.

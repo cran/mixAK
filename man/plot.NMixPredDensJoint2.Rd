@@ -50,7 +50,7 @@
   \code{\link{NMixPredDensJoint2}}, \code{\link{NMixMCMC}}.
 }
 \author{
-  \eqn{\mbox{Arno\v{s}t Kom\'arek}}{Arno&#353t Kom&#225rek} \email{arnost.komarek[AT]mff.cuni.cz}
+  Arnošt Komárek \email{arnost.komarek[AT]mff.cuni.cz}
 }  
 \examples{
 ## See additional material available in 

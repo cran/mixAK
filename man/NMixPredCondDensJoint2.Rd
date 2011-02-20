@@ -83,7 +83,7 @@ NMixPredCondDensJoint2(x, \dots)
   \code{\link{plot.NMixPredCondDensJoint2}}, \code{\link{NMixMCMC}}, \code{\link{GLMM_MCMC}}.
 }
 \author{
-  \eqn{\mbox{Arno\v{s}t Kom\'arek}}{Arno&#353t Kom&#225rek} \email{arnost.komarek[AT]mff.cuni.cz}
+  Arnošt Komárek \email{arnost.komarek[AT]mff.cuni.cz}
 }  
 \keyword{multivariate}
 \keyword{dplot}

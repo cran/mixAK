@@ -14,7 +14,7 @@
 ## *************************************************************
 ## tracePlots.GLMM_MCMC
 ## *************************************************************
-tracePlots.GLMM_MCMC <- function(x, param=c("Deviance", "Cond.Deviance", "beta", "Eb", "SDb", "Corb", "sigma_eps", "w_b", "mu_b", "sd_b", "gammaInv_b", "gammaInv_eps"),
+tracePlots.GLMM_MCMC <- function(x, param=c("Deviance", "Cond.Deviance", "alpha", "Eb", "SDb", "Corb", "sigma_eps", "w_b", "mu_b", "sd_b", "gammaInv_b", "gammaInv_eps"),
                                  relabel=FALSE, order,                                 
                                  auto.layout=TRUE, xlab="Iteration", ylab, col="slateblue", main="", ...)
 {
@@ -31,7 +31,7 @@ tracePlots.GLMM_MCMC <- function(x, param=c("Deviance", "Cond.Deviance", "beta",
   
   ### Number of parameters to plot
   if (param %in% c("Deviance", "Cond.Deviance")) nparam <- 1
-  else if (param == "beta") nparam <- sum(x$p) + sum(x$fixed.intercept)
+  else if (param == "alpha") nparam <- sum(x$p) + sum(x$fixed.intercept)
        else if (param %in% c("Eb", "SDb")) nparam <- x$dimb
             else if (param == "Corb") nparam <- (x$dimb * (x$dimb + 1)) / 2 - x$dimb
                  else if (param == "sigma_eps") nparam <- x$R["Rc"]

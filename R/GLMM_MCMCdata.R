@@ -37,7 +37,7 @@ GLMM_MCMCdata <- function(y, dist, id, time, x, z, random.intercept)
 #####             dimb              dimension of random effects (random intercepts included)
 #####             LTb               length of lower triangle of matrix dimb x dimb
 #####             naamLTb           names (indices) for elements of a lower triangle of matrix dimb x dimb  
-#####             lbeta             length of beta vector (fixed intercepts included)
+#####             lalpha             length of alpha vector (fixed intercepts included)
 #####             p_fi              numeric vector of length R
 #####             q_ri              numeric vector of length R  
 ##### ------------------------------------------------------------------------------------------------------------------
@@ -167,10 +167,10 @@ GLMM_MCMCdata <- function(y, dist, id, time, x, z, random.intercept)
     if (q[s] == 1) z[[s]] <- data.frame(z1=z[[s]])
   }
 
-  ##### Dimension of random effects and length of beta  vector
+  ##### Dimension of random effects and length of alpha  vector
   ##### ------------------------------------------------------
   dimb <- sum(q) + sum(CrandomIntcpt)
-  lbeta <- sum(p) + sum(CfixedIntcpt)
+  lalpha <- sum(p) + sum(CfixedIntcpt)
   LTb <- (dimb * (dimb + 1))/2
   if (dimb){
     Imat <- diag(dimb)
@@ -205,7 +205,7 @@ GLMM_MCMCdata <- function(y, dist, id, time, x, z, random.intercept)
               dimb             = dimb,
               LTb              = LTb,
               naamLTb          = naamLTb,
-              lbeta            = lbeta,
+              lalpha           = lalpha,
               p_fi             = p_fi,
               q_ri             = q_ri)
 

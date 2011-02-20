@@ -8,6 +8,8 @@
 //
 //  CREATED:   26/02/2010  (as file GLMM_dY_d_mean_Y_d.h by taking the code originally included in GLMM_MCMC.cpp)
 //             12/04/2010  (as this file)
+//             02/12/2010  computation of sum_Yd_i and sum_Yd added
+//                         argument N_s replaced by n and I
 //
 //  FUNCTIONS:  
 //     * dY_meanY     12/04/2010
@@ -33,6 +35,12 @@ namespace GLMM{
 //  dY[]               INPUT:  whatsever
 //                    OUTPUT:  see GLMM_MCMC.cpp
 //
+//  sum_dY_i[I]        INPUT:  whatsever
+//                    OUTPUT:  sum(dY) for each cluster of grouped observations
+//
+//  sum_dY[1]          INPUT:  whatsever
+//                    OUTPUT:  total sum(dY)
+//
 //  meanY[]            INPUT:  whatsever
 //                    OUTPUT:  see GLMM_MCMC.cpp
 // 
@@ -45,6 +53,11 @@ namespace GLMM{
 //  eta[]             values of linear predictors for both continuous and discrete responses
 //
 //  N_s[R_c + R_d]    numbers of observations for each response
+//                    THIS ARGUMENT REMOVED ON 02/12/2010
+//
+//  n[(R_c+R_d) * I]  number of observations for each response and each cluster
+//
+//  I[1]              number of clusters  
 //
 //  R_c[1]            number of continuous responses
 //
@@ -53,13 +66,16 @@ namespace GLMM{
 /***** ***************************************************************************************** *****/
 void
 dY_meanY(double* dY,
+         double* sum_dY_i,
+         double* sum_dY,
          double* meanY,
          int*    err,
          const double* Y_c,
          const int*    Y_d,
          const double* eta,
          const int*    dist,
-         const int*    N_s,
+         const int*    n,
+         const int*    I,
          const int*    R_c,
          const int*    R_d);
 

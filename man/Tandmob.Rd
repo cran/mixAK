@@ -145,18 +145,18 @@
   K. Hoppenbrouwers (Youth Health Department, Catholic University Leuven; Flemish Association for Youth Health Care).  
 }
 \references{
-\eqn{\mbox{Kom\'{a}rek, A.,}}{Kom&#225rek, A.,} Lesaffre, E.,
+Komárek, A., Lesaffre, E.,
 \eqn{\mbox{H\"{a}rk\"{a}nen,}}{Harkanen,} T., Declerck, D., and
 Virtanen, J. I. (2005).
 A Bayesian analysis of multivariate doubly-interval-censored dental data.
 \emph{Biostatistics,} \bold{6}, 145--155.
 
-\eqn{\mbox{Kom\'arek, A.}}{Kom&#225rek, A.} and Lesaffre, E. (2007).
+Komárek, A. and Lesaffre, E. (2007).
 Bayesian accelerated failure time model for correlated interval-censored data
 with a normal mixture as an error distribution.
 \emph{Statistica Sinica,} \bold{17}, 549--569. 
 
-Lesaffre, E., \eqn{\mbox{Kom\'{a}rek, A.},}{Kom&#225rek, A.,} and Declerck, D. (2005).
+Lesaffre, E., Komárek, A., and Declerck, D. (2005).
 An overview of methods for interval-censored data with an emphasis on
 applications in dentistry.
 \emph{Statistical Methods in Medical Research}, \bold{14}, 539--552.

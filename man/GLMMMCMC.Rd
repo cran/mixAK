@@ -11,15 +11,15 @@
   mixtures in the distributions of random effects.
 }  
 \details{
-  See accompanying paper (\eqn{\mbox{Kom\'arek}}{Kom&#225rek} et al., 2010).  
+  See accompanying papers (Komárek et al., 2010, Komárek and Komárková, 2011).  
 }  
 \usage{
 GLMM_MCMC(y, dist="gaussian", id, x, z, random.intercept,
-          prior.beta, init.beta,                      
-          scale.b,    prior.b,   init.b,
-          prior.eps,  init.eps,
+          prior.alpha, init.alpha,                      
+          scale.b,     prior.b,   init.b,
+          prior.eps,   init.eps,
           nMCMC=c(burn=10, keep=10, thin=1, info=10),
-          tuneMCMC=list(beta=1, b=1),
+          tuneMCMC=list(alpha=1, b=1),
           store=c(b=FALSE), keep.chains=TRUE)
 
 \method{print}{GLMM_MCMC}(x, \dots)
@@ -62,7 +62,7 @@ GLMM_MCMC(y, dist="gaussian", id, x, z, random.intercept,
   \item{random.intercept}{logical (vector) which determines for which responses random intercept
     should be included.
   }
-  \item{prior.beta}{a list which specifies prior distribution for fixed
+  \item{prior.alpha}{a list which specifies prior distribution for fixed
     effects (not the means of random effects). The prior distribution is
     normal and the user can specify the mean and variances.
     The list \code{prior.b} can have the components listed below.
@@ -72,7 +72,7 @@ GLMM_MCMC(y, dist="gaussian", id, x, z, random.intercept,
 	all components.}      
     }      
   }
-  \item{init.beta}{a numeric vector with initial values of fixed effects
+  \item{init.alpha}{a numeric vector with initial values of fixed effects
     (not the means of random effects). A sensible value is determined using the
     maximum-likelihood fits (using \code{\link[lme4]{lmer}} functions)
     and does not have to be given by the user.
@@ -164,7 +164,7 @@ GLMM_MCMC(y, dist="gaussian", id, x, z, random.intercept,
     are some discrete response profiles. The components of the list have
     the following meaning:
     \describe{
-      \item{beta}{scale parameters by which we multiply the proposal
+      \item{alpha}{scale parameters by which we multiply the proposal
 	covariance matrix when updating the fixed effects pertaining to
 	the discrete response profiles. There is one scale parameter for
         each DISCRETE profile. A single value is recycled if necessary.}
@@ -198,32 +198,32 @@ GLMM_MCMC(y, dist="gaussian", id, x, z, random.intercept,
   \item{R}{a two component vector giving the number of continuous
     responses and the number of discrete responses.}
   \item{p}{a numeric vector of length R giving the number of
-    non-intercept beta parameters for each response.}
+    non-intercept alpha parameters for each response.}
   \item{q}{a numeric vector of length R giving the number of
     non-intercept random effects for each response.}
   \item{fixed.intercept}{a logical vector of length R which indicates
     inclusion of fixed intercept for each response.}
   \item{random.intercept}{a logical vector of length R which indicates
     inclusion of random intercept for each response.}  
-  \item{lbeta}{length of the vector of fixed effects.}
+  \item{lalpha}{length of the vector of fixed effects.}
   \item{dimb}{dimension of the distribution of random effects.}
-  \item{prior.beta}{a list containing the used value of the
-    argument \code{prior.beta}.}
+  \item{prior.alpha}{a list containing the used value of the
+    argument \code{prior.alpha}.}
   \item{prior.b}{a list containing the used value of the
     argument \code{prior.b}.}
   \item{prior.eps}{a list containing the used value of the
     argument \code{prior.eps}.}
-  \item{init.beta}{a numeric vector with the used value of the
-    argument \code{init.beta}.}
+  \item{init.alpha}{a numeric vector with the used value of the
+    argument \code{init.alpha}.}
   \item{init.b}{a list containing the used value of the
     argument \code{init.b}.}
   \item{init.eps}{a list containing the used value of the
     argument \code{init.eps}.}
-  \item{state.first.beta}{a numeric vector with the first stored (after burn-in) value
-    of fixed effects \eqn{\beta}{beta}.}
-  \item{state.last.beta}{a numeric vector with the last sampled value
-    of fixed effects \eqn{\beta}{beta}. It can be used as argument
-    \code{init.beta} to restart MCMC.}
+  \item{state.first.alpha}{a numeric vector with the first stored (after burn-in) value
+    of fixed effects \eqn{\alpha}{alpha}.}
+  \item{state.last.alpha}{a numeric vector with the last sampled value
+    of fixed effects \eqn{\alpha}{alpha}. It can be used as argument
+    \code{init.alpha} to restart MCMC.}
   \item{state.first.b}{a list with the first stored (after burn-in) values of parameters
     related to the distribution of random effects. It has components
     named \code{b}, \code{K}, \code{w}, \code{mu}, \code{Sigma}, \code{Li}, \code{Q},
@@ -240,7 +240,7 @@ GLMM_MCMC(y, dist="gaussian", id, x, z, random.intercept,
     related to the distribution of residuals of continuous responses. It
     has components named \code{sigma}, \code{gammaInv}. It can be used as argument
     \code{init.eps} to restart MCMC.}
-  \item{prop.accept.beta}{acceptance proportion from the
+  \item{prop.accept.alpha}{acceptance proportion from the
     Metropolis-Hastings algorithm for fixed effects
     (separately for each response type). Note that the acceptance
     proportion is equal to one for continuous responses since the Gibbs
@@ -255,7 +255,7 @@ GLMM_MCMC(y, dist="gaussian", id, x, z, random.intercept,
   \item{summ.Deviance}{a \code{data.frame} with posterior summary
     statistics for the deviance (approximated using the Laplacian
     approximation) and conditional (given random effects) devience.}
-  \item{summ.beta}{a \code{data.frame} with posterior summary statistics for fixed effects.}
+  \item{summ.alpha}{a \code{data.frame} with posterior summary statistics for fixed effects.}
   \item{summ.b.Mean}{a matrix with posterior summary statistics for
     means of random effects.}
   \item{summ.b.SDCorr}{a matrix with posterior summary statistics for
@@ -406,7 +406,7 @@ GLMM_MCMC(y, dist="gaussian", id, x, z, random.intercept,
     iteration.}
   \item{b}{a matrix with the MCMC chains for random effects. It is
     included only if \code{store[b]} is \code{TRUE}.}
-  \item{beta}{numeric vector or matrix with the MCMC chain(s) for fixed effects.}
+  \item{alpha}{numeric vector or matrix with the MCMC chain(s) for fixed effects.}
   \item{sigma_eps}{numeric vector or matrix with the MCMC chain(s) for
     standard deviations of the error terms in the (mixed) models for
     continuous responses.}
@@ -423,17 +423,19 @@ GLMM_MCMC(y, dist="gaussian", id, x, z, random.intercept,
   }  
 }
 \references{
-  \eqn{\mbox{Kom\'{a}rek, A.}}{Kom&#225rek, A.}, Hansen, B. E., Kuiper,
-  E. M. M., van Buuren, H. R., and Lesaffre, E. (2010).
-  Discriminant analysis using a multivariate linear mixed model with a
-  normal mixture in the random effects distribution.
-  \emph{Statistics in Medicine}. To appear. %\bold{XX}, XXX-XXX.
+  Komárek, A. and Komárková, L. (2011).
+  Clustering for Multivariate Continuous and Discrete Longitudinal Data.
+  \emph{Submitted for publication}.
+
+  Komárek, A., Hansen, B. E., Kuiper, E. M. M., van Buuren, H. R., and Lesaffre, E. (2010).
+  Discriminant analysis using a multivariate linear mixed model with a normal mixture in the random effects distribution.
+  \emph{Statistics in Medicine}, \bold{29}, 3267-3283.
 }  
 \seealso{
   \code{\link{NMixMCMC}}.
 }
 \author{
-  \eqn{\mbox{Arno\v{s}t Kom\'arek}}{Arno&#353t Kom&#225rek} \email{arnost.komarek[AT]mff.cuni.cz}
+  Arnošt Komárek \email{arnost.komarek[AT]mff.cuni.cz}
 }  
 \examples{
 ### WILL BE ADDED.

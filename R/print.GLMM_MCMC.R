@@ -29,10 +29,10 @@ print.GLMM_MCMC <- function(x, ...)
   names(pr.Dev) <- rownames(x$summ.Deviance)
   print(pr.Dev)
     
-  if (x$lbeta){
+  if (x$lalpha){
     cat("\nPosterior summary statistics for fixed effects:")
     cat("\n-----------------------------------------------\n")
-    print(x$summ.beta, ...)
+    print(x$summ.alpha, ...)
   }
 
   if (x$dimb){

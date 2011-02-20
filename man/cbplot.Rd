@@ -53,7 +53,7 @@ cbplot(x, y, low, upp, band.type=c("ls", "s", "l"), add=FALSE,
   \code{invisible(x)}
 }
 \author{
-  \eqn{\mbox{Arno\v{s}t Kom\'arek}}{Arno&#353t Kom&#225rek} \email{arnost.komarek[AT]mff.cuni.cz}
+  Arnošt Komárek \email{arnost.komarek[AT]mff.cuni.cz}
 }  
 \examples{
 ### Artificial credible bands around the CDF's of N(100, 15*15)

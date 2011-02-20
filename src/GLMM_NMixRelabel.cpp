@@ -14,6 +14,10 @@
 extern "C" {
 #endif
 
+  //  int iteration = 0;       /** global variables for debugging purposes **/
+  //  int iter_show = 624;
+  //  int clus_show = 175;
+
 /***** ***************************************************************************************** *****/
 /***** GLMM_NMixRelabel                                                                          *****/
 /***** ***************************************************************************************** *****/
@@ -53,6 +57,9 @@ GLMM_NMixRelabel(const int*    type,
                  double* pm_Li_b,
                  int*    sum_Ir_b,
                  double* hatPr_b_b,
+                 double* Pr_b_b,
+                 double* hatPr_obs,
+                 double* Pr_obs,
                  int*    iter_relabel,
                  int*    nchange,
                  int*    err)
@@ -159,9 +166,11 @@ GLMM_NMixRelabel(const int*    type,
   double *eta_zs     = Calloc(N, double);
   double *meanY      = Calloc(N, double);  
   double *dY         = Calloc(N, double);  
+  double *sum_dY_i   = Calloc(*I, double);          // FINALLY NOT NEEDED
+  double sum_dY[1] = {0.0};                         // FINALLY NOT NEEDED
   GLMM::linear_predictors(eta_fixed, eta_random, eta, eta_zs, N_s, N_i,
                           X, chbeta, Z, b, shift_b, p, fixedIntcpt, q, randIntcpt, n, &R, I, &dim_b, cumq_ri);
-  GLMM::dY_meanY(dY, meanY, err, Y_c, Y_d, eta, dist, N_s, R_c, R_d);
+  GLMM::dY_meanY(dY, sum_dY_i, sum_dY, meanY, err, Y_c, Y_d, eta, dist, n, I, R_c, R_d);
 
   int max_N_i = AK_Basic::maxArray(N_i, *I);  
 
@@ -224,11 +233,12 @@ GLMM_NMixRelabel(const int*    type,
   }
 
   /***** Create SZitZiS matrices *****/ 
-  int l_ZitZi = 0;                                           // total length of ZitZi lower triangles of all SZitZiS matrices
-  for (s = 0; s < *R_c; s++)             l_ZitZi += *I * ((q_ri[s] * (q_ri[s] + 1)) / 2);
-  for (s = *R_c; s < (*R_c + *R_d); s++) l_ZitZi += N_s[s] * ((q_ri[s] * (q_ri[s] + 1)) / 2);
-  double *SZitZiS = Calloc(l_ZitZi, double);
-  GLMM::create_SZitZiS(SZitZiS, ZrespP, Zresp, scale_b, q, randIntcpt, R_c, R_d, I, n);
+  /*** --- needed only when the random effects are updated without LS solution --- ***/
+  //int l_ZitZi = 0;                                           // total length of ZitZi lower triangles of all SZitZiS matrices
+  //for (s = 0; s < *R_c; s++)             l_ZitZi += *I * ((q_ri[s] * (q_ri[s] + 1)) / 2);
+  //for (s = *R_c; s < (*R_c + *R_d); s++) l_ZitZi += N_s[s] * ((q_ri[s] * (q_ri[s] + 1)) / 2);
+  //double *SZitZiS = Calloc(l_ZitZi, double);
+  //GLMM::create_SZitZiS(SZitZiS, ZrespP, Zresp, scale_b, q, randIntcpt, R_c, R_d, I, n);
 
   /***** Shifted and scaled values of random effects  *****/
   double *bscaled = Calloc(*I * dim_b, double);
@@ -242,9 +252,16 @@ GLMM_NMixRelabel(const int*    type,
 
   /***** Quantities needed by a routine which updates random effects             *****/
   double log_dets_ranef[2]; 
-  double *dwork_ranef = Calloc(*K_b * dim_b + 5 * dim_b + 3 * LT_b + dim_b * dim_b + 2 * max_N_i, double);
   log_dets_ranef[0] = 0.0;
   log_dets_ranef[1] = -dim_b * M_LN_SQRT_2PI;
+
+  double *dwork_ranef = NULL;                        /*** working space for GLMM::updateRanEf  ***/  
+  dwork_ranef = Calloc(*K_b * dim_b + 5 * dim_b + 3 * LT_b + dim_b * dim_b + 2 * max_N_i, double);
+
+  double *dwork_ranef_QR = NULL;                     /*** working space for GLMM::updateRanEf_QR  ***/
+  int *iwork_ranef_QR = NULL;
+  dwork_ranef_QR = Calloc((max_N_i + dim_b) * (dim_b + 3) + dim_b * 8 + max_N_i * (2 * dim_b + 5) + LT_b * 2 + 2, double);
+  iwork_ranef_QR = Calloc(dim_b, int);
 
   /***** Reset naccept_b *****/
   AK_Basic::fillArray(naccept_b, 0, *I);
@@ -262,21 +279,20 @@ GLMM_NMixRelabel(const int*    type,
   double *dwork_MVN = Calloc(dim_b, double);
   AK_Basic::fillArray(dwork_MVN, 0.0, dim_b);
 
-  /***** Declare cum_Pr_b, Pr_b                                                               *****/
-  /***** Pr_b[j, i]     = w_j * phi(b_i | mu_j, Sigma_j) (for simple re-labeling algorithms)  *****/
-  /*****     * all iterations must be stored at once for Stephens' algorithm                  *****/
-  /***** cum_Pr_b[j, i] = sum_{l=1}^j w_l * phi(b_i | mu_l, Sigma_l)                          *****/
-  /***** Reset sum_Ir_b, hatPr_b_b, declare some additional needed quantities                   *****/  
-  int length_Pr_b = *K_b * *I;
-  if (*type == NMix::STEPHENS) length_Pr_b *= *keepMCMC;
-  double *Pr_b     = Calloc(length_Pr_b, double);
-  double *cum_Pr_b = Calloc(*K_b * *I, double);
+  /***** Declare cum_Pr_b_b                                                                       *****/
+  /***** Pr_b_b[j, i] = w_j * phi(b_i | mu_j, Sigma_j) (for simple re-labeling algorithms)        *****/
+  /*****     * all iterations must be stored at once for Stephens' algorithm                      *****/
+  /*****     * as of November 2010, all are always stored                                         *****/
+  /***** cum_Pr_b_b[j, i] = sum_{l=1}^j w_l * phi(b_i | mu_l, Sigma_l)                            *****/
+  /***** Reset sum_Ir_b, hatPr_b_b, hatPr_obs, declare some additional needed quantities          *****/  
+  double *cum_Pr_b_b = Calloc(*K_b * *I, double);
 
-  NMix::Pr_y_and_cum_Pr_y(Pr_b, cum_Pr_b, dwork_MVN, bscaled, &dim_b, I, logw_b, chmu_b, chLi_b, log_dets_b, K_b);
-        /** Even for *type == NMix::STEPHENS, Pr_b is initialized only at first K_b * I places **/
+  NMix::Pr_y_and_cum_Pr_y(Pr_b_b, cum_Pr_b_b, dwork_MVN, bscaled, &dim_b, I, logw_b, chmu_b, chLi_b, log_dets_b, K_b);
+        /** Even for *type == NMix::STEPHENS, Pr_b_b is initialized only at first K_b * I places **/
         /** using the values from the first iteration.                                         **/
   AK_Basic::fillArray(sum_Ir_b,  0,   *I * *K_b);
   AK_Basic::fillArray(hatPr_b_b, 0.0, *I * *K_b);
+  AK_Basic::fillArray(hatPr_obs, 0.0, *I * *K_b);
 
   /***** Indicator to be passed to NMix::updateAlloc *****/
   bool cum_Pr_done_b[1] = {true};
@@ -289,7 +305,7 @@ GLMM_NMixRelabel(const int*    type,
     *rInv_bPP = Calloc(*I, int);
     rInv_bPP++;
   }
-  NMix::updateAlloc(r_b, mixN_b, rInv_b, cum_Pr_b, dwork_MVN,
+  NMix::updateAlloc(r_b, mixN_b, rInv_b, cum_Pr_b_b, dwork_MVN,
                     bscaled, &dim_b, I, logw_b, chmu_b, chLi_b, log_dets_b, K_b, cum_Pr_done_b);  
 
   /***** Working space for NMix::orderComp *****/
@@ -297,24 +313,65 @@ GLMM_NMixRelabel(const int*    type,
   AK_Basic::fillArray(dwork_orderComp, 0.0, *K_b);
 
 
+/***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/
+/***** Preparation to be able to calculate observed deviance based quantities (random effects integrated out)      *****/
+/***** * quantities needed by GLMM_Deviance function and not yet i
+/***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/ 
+  double marg_ll[1] = {0.0};
+  double *marg_ll_i = Calloc(*I, double);
+  AK_Basic::fillArray(marg_ll_i, 0.0, *I);
+
+  double cond_ll[1] = {0.0};
+  double *cond_ll_i = Calloc(*I, double);
+  AK_Basic::fillArray(cond_ll_i, 0.0, *I);  
+
+  double *stres = Calloc(N, double);
+  AK_Basic::fillArray(stres, 0.0, N);  
+
+  double *sqrt_w_phi = Calloc(N, double);
+  AK_Basic::fillArray(sqrt_w_phi, 0.0, N);  
+
+  double *dwork_GLMM_Deviance = Calloc((max_N_i + dim_b) * (dim_b + 3) + dim_b * 5 + max_N_i * (dim_b + 1) + LT_b, double);
+  int    *iwork_GLMM_Deviance = Calloc(dim_b > 0 ? dim_b : 1, int);
+
+  /***** Create ZS matrices *****/
+  /*** --- needed for GLMM_Deviance and also for update of random effects via QR decomposition        --- ***/
+  /*** --- l_ZS[i] gives the length of array for ZS matrices in the i-th cluster                      --- ***/
+  int *l_ZS = Calloc(*I, int);
+  AK_Basic::fillArray(l_ZS, 0, *I);
+  int *l_ZSP;
+  int *nP = n;
+  for (s = 0; s < R; s++){
+    l_ZSP = l_ZS;
+    for (i = 0; i < *I; i++){
+      *l_ZSP += *nP * q_ri[s];
+      l_ZSP++;
+      nP++;
+    }
+  }
+  int sum_l_ZS = AK_Basic::sum(l_ZS, *I);                        /* length of array for ZS matrices          */
+  double *ZS = Calloc(sum_l_ZS, double);
+  GLMM::create_ZS(ZS, ZrespP, nrespP, Zresp, nresp, scale_b, q, randIntcpt, &R, I);
+
+
+
 /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/
-/***** Main computation for simple re-labeling algorithms based on ordering of mixture weights            *****/
-/***** or ordering of mixture means                                                                       *****/
+/***** Simple re-labeling algorithms based on ordering of mixture weights                                 *****/
+/***** or ordering of mixture means (it is used as initial one for Stephens)                              *****/
 /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/ 
   int iter;
   int iter_backs = 0;        /*** used to move MCMC iteration counter ***/
 
+  int simpleType;
   int margin4orderComp;
   int dim4orderComp;
 
-  /***** Declarations of variables used only by simple algorithms *****/  
-  double *hatPr_b_bP = NULL;
-
-  /***** Declarations of variables used only by Stephens' algorithm *****/
+  /***** Declarations of some variables used below *****/
   int    *r_bAll  = NULL;
   int    *r_bAllP = NULL;
 
-  double *Pr_bP = NULL;
+  double *Pr_b_bP = NULL;
+  double *Pr_obsP = NULL;
 
   int *nchangeP = NULL;
   int nchanges;
@@ -341,8 +398,10 @@ GLMM_NMixRelabel(const int*    type,
   case NMix::MEAN:
   case NMix::WEIGHT:
 
+    simpleType = *type;
+
     /***** Arguments passed to NMix::orderComp function *****/
-    switch (*type){
+    switch (simpleType){
     case NMix::MEAN:
       margin4orderComp = *iparam;
       dim4orderComp    = dim_b;
@@ -354,87 +413,16 @@ GLMM_NMixRelabel(const int*    type,
       break;   
     }
 
-    /***** Loop over MCMC iterations *****/
-    GetRNGstate();  
-    Rprintf((char*)("MCMC Iteration "));
-    for (iter = 1; iter <= *keepMCMC; iter++){
-
-      /***** Progress information *****/
-      if (!(iter % *info) || iter == *keepMCMC){
-        for (i = 0; i < iter_backs; i++) Rprintf((char*)("\b"));
-        Rprintf((char*)("%d"), iter);
-        iter_backs = int(log10(double(iter))) + 1;
-      }
-
-      /***** Calculate parameter values derived from mixture parameters *****/
-      NMix::w2logw(logw_b, chw_bP, K_b);  
-      NMix::Li2log_dets(log_dets_b, chLi_bP, K_b, &dim_b);
-
-      /***** Calculate values of linear predictors *****/
-      if (l_beta) GLMM::linear_predictors_fixed_updated(eta_fixed, eta, meanY, eta_random, X, chbetaP, p, fixedIntcpt, dist, n, &R, I);
-
-      /***** Sample new values of random effects *****/
-      GLMM::updateRanEf(b, bscaled, eta_randomresp, etaresp, meanYresp, log_dets_ranef,
-      	                dwork_ranef, Y_crespP, Y_drespP, dYrespP, eta_fixedrespP, eta_randomrespP, eta_zsrespP, etarespP, meanYrespP, 
-                        ZrespP, nrespP, naccept_b, err,
-      	                Y_cresp, Y_dresp, dYresp, eta_fixedresp, eta_zsresp, Zresp, SZitZiS, shift_b, scale_b, 
-      	                q, randIntcpt, q_ri, cumq_ri, &dim_b, &LT_b, R_c, R_d, dist, I, nresp, N_i,
-      	                chsigma_epsP, K_b, chmu_bP, chQ_bP, chLi_bP, log_dets_b, r_b, sqrt_tune_scale_b, log_sqrt_tune_scale_b);
-
-      /***** Compute new Pr_b and cum_Pr_b             *****/
-      NMix::Pr_y_and_cum_Pr_y(Pr_b, cum_Pr_b, dwork_MVN, bscaled, &dim_b, I, logw_b, chmu_bP, chLi_bP, log_dets_b, K_b);
-
-      /***** Sample new component allocations *****/
-      NMix::updateAlloc(r_b, mixN_b, rInv_b, cum_Pr_b, dwork_MVN,
-                        bscaled, &dim_b, I, logw_b, chmu_bP, chLi_bP, log_dets_b, K_b, cum_Pr_done_b);
-
-      /***** Determine order and rank of components according to required re-labeling algorithm *****/
-      switch (*type){
-      case NMix::MEAN:
-        NMix::orderComp(chorder_bP, chrank_bP, dwork_orderComp, &margin4orderComp, K_b, chmu_bP, &dim4orderComp);
-        break;
-
-      case NMix::WEIGHT:    
-        NMix::orderComp(chorder_bP, chrank_bP, dwork_orderComp, &margin4orderComp, K_b, chw_bP, &dim4orderComp);
-        break;
-      }
-
-      /***** Update sum_Ir_b, hatPr_b_b *****/
-      NMix::update_sum_Ir_and_sum_Pr_y(sum_Ir_b, hatPr_b_b, Pr_b, r_b, chrank_bP, K_b, I);
-
-      /***** Shift pointers in chains *****/
-      chsigma_epsP += *R_c;
-      chw_bP       += *K_b;
-      chmu_bP      += dim_b * *K_b;
-      chLi_bP      += LT_b * *K_b;
-      chQ_bP       += LT_b * *K_b;
-      //chSigma_bP   += LT_b * *K_b;
-      chbetaP      += l_beta;
-      chorder_bP   += *K_b;
-      chrank_bP    += *K_b; 
-    }
-    Rprintf((char*)("\n"));
-    PutRNGstate();
-
-    /***** Calculate hatPr_b_b (we have to divide current values by keepMCMC) *****/
-    hatPr_b_bP = hatPr_b_b;
-    for (i = 0; i < *I * *K_b; i++){
-      *hatPr_b_bP /= *keepMCMC;
-      hatPr_b_bP++;      
-    }
-    
     break;
 
-
-/***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/
-/***** Main computation for Stephens' algorithm                                                           *****/
-/***** (Matthew Stephens, 2000, JRSS-B, 795-809, Section 4.1)                                             *****/
-/***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/ 
-  case NMix::STEPHENS:
+  case NMix::STEPHENS:       // Stephens' algorithm 
+                             // Matthew Stephens, 2000, JRSS-B, 795-809, Section 4.1
 
     /***** Arguments passed to NMix::orderComp function          *****/
     /***** corresponding to the initial re-labeling algorithm    *****/
-    switch (iparam[0]){
+    simpleType = iparam[0];
+
+    switch (simpleType){
     case NMix::IDENTITY:
       margin4orderComp = 0;
       dim4orderComp    = 1;
@@ -451,98 +439,140 @@ GLMM_NMixRelabel(const int*    type,
       break;   
     }
 
-    /***** Space to store component allocations from all iterations of MCMC  *****/
-    /***** * initialize by -1                                                *****/
-    r_bAll = Calloc(*I * *keepMCMC, int);
-    AK_Basic::fillArray(r_bAll, -1, *I * *keepMCMC);
+    break;
+  }                 /** end of main switch type **/  
 
-    /***** Loop over MCMC iterations to calculate Pr_b and r_bAll.                                   *****/
-    /***** Ititialize re-labeling by one of simple algorithms based on mixture weights or means.     *****/
-    r_bAllP = r_bAll;
-    Pr_bP   = Pr_b;
+  /***** Space to store component allocations from all iterations of MCMC  *****/
+  /***** * initialize by -1                                                *****/
+  r_bAll = Calloc(*I * *keepMCMC, int);
+  AK_Basic::fillArray(r_bAll, -1, *I * *keepMCMC);
 
-    GetRNGstate();  
-    Rprintf((char*)("MCMC Iteration (initial re-labelling) "));
-    for (iter = 1; iter <= *keepMCMC; iter++){
+  /***** Loop over MCMC iterations to calculate Pr_b_b, Pr_obs, and r_bAll.                        *****/
+  /***** Ititialize re-labeling by one of simple algorithms based on mixture weights or means.     *****/
+  r_bAllP = r_bAll;
+  Pr_b_bP   = Pr_b_b;
+  Pr_obsP   = Pr_obs;
 
-      /***** Progress information *****/
-      if (!(iter % *info) || iter == *keepMCMC){
-        for (i = 0; i < iter_backs; i++) Rprintf((char*)("\b"));
-        Rprintf((char*)("%d"), iter);
-        iter_backs = int(log10(double(iter))) + 1;
-      }
+  GetRNGstate();  
+  Rprintf((char*)("MCMC Iteration (simple re-labelling) "));
+  for (iter = 1; iter <= *keepMCMC; iter++){
 
-      /***** Calculate parameter values derived from mixture parameters *****/
-      NMix::w2logw(logw_b, chw_bP, K_b);  
-      NMix::Li2log_dets(log_dets_b, chLi_bP, K_b, &dim_b);
+    //iteration = iter;         // iteration is a global variable for debugging purposes
 
-      /***** Calculate values of linear predictors *****/
-      if (l_beta) GLMM::linear_predictors_fixed_updated(eta_fixed, eta, meanY, eta_random, X, chbetaP, p, fixedIntcpt, dist, n, &R, I);
-
-      /***** Sample new values of random effects *****/
-      GLMM::updateRanEf(b, bscaled, eta_randomresp, etaresp, meanYresp, log_dets_ranef, 
-      	                dwork_ranef, Y_crespP, Y_drespP, dYrespP, eta_fixedrespP, eta_randomrespP, eta_zsrespP, etarespP, meanYrespP, 
-                        ZrespP, nrespP, naccept_b, err,
-      	                Y_cresp, Y_dresp, dYresp, eta_fixedresp, eta_zsresp, Zresp, SZitZiS, shift_b, scale_b, 
-      	                q, randIntcpt, q_ri, cumq_ri, &dim_b, &LT_b, R_c, R_d, dist, I, nresp, N_i,
-      	                chsigma_epsP, K_b, chmu_bP, chQ_bP, chLi_bP, log_dets_b, r_b, sqrt_tune_scale_b, log_sqrt_tune_scale_b);
-
-      /***** Compute new Pr_b and cum_Pr_b             *****/
-      NMix::Pr_y_and_cum_Pr_y(Pr_bP, cum_Pr_b, dwork_MVN, bscaled, &dim_b, I, logw_b, chmu_bP, chLi_bP, log_dets_b, K_b);
-
-      /***** Sample new component allocations *****/
-      NMix::updateAlloc(r_b, mixN_b, rInv_b, cum_Pr_b, dwork_MVN,
-                        bscaled, &dim_b, I, logw_b, chmu_bP, chLi_bP, log_dets_b, K_b, cum_Pr_done_b);
-
-      /***** Determine order and rank of components according to required initial re-labeling algorithm *****/
-      switch (iparam[0]){
-      case NMix::IDENTITY:
-        for (j = 0; j < *K_b; j++){
-          *chorder_bP = j;
-          *chrank_bP  = j;
-          chorder_bP++;
-          chrank_bP++;
-        }
-        break;
-
-      case NMix::MEAN:
-        NMix::orderComp(chorder_bP, chrank_bP, dwork_orderComp, &margin4orderComp, K_b, chmu_bP, &dim4orderComp);
-        chorder_bP += *K_b;
-        chrank_bP  += *K_b; 
-        break;
-
-      case NMix::WEIGHT:    
-        NMix::orderComp(chorder_bP, chrank_bP, dwork_orderComp, &margin4orderComp, K_b, chw_bP, &dim4orderComp);
-        chorder_bP += *K_b;
-        chrank_bP  += *K_b; 
-        break;
-      }
-
-      /***** Keep component allocations in r_bAll *****/
-      AK_Basic::copyArray(r_bAllP, r_b, *I);
-
-      /***** Shift pointers in chains *****/
-      chsigma_epsP += *R_c;
-      chw_bP       += *K_b;
-      chmu_bP      += dim_b * *K_b;
-      chLi_bP      += LT_b * *K_b;
-      chQ_bP       += LT_b * *K_b;
-      //chSigma_bP   += LT_b * *K_b;
-      chbetaP      += l_beta;
-
-      /***** Shift pointers in r_bAll and Pr_b  *****/
-      r_bAllP += *I;
-      Pr_bP   += (*I * *K_b); 
+    /***** Progress information *****/
+    if (!(iter % *info) || iter == *keepMCMC){
+      for (i = 0; i < iter_backs; i++) Rprintf((char*)("\b"));
+      Rprintf((char*)("%d"), iter);
+      iter_backs = int(log10(double(iter))) + 1;
     }
-    Rprintf((char*)("\n"));
-    PutRNGstate();
+
+    /***** Calculate parameter values derived from mixture parameters *****/
+    NMix::w2logw(logw_b, chw_bP, K_b);  
+    NMix::Li2log_dets(log_dets_b, chLi_bP, K_b, &dim_b);
+
+    /***** Calculate values of linear predictors *****/
+    if (l_beta) GLMM::linear_predictors_fixed_updated(eta_fixed, eta, meanY, eta_random, X, chbetaP, p, fixedIntcpt, dist, n, &R, I);
+
+    /***** Sample new values of random effects *****/
+    GLMM::updateRanEf_QR(b, bscaled, eta_randomresp, etaresp, meanYresp, log_dets_ranef,
+                         iwork_ranef_QR, dwork_ranef_QR, 
+                         Y_crespP, Y_drespP, dYrespP, eta_fixedrespP, eta_randomrespP, etarespP, meanYrespP, 
+                         ZrespP, nrespP, naccept_b, err,
+	                 Y_cresp, Y_dresp, dYresp, eta_fixedresp, Zresp, ZS, shift_b, scale_b, 
+	                 q, randIntcpt, q_ri, &dim_b, &LT_b, R_c, R_d, dist, I, nresp, N_i, &max_N_i, l_ZS,
+	                 chsigma_epsP, chmu_bP, chLi_bP, log_dets_b, r_b, sqrt_tune_scale_b, log_sqrt_tune_scale_b);
+    //GLMM::updateRanEf(b, bscaled, eta_randomresp, etaresp, meanYresp, log_dets_ranef, 
+    //  	        dwork_ranef, Y_crespP, Y_drespP, dYrespP, eta_fixedrespP, eta_randomrespP, eta_zsrespP, etarespP, meanYrespP, 
+    //                  ZrespP, nrespP, naccept_b, err,
+    //  	        Y_cresp, Y_dresp, dYresp, eta_fixedresp, eta_zsresp, Zresp, SZitZiS, shift_b, scale_b, 
+    //  	        q, randIntcpt, q_ri, cumq_ri, &dim_b, &LT_b, R_c, R_d, dist, I, nresp, N_i,
+    //  	        chsigma_epsP, K_b, chmu_bP, chQ_bP, chLi_bP, log_dets_b, r_b, sqrt_tune_scale_b, log_sqrt_tune_scale_b);
+
+    /***** Compute new Pr_b_b and cum_Pr_b_b             *****/
+    NMix::Pr_y_and_cum_Pr_y(Pr_b_bP, cum_Pr_b_b, dwork_MVN, bscaled, &dim_b, I, logw_b, chmu_bP, chLi_bP, log_dets_b, K_b);
+
+    /***** Sample new component allocations *****/
+    NMix::updateAlloc(r_b, mixN_b, rInv_b, cum_Pr_b_b, dwork_MVN,
+                      bscaled, &dim_b, I, logw_b, chmu_bP, chLi_bP, log_dets_b, K_b, cum_Pr_done_b);
+
+    /*** GLMM log-likelihood, marginal and conditional --> will be used to calculate P(r[i]=k | theta, y) ***/
+    GLMM::Deviance(marg_ll, marg_ll_i, Pr_obsP, cond_ll, cond_ll_i, stres, sqrt_w_phi, 
+                   Y_crespP, Y_drespP, dYrespP, eta_fixedrespP, eta_randomrespP, meanYrespP, ZrespP, nrespP,
+                   iwork_GLMM_Deviance, dwork_GLMM_Deviance, err,
+                   Y_cresp,  Y_dresp,  dYresp,  eta_fixedresp,  eta_randomresp,  meanYresp , Zresp,  nresp,
+                   ZS, shift_b, scale_b, q, randIntcpt, q_ri, &dim_b, &LT_b, R_c, R_d, dist, I, N_i, &max_N_i, l_ZS,
+                   chsigma_epsP, K_b, chw_bP, logw_b, chmu_bP, chLi_bP, log_dets_b, bscaled);
+
+    //if (iteration == iter_show){
+    //  Rprintf("  --- marg_Li[%d] = %g --- \n", clus_show, marg_L_i[clus_show]);
+    //}
+
+    /*** Fill in Pr_obs values --> based on marg_L_i and marg_L_ik ***/
+    //GLMM::Deviance2Pr_obs(Pr_obsP, marg_L_i, marg_L_ik, chw_bP, I, K_b);
+
+    /***** Determine order and rank of components according to required initial re-labeling algorithm *****/
+    switch (simpleType){
+    case NMix::IDENTITY:
+      for (j = 0; j < *K_b; j++){
+        *chorder_bP = j;
+        *chrank_bP  = j;
+        chorder_bP++;
+        chrank_bP++;
+      }
+      break;
+
+    case NMix::MEAN:
+      NMix::orderComp(chorder_bP, chrank_bP, dwork_orderComp, &margin4orderComp, K_b, chmu_bP, &dim4orderComp);
+      chorder_bP += *K_b;
+      chrank_bP  += *K_b; 
+      break;
+
+    case NMix::WEIGHT:    
+      NMix::orderComp(chorder_bP, chrank_bP, dwork_orderComp, &margin4orderComp, K_b, chw_bP, &dim4orderComp);
+      chorder_bP += *K_b;
+      chrank_bP  += *K_b; 
+      break;
+    }
+
+    /***** Keep component allocations in r_bAll *****/
+    AK_Basic::copyArray(r_bAllP, r_b, *I);
+
+    /***** Shift pointers in chains *****/
+    chsigma_epsP += *R_c;
+    chw_bP       += *K_b;
+    chmu_bP      += dim_b * *K_b;
+    chLi_bP      += LT_b * *K_b;
+    chQ_bP       += LT_b * *K_b;
+    //chSigma_bP   += LT_b * *K_b;
+    chbetaP      += l_beta;
+
+    /***** Shift pointers in r_bAll, Pr_b_b, Pr_obs *****/
+    r_bAllP += *I;
+    Pr_b_bP += (*I * *K_b); 
+    Pr_obsP += (*I * *K_b); 
+  }
+  Rprintf((char*)("\n"));
+  PutRNGstate();
 
 
-    /***** Main Re-labeling (Algorithm 2, p. 802 of Stephens, 2000) *****/
+  /***** Stephens' Re-labeling (Algorithm 2, p. 802 of Stephens, 2000) *****/
+
+  /*** Quantities upon which the re-labelling algorithm is used ***/
+  double *hatPr_forStephens = hatPr_obs;
+  double *Pr_forStephens    = Pr_obs;
+  double *hatPr_notForStephens = hatPr_b_b;
+  double *Pr_notForStephens    = Pr_b_b;
+
+  //double *hatPr_forStephens = hatPr_b_b;
+  //double *Pr_forStephens    = Pr_b_b;
+  //double *hatPr_notForStephens = hatPr_obs;
+  //double *Pr_notForStephens    = Pr_obs;
+
+  if (*type == NMix::STEPHENS){
     *iter_relabel = 0;
     nchanges      = 1;
     nchangeP      = nchange;
-    Rprintf((char*)("Re-labelling iteration (number of labelling changes): "));
+    Rprintf((char*)("Stephens' re-labelling iteration (number of labelling changes): "));
 
     switch (iparam[3]){
     case 0:                   /***** TRANSPORTATION version of the Stephens' algorithm *****/                 
@@ -571,16 +601,17 @@ GLMM_NMixRelabel(const int*    type,
         /***** Progress information *****/
         Rprintf((char*)("%d"), *iter_relabel);
 
-        /***** Step 1 of Stephens' algorithm        *****/
-        /***** = computation of hat{q}_{i,j}        *****/
-        /***** * keep hat{q}_{i,j} in hatPr_y       *****/
-        NMix::Stephens_step1(hatPr_b_b, Pr_b, chrank_b, keepMCMC, I, K_b);
+        /***** Step 1 of Stephens' algorithm                  *****/
+        /***** = computation of hat{q}_{i,j}                  *****/
+        /***** * keep hat{q}_{i,j} in hatPr_forStephens       *****/
+        NMix::Stephens_step1(hatPr_forStephens, Pr_forStephens, chrank_b, keepMCMC, I, K_b);
 
         /***** Step 2 of Stephens' algorithm        *****/
         /***** * change labeling                    *****/
         *err = 1;
         error("%s:  Transportation version of the Stephens' algorithm not (yet?) implemented.\n", fname);    
-        NMix::Stephens_step2_transport(nchangeP, chorder_b, chrank_b, lp_costs, lp_solution, lp_r_signs, lp_r_rhs, lp_c_signs, lp_c_rhs, lp_integers, hatPr_b_b, Pr_b, keepMCMC, I, K_b);
+        NMix::Stephens_step2_transport(nchangeP, chorder_b, chrank_b, lp_costs, lp_solution, lp_r_signs, lp_r_rhs, lp_c_signs, lp_c_rhs, lp_integers, 
+                                       hatPr_forStephens, Pr_forStephens, keepMCMC, I, K_b);
         nchanges = *nchangeP;
         nchangeP++;
 
@@ -620,14 +651,15 @@ GLMM_NMixRelabel(const int*    type,
         /***** Progress information *****/
         Rprintf((char*)("%d"), *iter_relabel);
 
-        /***** Step 1 of Stephens' algorithm        *****/
-        /***** = computation of hat{q}_{i,j}        *****/
-        /***** * keep hat{q}_{i,j} in hatPr_y       *****/
-        NMix::Stephens_step1(hatPr_b_b, Pr_b, chrank_b, keepMCMC, I, K_b);
+        /***** Step 1 of Stephens' algorithm                  *****/
+        /***** = computation of hat{q}_{i,j}                  *****/
+        /***** * keep hat{q}_{i,j} in hatPr_forStephens       *****/
+        NMix::Stephens_step1(hatPr_forStephens, Pr_forStephens, chrank_b, keepMCMC, I, K_b);
 
         /***** Step 2 of Stephens' algorithm        *****/
         /***** * change labeling                    *****/
-        NMix::Stephens_step2_search(nchangeP, index, chorder_b, chrank_b, hatPr_b_b, Pr_b, order_perm, keepMCMC, I, K_b, &Kfact);      
+        NMix::Stephens_step2_search(nchangeP, index, chorder_b, chrank_b, 
+                                    hatPr_forStephens, Pr_forStephens, order_perm, keepMCMC, I, K_b, &Kfact);      
         nchanges = *nchangeP;
         nchangeP++;
 
@@ -644,29 +676,47 @@ GLMM_NMixRelabel(const int*    type,
     }                          /*** end of switch (iparam[3]) ***/
     Rprintf((char*)("\n"));    
 
-    /***** Re-calculate hatPr_b_b if there is no convergence to ensure that it corresponds to returned values of chorder and chrank *****/
+    /***** Re-calculate hatPr_forStephens if there is no convergence to ensure that it corresponds to returned values of chorder and chrank *****/    
     if (*iter_relabel == iparam[2] && nchanges){
-      NMix::Stephens_step1(hatPr_b_b, Pr_b, chrank_b, keepMCMC, I, K_b);
+      NMix::Stephens_step1(hatPr_forStephens, Pr_forStephens, chrank_b, keepMCMC, I, K_b);
     }
+  }
 
-    /***** Calculate sum_Ir_b which corresponds to final re-labeling *****/
-    NMix::sum_Ir(sum_Ir_b, r_bAll, chrank_b, K_b, I, keepMCMC);
+  /***** Re-calculate hatPr_forStephens if simple algorithm was used to correspond to returned values of chorder and chrank *****/
+  if (*type == NMix::MEAN || *type == NMix::WEIGHT){
+    NMix::Stephens_step1(hatPr_forStephens, Pr_forStephens, chrank_b, keepMCMC, I, K_b);
+  }
 
-    /***** Cleaning of the space allocated for Stephens' algorithm *****/
-    Free(r_bAll);
-    break;
-  }    /** end of main switch (*type)  **/
+  /***** Re-calculate hatPr_notForStephens to correspond to returned values of chorder and chrank *****/
+  NMix::Stephens_step1(hatPr_notForStephens, Pr_notForStephens, chrank_b, keepMCMC, I, K_b);
 
+  /***** Calculate sum_Ir_b which corresponds to final re-labeling *****/
+  NMix::sum_Ir(sum_Ir_b, r_bAll, chrank_b, K_b, I, keepMCMC);
 
-/***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/
-/***** Calculate posterior means of model parameters (using re-labeled sample)                            *****/
-/***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/ 
-  NMix::PosterMeanMixParam(pm_w_b, pm_mu_b, pm_Q_b, pm_Sigma_b, pm_Li_b, K_b, chw_b, chmu_b, chQ_b, chSigma_b, chLi_b, chorder_b, &dim_b, keepMCMC);
+  /***** Re-shuffle columns in Pr_b_b and Pr_obs *****/
+  double *work_reorder = Calloc(*K_b, double);
+  NMix::reorder_Pr_y(Pr_b_b, work_reorder, chorder_b, keepMCMC, I, K_b);  
+  NMix::reorder_Pr_y(Pr_obs, work_reorder, chorder_b, keepMCMC, I, K_b);  
+  Free(work_reorder);
+
+  /***** Calculate posterior means of model parameters (using re-labeled sample)                            *****/
+  NMix::PosterMeanMixParam(pm_w_b, pm_mu_b, pm_Q_b, pm_Sigma_b, pm_Li_b, 
+                           K_b, chw_b, chmu_b, chQ_b, chSigma_b, chLi_b, chorder_b, &dim_b, keepMCMC);
 
 
 /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/
 /***** Cleaning                                                                                           *****/
 /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/ 
+  Free(ZS);
+  Free(l_ZS);
+  Free(dwork_GLMM_Deviance);
+  Free(iwork_GLMM_Deviance);
+  Free(sqrt_w_phi);
+  Free(stres);
+  Free(cond_ll_i);
+  Free(marg_ll_i);
+
+  Free(r_bAll);
   Free(dwork_orderComp);
   rInv_bPP = rInv_b;
   for (j = 0; j < *K_b; j++){
@@ -675,14 +725,15 @@ GLMM_NMixRelabel(const int*    type,
   }
   Free(rInv_b);
   Free(mixN_b);  
-  Free(cum_Pr_b);
-  Free(Pr_b);
+  Free(cum_Pr_b_b);
   Free(dwork_MVN);
   Free(log_dets_b);
   Free(logw_b);
   Free(dwork_ranef);
+  Free(dwork_ranef_QR);
+  Free(iwork_ranef_QR);
   Free(bscaled);
-  Free(SZitZiS);
+  //Free(SZitZiS);
   Free(nrespP);
   Free(nresp);
   Free(ZrespP);
@@ -709,6 +760,7 @@ GLMM_NMixRelabel(const int*    type,
     Free(Y_cresp);
   }
 
+  Free(sum_dY_i);
   Free(dY);
   Free(meanY);
   Free(eta_zs);

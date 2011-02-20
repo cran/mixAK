@@ -20,6 +20,9 @@ namespace GLMM {
          /*   2 = POISSON_LOG:      Poisson distribution with log link                                */
 
   const int nNR_FS = 1;      /*** number of Newton-Raphson/Fisher scoring steps when updating fixed/random effects ***/
+
+  const double LL_MIN   = -1000.0;         /*** used inside GLMM::Deviance to indicate -Inf log-likelihood, exp(-1000) = 0 ***/
+  const double E_LL_MIN = exp(LL_MIN);
 }
 
 #endif

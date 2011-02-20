@@ -23,7 +23,7 @@
   Gibbs step is used within the MCMC algorithm 
 }
 \details{
-  See accompanying paper (\eqn{\mbox{Kom\'arek}}{Kom&#225rek}, 2009).
+  See accompanying paper (Komárek, 2009).
   In the rest of the helpfile,
   the same notation is used as in the paper, namely, \eqn{n} denotes the number of
   observations, \eqn{p} is dimension of the data, \eqn{K} is the number
@@ -671,8 +671,7 @@ NMixMCMC(y0, y1, censor, scale, prior,
   Deviance information criteria for missing data models.
   \emph{Bayesian Analysis}, \bold{1}, 651-674.
   
-  \eqn{\mbox{Capp\'e, Robert and Ryd\'en}}{%
-    Capp&#233, Robert and Ryd&#233n} (2003).
+  Cappé, Robert and Rydén (2003).
   Reversible jump, birth-and-death and more general continuous time Markov chain Monte Carlo samplers.
   \emph{Journal of the Royal Statistical Society, Series B}, \bold{65}, 679-700.
   
@@ -689,7 +688,7 @@ NMixMCMC(y0, y1, censor, scale, prior,
   Bayesian mixture modelling.
   \emph{Statistical Science}, \bold{20}, 50--67.
   
-  \eqn{\mbox{Kom\'{a}rek, A.}}{Kom&#225rek, A.} (2009).
+  Komárek, A. (2009).
   A new R package for Bayesian estimation of multivariate normal mixtures allowing for selection 
   of the number of components and interval-censored data.
   \emph{Computational Statistics and Data Analysis}, \bold{53}, 3932--3947.
@@ -711,7 +710,7 @@ NMixMCMC(y0, y1, censor, scale, prior,
   \code{\link{NMixPredDensMarg}}, \code{\link{NMixPredDensJoint2}}.
 }
 \author{
-  \eqn{\mbox{Arno\v{s}t Kom\'arek}}{Arno&#353t Kom&#225rek} \email{arnost.komarek[AT]mff.cuni.cz}
+  Arnošt Komárek \email{arnost.komarek[AT]mff.cuni.cz}
 }  
 \examples{
 \dontrun{

@@ -17,7 +17,7 @@
 }
 \details{
   For \code{dim} = 2, \eqn{p_{2,1}}{p[2,1]}
-  (\eqn{\sim(\theta)}{sin(theta)})
+  (\eqn{\sin(\theta)}{sin(theta)})
   is generated from Unif(0, 1) and the rest computed as follows:
   \eqn{p_{1,1} = p_{2,2} = \sqrt{1 - p_{2,1}^2}}{%
     p[1,1] = p[2,2] = sqrt(1 - p[2,1]^2)}
@@ -65,7 +65,7 @@ rRotationMatrix(n, dim)
 %\seealso{
 %}
 \author{
-  \eqn{\mbox{Arno\v{s}t Kom\'arek}}{Arno&#353t Kom&#225rek} \email{arnost.komarek[AT]mff.cuni.cz}
+  Arnošt Komárek \email{arnost.komarek[AT]mff.cuni.cz}
 }  
 \examples{
 P <- rRotationMatrix(n=1, dim=5)
