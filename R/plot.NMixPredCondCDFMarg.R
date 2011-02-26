@@ -85,7 +85,7 @@ plot.NMixPredCondCDFMarg <- function(x, ixcond, imargin, prob, over=FALSE, auto.
     #
     if (missing(col)){
       if (over){
-        col <- heat_hcl(length(xcond), h=c(0, -100), c=c(40, 80), l=c(75, 40), power=1)             ### sequential palette
+        col <- heat_hcl(length(xcond), h=c(0, -100), c.=c(40, 80), l=c(75, 40), power=1)             ### sequential palette
         col <- col[length(col):1]
       }  
       else      col <- rep("darkblue", length(xcond))

@@ -1,8 +1,7 @@
 \name{SP2Rect}
 \alias{SP2Rect}
 \title{
-  Creation of a rectangular symmetric matrix from its lower triangle
-  (symmetric packed format)
+  Conversion of a symmetric matrix stored in a packed format (lower triangle only) into a matrix
 }
 \description{
   It creates a symmetric matrix from its lower triangle.

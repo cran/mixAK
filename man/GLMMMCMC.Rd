@@ -2,8 +2,8 @@
 \alias{GLMM_MCMC}
 \alias{print.GLMM_MCMC}
 \title{
-  MCMC estimation of generalized linear mixed model
-  with mixtures in the distributions.
+  MCMC estimation of a (multivariate) generalized linear mixed model
+  with a normal mixture in the distribution of random effects
 }
 \description{
   This function runs MCMC for a generalized linear mixed model
@@ -86,8 +86,8 @@ GLMM_MCMC(y, dist="gaussian", id, x, z, random.intercept,
     are given as components of the list \code{scale.b}. The components
     are named:
     \describe{
-      \item{shift}{ADD DESCRIPTION}
-      \item{scale}{ADD DESCRIPTION}
+      \item{shift}{see vignette PBCseq.pdf for details}
+      \item{scale}{see vignette PBCseq.pdf for details}
     }          
   }  
   \item{prior.b}{a list which specifies prior distribution for (shifted
@@ -107,14 +107,14 @@ GLMM_MCMC(y, dist="gaussian", id, x, z, random.intercept,
         prior for mixture means and mixture variances.
       }
       \item{Kmax}{maximal number of mixture components.}
-      \item{lambda}{ADD DESCRIPTION}
-      \item{delta}{ADD DESCRIPTION}
-      \item{xi}{ADD DESCRIPTION}
-      \item{ce}{ADD DESCRIPTION}
-      \item{D}{ADD DESCRIPTION}
-      \item{zeta}{ADD DESCRIPTION}
-      \item{g}{ADD DESCRIPTION}
-      \item{h}{ADD DESCRIPTION}            
+      \item{lambda}{see vignette PBCseq.pdf for details}
+      \item{delta}{see vignette PBCseq.pdf for details}
+      \item{xi}{see vignette PBCseq.pdf for details}
+      \item{ce}{see vignette PBCseq.pdf for details}
+      \item{D}{see vignette PBCseq.pdf for details}
+      \item{zeta}{see vignette PBCseq.pdf for details}
+      \item{g}{see vignette PBCseq.pdf for details}
+      \item{h}{see vignette PBCseq.pdf for details}            
     }  
   }
   \item{init.b}{a list with initial values for parameters related to the
@@ -128,9 +128,9 @@ GLMM_MCMC(y, dist="gaussian", id, x, z, random.intercept,
      value leading to weakly informative prior distribution can be
      determined by the function.
      \describe{
-       \item{zeta}{ADD DESCRIPTION}
-       \item{g}{ADD DESCRIPTION}
-       \item{h}{ADD DESCRIPTION}       
+       \item{zeta}{see vignette PBCseq.pdf for details}
+       \item{g}{see vignette PBCseq.pdf for details}
+       \item{h}{see vignette PBCseq.pdf for details}       
      }  
   }
   \item{init.eps}{a list with initial values for parameters related to the
@@ -438,7 +438,12 @@ GLMM_MCMC(y, dist="gaussian", id, x, z, random.intercept,
   Arnošt Komárek \email{arnost.komarek[AT]mff.cuni.cz}
 }  
 \examples{
-### WILL BE ADDED.
+## See also additional material available in 
+## YOUR_R_DIR/library/mixAK/doc/
+## or YOUR_R_DIR/site-library/mixAK/doc/
+## - files PBCseq.pdf,
+##         PBCseq.R
+## ==============================================
 }
 \keyword{models}
 \keyword{multivariate}

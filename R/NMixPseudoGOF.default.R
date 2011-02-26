@@ -273,7 +273,7 @@ NMixPseudoGOF.default <- function(x, scale, w, mu, Sigma, breaks, nbreaks=10, di
                                                               Observed = OBSERVED, Expected = EXPECT, Resid = RESID)
         
         if (i == 1 & j == 3){
-          COL <- rev(heat_hcl(33, c=c(80, 30), l=c(30, 90), power=c(1/5, 1.3)))
+          COL <- rev(heat_hcl(33, c.=c(80, 30), l=c(30, 90), power=c(1/5, 1.3)))
           PP2 <- matrix(PP, nrow=length(labels[[i]]), ncol=length(labels[[j]]))
           RESID2 <- matrix(abs(RESID), nrow=length(labels[[i]]), ncol=length(labels[[j]]))
 
@@ -283,7 +283,7 @@ NMixPseudoGOF.default <- function(x, scale, w, mu, Sigma, breaks, nbreaks=10, di
           image(breaks[[i]], breaks[[j]], FF, col=COL, xlab=paste("x", i, sep=""), ylab=paste("x", j, sep=""))
 
           IMBREAK <- seq(0.5, 5, by=0.5)
-          IMCOL <- rev(heat_hcl(length(IMBREAK) + 1, c=c(80, 30), l=c(30, 90), power=c(1/5, 1.3)))
+          IMCOL <- rev(heat_hcl(length(IMBREAK) + 1, c.=c(80, 30), l=c(30, 90), power=c(1/5, 1.3)))
           image(midpoints[[i]], midpoints[[j]], RESID2, col=IMCOL, xlab=paste("x", i, sep=""), ylab=paste("x", j, sep=""))          
         }
       }

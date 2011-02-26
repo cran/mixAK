@@ -73,7 +73,7 @@ NMixPlugCondDensJoint2.default <- function(x, icond, scale, w, mu, Sigma, ...)
   MEAN <- as.numeric(mu[,icond])
   SIGMA <- Sigma[[1]][icond, icond]
   if (K >= 2) for (k in 2:K) SIGMA <- c(SIGMA, Sigma[[k]][icond, icond])
-  logdenom <- dMVNmixture2(x=x[[icond]], w=w, mean=MEAN, Sigma=SIGMA, log=TRUE)    
+  logdenom <- dMVNmixture2(x=x[[icond]], weight=w, mean=MEAN, Sigma=SIGMA, log=TRUE)    
 
   ## Compute conditional densities for remaining pairs of margins
   RET <- list(x=x, icond=icond, dens=list())
@@ -95,7 +95,7 @@ NMixPlugCondDensJoint2.default <- function(x, icond, scale, w, mu, Sigma, ...)
         SIGMA <- list()
         for (k in 1:K) SIGMA[[k]] <- Sigma[[k]][c(m0, m1, icond), c(m0, m1, icond)]
         GRID <- cbind(rep(x[[m0]], n[m1]), rep(x[[m1]], each=n[m0]), rep(x[[icond]][t], n[m0]*n[m1]))
-        lognumer <- dMVNmixture2(x=GRID, w=w, mean=MEAN, Sigma=SIGMA, log=TRUE)        
+        lognumer <- dMVNmixture2(x=GRID, weight=w, mean=MEAN, Sigma=SIGMA, log=TRUE)        
         RET$dens[[t]][[pp]] <- matrix(exp(lognumer - logdenom[t]), nrow=n[m0], ncol=n[m1])
         NAMEN <- c(NAMEN, paste(m0, "-", m1, sep=""))
         pp <- pp + 1

@@ -77,7 +77,7 @@ NMixPlugDensJoint2.default <- function(x, scale, w, mu, Sigma, ...)
   RET <- list(x=x, dens=list())
   if (p == 2){
     GRID <- cbind(rep(x[[1]], n[2]), rep(x[[2]], each=n[1]))
-    RET$dens[[1]] <- matrix(dMVNmixture2(x=GRID, w=w, mean=mu, Sigma=Sigma), nrow=n[1], ncol=n[2])
+    RET$dens[[1]] <- matrix(dMVNmixture2(x=GRID, weight=w, mean=mu, Sigma=Sigma), nrow=n[1], ncol=n[2])
     names(RET$dens) <- "1-2"
   }else{
     pp <- 1
@@ -88,7 +88,7 @@ NMixPlugDensJoint2.default <- function(x, scale, w, mu, Sigma, ...)
         MEAN <- mu[, c(m0, m1)]
         SIGMA <- list()
         for (k in 1:K) SIGMA[[k]] <- Sigma[[k]][c(m0, m1), c(m0, m1)]
-        RET$dens[[pp]] <- matrix(dMVNmixture2(x=GRID, w=w, mean=MEAN, Sigma=SIGMA), nrow=n[m0], ncol=n[m1])
+        RET$dens[[pp]] <- matrix(dMVNmixture2(x=GRID, weight=w, mean=MEAN, Sigma=SIGMA), nrow=n[m0], ncol=n[m1])
         NAMEN <- c(NAMEN, paste(m0, "-", m1, sep=""))
         pp <- pp + 1
       }      

@@ -179,7 +179,12 @@ NMixRelabel(object, type=c("mean", "weight", "stephens"), par, \dots)
   Arnošt Komárek \email{arnost.komarek[AT]mff.cuni.cz}
 }  
 \examples{
-## TO BE ADDED.
+## See also additional material available in 
+## YOUR_R_DIR/library/mixAK/doc/
+## or YOUR_R_DIR/site-library/mixAK/doc/
+## - files PBCseq.pdf,
+##         PBCseq.R
+## ==============================================
 }
 \keyword{multivariate}
 \keyword{cluster}

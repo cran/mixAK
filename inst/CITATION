@@ -1,4 +1,4 @@
-citHeader("To cite package 'mixAK' in publications use:")
+citHeader("To cite package 'mixAK' in publications, please, use either of the following articles:")
      
 desc <- packageDescription("mixAK")
 year <- sub(".*(2[[:digit:]]{3})-.*", "\\1", desc$Date)
@@ -6,11 +6,41 @@ vers <- paste("R package version", desc$Version)
 
 citEntry(entry   = "Article",
          title   = "A new R package for Bayesian estimation of multivariate normal mixtures allowing for selection of number of components and interval-censored data",
-         author  = "Kom\\'arek A.",
+         author  = "Arno\\v{s}t Kom\\'arek",
          journal = "Computational Statistics and Data Analysis",
          year    = "2009",
          volume  = "53",
-         pages   = "3932-3947, doi: 10.1016/j.csda.2009.05.006",
-         textVersion = "Komarek, A. (2009). A new R package for Bayesian estimation of multivariate normal mixtures
+         number  = "12",
+         pages   = "3932-3947",
+         doi     = "10.1016/j.csda.2009.05.006",
+         textVersion = "Komarek, A. (2009). 
+                        A new R package for Bayesian estimation of multivariate normal mixtures
                         allowing for selection of number of components and interval-censored data.
-                        Computational Statistics and Data Analysis, 53, 3932-3947. doi: 10.1016/j.csda.2009.05.006.")
+                        Computational Statistics and Data Analysis, 53(12), 3932-3947. doi: 10.1016/j.csda.2009.05.006.")
+
+citEntry(entry   = "Article",
+         title   = "Discriminant analysis using a multivariate linear mixed model with a normal mixture in the random effects distribution",
+         author  = "Arno\\v{s}t Kom\\'arek, Bettina E. Hansen, Edith M. M. Kuiper, Henk R. van Buuren, Emmanuel Lesaffre",
+         journal = "Statistics in Medicine",
+         year    = "2010",
+         volume  = "29",
+         number  = "30",
+         pages   = "3267-3283",
+         doi     = "10.1002/sim.3849",
+         textVersion = "Komarek, A., Hansen, B. E., Kuiper, E. M. M., van Buuren, H. R., and Lesaffre, E. (2010).
+                        Discriminant analysis using a multivariate linear mixed model with a normal mixture 
+                        in the random effects distribution.
+                        Statistics in Medicine, 29(30), 3267-3283. doi: 10.1002/sim.3849.")
+
+citEntry(entry   = "Article",
+         title   = "Clustering for multivariate continuous and discrete longitudinal data",
+         author  = "Arno\\v{s}t Kom\\'arek, Lenka Kom\\'arkov\\'a",
+         journal = "Submitted for publication",
+         year    = "2011",
+         volume  = "00",
+         number  = "0",
+         pages   = "000-000",
+         doi     = "000000",
+         textVersion = "Komarek, A. and Komarkova, L. (2011).
+                        Clustering for multivariate continuous and discrete longitudinal data.
+                        Submitted for publication.")

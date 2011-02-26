@@ -97,13 +97,13 @@ NMixPlugDensMarg.default <- function(x, scale, w, mu, Sigma, ...)
   ## Compute marginal densities
   RET <- list(x=x, dens=list())
   if (p == 1){
-    RET$dens[[1]] <- dMVNmixture2(x=x[[1]], w=w, mean=mu, Sigma=Sigma)
+    RET$dens[[1]] <- dMVNmixture2(x=x[[1]], weight=w, mean=mu, Sigma=Sigma)
   }else{
     for (m0 in 1:p){
       MEAN <- as.numeric(mu[,m0])
       SIGMA <- Sigma[[1]][m0, m0]
       if (K >= 2) for (k in 2:K) SIGMA <- c(SIGMA, Sigma[[k]][m0, m0])
-      RET$dens[[m0]] <- dMVNmixture2(x=x[[m0]], w=w, mean=MEAN, Sigma=SIGMA)
+      RET$dens[[m0]] <- dMVNmixture2(x=x[[m0]], weight=w, mean=MEAN, Sigma=SIGMA)
     }  
   }    
   names(RET$dens) <- paste(1:p)

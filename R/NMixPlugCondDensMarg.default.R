@@ -73,7 +73,7 @@ NMixPlugCondDensMarg.default <- function(x, icond, scale, w, mu, Sigma, ...)
   MEAN <- as.numeric(mu[,icond])
   SIGMA <- Sigma[[1]][icond, icond]
   if (K >= 2) for (k in 2:K) SIGMA <- c(SIGMA, Sigma[[k]][icond, icond])
-  logdenom <- dMVNmixture2(x=x[[icond]], w=w, mean=MEAN, Sigma=SIGMA, log=TRUE)    
+  logdenom <- dMVNmixture2(x=x[[icond]], weight=w, mean=MEAN, Sigma=SIGMA, log=TRUE)    
   
   ## Compute conditional densities for remaining margins
   RET <- list(x=x, icond=icond, dens=list())
@@ -91,7 +91,7 @@ NMixPlugCondDensMarg.default <- function(x, icond, scale, w, mu, Sigma, ...)
       SIGMA <- list()
       for (k in 1:K) SIGMA[[k]] <- Sigma[[k]][c(m0, icond), c(m0, icond)]
       GRID <- cbind(x[[m0]], rep(x[[icond]][t], length(x[[m0]])))
-      lognumer <- dMVNmixture2(x=GRID, w=w, mean=MEAN, Sigma=SIGMA, log=TRUE)
+      lognumer <- dMVNmixture2(x=GRID, weight=w, mean=MEAN, Sigma=SIGMA, log=TRUE)
       RET$dens[[t]][[m0]] <- exp(lognumer - logdenom[t])
     }
 

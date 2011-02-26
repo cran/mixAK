@@ -3,20 +3,64 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
 <title>Package mixAK vignettes</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 <!--<meta http-equiv="content-type" content="text/html; charset=iso-8859-2" />-->
 <meta name="description" content="Vignettes for package mixAK" />
 <meta name="keywords" content="vignette" />
-<meta name="author" content="Arno&#353t Kom&#225rek" />
+<meta name="author" content="Arnošt Komárek / Original design by Andreas Viklund - http://andreasviklund.com" />
+<link rel="stylesheet" href="arnost02.css" type="text/css" media="screen" />
 </head>
 
 <body>
-<h1>Package <tt>mixAK</tt></h1>
+<div id="container">
+
+<!-- SITE NAME -->
+<div id="sitename">
+<h1>R Package <tt>mixAK</tt></h1>
+<a href="http://www.karlin.mff.cuni.cz/~komarek/indexEN.html"><h2><font color="#ffffff">Arnošt Komárek</font></h2></a>
+</div>
+
+<!-- UPPER MENU -->
+<div id="mainmenu">
+</div>
+
+<!-- MAIN PART OF THE WEBPAGE -->
+<div id="wrap">
+
+<!-- RIGHT MENU -->
+<div id="rightside">
+<h2>This page</h2>
 <p>
+<a class="nav" href="#Papers">Papers related to the package</a><span class="hide"> | </span>
+<a class="nav" href="#Supplement">Supplementary materials and vignettes</a><span class="hide"> | </span>
+<a class="nav" href="#NMixMCMC">Density estimation via normal mixtures (and MCMC)</a><span class="hide"> | </span>
+<a class="nav" href="#GLMMMCMC">Multivariate GLMM's with a normal mixture in the distribution of random effects</a><span class="hide"> | </span>
+<a class="nav" href="#Support">Supporting functions to further process or visualize results from running NMixMCMC or GLMM_MCMC functions</a><span class="hide"> | </span>
+<a class="nav" href="#UnivDist">Univariate distributions</a><span class="hide"> | </span>
+<a class="nav" href="#MultDist">Multivariate distributions</a><span class="hide"> | </span>
+<a class="nav" href="#MiscelRN">Miscellaneous random number generation</a><span class="hide"> | </span>
+<a class="nav" href="#MatrixLA">Matrix linear algebra</a><span class="hide"> | </span>
+<a class="nav" href="#BasicStat">Basic statistics</a><span class="hide"> | </span>
+<a class="nav" href="#Utils">Utilities</a><span class="hide"> | </span>
+<a class="nav" href="#Datasets">Datasets</a><span class="hide"> | </span>
+</p>
+</div>
+
+<!-- INTRODUCTION -->
+<div id="contentalt" >
+<p class="intro">
 This package contains a mixture of statistical methods including the MCMC methods to analyze normal mixtures.
-Methods from the following areas can be found here
+</p>
+
+<br>
+
+<p>
+This overview provides a sorted list of the functions of the package and links to few more involved examples.
+Methods implemented in the package could be classified into following areas.
 <ul>
-  <li><a href="#NMixMCMC">Density estimation via normal mixtures and MCMC</a></li>
+  <li><a href="#NMixMCMC">Density estimation via normal mixtures (and MCMC)</a></li>
   <li><a href="#GLMMMCMC">Multivariate generalized linear mixed models with a normal mixture in the distribution of random effects</a></li>
+  <li><a href="#Support">Supporting functions to further process or visualize results from running NMixMCMC or GLMM_MCMC functions</a></li>
   <li><a href="#UnivDist">Univariate distributions</a></li>
   <li><a href="#MultDist">Multivariate distributions</a></li>
   <li><a href="#MiscelRN">Miscellaneous random number generation</a></li>
@@ -25,280 +69,426 @@ Methods from the following areas can be found here
   <li><a href="#Utils">Utilities</a></li>
   <li><a href="#Datasets">Datasets</a></li>
 </ul>
-Additional information can be found in the references mentioned below and
-at personal webpage of <a href="http://www.karlin.mff.cuni.cz/~komarek"> Arno&#353t Kom&#225rek.</a>
 </p>
 
-<br><br>
-<p>
-This overview provides a sorted list of the functions of the package and links to few more involved examples.
-</p>
+<!--<p>
+Additional information can be found in the references mentioned below and
+at personal webpage of <a href="http://www.karlin.mff.cuni.cz/~komarek"> Arnošt Komárek.</a>
+</p>-->
+</div>
 
 <!-- ======================================================================================================== -->
-<br><p><a name="NMixMCMC"></a>
-<h1>1. Density estimation via normal mixtures and MCMC</h1>
+<p></p>
+<div id="contentalt" >
+<p><a name="Papers"></a>
+<h1>Papers related to the package</h1>
+
+<p>
+Please, cite either of the following papers if you find the package useful.
+</p>
+
 <ul>
-  <li><a href="../html/NMixMCMC.html"> <b>NMixMCMC</b></a> <br>
-    <ul>
-      <li>There exists a <b>print</b> method for objects of class <i>NMixMCMC</i>.</li>
-    </ul>
-  </li>
-  <li><a href="../html/NMixChainsDerived.html"> <b>NMixChainsDerived</b></a> <br>
-  </li>
-  <li><a href="../html/NMixSummComp.html"> <b>NMixSummComp</b></a> <br>
-  </li>
-  <li><a href="../html/NMixRelabel.html"> <b>NMixRelabel</b></a> <br>
-  </li>
-  <li><a href="../html/NMixPredDA.html"> <b>NMixPredDA</b></a> <br>
-  </li>
-  <li><a href="../html/NMixPlugDA.html"> <b>NMixPlugDA</b></a> <br>
-  </li>
-  <li><a href="../html/NMixPredDensJoint2.html"> <b>NMixPredDensJoint2</b></a> <br>
-    <ul>
-      <li>This is a generic function with <i>default</i> method and a method for objects of class <i>NMixMCMC</i> and <i>GLMM_MCMC</i>
-          implemented.</li>
-      <li>There is also a <a href="../html/plot.NMixPredDensJoint2.html"><b>plot</b></a> method for objects of class <i>NMixPredDensJoint2</i>.
-    </ul>
-  </li>
-  <li><a href="../html/NMixPredCondDensJoint2.html"> <b>NMixPredCondDensJoint2</b></a> <br>
-    <ul>
-      <li>This is a generic function with <i>default</i> method and a method for objects of class <i>NMixMCMC</i> and <i>GLMM_MCMC</i>
-          implemented.</li>
-      <li>There is also a <a href="../html/plot.NMixPredCondDensJoint2.html"><b>plot</b></a> method for objects of class <i>NMixPredCondDensJoint2</i>.
-    </ul>
-  </li>
-  <li><a href="../html/NMixPlugDensJoint2.html"> <b>NMixPlugDensJoint2</b></a> <br>
-    <ul>
-      <li>This is a generic function with <i>default</i> method and a method for objects of class <i>NMixMCMC</i> and <i>GLMM_MCMC</i>
-          implemented.</li>
-      <li>There is also a <a href="../html/plot.NMixPlugDensJoint2.html"><b>plot</b></a> method for objects of class <i>NMixPlugDensJoint2</i>.
-    </ul>
-  </li>
-  <li><a href="../html/NMixPlugCondDensJoint2.html"> <b>NMixPlugCondDensJoint2</b></a> <br>
-    <ul>
-      <li>This is a generic function with <i>default</i> method and a method for objects of class <i>NMixMCMC</i> and <i>GLMM_MCMC</i>
-          implemented.</li>
-      <li>There is also a <a href="../html/plot.NMixPlugCondDensJoint2.html"><b>plot</b></a> method for objects of class <i>NMixPlugCondDensJoint2</i>.
-    </ul>
-  </li>
-  <li><a href="../html/NMixPredDensMarg.html"> <b>NMixPredDensMarg</b></a> <br>
-    <ul>
-      <li>This is a generic function with <i>default</i> method and a method for objects of class <i>NMixMCMC</i> and <i>GLMM_MCMC</i>
-          implemented.</li>
-      <li>There is also a <a href="../html/plot.NMixPredDensMarg.html"><b>plot</b></a> method for objects of class <i>NMixPredDensMarg</i>.
-    </ul>
-  </li>
-  <li><a href="../html/NMixPredCDFMarg.html"> <b>NMixPredCDFMarg</b></a> <br>
-    <ul>
-      <li>This is a generic function with <i>default</i> method and a method for objects of class <i>NMixMCMC</i> and <i>GLMM_MCMC</i>
-          implemented.</li>
-      <li>There is also a <a href="../html/plot.NMixPredCDFMarg.html"><b>plot</b></a> method for objects of class <i>NMixPredCDFMarg</i>.
-    </ul>
-  </li>
-  <li><a href="../html/NMixPredCondDensMarg.html"> <b>NMixPredCondDensMarg</b></a> <br>
-    <ul>
-      <li>This is a generic function with <i>default</i> method and a method for objects of class <i>NMixMCMC</i> and <i>GLMM_MCMC</i>
-          implemented.</li>
-      <li>There is also a <a href="../html/plot.NMixPredCondDensMarg.html"><b>plot</b></a> method for objects of class <i>NMixPredCondDensMarg</i>.
-    </ul>
-  </li>
-  <li><a href="../html/NMixPlugDensMarg.html"> <b>NMixPlugDensMarg</b></a> <br>
-    <ul>
-      <li>This is a generic function with <i>default</i> method and a method for objects of class <i>NMixMCMC</i> and <i>GLMM_MCMC</i>
-          implemented.</li>
-      <li>There is also a <a href="../html/plot.NMixPlugDensMarg.html"><b>plot</b></a> method for objects of class <i>NMixPlugDensMarg</i>.
-    </ul>
-  </li>
-  <li><a href="../html/NMixPredCondDensMarg.html"> <b>NMixPlugCondDensMarg</b></a> <br>
-    <ul>
-      <li>This is a generic function with <i>default</i> method and a method for objects of class <i>NMixMCMC</i> and <i>GLMM_MCMC</i>
-          implemented.</li>
-      <li>There is also a <a href="../html/plot.NMixPlugCondDensMarg.html"><b>plot</b></a> method for objects of class <i>NMixPlugCondDensMarg</i>.
-    </ul>
-  </li>
-  <li><a href="../html/Y2T.html"> <b>Y2T</b></a> <br>
-    <ul>
-      <li>This is a generic function with <i>default</i> method to transform a fitted distribution of Y = trans(T) into
-          a distribution of T = itrans(Y). </li>
-      <li>There are methods for objects of class 
+  <li><a href="http://www.karlin.mff.cuni.cz/~komarek/publication.html#KomarekNMixIC"><font class="redb">Komárek, A. (2009).</font></a>
+           <strong>A new R package for Bayesian estimation of multivariate normal mixtures allowing for
+           selection of the number of components and interval-censored data.</strong>
+      <cite>Computational Statistics and Data Analysis,</cite> <b>53</b>(12), 3932-3947, 
+      doi: <a href=http://dx.doi.org/10.1016/j.csda.2009.05.006>10.1016/j.csda.2009.05.006</a>.
+  <ul><li>Paper describing the methods related to 
+  <a href="#NMixMCMC">density estimation via normal mixtures and MCMC.</a>  
+  </li></ul>
+  <br></li>
+
+  <li><a href="http://www.karlin.mff.cuni.cz/~komarek/publication.html#KomarekHansenet"><font class="redb">Komárek, A.,
+           Hansen, B. E., Kuiper, E. M. M., van Buuren, H. R., and Lesaffre, E. (2010).</font></a>
+           <strong>Discriminant analysis using a multivariate linear mixed model with a normal mixture 
+           in the random effects distribution.</strong>
+      <cite>Statistics in Medicine,</cite> <b>29</b>(30), 3267-3283, 
+      doi: <a href=http://dx.doi.org/10.1002/sim.3849>10.1002/sim.3849</a>.
+  <br>
+  <ul><li>Paper describing the methods related to <strong>discriminant analysis</strong> 
+  for multivariate longitudinal or grouped data <strong>continuous</strong> data based on
+  <a href="#GLMMMCMC">multivariate linear mixed models with a normal mixture in the distribution of random effects.</a>  
+  </li></ul>
+  <br></li>
+
+  <li><a href="http://www.karlin.mff.cuni.cz/~komarek/publication.html#glmmClust"><font class="redb">Komárek, A.
+  and Komárková, L. (2011).</font></a>
+  <strong>Clustering for multivariate continuous and discrete longitudinal data.</strong>
+  <cite>Submitted for publication.</cite>
+  <ul><li>Paper describing the methods related to <strong>cluster analysis</strong>
+  for multivariate longitudinal or grouped data <strong>continuous and discrete</strong> data based on
+  <a href="#GLMMMCMC">multivariate generalized linear mixed models with a normal mixture in the distribution of random effects.</a>  
+  <br></li>
+
+  <br></li>
+</ul>
+</div>
+
+<!-- ======================================================================================================== -->
+<p></p>
+<div id="contentalt" >
+<p><a name="Supplement"></a>
+<h1>Supplementary materials and vignettes</h1>
+<ul>
+  <li><a href="Komarek-NMix-supplement.pdf"><font class="redb">Komarek-NMix-supplement.pdf</font></a><br>
+    Supplement to 
+    <a href="http://www.karlin.mff.cuni.cz/~komarek/publication.html#KomarekNMixIC">Komárek (2009)</a> 
+    which includes some technical details not included in the main paper.
+  <br>&nbsp</li>
+
+  <li><a href="Galaxy.pdf"><font class="redb">Galaxy.pdf</font></a>,&nbsp  
+      <a href="Galaxy.R"><font class="redb">Galaxy.R</font></a>&nbsp  
+      <!--<a href="Galaxy.Rnw"><font class="redb">Galaxy.Rnw</font></a>--><br>
+   R example of 1-dimensional density estimation using the RJ-MCMC described in Section 6.1 of 
+   <a href="http://www.karlin.mff.cuni.cz/~komarek/publication.html#KomarekNMixIC">Komárek (2009)</a>.
+   <br>&nbsp</li>
+
+  <li><a href="Faithful.pdf"><font class="redb">Faithful.pdf</font></a>,&nbsp  
+      <a href="Faithful.R"><font class="redb">Faithful.R</font></a>&nbsp  
+      <!--<a href="Faithful.Rnw"><font class="redb">Faithful.Rnw</font></a>--><br>
+  R example of 2-dimensional density estimation described in Section 6.2 of 
+  <a href="http://www.karlin.mff.cuni.cz/~komarek/publication.html#KomarekNMixIC">Komárek (2009)</a>.
+  <br>&nbsp</li>
+
+  <li><a href="Tandmob.pdf"><font class="redb">Tandmob.pdf</font></a>,&nbsp
+      <a href="Tandmob.R"><font class="redb">Tandmob.R</font></a>&nbsp 
+      <!--<a href="Tandmob.Rnw"><font class="redb">Tandmob.Rnw</font></a>--><br>
+  R example of 6-dimensional density estimation with interval-censored data
+  described in Section 6.3 of 
+  <a href="http://www.karlin.mff.cuni.cz/~komarek/publication.html#KomarekNMixIC">Komárek (2009)</a>.
+  <br>&nbsp</li>
+
+  <li><a href="PBCseq.pdf"><font class="redb">PBCseq.pdf</font></a>,&nbsp  
+      <a href="PBCseq.R"><font class="redb">PBCseq.R</font></a>&nbsp  
+      <!--<a href="PBCseq.Rnw"><font class="redb">PBCseq.Rnw</font></a>--><br>
+   R example of cluster analysis based on multivariate longitudinal data from a Mayo Clinic trial on 312 patients
+   with primary biliary cirrhosis described in Section 3.1 of
+   <a href="http://www.karlin.mff.cuni.cz/~komarek/publication.html#glmmClust">Komárek and Komárková (2011)</a>.
+   <br>&nbsp</li>
+</ul>
+</div>
+
+<!-- ======================================================================================================== -->
+<p></p>
+<div id="contentalt" >
+<p><a name="NMixMCMC"></a>
+<h1>1. Density estimation via normal mixtures (and MCMC)</h1>
+
+<table width="100%">
+<tr><td width="25%"><a href="../html/NMixMCMC.html"> <b>NMixMCMC</b></a></td>
+    <td><strong>MCMC estimation of (multivariate) normal mixtures with possibly censored data</strong></td></tr>
+<tr><td></td>
+    <td>&nbsp&nbsp There exists a <b>print</b> method for objects of class <i>NMixMCMC</i>.</td></tr>
+
+<tr><td width="25%"><a href="../html/NMixEM.html"> <b>NMixEM</b></a></td>
+    <td><strong>EM algorithm for a homoscedastic normal mixture</strong></td></tr>
+<tr><td></td>
+    <td>&nbsp&nbsp There exists a <b>print</b> method for objects of class <i>NMixEM</i>.</td></tr>
+
+<tr><td width="25%"><a href="../html/NMixChainsDerived.html"> <b>NMixChainsDerived</b></a></td>
+    <td><strong>Create MCMC chains derived from previously sampled values</strong></td></tr>
+
+<tr><td width="25%"><a href="../html/NMixPredDA.html"> <b>NMixPredDA</b></a></td>
+    <td><strong>Discriminant analysis based on MCMC output from the mixture model</strong></td></tr>
+
+<tr><td width="25%"><a href="../html/NMixPlugDA.html"> <b>NMixPlugDA</b></a></td>
+    <td><strong>Discriminant analysis based on plug-in estimates from the mixture model</strong></td></tr>
+<tr><td colspan="2">&nbsp</td></tr>
+</table>
+
+</p>
+</div>
+
+<!-- ======================================================================================================== -->
+<p></p>
+<div id="contentalt" >
+<p><a name="GLMMMCMC"></a>
+<h1>2. Multivariate generalized linear mixed models with a normal mixture in the distribution of random effects</h1>
+
+<table width="100%">
+<tr><td width="25%"><a href="../html/GLMMMCMC.html"> <b>GLMM_MCMC</b></a></td>
+    <td><strong>  MCMC estimation of a (multivariate) generalized linear mixed model with a normal mixture in the distribution of random effects</strong></td></tr>
+<tr><td></td>
+    <td>&nbsp&nbsp There exists a <b>print</b> and <a href="../html/fitted.GLMMMCMC.html"><b>fitted</b></a> method for objects of class <i>GLMM_MCMC</i>.</td></tr>
+
+<tr><td width="25%"><a href="../html/GLMMlongitDA.html"> <b>GLMM_longitDA</b></a></td>
+    <td><strong>Discriminant analysis for longitudinal profiles based on fitted GLMM's</strong></td></tr>
+<tr><td colspan="2">&nbsp</td></tr>
+</table>
+
+</p>
+</div>
+
+<!-- ======================================================================================================== -->
+<p></p>
+<div id="contentalt" >
+<p><a name="Support"></a>
+<h1>3. Supporting functions to further process or visualize results from running NMixMCMC or GLMM_MCMC functions</h1>
+
+The following functions are generic with <i>default</i> method and a method for objects of class <i>NMixMCMC</i> and <i>GLMM_MCMC</i> implemented.
+<table width="100%">
+<tr><td width="25%"><a href="../html/NMixRelabel.html"> <b>NMixRelabel</b></a></td>
+    <td><strong>Re-labeling the MCMC output of the mixture model</strong></td></tr>
+
+<tr><td width="25%"><a href="../html/NMixSummComp.html"> <b>NMixSummComp</b></a></td>
+    <td><strong>Summary for the mixture components</strong></td></tr>
+
+<tr><td width="25%"><a href="../html/tracePlots.html"> <b>tracePlots</b></a></td>
+    <td><strong>Traceplots for selected parameters</strong></td></tr>
+
+<tr><td width="25%"><a href="../html/NMixPredDensJoint2.html"> <b>NMixPredDensJoint2</b></a></td>
+    <td><strong>Pairwise bivariate predictive density</strong></td></tr>
+<tr><td></td>
+    <td>&nbsp&nbsp There is also a <a href="../html/plot.NMixPredDensJoint2.html"><b>plot</b></a> method for objects of class <i>NMixPredDensJoint2</i>.</td></tr>
+
+<tr><td width="25%"><a href="../html/NMixPlugDensJoint2.html"> <b>NMixPlugDensJoint2</b></a></td>
+    <td><strong>Pairwise bivariate densities: plug-in estimate</strong></td></tr>
+<tr><td></td>
+    <td>&nbsp&nbsp There is also a <a href="../html/plot.NMixPlugDensJoint2.html"><b>plot</b></a> method for objects of class <i>NMixPlugDensJoint2</i>.</td></tr>
+
+<tr><td width="25%"><a href="../html/NMixPredCondDensJoint2.html"> <b>NMixPredCondDensJoint2</b></a></td>
+    <td><strong>Pairwise bivariate conditional predictive densities</strong></td></tr>
+<tr><td></td>
+    <td>&nbsp&nbsp There is also a <a href="../html/plot.NMixPredCondDensJoint2.html"><b>plot</b></a> method for objects of class <i>NMixPredCondDensJoint2</i>.</td></tr>
+
+<tr><td width="25%"><a href="../html/NMixPlugCondDensJoint2.html"> <b>NMixPlugCondDensJoint2</b></a></td>
+    <td><strong>Pairwise bivariate conditional densities: plug-in estimate</strong></td></tr>
+<tr><td></td>
+    <td>&nbsp&nbsp There is also a <a href="../html/plot.NMixPlugCondDensJoint2.html"><b>plot</b></a> method for objects of class <i>NMixPlugCondDensJoint2</i>.</td></tr>
+
+<tr><td width="25%"><a href="../html/NMixPredDensMarg.html"> <b>NMixPredDensMarg</b></a></td>
+    <td><strong>Marginal (univariate) predictive density</strong></td></tr>
+<tr><td></td>
+    <td>&nbsp&nbsp There is also a <a href="../html/plot.NMixPredDensMarg.html"><b>plot</b></a> method for objects of class <i>NMixPredDensMarg</i>.</td></tr>
+
+<tr><td width="25%"><a href="../html/NMixPlugDensMarg.html"> <b>NMixPlugDensMarg</b></a></td>
+    <td><strong>Marginal (univariate) densities: plug-in estimate</strong></td></tr>
+<tr><td></td>
+    <td>&nbsp&nbsp There is also a <a href="../html/plot.NMixPlugDensMarg.html"><b>plot</b></a> method for objects of class <i>NMixPlugDensMarg</i>.</td></tr>
+
+<tr><td width="25%"><a href="../html/NMixPredCDFMarg.html"> <b>NMixPredCDFMarg</b></a></td>
+    <td><strong>Marginal (univariate) predictive cumulative distribution function</strong></td></tr>
+<tr><td></td>
+    <td>&nbsp&nbsp There is also a <a href="../html/plot.NMixPredCDFMarg.html"><b>plot</b></a> method for objects of class <i>NMixPredCDFMarg</i>.</td></tr>
+
+<tr><td width="25%"><a href="../html/NMixPredCondDensMarg.html"> <b>NMixPredCondDensMarg</b></a></td>
+    <td><strong>Univariate conditional predictive density</strong></td></tr>
+<tr><td></td>
+    <td>&nbsp&nbsp There is also a <a href="../html/plot.NMixPredCondDensMarg.html"><b>plot</b></a> method for objects of class <i>NMixPredCondDensMarg</i>.</td></tr>
+
+<tr><td width="25%"><a href="../html/NMixPlugCondDensMarg.html"> <b>NMixPlugCondDensMarg</b></a></td>
+    <td><strong>Univariate conditional densities: plug-in estimate</strong></td></tr>
+<tr><td></td>
+    <td>&nbsp&nbsp There is also a <a href="../html/plot.NMixPlugCondDensMarg.html"><b>plot</b></a> method for objects of class <i>NMixPlugCondDensMarg</i>.</td></tr>
+<tr><td colspan="2">&nbsp</td></tr>
+</table>
+
+
+Additionally, the following functions are available.
+<table width="100%">
+<tr><td width="25%"><a href="../html/Y2T.html"> <b>Y2T</b></a></td>
+    <td><strong>Transform fitted distribution of Y=trans(T) into distribution of T</strong></td></tr>
+<tr><td></td>
+    <td>&nbsp&nbsp This is a generic function with <i>default</i> method to transform a fitted distribution of Y = trans(T) into a distribution of T = itrans(Y).</td></tr>
+<tr><td></td>
+    <td>&nbsp&nbsp There are methods for objects of class 
           <i>NMixPredDensMarg</i>, <i>NMixPlugDensMarg</i>, <i>NMixPredCDFMarg</i>,
           <i>NMixPredDensJoint2</i>, <i>NMixPlugDensJoint2</i>,
           <i>NMixPredCondDensMarg</i>, <i>NMixPlugCondDensMarg</i>,
-          <i>NMixPredCondDensJoint2</i>, <i>NMixPlugCondDensJoint2</i>.
-      </li>
-    </ul>
-  </li>
+          <i>NMixPredCondDensJoint2</i>, <i>NMixPlugCondDensJoint2</i>.</td></tr>
 
-</ul>
-</p>
+<tr><td width="25%"><a href="../html/summaryDiff.html"> <b>summaryDiff</b></a></td>
+    <td><strong>Posterior summary statistics for a difference of two quantities</strong></td></tr>
+<tr><td colspan="2">&nbsp</td></tr>
+</table>
 
-<p>
-Supplementary material for this part is available:
-<ul>
-  <li><a href="http://www.karlin.mff.cuni.cz/~komarek/publication.html#KomarekNMixIC">Kom&#225rek, A. (2009).
-           A new R package for Bayesian estimation of multivariate normal mixtures allowing for
-           selection of the number of components and interval-censored data.</a>  
-  <cite>Computational Statistics and Data Analysis,</cite> <b>53</b>(12). 3932-3947, doi: 10.1016/j.csda.2009.05.006.
-  <br>
-  Paper describing the methods implemented in the package.  
-  </li>
-  <li><a href="Komarek-NMix-supplement.pdf">Komarek-NMix-supplement.pdf</a><br>
-  Supplement to the paper which includes some technical details.
-  </li>
-  <li><a href="Galaxy.pdf">Galaxy.pdf</a>, <a href="Galaxy.R">Galaxy.R</a>, <a href="Galaxy.Rnw">Galaxy.Rnw</a><br>
-  Example of 1 dimensional analysis using the RJ-MCMC.
-  </li>
-  <li><a href="Faithful.pdf">Faithful.pdf</a>, <a href="Faithful.R">Faithful.R</a>, <a href="Faithful.Rnw">Faithful.Rnw</a><br>
-  Example of 2 dimensional analysis.
-  </li>
-  <li><a href="Tandmob.pdf">Tandmob.pdf</a>, <a href="Tandmob.R">Tandmob.R</a>, <a href="Tandmob.Rnw">Tandmob.Rnw</a><br>
-  Example of 6 dimensional analysis with the interval-censored data.
-  </li>
-</ul>
 </p>
+</div>
 
 <!-- ======================================================================================================== -->
-<br><p><a name="GLMMMCMC"></a>
-<h1>2. Multivariate generalized linear mixed models with a normal mixture in the distribution of random effects</h1>
-<ul>
-  <li><a href="../html/GLMMMCMC.html"> <b>GLMM_MCMC</b></a> <br>
-    <ul>
-      <li>There exists a <b>print</b> and <a href="../html/fitted.GLMMMCMC.html"><b>fitted</b></a> method for objects of class <i>GLMM_MCMC</i>.</li>
-    </ul>
-  </li>
-  <li><a href="../html/GLMMlongitDA.html"> <b>GLMM_longitDA</b></a> <br>
-  </li>
-</ul>
+<p></p>
+<div id="contentalt" >
+<p><a name="UnivDist"></a>
+<h1>4. Univariate distributions</h1>
+
+<table width="100%">
+<tr><td width="25%"><a href="../html/TNorm.html"> <b>rTNorm</b></a></td>
+    <td><strong>Random number generation from a <i>truncated normal</i> distribution</strong></td></tr>
+<tr><td colspan="2">&nbsp</td></tr>
+</table>
+
 </p>
+</div>
 
 <!-- ======================================================================================================== -->
+<p></p>
+<div id="contentalt" >
+<p><a name="MultDist"></a>
+<h1>5. Multivariate distributions</h1>
 
-<br><p><a name="UnivDist"></a>
-<h1>3. Univariate distributions</h1>
-<ul>
-  <li><a href="../html/TNorm.html"> <b>rTNorm</b></a> <br>
-  Random number generation from a <i>truncated normal</i> distribution.
-  </li>
-</ul>
+<table width="100%">
+<tr><td width="25%"><a href="../html/MVN.html"> <b>dMVN</b>, <b>rMVN</b>, <b>rcMVN</b></a></td>
+    <td><strong>(Log-)density and random number genaration for a <i>multivariate normal</i> distribution</strong></td></tr>
+
+<tr><td width="25%"><a href="../html/TMVN.html"> <b>rTMVN</b></a></td>
+    <td><strong>Random number genaration from a <i>truncated multivariate normal</i> distribution</strong></td></tr>
+
+<tr><td width="25%"><a href="../html/MVNmixture.html"> <b>dMVNmixture</b>, <b>dMVNmixture2</b>, <b>rMVNmixture</b>, <b>rMVNmixture2</b></a></td>
+    <td><strong>(Log-)density and random number genaration for a <i>mixture of (multivariate) normal distributions</i></strong></td></tr>
+
+<tr><td width="25%"><a href="../html/Wishart.html"> <b>dWishart</b>, <b>rWishart</b></a></td>
+    <td><strong>(Log-)density and random number genaration for a <i>Wishart</i> distribution</strong></td></tr>
+
+<tr><td width="25%"><a href="../html/Dirichlet.html"> <b>rDirichlet</b></a></td>
+    <td><strong>Random number genaration from a <i>Dirichlet</i> distribution</strong></td></tr>
+<tr><td colspan="2">&nbsp</td></tr>
+</table>
+
 </p>
+</div>
 
 <!-- ======================================================================================================== -->
+<p></p>
+<div id="contentalt" >
+<p><a name="MiscelRN"></a>
+<h1>6. Miscellaneous random number generation</h1>
 
-<br><p><a name="MultDist"></a>
-<h1>4. Multivariate distributions</h1>
-<ul>
-  <li><a href="../html/MVN.html"> <b>dMVN</b>, <b>rMVN</b>, <b>rcMVN</b></a> <br>
-  (Log-)density and random number genaration for a <i>multivariate normal</i> distribution.
-  </li>
-  <li><a href="../html/TMVN.html"> <b>rTMVN</b></a> <br>
-  Random number genaration from a <i>truncated multivariate normal</i> distribution.
-  </li>
-  <li><a href="../html/MVNmixture.html"> <b>dMVNmixture</b>, <b>dMVNmixture2</b>, 
-  <b>rMVNmixture</b>, <b>rMVNmixture2</b></a> <br>
-  (Log-)density and random number genaration for a <i>mixture of (multivariate) normal distributions</i>.
-  </li>
-  <li><a href="../html/Wishart.html"> <b>dWishart</b>, <b>rWishart</b></a> <br>
-  (Log-)density and random number genaration for a <i>Wishart</i> distribution.
-  </li>
-  <li><a href="../html/Dirichlet.html"> <b>rDirichlet</b></a> <br>
-  Random number genaration from a <i>Dirichlet</i> distribution.
-  </li>
-</ul>
+<table width="100%">
+<tr><td width="25%"><a href="../html/rRotationMatrix.html"> <b>rRotationMatrix</b></a></td>
+    <td><strong>Random <i>rotation matrix</i></strong></td></tr>
+
+<tr><td width="25%"><a href="../html/rSamplePair.html"> <b>rSamplePair</b></a></td>
+    <td><strong>Sample a pair (with replacement)</strong></td></tr>
+<tr><td colspan="2">&nbsp</td></tr>
+</table>
+
 </p>
+</div>
 
 <!-- ======================================================================================================== -->
+<p></p>
+<div id="contentalt" >
+<p><a name="MatrixLA"></a>
+<h1>7. Matrix linear algebra</h1>
 
-<br><p><a name="MiscelRN"></a>
-<h1>5. Miscellaneous random number generation</h1>
-<ul>
-  <li><a href="../html/rRotationMatrix.html"> <b>rRotationMatrix</b></a> <br>
-  Random <i>rotation matrix</i>.
-  </li>
-  <li><a href="../html/rSamplePair.html"> <b>rSamplePair</b></a> <br>
-  Sample a random pair.
-  </li>
-</ul>
+<table width="100%">
+<tr><td width="25%"><a href="../html/MatMPpinv.html"> <b>MatMPpinv</b></a></td>
+    <td><strong>Moore-Penrose pseudoinverse of a squared matrix</strong></td></tr>
+
+<tr><td width="25%"><a href="../html/MatSqrt.html"> <b>MatSqrt</b></a></td>
+    <td><strong>Square root of a matrix</strong></td></tr>
+<tr><td colspan="2">&nbsp</td></tr>
+</table>
+
 </p>
+</div>
 
 <!-- ======================================================================================================== -->
+<p></p>
+<div id="contentalt" >
+<p><a name="BasicStat"></a>
+<h1>8. Basic statistics</h1>
 
-<br><p><a name="MatrixLA"></a>
-<h1>6. Matrix linear algebra</h1>
-<ul>
-  <li><a href="../html/MatMPpinv.html"> <b>MatMPpinv</b></a> <br>
-  Moore-Penrose pseudoinverse of a squared matrix.
-  </li>
-  <li><a href="../html/MatSqrt.html"> <b>MatSqrt</b></a> <br>
-  Square root of a matrix.
-  </li>
-</ul>
+<table width="100%">
+<tr><td width="25%"><a href="../html/BLA.html"> <b>BLA</b></a></td>
+    <td><strong>Best linear approximation with respect to the mean square error (theoretical linear regression)</strong></td></tr>
+<tr><td colspan="2">&nbsp</td></tr>
+</table>
+
 </p>
+</div>
 
 <!-- ======================================================================================================== -->
+<p></p>
+<div id="contentalt" >
+<p><a name="Utils"></a>
+<h1>9. Utilities</h1>
 
-<br><p><a name="BasicStat"></a>
-<h1>7. Basic statistics</h1>
-<ul>
-  <li><a href="../html/BLA.html"> <b>BLA</b></a> <br>
-  Best linear approximation with respect to the mean squared error (theoretical least squares).
-  </li>
-</ul>
+<table width="100%">
+<tr><td width="25%"><a href="../html/getProfiles.html"> <b>getProfiles</b></a></td>
+    <td><strong>Individual longitudinal profiles of a given variable</strong></td></tr>
+
+<tr><td width="25%"><a href="../html/plotProfiles.html"> <b>plotProfiles</b></a></td>
+    <td><strong>Plot individual longitudinal profiles</strong></td></tr>
+
+<tr><td width="25%"><a href="../html/BsBasis.html"> <b>BsBasis</b></a></td>
+    <td><strong>B-spline basis</strong></td></tr>
+
+<tr><td width="25%"><a href="../html/generatePermutations.html"> <b>generatePermutations</b></a></td>
+    <td><strong>Generate all permutations of (1, ..., K)</strong></td></tr>
+
+<tr><td width="25%"><a href="../html/SP2Rect.html"> <b>SP2Rect</b></a></td>
+    <td><strong>Conversion of a symmetric matrix stored in a packed format (lower triangle only) into a matrix</strong></td></tr>
+
+<tr><td width="25%"><a href="../html/autolayout.html"> <b>autolayout</b></a></td>
+    <td><strong>Automatic layout for several plots in one figure</strong></td></tr>
+
+<tr><td width="25%"><a href="../html/cbplot.html"> <b>cbplot</b></a></td>
+    <td><strong>Plot a function together with its confidence/credible bands</strong></td></tr>
+<tr><td colspan="2">&nbsp</td></tr>
+</table>
+
 </p>
-
+</div>
 
 <!-- ======================================================================================================== -->
+<p></p>
+<div id="contentalt" >
+<p><a name="Datasets"></a>
+<h1>10. Datasets</h1>
 
-<br><p><a name="Utils"></a>
-<h1>8. Utilities</h1>
-<ul>  
-  <li><a href="../html/getProfiles.html"> <b>getProfiles</b></a> <br>
-  </li>
-  <li><a href="../html/plotProfiles.html"> <b>plotProfiles</b></a> <br>
-  </li>
-  <li><a href="../html/BsBasis.html"> <b>BsBasis</b></a> <br>
-  </li>
-  <li><a href="../html/generatePermutations.html"> <b>generatePermutations</b></a> <br>
-  Generate all permutations of (1, ..., K).
-  </li>
-  <li><a href="../html/SP2Rect.html"> <b>SP2Rect</b></a> <br>
-  Conversion of a symmetric matrix stored in a packed format (lower triangle only) into a matrix.
-  </li>
-  <li><a href="../html/autolayout.html"> <b>autolayout</b></a> <br>
-  </li>
-</ul>
+<table width="100%">
+<tr><td width="25%"><a href="../html/Acidity.html"> <b>Acidity</b></a></td>
+    <td><strong>Acidity index of lakes in North-Central Wisconsin</strong></td></tr>
+<tr><td></td>
+    <td>&nbsp&nbsp Acidity index measured in a sample of 155 lakes in North-Central Wisconsin.</td></tr>
+
+<tr><td width="25%"><a href="../html/Enzyme.html"> <b>Enzyme</b></a></td>
+    <td><strong>Enzymatic activity in the blood</strong></td></tr>
+<tr><td></td>
+    <td>&nbsp&nbsp Enzymatic activity in the blood, for an enzyme involved in the metabolism of carcinogenic substances, among a group of 245 unrelated individuals.</td></tr>
+
+<tr><td width="25%"><a href="../html/Faithful.html"> <b>Faithful</b></a></td>
+    <td><strong>Old Faithful Geyser Data</strong></td></tr>
+<tr><td></td>
+    <td>&nbsp&nbsp Waiting time between eruptions and the duration of the eruption for the Old Faithful geyser in Yellowstone National Park, Wyoming, USA, version used in H&#228rdle (1991).</td></tr>
+
+<tr><td width="25%"><a href="../html/Galaxy.html"> <b>Galaxy</b></a></td>
+    <td><strong>Velocities of distant galaxies</strong></td></tr>
+<tr><td></td>
+    <td>&nbsp&nbsp Velocities of 82 distant galaxies, diverging from our own galaxy.</td></tr>
+
+<tr><td width="25%"><a href="../html/PBCseq.html"> <b>PBCseq</b></a></td>
+    <td><strong>Mayo Clinic Primary Biliary Cirrhosis, sequential data</strong></td></tr>
+<!--<tr><td></td>
+    <td>&nbsp&nbsp </td></tr>-->
+
+<tr><td width="25%"><a href="../html/Tandmob.html"> <b>Tandmob</b></a></td>
+    <td><strong>Signal Tandmobiel data</strong></td></tr>
+<tr><td></td>
+    <td>&nbsp&nbsp Dental (Signal Tandmobiel) data for 4430 6-12 year old children</td></tr>
+
+<tr><td width="25%"><a href="../html/TandmobEmer.html"> <b>TandmobEmer</b></a></td>
+    <td><strong>Signal Tandmobiel data - emergence times</strong></td></tr>
+<tr><td></td>
+    <td>&nbsp&nbsp Data derived from <a href="../html/Tandmob.html"> <b>Tandmob</b></a>.</td></tr>
+
+<tr><td colspan="2">&nbsp</td></tr>
+</table>
+
 </p>
+</div>
 
-<!-- ======================================================================================================== -->
+<p></p>
+<div class="clearingdiv">&nbsp;</div>
 
-<br><p><a name="Datasets"></a>
-<h1>9. Datasets</h1>
-<ul>
-  <li><a href="../html/Acidity.html"> <b>Acidity</b></a> <br>
-  Acidity index measured in a sample of 155 lakes in North-Central
-  Wisconsin.
-  </li>
-  <li><a href="../html/Enzyme.html"> <b>Enzyme</b></a> <br>
-  Enzymatic activity in the blood, for an enzyme involved in the
-  metabolism of carcinogenic substances, among a group of 245 unrelated individuals.
-  </li>
-  <li><a href="../html/Faithful.html"> <b>Faithful</b></a> <br>
-  Waiting time between eruptions and the duration of the eruption
-  for the Old Faithful geyser in Yellowstone National Park, Wyoming,
-  USA, version used in H&#228rdle (1991).
-  </li>
-  <li><a href="../html/Galaxy.html"> <b>Galaxy</b></a> <br>
-  Velocities of 82 distant galaxies, diverging from our own galaxy.
-  </li>
-  <li><a href="../html/Tandmob.html"> <b>Tandmob</b></a> <br>
-  Dental (Signal Tandmobiel) data for 4430 6-12 year old children.
-  </li>
-  <li><a href="../html/TandmobEmer.html"> <b>TandmobEmer</b></a> <br>
-  Data derived from <a href="../html/Tandmob.html"> <b>Tandmob</b></a>.
-  </li>
-</ul>
-</p>
+</div>       <!-- end of <div id="wrap"> -->
+</div>       <!-- end of <div id="container"> -->
 
-<br><br><br>
+<div id="footer">&copy; 2011
+<a href="mailto:arnost.komarek[AT]mff.cuni.cz">Arnošt Komárek</a>  |
+Design by <a href="http://andreasviklund.com">Andreas Viklund</a>
+</div>
 
 </body>
 </html>
