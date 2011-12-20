@@ -8,6 +8,7 @@
 ##  LOG:       25/05/2009:  xlab, ylab arguments removed
 ##                          xylab argument added instead
 ##                          contour argument added, function draws images by default
+##             08/11/2011:  add.contour, col.add.contour arguments added
 ##
 ##  FUNCTION:  plot.NMixPredDensJoint2 (03/12/2007)
 ##             
@@ -16,7 +17,7 @@
 ## *************************************************************
 ## plot.NMixPredDensJoint2
 ## *************************************************************
-plot.NMixPredDensJoint2 <- function(x, K=0, contour=FALSE, auto.layout=TRUE, col, lwd=1, main, xylab, ...)
+plot.NMixPredDensJoint2 <- function(x, K=0, contour=FALSE, add.contour=TRUE, col.add.contour="brown", auto.layout=TRUE, col, lwd=1, main, xylab, ...)
 {
   p <- length(x$x)  
   nfig <- p * (p-1)/2
@@ -64,6 +65,7 @@ plot.NMixPredDensJoint2 <- function(x, K=0, contour=FALSE, auto.layout=TRUE, col
         col <- rev(heat_hcl(33, c.=c(80, 30), l=c(30, 90), power=c(1/5, 1.3)))
       }
       image(x$x[[1]], x$x[[2]], dx, col=col, main=main, xlab=xlab, ylab=ylab, ...)
+      if (add.contour) contour(x$x[[1]], x$x[[2]], dx, col=col.add.contour, lwd=lwd, add=TRUE)      
     }      
   }else{
     if (auto.layout){
@@ -108,6 +110,7 @@ plot.NMixPredDensJoint2 <- function(x, K=0, contour=FALSE, auto.layout=TRUE, col
             col <- rev(heat_hcl(33, c.=c(80, 30), l=c(30, 90), power=c(1/5, 1.3)))
           }
           image(x$x[[m0]], x$x[[m1]], dx, col=col, main=main, xlab=xlab, ylab=ylab, ...)
+          if (add.contour) contour(x$x[[m0]], x$x[[m1]], dx, col=col.add.contour, lwd=lwd, add=TRUE)
         }  
       }  
     }    

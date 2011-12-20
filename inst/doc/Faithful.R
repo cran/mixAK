@@ -1,38 +1,35 @@
+### R code from vignette source 'Faithful.Rnw'
+
 ###################################################
-### chunk number 1: What should be created in this Sweave run
+### code chunk number 1: What should be created in this Sweave run
 ###################################################
-#line 82 "Faithful.Rnw"
 RUN.TIMECONSUMING.CODE <- FALSE
 RUN.ALLOUT <- FALSE
 
 
 ###################################################
-### chunk number 2: Directory to store figures
+### code chunk number 2: Directory to store figures
 ###################################################
-#line 90 "Faithful.Rnw"
 FIGDIR <- "./figures/"
 FIGKEEPDIR <- "./figuresKeep/"
 
 
 ###################################################
-### chunk number 3: Directory with results computed in past
+### code chunk number 3: Directory with results computed in past
 ###################################################
-#line 101 "Faithful.Rnw"
 RESULTDIR <- "/home/komarek/RESULT_OBJ/mixAK-Faithful-S081115/"   ### must be changed by the user
 RESULT2DIR <- "./RESULT_OBJ/"      ### must be changed by the user
 
 
 ###################################################
-### chunk number 4: Options
+### code chunk number 4: Options
 ###################################################
-#line 107 "Faithful.Rnw"
 options(width=80)
 
 
 ###################################################
-### chunk number 5: Check for existence of directories to store results
+### code chunk number 5: Check for existence of directories to store results
 ###################################################
-#line 112 "Faithful.Rnw"
 if (!file.exists(RESULTDIR)){
   stop(paste("Directory ", RESULTDIR, " does not exist.\nYou have to create it or change the value of the variable RESULTDIR.\n"))
 }  
@@ -42,9 +39,8 @@ if (!file.exists(RESULT2DIR)){
 
 
 ###################################################
-### chunk number 6: Load results computed in past
+### code chunk number 6: Load results computed in past
 ###################################################
-#line 124 "Faithful.Rnw"
 Kshow <- 3
 
 if ("Faithful-Result.RData" %in% dir(RESULT2DIR)){
@@ -72,26 +68,23 @@ if (RUN.ALLOUT){
 
 
 ###################################################
-### chunk number 7: Load needed packages
+### code chunk number 7: Load needed packages
 ###################################################
-#line 154 "Faithful.Rnw"
 library("mixAK")
 library("coda")
 library("colorspace")
 
 
 ###################################################
-### chunk number 8: Read the data and compute a brief summary
+### code chunk number 8: Read the data and compute a brief summary
 ###################################################
-#line 166 "Faithful.Rnw"
 data("Faithful", package="mixAK")
 summary(Faithful)
 
 
 ###################################################
-### chunk number 9: Draw scatterplot and histogram
+### code chunk number 9: Draw scatterplot and histogram
 ###################################################
-#line 172 "Faithful.Rnw"
 postscript(paste(FIGDIR, "figFaithful01.ps", sep=""), width=7, height=10, 
            horizontal=FALSE)
 par(bty="n")
@@ -107,24 +100,21 @@ dev.off()
 
 
 ###################################################
-### chunk number 10: Length of the MCMC
+### code chunk number 10: Length of the MCMC
 ###################################################
-#line 198 "Faithful.Rnw"
 nMCMC <- c(burn=100000, keep=500000, thin=10, info=10000)
 
 
 ###################################################
-### chunk number 11: Grid of values for the predictive density
+### code chunk number 11: Grid of values for the predictive density
 ###################################################
-#line 203 "Faithful.Rnw"
 ygrid <- list(eruptions=seq(1, 6, length=100), 
               waiting=seq(40, 100, length=100))
 
 
 ###################################################
-### chunk number 12: TESTING: Prior distribution and model with three components and posterior predictive density
+### code chunk number 12: TESTING: Prior distribution and model with three components and posterior predictive density
 ###################################################
-#line 214 "Faithful.Rnw"
 set.seed(770328)
 Prior0 <- list(priorK="fixed", Kmax=3)
 TEST.Model0 <- NMixMCMC(y0=Faithful, prior=Prior0, nMCMC=c(burn=100, keep=100, thin=2, info=50))
@@ -133,16 +123,14 @@ TEST.JPDensModel0 <- NMixPredDensJoint2(TEST.Model0[[1]], grid=ygrid)
 
 
 ###################################################
-### chunk number 13: Prior distribution
+### code chunk number 13: Prior distribution
 ###################################################
-#line 226 "Faithful.Rnw"
 Prior0 <- list(priorK="fixed", Kmax=3)
 
 
 ###################################################
-### chunk number 14: Model with three components
+### code chunk number 14: Model with three components
 ###################################################
-#line 232 "Faithful.Rnw"
 if (RUN.TIMECONSUMING.CODE){
   set.seed(777988621)  
   Model0 <- NMixMCMC(y0=Faithful, prior=Prior0, nMCMC=nMCMC, PED=TRUE)
@@ -150,9 +138,8 @@ if (RUN.TIMECONSUMING.CODE){
 
 
 ###################################################
-### chunk number 15: The prior distribution was the same as with eval=FALSE
+### code chunk number 15: The prior distribution was the same as with (eval = FALSE)
 ###################################################
-## #line 260 "Faithful.Rnw"
 ## Prior0 <- list(priorK="fixed", Kmax=3, 
 ##                delta=1, 
 ##                priormuQ="independentC",
@@ -161,16 +148,14 @@ if (RUN.TIMECONSUMING.CODE){
 
 
 ###################################################
-### chunk number 16: Model0: Basic posterior summary
+### code chunk number 16: Model0: Basic posterior summary
 ###################################################
-#line 304 "Faithful.Rnw"
 print(Model0)
 
 
 ###################################################
-### chunk number 17: Model0: Marginal predictive densities
+### code chunk number 17: Model0: Marginal predictive densities
 ###################################################
-#line 312 "Faithful.Rnw"
 if (RUN.TIMECONSUMING.CODE){
   MPDensModel0 <- list()
   MPDensModel0[[1]] <- NMixPredDensMarg(Model0[[1]], grid=ygrid)  
@@ -179,9 +164,8 @@ if (RUN.TIMECONSUMING.CODE){
 
 
 ###################################################
-### chunk number 18: Model0: Plot of the marginal predictive density
+### code chunk number 18: Model0: Plot of the marginal predictive density
 ###################################################
-#line 322 "Faithful.Rnw"
 postscript(paste(FIGDIR, "figFaithful02.ps", sep=""), width=7, height=5, 
            horizontal=FALSE)
 plot(MPDensModel0[[1]])
@@ -189,9 +173,8 @@ dev.off()
 
 
 ###################################################
-### chunk number 19: Model0: Joint predictive density
+### code chunk number 19: Model0: Joint predictive density
 ###################################################
-#line 332 "Faithful.Rnw"
 if (RUN.TIMECONSUMING.CODE){
   JPDensModel0 <- list()
   JPDensModel0[[1]] <- NMixPredDensJoint2(Model0[[1]], grid=ygrid)  
@@ -200,9 +183,8 @@ if (RUN.TIMECONSUMING.CODE){
 
 
 ###################################################
-### chunk number 20: Model0: Plot of the joint predictive density
+### code chunk number 20: Model0: Plot of the joint predictive density
 ###################################################
-#line 343 "Faithful.Rnw"
 postscript(paste(FIGDIR, "figFaithful03.ps", sep=""), width=7, height=5, 
            horizontal=FALSE)
 plot(JPDensModel0[[1]])
@@ -210,9 +192,8 @@ dev.off()
 
 
 ###################################################
-### chunk number 21: Model0: Plot of the marginal predictive density with the histogram
+### code chunk number 21: Model0: Plot of the marginal predictive density with the histogram
 ###################################################
-#line 367 "Faithful.Rnw"
 postscript(paste(FIGDIR, "figFaithful04.ps", sep=""), width=7, height=10, 
            horizontal=FALSE)
 par(mfrow=c(2, 2), bty="n")
@@ -231,9 +212,8 @@ dev.off()
 
 
 ###################################################
-### chunk number 22: Model0: Contour plot of the joint predictive density with the scatterplot
+### code chunk number 22: Model0: Contour plot of the joint predictive density with the scatterplot
 ###################################################
-#line 388 "Faithful.Rnw"
 postscript(paste(FIGDIR, "figFaithful05.ps", sep=""), width=7, height=10, 
            horizontal=FALSE)
 par(mfrow=c(2, 1), bty="n")
@@ -248,9 +228,8 @@ dev.off()
 
 
 ###################################################
-### chunk number 23: Model0: Image plot of the joint predictive density with the scatterplot
+### code chunk number 23: Model0: Image plot of the joint predictive density with the scatterplot
 ###################################################
-#line 419 "Faithful.Rnw"
 postscript(paste(FIGDIR, "figFaithful06.ps", sep=""), width=7, height=10, 
            horizontal=FALSE)
 par(mfrow=c(2, 1), bty="n")
@@ -266,16 +245,14 @@ dev.off()
 
 
 ###################################################
-### chunk number 24: RJMCMC: Choose chain
+### code chunk number 24: RJMCMC: Choose chain
 ###################################################
-#line 447 "Faithful.Rnw"
 CH <- 1
 
 
 ###################################################
-### chunk number 25: Model0: Create mcmc objects
+### code chunk number 25: Model0: Create mcmc objects
 ###################################################
-#line 452 "Faithful.Rnw"
 if (RUN.ALLOUT){
   start <- Model0[[CH]]$nMCMC["burn"] + 1
   end <- Model0[[CH]]$nMCMC["burn"] + Model0[[CH]]$nMCMC["keep"]
@@ -286,9 +263,8 @@ if (RUN.ALLOUT){
 
 
 ###################################################
-### chunk number 26: Choose iters to draw traceplots
+### code chunk number 26: Choose iters to draw traceplots
 ###################################################
-#line 466 "Faithful.Rnw"
 if (RUN.ALLOUT){
   tstart <- 495001
   tend <- 500000
@@ -300,9 +276,8 @@ if (RUN.ALLOUT){
 
 
 ###################################################
-### chunk number 27: Model0: Traceplots
+### code chunk number 27: Model0: Traceplots
 ###################################################
-#line 478 "Faithful.Rnw"
 if (RUN.ALLOUT){
   lwd <- 0.5
   postscript(paste(FIGKEEPDIR, "figFaithful07.ps", sep=""), width=7, height=10, 
@@ -325,9 +300,8 @@ if (RUN.ALLOUT){
 
 
 ###################################################
-### chunk number 28: Model0: Traceplots
+### code chunk number 28: Model0: Traceplots
 ###################################################
-#line 501 "Faithful.Rnw"
 if (RUN.ALLOUT){
   postscript(paste(FIGKEEPDIR, "figFaithful08.ps", sep=""), width=7, height=10, 
              horizontal=FALSE)
@@ -345,9 +319,8 @@ if (RUN.ALLOUT){
 
 
 ###################################################
-### chunk number 29: Model0: Density plots
+### code chunk number 29: Model0: Density plots
 ###################################################
-#line 520 "Faithful.Rnw"
 if (RUN.ALLOUT){
   postscript(paste(FIGKEEPDIR, "figFaithful09.ps", sep=""), width=7, height=10, 
              horizontal=FALSE)
@@ -369,9 +342,8 @@ if (RUN.ALLOUT){
 
 
 ###################################################
-### chunk number 30: Model0: Autocorrelation plots
+### code chunk number 30: Model0: Autocorrelation plots
 ###################################################
-#line 559 "Faithful.Rnw"
 if (RUN.ALLOUT){
   postscript(paste(FIGKEEPDIR, "figFaithful10.ps", sep=""), width=7, height=10, 
              horizontal=FALSE)
@@ -393,13 +365,12 @@ if (RUN.ALLOUT){
 
 
 ###################################################
-### chunk number 31: Model0: Scatterplots and histograms of mixture elements
+### code chunk number 31: Model0: Scatterplots and histograms of mixture elements
 ###################################################
-#line 598 "Faithful.Rnw"
 if (RUN.ALLOUT){
   PCH <- 1;  CEX <- 0.5
   set.seed(770328)
-  SELECT <- sample(end-start+1, size=5000, replace=FALSE)
+  SELECT <- sample(end-start+1, size=500, replace=FALSE)
 
   MuDens1 <- MuDens2 <- list()
   for (j in 1:3){
@@ -480,9 +451,8 @@ if (RUN.ALLOUT){
 
 
 ###################################################
-### chunk number 32: Fixed K MCMC
+### code chunk number 32: Fixed K MCMC
 ###################################################
-#line 715 "Faithful.Rnw"
 if (RUN.TIMECONSUMING.CODE){
   Seed <- c(777988621, 777988621, 777988621, 777988621, 780830,
             780830, 777988621, 777988621, 777988621, 777988621)
@@ -526,9 +496,8 @@ if (RUN.TIMECONSUMING.CODE){
 
 
 ###################################################
-### chunk number 33: Fixed K: PED and DIC
+### code chunk number 33: Fixed K: PED and DIC
 ###################################################
-#line 763 "Faithful.Rnw"
 PED <- ModelK[[1]]$PED
 DIC <- list(Chain1=ModelK[[1]][[1]]$DIC, Chain2=ModelK[[1]][[2]]$DIC)
 for (k in 2:length(ModelK)){
@@ -540,23 +509,20 @@ rownames(PED) <- rownames(DIC[[1]]) <- rownames(DIC[[2]]) <- paste("K=", 1:lengt
 
 
 ###################################################
-### chunk number 34: Fixed K: print PED
+### code chunk number 34: Fixed K: print PED
 ###################################################
-#line 773 "Faithful.Rnw"
 print(PED)
 
 
 ###################################################
-### chunk number 35: Fixed K: print DIC
+### code chunk number 35: Fixed K: print DIC
 ###################################################
-#line 776 "Faithful.Rnw"
 print(DIC)
 
 
 ###################################################
-### chunk number 36: Fixed K MCMC: Eruptions - plot of the marginal predictive density
+### code chunk number 36: Fixed K MCMC: Eruptions - plot of the marginal predictive density
 ###################################################
-#line 784 "Faithful.Rnw"
 CH <- 1
 postscript(paste(FIGDIR, "figFaithful11.ps", sep=""), width=6, height=6, 
            horizontal=FALSE)
@@ -572,9 +538,8 @@ dev.off()
 
 
 ###################################################
-### chunk number 37: Fixed K MCMC: Eruptions - plot of the marginal predictive density
+### code chunk number 37: Fixed K MCMC: Eruptions - plot of the marginal predictive density
 ###################################################
-#line 800 "Faithful.Rnw"
 postscript(paste(FIGDIR, "figFaithful12.ps", sep=""), width=7, height=10, 
            horizontal=FALSE)
 par(mar=c(3, 2, 2, 1)+0.1)
@@ -590,9 +555,8 @@ dev.off()
 
 
 ###################################################
-### chunk number 38: Fixed K MCMC: Waiting - plot of the marginal predictive density
+### code chunk number 38: Fixed K MCMC: Waiting - plot of the marginal predictive density
 ###################################################
-#line 819 "Faithful.Rnw"
 CH <- 1
 postscript(paste(FIGDIR, "figFaithful13.ps", sep=""), width=6, height=6, 
            horizontal=FALSE)
@@ -607,9 +571,8 @@ dev.off()
 
 
 ###################################################
-### chunk number 39: Fixed K MCMC: Waiting - plot of the marginal predictive density
+### code chunk number 39: Fixed K MCMC: Waiting - plot of the marginal predictive density
 ###################################################
-#line 834 "Faithful.Rnw"
 postscript(paste(FIGDIR, "figFaithful14.ps", sep=""), width=7, height=10, 
            horizontal=FALSE)
 par(mar=c(3, 2, 2, 1)+0.1)
@@ -624,9 +587,8 @@ dev.off()
 
 
 ###################################################
-### chunk number 40: Fixed K MCMC: Waiting - plot of the joint predictive density
+### code chunk number 40: Fixed K MCMC: Waiting - plot of the joint predictive density
 ###################################################
-#line 876 "Faithful.Rnw"
 CH <- 1
 postscript(paste(FIGDIR, "figFaithful15.ps", sep=""), width=7, height=10, 
            horizontal=FALSE)
@@ -643,9 +605,8 @@ dev.off()
 
 
 ###################################################
-### chunk number 41: Fixed K MCMC: Waiting - plot of the joint predictive density
+### code chunk number 41: Fixed K MCMC: Waiting - plot of the joint predictive density
 ###################################################
-#line 895 "Faithful.Rnw"
 CH <- 1
 postscript(paste(FIGDIR, "figFaithful19.ps", sep=""), width=7, height=10, 
            horizontal=FALSE)
@@ -663,9 +624,8 @@ dev.off()
 
 
 ###################################################
-### chunk number 42: Save results
+### code chunk number 42: Save results
 ###################################################
-#line 930 "Faithful.Rnw"
 if (RUN.TIMECONSUMING.CODE){
   save(list="Model0", 
        file=paste(RESULTDIR, "/Faithful-Model0", Kshow, ".RData", sep=""))        

@@ -11,23 +11,26 @@
 }  
 \usage{
 NMixMCMCwrapper(chain=1,
-                z0, z1, censor,
-                p, n, scale, prior, inits, RJMCMC,
-                Cinteger, Cdouble, CRJMCMC,
+                scale, prior, inits, Cpar, RJMCMC, CRJMCMC,
                 actionAll, nMCMC, keep.chains, PED,
                 dens.zero)
 }
 \arguments{
   \item{chain}{identification of the chain sampled in a particular call
-    of this function, usually number like 1, 2,
-    \dots}
-  \item{z0}{\eqn{n\times p}{n x p} matrix with shifted and scaled main limits
-    of observed intervals.}
-  \item{z0}{\eqn{n\times p}{n x p} matrix with shifted and scaled upper
-    limits of observed intervals.}
-  \item{censor}{\eqn{n\times p}{n x p} matrix with censoring indicators.}
-  \item{p}{dimension of the response.}
-  \item{n}{number of observations.}
+    of this function, usually number like 1, 2, \ldots}
+  \item{Cpar}{a list with the following components
+    \describe{
+      \item{z0}{\eqn{n\times p}{n x p} matrix with shifted and scaled main limits
+        of observed intervals.}
+      \item{z0}{\eqn{n\times p}{n x p} matrix with shifted and scaled upper
+        limits of observed intervals.}
+      \item{censor}{\eqn{n\times p}{n x p} matrix with censoring indicators.}
+      \item{p}{dimension of the response.}
+      \item{n}{number of observations.}
+      \item{Cinteger}{a numeric vector with integer prior parameters.}
+      \item{Cdouble}{a numeric vector with double precission prior parameters.}      
+    }  
+  }  
   \item{scale}{a list specifying how to scale the data before running
     MCMC. See argument \code{scale} in \code{\link{NMixMCMC}}
   }
@@ -41,8 +44,6 @@ NMixMCMCwrapper(chain=1,
   }
   \item{RJMCMC}{a list specifying parameters for RJ-MCMC.
     See argument \code{RJMCMC} in \code{\link{NMixMCMC}}}
-  \item{Cinteger}{a numeric vector with integer prior parameters.}
-  \item{Cdouble}{a numeric vector with double precission prior parameters.}
   \item{CRJMCMC}{a numeric vector with parameters for RJ-MCMC.}
   \item{actionAll}{argument for underlying C++ function.}
   \item{nMCMC}{vector giving the length of MCMC etc.}

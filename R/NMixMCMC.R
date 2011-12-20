@@ -21,11 +21,9 @@
 NMixMCMC <- function(y0, y1, censor, scale, prior,
                      init, init2, RJMCMC,
                      nMCMC=c(burn=10, keep=10, thin=1, info=10),
-                     PED, keep.chains=TRUE, onlyInit=FALSE, dens.zero=1e-300)
+                     PED, keep.chains=TRUE, onlyInit=FALSE, dens.zero=1e-300, parallel=FALSE)
 {
   thispackage <- "mixAK"
-  
-  parallel <- FALSE     ### at this moment, parallel computation not fully implemented
 
   EMin <- -5           ## exp(-(D1+D2)) = exp(-EMin) when computing importance sampling weights
                        ## if D1 + D2 < EMin, where D1 = log(f(y|theta1)), D2 = log(f(y|theta2))
@@ -915,27 +913,35 @@ NMixMCMC <- function(y0, y1, censor, scale, prior,
 #  attr(RET, "CRJMCMC") <- CRJMCMC    
 
 
+  ##### Parameters passed to C++ which will be stored also in the resulting object (to be able to use them in related functions)
+  ##### ========================================================================================================================
+  Cpar <- list(z0          = z0,
+               z1          = z1,
+               censor      = dd$censor,
+               dimy        = c(p=dd$p, n=dd$n),
+               priorInt    = Cinteger,
+               priorDouble = Cdouble)
+  rm(list=c("Cinteger", "Cdouble"))
+    
+
   ########## ========== Run MCMC ========== ##########
   ########## ============================== ##########
   if (PED){
     if (parallel){
-      stop("Parallel computation not yet fully supported.")
-      #require(snow)
-      #require(snowfall)
+      require("snow")
+      require("snowfall")
       
-      #sfInit(parallel=TRUE, cpus=2)      
-      #RET <- sfLapply(1:2, NMixMCMCwrapper,
-      #                     z0=z0, z1=z1, censor=dd$censor, p=dd$p, n=dd$n,
-      #                     scale=scale, prior=prior, inits=list(init, init2), RJMCMC=RJMCMC,
-      #                     Cinteger=Cinteger, Cdouble=Cdouble, CRJMCMC=CRJMCMC,
-      #                     actionAll=actionAll, nMCMC=nMCMC, keep.chains=keep.chains, PED=TRUE,
-      #                     dens.zero=dens.zero)
-      #sfStop()
+      sfInit(parallel=TRUE, cpus=2)
+      cat(paste("MCMC sampling started on ", date(), ".\n", sep=""))      
+      RET <- sfLapply(1:2, NMixMCMCwrapper,
+                           scale=scale, prior=prior, inits=list(init, init2), Cpar=Cpar, RJMCMC=RJMCMC, CRJMCMC=CRJMCMC,
+                           actionAll=actionAll, nMCMC=nMCMC, keep.chains=keep.chains, PED=TRUE,
+                           dens.zero=dens.zero)
+      cat(paste("MCMC sampling finished on ", date(), ".\n", sep=""))      
+      sfStop()
     }else{
       RET <- lapply(1:2, NMixMCMCwrapper,
-                         z0=z0, z1=z1, censor=dd$censor, p=dd$p, n=dd$n,
-                         scale=scale, prior=prior, inits=list(init, init2), RJMCMC=RJMCMC,
-                         Cinteger=Cinteger, Cdouble=Cdouble, CRJMCMC=CRJMCMC,
+                         scale=scale, prior=prior, inits=list(init, init2), Cpar=Cpar, RJMCMC=RJMCMC, CRJMCMC=CRJMCMC,
                          actionAll=actionAll, nMCMC=nMCMC, keep.chains=keep.chains, PED=TRUE,
                          dens.zero=dens.zero)
     }
@@ -1028,9 +1034,7 @@ NMixMCMC <- function(y0, y1, censor, scale, prior,
     class(RET) <- "NMixMCMClist"
   }else{
     RET <- NMixMCMCwrapper(chain=1,
-                           z0=z0, z1=z1, censor=dd$censor, p=dd$p, n=dd$n,
-                           scale=scale, prior=prior, inits=list(init), RJMCMC=RJMCMC,
-                           Cinteger=Cinteger, Cdouble=Cdouble, CRJMCMC=CRJMCMC,
+                           scale=scale, prior=prior, inits=list(init), Cpar=Cpar, RJMCMC=RJMCMC, CRJMCMC=CRJMCMC,
                            actionAll=actionAll, nMCMC=nMCMC, keep.chains=keep.chains,
                            PED=FALSE, dens.zero=dens.zero)
   }  

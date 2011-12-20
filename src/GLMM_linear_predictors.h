@@ -10,14 +10,19 @@
 //
 //  FUNCTIONS:  
 //     *   12/07/2009:  GLMM::linear_predictors  
+//
 //     *   27/02/2010:  GLMM::linear_predictors_fixed_updated
 //         12/04/2010:    additional arguments added
 //
 //     *   07/08/2009:  GLMM::linear_predictor_fixed
+//
 //     *   07/08/2009:  GLMM::linear_predictor_random
+//
 //     *   07/08/2009:  GLMM::linear_predictor_zs
 //
 //     *   13/04/2010:  GLMM::linear_predictor_b_random_meanY
+//
+//     *   05/12/2011:  GLMM::linear_predictors_random_updated
 //
 // ======================================================================
 //
@@ -107,7 +112,7 @@ linear_predictors(double* eta_fixed,
 //
 //  p[R]:                         number of covariates (intercept excluding) for each response
 //
-//  fixedIntcpt[R]:               0/1 indicating whether there is a random intercept for a specific response
+//  fixedIntcpt[R]:               0/1 indicating whether there is a fixed intercept for a specific response
 //
 //  dist[R]:                      types of response
 //
@@ -130,6 +135,57 @@ linear_predictors_fixed_updated(double* eta_fixed,
                                 const int*    n,       
                                 const int*    R,            
                                 const int*    I);
+
+
+/***** ***************************************************************************************** *****/
+/***** GLMM::linear_predictors_random_updated                                                    *****/
+/***** ***************************************************************************************** *****/
+//
+//  eta_random[sum(n)]:     INPUT:  whatsever
+//                         OUTPUT:  values of z[s,i,j]'b[s,i] (+ b[s,i,intercept])
+//                                  filled by zeros if there are no b's/intercepts                               
+//  
+//  eta[sum(n)]:            INPUT:  whatsever
+//                         OUTPUT:  values of eta_fixed + eta_random
+//
+//  meanY[sum(n)]:          INPUT:  whatsever
+//                         OUTPUT:  updated values of E(Y | eta)
+//
+//  eta_fixed[sum(n)]:            linear predictor values derived from fixed effects
+//
+//  Z[]:                          covariates for random effects
+//                                see GLMM_MCMC.{h,cpp}
+//
+//  b[I, sum(q + randIntcpt)]:    random effects
+//
+//  q[R]:                         number of random effects covariates (intercept excluding) for each response
+//
+//  randIntcpt[R]:                0/1 indicating whether there is a random intercept for a specific response
+//
+//  dist[R]:                      types of response
+//
+//  n[I, R]:                      number of observations for each cluster and each response
+//
+//  R[1]:                         number of responses
+//
+//  I[1]:                         number of clusters
+//
+//  dim_b[1]:                     dimension of random effects  = sum(q + randIntcpt)
+//
+void
+linear_predictors_random_updated(double* eta_random,      
+                                 double* eta,      
+                                 double* meanY,
+                                 const double* eta_fixed,  
+                                 const double* Z,  
+                                 const double* b,        
+                                 const int*    q,     
+                                 const int*    randIntcpt,  
+                                 const int*    dist,
+                                 const int*    n,       
+                                 const int*    R,        
+                                 const int*    I,
+                                 const int*    dim_b);
 
 
 /***** ***************************************************************************************** *****/

@@ -78,7 +78,8 @@ Bernoulli_Logit1(double* ll,
       }
       else{
         if (pi <= AK_Basic::_ZERO0){           // pi = 0
-          *ll = R_NegInf;                      // loglik = y * log(pi) = 1 * log(0)
+          //*ll = R_NegInf;                      // loglik = y * log(pi) = 1 * log(0)
+          *ll = AK_Basic::_LOG_ZERO0;
           break;
         }
         else{
@@ -88,7 +89,8 @@ Bernoulli_Logit1(double* ll,
     }
     else{
       if (pi >= 1 - AK_Basic::_ZERO0){         // pi = 1
-        *ll = R_NegInf;                        // loglik = (1 - y) * log(1 - pi) = 1 * log(0)
+        //*ll = R_NegInf;                        // loglik = (1 - y) * log(1 - pi) = 1 * log(0)
+        *ll = AK_Basic::_LOG_ZERO0;
         break;
       }
       else{ 
@@ -178,7 +180,8 @@ Bernoulli_Logit_sqrt_w_phi1(double* ll,
       else{
         if (pi <= AK_Basic::_ZERO0){           // pi = 0
           *sqrt_w_phiP = 0.0;
-          *ll = R_NegInf;                      // loglik = y * log(pi) = 1 * log(0)
+          //*ll = R_NegInf;                      // loglik = y * log(pi) = 1 * log(0)
+          *ll = AK_Basic::_LOG_ZERO0;
           break;
         }
         else{
@@ -190,7 +193,8 @@ Bernoulli_Logit_sqrt_w_phi1(double* ll,
     else{
       if (pi >= 1 - AK_Basic::_ZERO0){         // pi = 1
         *sqrt_w_phiP = 0.0;
-        *ll = R_NegInf;                        // loglik = (1 - y) * log(1 - pi) = 1 * log(0)
+        //*ll = R_NegInf;                        // loglik = (1 - y) * log(1 - pi) = 1 * log(0)
+        *ll = AK_Basic::_LOG_ZERO0;
         break;
       }
       else{ 
@@ -290,8 +294,10 @@ Bernoulli_Logit_sqrt_phi_stres1(double* ll,
       else{
         if (*piP <= AK_Basic::_ZERO0){      // pi = 0
           *sqrt_w_phiP = 0.0;
-          *stresP      = R_PosInf;              // stres = 1 / 0
-          *ll          = R_NegInf;              // loglik = y * log(pi) = 1 * log(0)
+          //*stresP      = R_PosInf;              // stres = 1 / 0
+          //*ll          = R_NegInf;              // loglik = y * log(pi) = 1 * log(0)
+          *stresP = 1 / AK_Basic::_ZERO;
+          *ll = AK_Basic::_LOG_ZERO0;
           break;
         }
         else{
@@ -304,8 +310,10 @@ Bernoulli_Logit_sqrt_phi_stres1(double* ll,
     else{
       if (*piP >= 1 - AK_Basic::_ZERO0){    // pi = 1
         *sqrt_w_phiP = 0.0;
-        *stresP      = R_PosInf;                // stres = 1 / 0
-        *ll          = R_NegInf;                // loglik = (1 - y) * log(1 - pi) = 1 * log(0)
+        //*stresP      = R_PosInf;                // stres = 1 / 0
+        //*ll          = R_NegInf;                // loglik = (1 - y) * log(1 - pi) = 1 * log(0)
+        *stresP = 1 / AK_Basic::_ZERO;
+        *ll = AK_Basic::_LOG_ZERO0; 
         break;
       }
       else{
@@ -380,8 +388,10 @@ Bernoulli_Logit_sqrt_phi_stres2(double* ll,
       else{
         if (*piP <= AK_Basic::_ZERO0){      // pi = 0
           *sqrt_w_phiP = 0.0;
-          *stresP      = R_PosInf;              // stres = 1 / 0
-          *ll          = R_NegInf;              // loglik = y * log(pi) = 1 * log(0)
+          //*stresP      = R_PosInf;              // stres = 1 / 0
+          //*ll          = R_NegInf;              // loglik = y * log(pi) = 1 * log(0)
+          *stresP = 1 / AK_Basic::_ZERO;
+          *ll = AK_Basic::_LOG_ZERO0;
           break;
         }
         else{
@@ -394,8 +404,10 @@ Bernoulli_Logit_sqrt_phi_stres2(double* ll,
     else{
       if (*piP >= 1 - AK_Basic::_ZERO0){    // pi = 1
         *sqrt_w_phiP = 0.0;
-        *stresP      = R_PosInf;                // stres = 1 / 0
-        *ll          = R_NegInf;                // loglik = (1 - y) * log(1 - pi) = 1 * log(0)
+        //*stresP      = R_PosInf;                // stres = 1 / 0
+        //*ll          = R_NegInf;                // loglik = (1 - y) * log(1 - pi) = 1 * log(0)
+        *stresP = 1 / AK_Basic::_ZERO;
+        *ll = AK_Basic::_LOG_ZERO0;
         break;
       }
       else{
@@ -498,7 +510,8 @@ Bernoulli_LogitUI1(double* ll,
       }
       else{
         if (*piP <= AK_Basic::_ZERO0){      // pi = 0
-          *ll = R_NegInf;                  // loglik = y * log(pi) = 1 * log(0)
+          //*ll = R_NegInf;                  // loglik = y * log(pi) = 1 * log(0)
+          *ll = AK_Basic::_LOG_ZERO0;
           break;
         }
         else{
@@ -508,7 +521,8 @@ Bernoulli_LogitUI1(double* ll,
     }
     else{
       if (*piP >= 1 - AK_Basic::_ZERO0){    // pi = 1
-        *ll = R_NegInf;                    // loglik = (1 - y) * log(1 - pi) = 1 * log(0)
+        //*ll = R_NegInf;                    // loglik = (1 - y) * log(1 - pi) = 1 * log(0)
+        *ll = AK_Basic::_LOG_ZERO0;
         break;
       }
       else{
@@ -625,7 +639,8 @@ Bernoulli_LogitUI2(double* ll,
       }
       else{
         if (*piP <= AK_Basic::_ZERO0){      // pi = 0
-          *ll = R_NegInf;                  // loglik = y * log(pi) = 1 * log(0)
+          //*ll = R_NegInf;                  // loglik = y * log(pi) = 1 * log(0)
+          *ll = AK_Basic::_LOG_ZERO0;
           break;
         }
         else{
@@ -635,7 +650,8 @@ Bernoulli_LogitUI2(double* ll,
     }
     else{
       if (*piP >= 1 - AK_Basic::_ZERO0){    // pi = 1
-        *ll = R_NegInf;                    // loglik = (1 - y) * log(1 - pi) = 1 * log(0)
+        //*ll = R_NegInf;                    // loglik = (1 - y) * log(1 - pi) = 1 * log(0)
+        *ll = AK_Basic::_LOG_ZERO0;
         break;
       }
       else{

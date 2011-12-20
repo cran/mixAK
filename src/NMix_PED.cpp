@@ -103,9 +103,10 @@ NMix_PED(double* PED,
     censorP++;
   }
 
-  /***** Reset Dbar, popt, pm_indDevObs, pm_indpopt, pm_windpopt, sum_ISweight, invalid_indDevObs, invalid_indpopt, invalid_windpopt *****/
+  /***** Reset Dbar, popt, wpopt, pm_indDevObs, pm_indpopt, pm_windpopt, sum_ISweight, invalid_indDevObs, invalid_indpopt, invalid_windpopt *****/
   *Dbar = 0.0;
   *popt = 0.0;
+  *wpopt = 0.0;
   AK_Basic::fillArray(pm_indDevObs, 0.0, *n);
   AK_Basic::fillArray(pm_indpopt, 0.0, *n);
   AK_Basic::fillArray(pm_windpopt, 0.0, *n);

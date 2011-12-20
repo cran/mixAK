@@ -51,6 +51,7 @@ const double _NORM_ZERO = 1e-16;                                                
 const double _ZERO  = 1e-50;                                                      // used by log_AK
 const double _ZERO0 = 1e-305;                                                     // used by log0_AK
 const double _LOG_ZERO0 = log(_ZERO0);                                            // used by log0_AK_bound
+                                                                                  // and also by various functions that calculate likelihoods
 const double _invFLT_MAX = 1e-50;
 const double _SCALE_ZERO = 1e-20;
 

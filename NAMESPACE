@@ -1,0 +1,82 @@
+# Load dynamic library
+useDynLib(mixAK)
+
+
+# Export all names
+exportPattern("GLMM_MCMC*")
+exportClasses("GLMM_MCMC", "GLMM_MCMClist")
+S3method(fitted, "GLMM_MCMC")
+S3method(print, "GLMM_MCMC")
+S3method(print, "GLMM_MCMClist")
+
+export("GLMM_longitDA")
+
+exportPattern("NMix*")
+exportClasses("NMixEM", "NMixMCMC", "NMixMCMClist")
+S3method(print, "NMixEM")
+S3method(print, "NMixMCMC")
+S3method(print, "NMixMCMClist")
+
+S3method(NMixPseudoGOF, "default")
+S3method(NMixPseudoGOF, "NMixMCMC")
+
+S3method(NMixRelabel, "default")
+S3method(NMixRelabel, "NMixMCMC")
+S3method(NMixRelabel, "GLMM_MCMC")
+
+S3method(NMixSummComp, "default")
+S3method(NMixSummComp, "NMixMCMC")
+S3method(NMixSummComp, "GLMM_MCMC")
+
+export("tracePlots")
+S3method(tracePlots, "default")
+S3method(tracePlots, "NMixMCMC")
+S3method(tracePlots, "GLMM_MCMC")
+
+exportClasses("NMixPlugCondDensJoint2", "NMixPlugCondDensMarg", "NMixPlugDensJoint2", "NMixPlugDensMarg", "NMixPredCDFMarg", "NMixPredCondCDFMarg", "NMixPredCondDensJoint2", "NMixPredCondDensMarg", "NMixPredDensJoint2", "NMixPredDensMarg")
+S3method(plot, "NMixPlugCondDensJoint2")
+S3method(plot, "NMixPlugCondDensMarg")
+S3method(plot, "NMixPlugDensJoint2")
+S3method(plot, "NMixPlugDensMarg")
+S3method(plot, "NMixPredCDFMarg")
+S3method(plot, "NMixPredCondCDFMarg")
+S3method(plot, "NMixPredCondDensJoint2")
+S3method(plot, "NMixPredCondDensMarg")
+S3method(plot, "NMixPredDensJoint2")
+S3method(plot, "NMixPredDensMarg")
+
+export("Y2T")
+S3method(Y2T, "NMixPlugCondDensJoint2")
+S3method(Y2T, "NMixPlugCondDensMarg")
+S3method(Y2T, "NMixPlugDensJoint2")
+S3method(Y2T, "NMixPlugDensMarg")
+S3method(Y2T, "NMixPredCDFMarg")
+S3method(Y2T, "NMixPredCondCDFMarg")
+S3method(Y2T, "NMixPredCondDensJoint2")
+S3method(Y2T, "NMixPredCondDensMarg")
+S3method(Y2T, "NMixPredDensJoint2")
+S3method(Y2T, "NMixPredDensMarg")
+
+export("summaryDiff")
+export("BLA", "BsBasis", "MatMPpinv", "MatSqrt", "SP2Rect", "autolayout", "cbplot", "generatePermutations", "getProfiles", "plotProfiles")
+export("dMVN", "rMVN")
+export("rcMVN")
+export("dMVNmixture", "dMVNmixture2", "rMVNmixture", "rMVNmixture2")
+export("rTMVN")
+export("rTNorm")
+export("rMVT")
+export("dWishart", "rWishart")
+export("rDirichlet")
+export("rRotationMatrix")
+export("rSamplePair")
+
+# Import all packages listed as Imports or Depends
+import(
+  splines,
+  colorspace,
+  lme4,
+  mnormt,
+  coda,
+  snow,
+  snowfall
+)

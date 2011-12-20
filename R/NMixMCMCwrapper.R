@@ -5,7 +5,8 @@
 ##  AUTHOR:    Arnost Komarek (LaTeX: Arno\v{s}t Kom\'arek)
 ##             arnost.komarek[AT]mff.cuni.cz
 ##
-##  CREATED:                  06/11/2008
+##  CREATED:    06/11/2008
+##              03/11/2011  parameter Cpar added to replace original z0, z1, censor, p, n, Cinteger, Cdouble
 ##
 ##  FUNCTIONS:  NMixMCMCwrapper
 ##
@@ -15,14 +16,15 @@
 ## NMixMCMCwrapper
 ## *************************************************************
 NMixMCMCwrapper <- function(chain=1,
-                            z0, z1, censor,
-                            p, n, scale, prior, inits, RJMCMC,
-                            Cinteger, Cdouble, CRJMCMC,
+                            scale, prior, inits, Cpar, RJMCMC, CRJMCMC,
                             actionAll, nMCMC, keep.chains, PED,
                             dens.zero)
 {  
   thispackage <- "mixAK"
 
+  p <- Cpar$dimy["p"]
+  n <- Cpar$dimy["n"]
+  
   LTp <- p * (p + 1)/2
   Imat <- diag(p)
   rowsI <- row(Imat)[lower.tri(row(Imat), diag=TRUE)]
@@ -66,22 +68,11 @@ NMixMCMCwrapper <- function(chain=1,
   CgammaInv <- inits[[chain]]$gammaInv
 
   Cr <- inits[[chain]]$r - 1
-
+ 
   ##### Some additional parameters
   ##### =============================================================================
   if (prior$priorK == "fixed") lsum_Ir <- n * CK
   else                         lsum_Ir <- 1
-
-  ##### Parameters passed to C++ which will be stored also in the resulting object (to be able to use them in related functions)
-  ##### ========================================================================================================================
-  Cpar <- list(z0          = z0,
-               z1          = z1,
-               censor      = censor,
-               dimy        = c(p=p, n=n),
-               priorInt    = Cinteger,
-               priorDouble = Cdouble)
-  rm(list=c("z0", "z1", "censor", "Cinteger", "Cdouble"))
-  
   
   ########## ========== MCMC sampling ========== ##########
   ########## =================================== ##########

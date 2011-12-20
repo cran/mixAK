@@ -1,6 +1,7 @@
 \name{GLMM_MCMC}
 \alias{GLMM_MCMC}
 \alias{print.GLMM_MCMC}
+\alias{print.GLMM_MCMClist}
 \title{
   MCMC estimation of a (multivariate) generalized linear mixed model
   with a normal mixture in the distribution of random effects
@@ -15,14 +16,17 @@
 }  
 \usage{
 GLMM_MCMC(y, dist="gaussian", id, x, z, random.intercept,
-          prior.alpha, init.alpha,                      
-          scale.b,     prior.b,   init.b,
-          prior.eps,   init.eps,
+          prior.alpha, init.alpha, init2.alpha,                      
+          scale.b,     prior.b,    init.b,      init2.b,
+          prior.eps,   init.eps,   init2.eps,
           nMCMC=c(burn=10, keep=10, thin=1, info=10),
           tuneMCMC=list(alpha=1, b=1),
-          store=c(b=FALSE), keep.chains=TRUE)
+          store=c(b=FALSE), PED=TRUE, keep.chains=TRUE,
+          dens.zero=1e-300, parallel=FALSE)
 
 \method{print}{GLMM_MCMC}(x, \dots)
+
+\method{print}{GLMM_MCMClist}(x, \dots)
 }
 \arguments{
   \item{y}{vector, matrix or data frame with responses. If \code{y} is vector then
@@ -73,10 +77,13 @@ GLMM_MCMC(y, dist="gaussian", id, x, z, random.intercept,
     }      
   }
   \item{init.alpha}{a numeric vector with initial values of fixed effects
-    (not the means of random effects). A sensible value is determined using the
+    (not the means of random effects) for the first chain. A sensible value is determined using the
     maximum-likelihood fits (using \code{\link[lme4]{lmer}} functions)
     and does not have to be given by the user.
   }
+  \item{init2.alpha}{a numeric vector with initial values of fixed
+    effects for the second chain.
+  }  
   \item{scale.b}{a list specifying how to scale the random effects during
     the MCMC. A sensible value is determined using the
     maximum-likelihood fits (using \code{\link[lme4]{lmer}} functions)
@@ -117,11 +124,14 @@ GLMM_MCMC(y, dist="gaussian", id, x, z, random.intercept,
       \item{h}{see vignette PBCseq.pdf for details}            
     }  
   }
-  \item{init.b}{a list with initial values for parameters related to the
+  \item{init.b}{a list with initial values of the first chain for parameters related to the
     distribution of random effects and random effects
     themselves. Sensible initial values are determined by the function
     itself and do not have to be given by the user.
   }
+  \item{init2.b}{a list with initial values of the second chain for parameters related to the
+    distribution of random effects and random effects
+    themselves.}
   \item{prior.eps}{a list specifying prior distributions for
      error terms for continuous responses. The list \code{prior.eps} can
      have the components listed below. For all components, a sensible
@@ -133,7 +143,7 @@ GLMM_MCMC(y, dist="gaussian", id, x, z, random.intercept,
        \item{h}{see vignette PBCseq.pdf for details}       
      }  
   }
-  \item{init.eps}{a list with initial values for parameters related to the
+  \item{init.eps}{a list with initial values of the first chain for parameters related to the
     distribution of error terms of continuous responses. The list
     \code{init.eps} can have the components listed below. For all
     components, a sensible value can be determined by the function.
@@ -145,6 +155,8 @@ GLMM_MCMC(y, dist="gaussian", id, x, z, random.intercept,
 	continuous response.}
     }  
   }
+  \item{init2.eps}{a list with initial values of the second chain for parameters related to the
+    distribution of error terms of continuous responses.}  
   \item{nMCMC}{numeric vector of length 4 giving parameters of the MCMC
     simulation. Its components may be named (ordering is then unimportant) as:
     \describe{
@@ -181,10 +193,22 @@ GLMM_MCMC(y, dist="gaussian", id, x, z, random.intercept,
 	are stored. Defaults to \code{FALSE}.}
     }  
   }
+  \item{PED}{a logical value which indicates whether the penalized
+    expected deviance (see Plummer, 2008 for more details)
+    is to be computed (which requires two parallel
+    chains).
+  }  
   \item{keep.chains}{logical. If \code{FALSE}, only summary statistics
     are returned in the resulting object. This might be useful in the
     model searching step to save some memory.
   }
+  \item{dens.zero}{a small value used instead of zero when computing
+    deviance related quantities.
+  }  
+  \item{parallel}{a logical value which indicates whether parallel
+    computation (based on packages \code{snow} and
+    \code{\link[snowfall]{snowfall-a-package}}) should be used when
+    running two chains for the purpose of \code{PED} calculation}
   \item{\dots}{additional arguments passed to the default \code{print} method.}  
 }
 \value{
@@ -430,6 +454,10 @@ GLMM_MCMC(y, dist="gaussian", id, x, z, random.intercept,
   Komárek, A., Hansen, B. E., Kuiper, E. M. M., van Buuren, H. R., and Lesaffre, E. (2010).
   Discriminant analysis using a multivariate linear mixed model with a normal mixture in the random effects distribution.
   \emph{Statistics in Medicine}, \bold{29}, 3267-3283.
+
+  Plummer, M. (2008).
+  Penalized loss functions for Bayesian model comparison.
+  \emph{Biostatistics}, \bold{9}, 523-539.  
 }  
 \seealso{
   \code{\link{NMixMCMC}}.

@@ -7,6 +7,9 @@
 //             arnost.komarek[AT]mff.cuni.cz
 //
 //  CREATED:   19/10/2009
+//            
+//  LOG:       06/12/2011:  log(0) = R_NegInf replaced by log(0) = AK_Basic::_LOG_ZERO0 when calculating log-likelihood
+//                          1 / 0 = R_PosInf replaced by 1 / 0 = 1 / AK_Basic::_ZERO when calculating stres
 //
 //  FUNCTIONS:  
 //     *   14/04/2010:  LogLik::Bernoulli_Logit1

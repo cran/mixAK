@@ -7,6 +7,8 @@
 //
 //  CREATED:   19/10/2009
 //
+//  LOG:       06/12/2011:  R_NegInf replaced by log(0) = AK_Basic::_LOG_ZERO0 when calculating log-likelihood
+//
 //  PART OF CODE TAKEN FROM:   R package glmmAK, ll_poisson.{cpp,h}
 //
 //  FUNCTIONS:  

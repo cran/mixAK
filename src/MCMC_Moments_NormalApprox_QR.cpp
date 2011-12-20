@@ -35,6 +35,7 @@ Moments_NormalApprox_QR(double* mean,
                         const double* Li_prior,
                         const int* n,
                         const int* dim,
+                        const double* half_factor,
                         const char* caller)
 {
   static int i, j;
@@ -127,6 +128,7 @@ Moments_NormalApprox_QR(double* mean,
   mean0P = mean0;
   meanP  = mean;
   for (j = 0; j < *dim; j++){
+    *meanP *= *half_factor;
     *meanP += *mean0P;
     mean0P++;
     meanP++;

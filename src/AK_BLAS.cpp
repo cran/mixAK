@@ -1115,6 +1115,32 @@ BDROWxtLT(double* A, const double* B, const double* L,  const int* nBl, const in
   return;
 }
 
+
+/***** ********************************************************************************* *****/
+/***** AK_BLAS::ta_bxLTxtLTxa_b: t(a - b) %*% t(L) %*% L %*% (a - b)                     *****/
+/***** ********************************************************************************* *****/
+void
+ta_bxLTxtLTxa_b(double* RES, double* a_b, const double* a, const double* b, const double* L, const int* p)
+{
+  static const double *aP, *bP;
+  static double *a_bP;
+  static int j;
+
+  aP   = a;
+  bP   = b;
+  a_bP = a_b;
+  for (j = 0; j < *p; j++){
+    *a_bP = *aP - *bP;
+    aP++;
+    bP++;
+    a_bP++;
+  }
+  F77_CALL(dtpmv)("L", "T", "N", p, L, a_b, &AK_Basic::_ONE_INT);     // a_b = t(L) %*% a_b
+  AK_BLAS::ddot2(RES, a_b, *p);
+
+  return;
+}
+
 }  /*** end of namespace AK_BLAS ***/
 
 

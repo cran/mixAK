@@ -73,8 +73,10 @@ Poisson_Log1(double* ll,
     /* Log-likelihood contribution */
     /*******************************/
     ll_now = *yP * eta_now - lambda - *log_y_factorP;
-    if (ll_now <= R_NegInf){
-      *ll = R_NegInf;
+    //if (ll_now <= R_NegInf){
+    //  *ll = R_NegInf;
+    if (ll_now <= AK_Basic::_LOG_ZERO0){
+      *ll = AK_Basic::_LOG_ZERO0;
       break;
     }
     *ll += ll_now;
@@ -152,8 +154,10 @@ Poisson_Log_sqrt_w_phi1(double* ll,
     /* Log-likelihood contribution */
     /*******************************/
     ll_now = *yP * eta_now - lambda - *log_y_factorP;
-    if (ll_now <= R_NegInf){
-      *ll = R_NegInf;
+    //if (ll_now <= R_NegInf){
+    //  *ll = R_NegInf;
+    if (ll_now <= AK_Basic::_LOG_ZERO0){
+      *ll = AK_Basic::_LOG_ZERO0;
       break;
     }
     *ll += ll_now;
@@ -243,8 +247,10 @@ Poisson_Log_sqrt_w_phi_stres1(double* ll,
     /* Log-likelihood contribution */
     /*******************************/
     ll_now = *yP * eta_now - *lambdaP - *log_y_factorP;
-    if (ll_now <= R_NegInf){
-      *ll = R_NegInf;
+    //if (ll_now <= R_NegInf){
+    //  *ll = R_NegInf;
+    if (ll_now <= AK_Basic::_LOG_ZERO0){
+      *ll = AK_Basic::_LOG_ZERO0;
       break;
     }
     *ll += ll_now;
@@ -309,8 +315,10 @@ Poisson_Log_sqrt_w_phi_stres2(double* ll,
     /* Log-likelihood contribution */
     /*******************************/
     ll_now = *yP * (*etaP + *offsetP) - *lambdaP - *log_y_factorP;
-    if (ll_now <= R_NegInf){
-      *ll = R_NegInf;
+    //if (ll_now <= R_NegInf){
+    //  *ll = R_NegInf;
+    if (ll_now <= AK_Basic::_LOG_ZERO0){
+      *ll = AK_Basic::_LOG_ZERO0;
       break;
     }
     *ll += ll_now;
@@ -406,8 +414,10 @@ Poisson_LogUI1(double* ll,
     /* Log-likelihood contribution */
     /*******************************/
     ll_now = *yP * eta_now - *lambdaP - *log_y_factorP;
-    if (ll_now <= R_NegInf){
-      *ll = R_NegInf;
+    //if (ll_now <= R_NegInf){
+    //  *ll = R_NegInf;
+    if (ll_now <= AK_Basic::_LOG_ZERO0){
+      *ll = AK_Basic::_LOG_ZERO0;
       break;
     }
     *ll += ll_now;
@@ -513,8 +523,10 @@ Poisson_LogUI2(double* ll,
     /* Log-likelihood contribution */
     /*******************************/
     ll_now = *yP * (*etaP + *offsetP) - *lambdaP - *log_y_factorP;
-    if (ll_now <= R_NegInf){
-      *ll = R_NegInf;
+    //if (ll_now <= R_NegInf){
+    //  *ll = R_NegInf;
+    if (ll_now <= AK_Basic::_LOG_ZERO0){
+      *ll = AK_Basic::_LOG_ZERO0;
       break;
     }
     *ll += ll_now;

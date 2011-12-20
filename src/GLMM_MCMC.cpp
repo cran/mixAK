@@ -14,9 +14,9 @@
 extern "C" {
 #endif
 
-  //int clus_show = 8;     /** global variable for debugging purposes **/
-  //int iter_show = 51132;
-  //int iteration = 0;
+  //  int clus_show = 8;     /** global variable for debugging purposes **/
+  //  int iter_show = 1611;
+  //  int iteration = 0;
 
 /***** ***************************************************************************************** *****/
 /***** GLMM_MCMC                                                                                 *****/
@@ -102,10 +102,7 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
   const int *I = I_n;
   int       *n = I_n + 1;
 
-  /***** Length of MCMC *****/
-
-
-  /***** Storage of optional parameters *****/
+  /***** Storage of optional parameters, length of MCMC, addtional dimensionality parameters *****/
   const int *keep_b = keepChain_nMCMC_R_cd_dist;  
   const int *Mburn  = keep_b + 1;
   const int *Mkeep  = Mburn + 1;
@@ -389,10 +386,12 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
   /***** dY:                          Data dependent, parameter constant values needed to calculate          *****/
   /*****                              the log-likelihood (e.g., log(y!) for Poisson response)                *****/ 
   /***** sum_dY_i:                    sum(dY) for each cluster                                               *****/
-  /***** sum_dY:                      total sum(dY)
-  /*****                              --> used inside GLMM::Deviance to avoid exp(-Inf) for Poisson response *****/
+  /***** sum_dY:                      total sum(dY)                                                          *****/
+  /*****                              --> it used to be used inside GLMM::Deviance to avoid exp(-Inf)        *****/
+  /*****                                  for Poisson response                                               *****/
   /*****                                  since then loglik = SOMETHING - sum log(y!) which might be very    *****/
-  /*****                                  negative leading to exp(-Inf)                                      *****/  
+  /*****                                  negative leading to exp(-Inf)                                      *****/
+  /*****                              --> not any more (since...)                                            *****/  
   int *N_s           = Calloc(R, int);
   int *N_i           = Calloc(*I, int);
   double *eta_fixed  = Calloc(N, double); 
@@ -577,7 +576,7 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
   double *stres      = Calloc(N, double);
   double *sqrt_w_phi = Calloc(N, double);
 
-  double *dwork_GLMM_Deviance = Calloc((max_N_i + dim_b) * (dim_b + 3) + dim_b * 5 + max_N_i * (dim_b + 1) + LT_b, double);
+  double *dwork_GLMM_Deviance = Calloc((max_N_i + dim_b) * (dim_b + 3) + dim_b * 6 + max_N_i * (3 * dim_b + 5) + LT_b, double);
   int    *iwork_GLMM_Deviance = Calloc(dim_b > 0 ? dim_b : 1, int);
 
   double **stresclus  = Calloc(*I, double*);
@@ -923,13 +922,13 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
                    iwork_GLMM_Deviance, dwork_GLMM_Deviance, err,
                    Y_cresp,  Y_dresp,  dYresp,  eta_fixedresp,  eta_randomresp,  meanYresp , Zresp,  nresp,
                    ZS, shift_b, scale_b, q, randIntcpt, q_ri, &dim_b, &LT_b, R_c, R_d, dist, I, N_i, &max_N_i, l_ZS,
-                   sigma_eps, K_b, w_b, logw_b, mu_b, Li_b, log_dets_b, bscaled);
+                   sigma_eps, K_b, w_b, logw_b, mu_b, Li_b, log_dets_b, bscaled, &AK_Basic::_ONE_INT);
     //if (*iter > 110 & *iter < 113){
     //  Rprintf("\nchGLMMLogLP=%g\n, mll <- ", *chGLMMLogLP);
     //  AK_Basic::printVec4R(marg_ll_i, *I);
     //}
     chGLMMLogLP++;     // (only shift, not needed to copy it)
-    chLogLP++;         // (only shift, not needed to copy it)\
+    chLogLP++;         // (only shift, not needed to copy it)
 
     if (dim_b){        // there are random effects
 

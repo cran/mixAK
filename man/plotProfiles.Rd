@@ -6,7 +6,7 @@
 \usage{
 plotProfiles(ip, data, var, trans, tvar, gvar,
              auto.layout=TRUE, lines=TRUE, points=FALSE, add=FALSE,
-             xlab="Time", ylab, xlim, ylim, main, col="darkblue",
+             xlab="Time", ylab, xaxt="s", yaxt="s", xlim, ylim, main, col="darkblue",
              lty=1, lwd=1, pch=16)
 }
 \arguments{
@@ -25,7 +25,7 @@ plotProfiles(ip, data, var, trans, tvar, gvar,
     connecting observations within individuals.}
   \item{points}{logical. If \code{TRUE}, points are added to the plot.}
   \item{add}{logical. If \code{TRUE}, the new plot overlays the old one.}
-  \item{xlab, ylab, xlim, ylim, main, col, lty, lwd, pch}{arguments passed to
+  \item{xlab, ylab, xaxt, yaxt, xlim, ylim, main, col, lty, lwd, pch}{arguments passed to
     standard plotting functions. \code{col} might also be a vector in
     which case different colors are used for profiles from different
     groups identified by the \code{gvar} variable.}

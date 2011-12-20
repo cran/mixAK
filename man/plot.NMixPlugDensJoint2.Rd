@@ -9,14 +9,20 @@
   \code{\link[graphics]{contour}} plot. See also \code{\link{NMixPlugDensJoint2}}.
 }
 \usage{
-\method{plot}{NMixPlugDensJoint2}(x, contour=FALSE, auto.layout=TRUE,
+\method{plot}{NMixPlugDensJoint2}(x, contour=FALSE,
+    add.contour=TRUE, col.add.contour="brown",
+    auto.layout=TRUE,
     col, lwd=1, main, xylab, \dots)
 }
 \arguments{
   \item{x}{an object of class \code{NMixPlugDensJoint2}.}
   \item{contour}{logical. If \code{TRUE} then contours are drawn,
     otherwise image plot is created.
-  }  
+  }
+  \item{add.contour}{logical. If \code{TRUE} and \code{contour} is
+    \code{FALSE} (i.e., image plot is drawn) then contours are added to
+    the image plots.}
+  \item{col.add.contour}{color of contours which are added to the image plot.}  
   \item{auto.layout}{if \code{TRUE} then the function determines itself
     how to divide the plotting region to draw densities for all margins.
   }

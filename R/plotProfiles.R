@@ -17,7 +17,7 @@
 ##
 plotProfiles <- function(ip, data, var, trans, tvar, gvar,
                          auto.layout=TRUE, lines=TRUE, points=FALSE, add=FALSE,
-                         xlab="Time", ylab, xlim, ylim, main, col="darkblue", lty=1, lwd=1, pch=16)
+                         xlab="Time", ylab, xaxt="s", yaxt="s", xlim, ylim, main, col="darkblue", lty=1, lwd=1, pch=16)
 {
   if (missing(xlim)){
     xlim <- range(data[, tvar], na.rm=TRUE)
@@ -49,7 +49,7 @@ plotProfiles <- function(ip, data, var, trans, tvar, gvar,
     on.exit(oldPar)
   }
 
-  if (!add) plot(xlim, ylim, type="n", xlab=xlab, ylab=ylab)
+  if (!add) plot(xlim, ylim, type="n", xaxt=xaxt, yaxt=yaxt, xlab=xlab, ylab=ylab)
   for (i in 1:length(ip)){
     if (!missing(gvar)) COL <- col[ip[[i]][1, gvar]]
     else                COL <- col[1]

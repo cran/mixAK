@@ -97,6 +97,7 @@ extern "C" {
 //                                                     response R-1 for observation (I-1, n[0, I-1])
 //  XtX[]                    lower triangles of matrices t(X_s) %*% X_s, where X_s is the design matrix of the fixed effects 
 //                           (including possibly column of ones for a fixed intercept) for response s (s=0,...,R-1)
+//                           THIS ARGUMENT IS NO MORE PRESENT, XtX matrices are automatically calculated inside the GLMM_MCMC function
 //
 //  Z[]:                     covariate matrices for random effects (without a column of ones for intercept)
 //                           * ordering the same as for X matrix
@@ -109,6 +110,7 @@ extern "C" {
 //                                   t(Z_0[I-1]) %*% Z_0[I-1], ..., t(Z_{R-1}[I-1]) %*% Z_{R-1}[I-1], 
 //                           OUTPUT: lower triangles of matrices S_s %*% t(Z_s[i]) %*% Z_s[i] %*% S_s,
 //                                   where S is the diagonal matrix with scale_b on a diagonal  
+//                           THIS ARGUMENT IS NO MORE PRESENT, SZitZiS matrices are automatically calculated inside the GLMM_MCMC function
 //
 //  p_fI_q_rI[4*R]:          p_fI_q_rI[0,...,R-1]     = p[R]: 
 //                                       numbers of fixed effects covariates for each response corresponding to X matrices

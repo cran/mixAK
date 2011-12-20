@@ -208,6 +208,7 @@ GLMM_MCMCdata <- function(y, dist, id, time, x, z, random.intercept)
               lalpha           = lalpha,
               p_fi             = p_fi,
               q_ri             = q_ri)
+  if (R > 1) RET$name.response <- names(x) else RET$name.response <- "Response"
 
   return(RET)  
 }

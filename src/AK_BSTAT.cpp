@@ -88,4 +88,35 @@ shiftScale(double* yscaled,  const double* y,  const double* shift,  const doubl
   return;
 }
 
+
+/***** *************************************************************************************************** *****/
+/***** AK_BSTAT::inv_shiftScale                                                                            *****/
+/***** *************************************************************************************************** *****/
+void
+inv_shiftScale(double* y,  const double* yscaled,  const double* shift,  const double* scale,  const int* n,  const int* p)
+{
+  static const double *yscaledP;
+  static const double *shiftP;
+  static const double *scaleP;
+  static double *yP;
+  static int i, j;
+
+  yP       = y;
+  yscaledP = yscaled;
+  for (i = 0; i < *n; i++){
+    shiftP = shift;
+    scaleP = scale;
+    for (j = 0; j < *p; j++){
+      *yP = *shiftP + *scaleP * *yscaledP;
+      yscaledP++;
+      yP++;
+      shiftP++;
+      scaleP++;
+    }
+  }
+  
+  return;
+}
+
+
 }  /*** end of namespace AK_BSTAT ***/

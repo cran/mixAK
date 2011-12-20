@@ -15,6 +15,8 @@
 //                                    -> it leads to finite likelihood even with likelihood of 1e-305
 //                       02/12/2010:  arguments sum_Yd_i and sum_Yd (typically containing sum(log(y!)) for Poisson response)
 //                                    added to make corrections to log-likelihoods before exp to avoid exp(-Inf)
+//                       02/12/2011:  argument iterate_to_mode added which allows for more than one Newton-Raphson step
+//                                    when searching (for each k) for the mode of p(y_i | b, psi)*p(b | theta, u_i=k)
 //
 //     * TO DO:  
 //       Commands:  *marg_ll_iP += *w_k * AK_Basic::exp0_AK(loglik_k);  (around line 239)
@@ -48,7 +50,13 @@ const int use_Hessian_in_bhat = 1;     // 0 --> in the Laplacian approximation, 
                                        //       in the located mode bhat
                                        //       -> Hessian must be calculated twice (once to locate bhat
                                        //          and once to calculate it in bhat)
-             
+// IMPORTANT NOTE:  When 'iterate_to_mode' is 1, value of use_Hessian_in_bhat does not have any effect
+//                  and calculation proceeds as if use_Hessian_in_bhat = 1.
+
+const int max_NRstep_Deviance = 10;            // see explanation of iterate_to_mode argument below
+const double toler_NRstep_Deviance = 1e-5;     // see explanation of iterate_to_mode argument below
+const int max_stephalf_Deviance = 10;         
+
 
 /***** ********************************************************************** *****/
 /***** GLMM:Deviance                                                          *****/
@@ -89,6 +97,12 @@ const int use_Hessian_in_bhat = 1;     // 0 --> in the Laplacian approximation, 
 //                        OUTPUT:  sqrt(var(Y_{i,s,j}|theta, b)) / phi_s, where phi_s is the dispersion parameter of the s-th response
 //                                 cluster index (i) is the major index to loop,
 //                                 the second index to loop is the response profile index (s)
+//
+//  iterate_to_mode[1]:    0 --> Only one Newton-Raphson iteration is performed for each k when searching for the mode 
+//                               of f(b) = p(y_i | b, psi)*p(b | theta, u_i=k).
+//                        >0 --> At most GLMM::max_NRstep_Deviance Newton-Raphson steps are performed when searching for the mode of f(b).
+//                               Iterations stops when |log f(b[t+1]) - log f(b[t])|/|log f(b[t+1])| < GLMM::toler_NRstep_Deviance.
+//                                
 //
 void
 Deviance(double* marg_ll,
@@ -139,7 +153,8 @@ Deviance(double* marg_ll,
          const double* mu,         
          const double* Li,
          const double* log_dets,
-         const double* bscaled);
+         const double* bscaled,
+         const int*    iterate_to_mode);
 
 }    // end of namespace GLMM
 

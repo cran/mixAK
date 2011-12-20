@@ -75,14 +75,22 @@
 //                                       where B is a block diagonal matrix with blocks stored in ROW major order
 //                                       and L is lower triangular matrix stored in a packed format in COLUMN major order
 //
-// ======================================================================
+//     * ta_bxLTxtLTxa_b  02/12/2011:    Compute t(a - b) %*% L %*% t(L) %*% (a - b),
+//                                       where a and b are vectors and L is lower triangular matrix stored in a packed format in COLUMN major order
+//                                       * useful for evaluation of multivariate normal densities where b = mean, 
+//                                         L is Cholesky decomposition of the inverted covariance matrix
+// =================================================================================================================================================
 //
 #ifndef _AK_BLAS_H_
 #define _AK_BLAS_H_
 
 #include <R.h>
+#include <R_ext/Lapack.h>
+
+#include "AK_Basic.h"
 
 namespace AK_BLAS{
+
 
 /***** ********************************************************************************* *****/
 /***** AK_BLAS::ddot:  Scalar product t(x) %*% y                                         *****/
@@ -519,6 +527,19 @@ RectROWxtLT(double* A,  const double* B,  const double* L,  const int* nrB,  con
 //
 void
 BDROWxtLT(double* A, const double* B, const double* L,  const int* nBl, const int* nrB,  const int* ncB,  const int* p);
+
+
+/***** ********************************************************************************* *****/
+/***** AK_BLAS::ta_bxLTxtLTxa_b: t(a - b) %*% t(L) %*% L %*% (a - b)                     *****/
+/***** ********************************************************************************* *****/
+//  Compute t(a - b) %*% L %*% t(L) %*% (a - b),
+//  where a and b are vectors of length p 
+//  and L is lower triangular matrix stored in a packed format in COLUMN major order
+//  * useful for evaluation of multivariate normal densities where b = mean, 
+//    L is Cholesky decomposition of the inverted covariance matrix
+void
+ta_bxLTxtLTxa_b(double* RES, double* a_b, const double* a, const double* b, const double* L, const int* p);
+
 
 }  /*** end of namespace AK_BLAS ***/
 

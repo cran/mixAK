@@ -38,13 +38,9 @@ GLMM_MCMCscale.b <- function(scale.b, dimb, iEranefVec, iSDranefVec)
     if (length(scale.b$scale) == 1) scale.b$scale <- rep(scale.b$scale, dimb)
     if (length(scale.b$scale) != dimb) stop(paste("scale.b$scale must be a vector of length ", dimb, sep=""))
     if (any(scale.b$scale <= 0)) stop("all elements of scale.b$scale must be positive")
-    CshiftScale_b <- c(scale.b$shift, scale.b$scale)    
   }else{
     scale.b <- list(shift=0, scale=1)
-    CshiftScale_b <- c(0, 1)
   }  
 
-  RET <- list(scale.b       = scale.b,
-              CshiftScale_b = CshiftScale_b)
-  return(RET)  
+  return(scale.b)  
 }

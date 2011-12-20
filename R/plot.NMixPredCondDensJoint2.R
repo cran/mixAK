@@ -5,6 +5,7 @@
 ##             arnost.komarek[AT]mff.cuni.cz
 ##
 ##  CREATED:   01/06/2009
+##  LOG:       08/11/2011:  add.contour, col.add.contour arguments added
 ##
 ##  FUNCTIONS: plot.NMixPredCondDensJoint2 (01/06/2009)
 ##             
@@ -14,7 +15,7 @@
 ## plot.NMixPredCondDensJoint2
 ## *************************************************************
 ##
-plot.NMixPredCondDensJoint2 <- function(x, ixcond, imargin, contour=FALSE, auto.layout=TRUE, col, lwd=1, main, xylab, ...)
+plot.NMixPredCondDensJoint2 <- function(x, ixcond, imargin, contour=FALSE, add.contour=TRUE, col.add.contour="brown", auto.layout=TRUE, col, lwd=1, main, xylab, ...)
 {
   if (missing(ixcond) & missing(imargin)) stop("either ixcond or imargin must be given")
 
@@ -90,6 +91,7 @@ plot.NMixPredCondDensJoint2 <- function(x, ixcond, imargin, contour=FALSE, auto.
         contour(x$x[[imargin[1]]], x$x[[imargin[2]]], dx, col=col, main=main[i], xlab=xlab, ylab=ylab, lwd=lwd, ...)
       }else{
         image(x$x[[imargin[1]]], x$x[[imargin[2]]], dx, col=col, main=main[i], xlab=xlab, ylab=ylab, ...)
+        if (add.contour) contour(x$x[[imargin[1]]], x$x[[imargin[2]]], dx, col=col.add.contour, lwd=lwd, add=TRUE)
       }                        
     }  
   }
@@ -133,6 +135,7 @@ plot.NMixPredCondDensJoint2 <- function(x, ixcond, imargin, contour=FALSE, auto.
           contour(x$x[[m0]], x$x[[m1]], x$dens[[ixcond]][[NAAM]], col=col, main=main, xlab=xlab, ylab=ylab, lwd=lwd, ...)
         }else{
           image(x$x[[m0]], x$x[[m1]], x$dens[[ixcond]][[NAAM]], col=col, main=main, xlab=xlab, ylab=ylab, ...)
+          if (add.contour) contour(x$x[[m0]], x$x[[m1]], x$dens[[ixcond]][[NAAM]], col=col.add.contour, lwd=lwd, add=TRUE)
         }                  
       }
     }          

@@ -60,7 +60,8 @@
 NMixMCMC(y0, y1, censor, scale, prior,
          init, init2, RJMCMC,
          nMCMC=c(burn=10, keep=10, thin=1, info=10),
-         PED, keep.chains=TRUE, onlyInit=FALSE, dens.zero=1e-300)
+         PED, keep.chains=TRUE, onlyInit=FALSE, dens.zero=1e-300,
+         parallel=FALSE)
 
 \method{print}{NMixMCMC}(x, dic, \dots)
 
@@ -431,12 +432,6 @@ NMixMCMC(y0, y1, censor, scale, prior,
     determines parameters of the prior distribution, initial values,
     values of \code{scale} and
     parameters for the reversible jump MCMC.}
-%  \item{parallel}{logical. If \code{TRUE}, parallel computation through
-%    \code{\link[snowfall]{sfInit}} from \code{snowfall} packed is
-%    invoked to sample multiple chains. To be able to set this option to
-%    \code{TRUE}, packages \code{snowfall} and \code{snow} must be
-%    installed.
-% }
   \item{dens.zero}{a small value used instead of zero when computing
     deviance related quantities.}
   \item{x}{an object of class \code{NMixMCMC} or \code{NMixMCMClist} to
@@ -448,7 +443,11 @@ NMixMCMC(y0, y1, censor, scale, prior,
   \item{ped}{logical which indicates whether PED should be printed. By
     default, PED is printed only for models with a fixed number of
     mixture components.
-  }  
+  }
+  \item{parallel}{a logical value which indicates whether parallel
+    computation (based on packages \code{snow} and
+    \code{\link[snowfall]{snowfall-a-package}}) should be used when
+    running two chains for the purpose of \code{PED} calculation}  
   \item{\dots}{additional arguments passed to the default \code{print} method.}
 }
 \value{

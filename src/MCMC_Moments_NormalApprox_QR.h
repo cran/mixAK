@@ -91,6 +91,9 @@ namespace MCMC{
 //
 //  dim[1]:            dimension
 //
+//  half_factor[1]:    factor for step halving when using this routine for finding a mode in the context of GLMM
+//                     * should be set to 1 for standard use 
+//
 //  caller:            name of the routine which has called this function 
 //                     (used in error messages)
 // 
@@ -123,6 +126,7 @@ Moments_NormalApprox_QR(double* mean,
                         const double* Li_prior,
                         const int* n,
                         const int* dim,
+                        const double* half_factor,
                         const char* caller);
 
 

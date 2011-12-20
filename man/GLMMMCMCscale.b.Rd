@@ -24,10 +24,7 @@ GLMM_MCMCscale.b(scale.b, dimb, iEranefVec, iSDranefVec)
     Defaults to a vector of ones if missing}  
 }
 \value{
-  A list with the following components:
-  \item{scale.b}{value of \code{scale.b} with added default values
-    where necessary}
-  \item{CshiftScale_b}{a numeric vector to be passed to C++}  
+  Value of \code{scale.b} with added default values where necessary.
 }
 \seealso{
   \code{\link{GLMM_MCMC}}.

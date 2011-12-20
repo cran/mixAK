@@ -45,7 +45,8 @@ GLMM_MCMCdata(y, dist, id, time, x, z, random.intercept)
   \item{naamLTb}{names (indices) for elements of a lower triangle of matrix dimb x dimb}  
   \item{lalpha}{length of alpha vector (fixed intercepts included)}
   \item{p_fi}{numeric vector of length R}
-  \item{q_ri}{numeric vector of length R}   
+  \item{q_ri}{numeric vector of length R}
+  \item{name.response}{character vector}
 }
 \seealso{
   \code{\link{GLMM_MCMC}}.

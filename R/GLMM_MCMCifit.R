@@ -90,19 +90,21 @@ GLMM_MCMCifit <- function(do.init, na.complete,
 #####
 ##### ------------------------------------------------------------------------------------------------------------------------------------
 #####  
-#####             ibMat          matrix with initial values of random effects (EB estimates from (RE)ML fits)   
+#####             ibMat          matrix with initial values of random effects (EB estimates from (RE)ML fits)
+#####             ibMat2         matrix with alternative initial values of random effects  
 #####             iEranefVec     vector with estimated means of random effects
 #####             iSEranefVec    vector with standard errors of estimated means of random effects
 #####             iSDranefVec    vector with estimated standard deviations of random effects
 #####             ialpha         vector with initial values of alpha's (including fixed intercepts)
+#####             ialpha2        vector with alternative initial values of alpha's (including fixed intercepts)  
+#####             iSEalpha       vector with standard errors of estimated values of fixed effects  
 #####  
 ##### ------------------------------------------------------------------------------------------------------------------------------------
 #####  
 ##### Other (potentially useful) variables created here:
 #####             TAB               table(id)
 #####
-##### ------------------------------------------------------------------------------------------------------------------------------------  
-  
+##### ------------------------------------------------------------------------------------------------------------------------------------    
   R <- Rc + Rd
 
   ##### Handle NA's if na.complete
@@ -271,12 +273,12 @@ GLMM_MCMCifit <- function(do.init, na.complete,
             if (dist[s] %in% c("gaussian"))               ifit <- lmer(FORM, data=dta)
             else if (dist[s] %in% c("binomial(logit)"))   ifit <- glmer(FORM, family=binomial(link=logit), data=dta)
                  else if (dist[s] %in% c("poisson(log)")) ifit <- glmer(FORM, family=poisson(link=log), data=dta)            
-          
+
             iintcpt[s, "Est"] <- fixef(ifit)["(Intercept)"]
             iintcpt[s, "SE"]  <- as.numeric(sqrt(vcov(ifit)[1, 1]))
             is.intcpt[s] <- TRUE        
          
-            iEranef[[s]] <- data.frame(Est=fixef(ifit)[-1], SE=sqrt(diag(vcov(ifit))[-1]))
+            iEranef[[s]] <- data.frame(Est=fixef(ifit)[-1], SE=sqrt(diag(as.matrix(vcov(ifit)))[-1]))
             is.ranef[s] <- TRUE
           }
             
@@ -297,7 +299,7 @@ GLMM_MCMCifit <- function(do.init, na.complete,
               iintcpt[s, "Est"] <- 0
               iintcpt[s, "SE"]  <- 0
 
-              iEranef[[s]] <- data.frame(Est=fixef(ifit), SE=sqrt(diag(vcov(ifit))))
+              iEranef[[s]] <- data.frame(Est=fixef(ifit), SE=sqrt(diag(as.matrix(vcov(ifit)))))
               is.ranef[s] <- TRUE
             }
               
@@ -326,7 +328,7 @@ GLMM_MCMCifit <- function(do.init, na.complete,
                 iintcpt[s, "Est"] <- 0
                 iintcpt[s, "SE"]  <- 0
 
-                iEranef[[s]] <- data.frame(Est=fixef(ifit), SE=sqrt(diag(vcov(ifit))))
+                iEranef[[s]] <- data.frame(Est=fixef(ifit), SE=sqrt(diag(as.matrix(vcov(ifit)))))
                 is.ranef[s] <- TRUE
               }
                 
@@ -368,10 +370,10 @@ GLMM_MCMCifit <- function(do.init, na.complete,
             iintcpt[s, "SE"]  <- as.numeric(sqrt(vcov(ifit)[1, 1]))
             is.intcpt[s] <- TRUE
       
-            ifixef[[s]] <- data.frame(Est=fixef(ifit)[2:(1+ncol(x[[s]]))], SE=sqrt(diag(vcov(ifit))[2:(1+ncol(x[[s]]))]))
+            ifixef[[s]] <- data.frame(Est=fixef(ifit)[2:(1+ncol(x[[s]]))], SE=sqrt(diag(as.matrix(vcov(ifit)))[2:(1+ncol(x[[s]]))]))
             is.fixef[s] <- TRUE
       
-            iEranef[[s]] <- data.frame(Est=fixef(ifit)[-(1:(1+ncol(x[[s]])))], SE=sqrt(diag(vcov(ifit))[-(1:(1+ncol(x[[s]])))]))
+            iEranef[[s]] <- data.frame(Est=fixef(ifit)[-(1:(1+ncol(x[[s]])))], SE=sqrt(diag(as.matrix(vcov(ifit)))[-(1:(1+ncol(x[[s]])))]))
             is.ranef[s] <- TRUE
           }
             
@@ -397,10 +399,10 @@ GLMM_MCMCifit <- function(do.init, na.complete,
               iintcpt[s, "Est"] <- 0
               iintcpt[s, "SE"]  <- 0
 
-              ifixef[[s]] <- data.frame(Est=fixef(ifit)[-1], SE=sqrt(diag(vcov(ifit))[-1]))
+              ifixef[[s]] <- data.frame(Est=fixef(ifit)[-1], SE=sqrt(diag(as.matrix(vcov(ifit)))[-1]))
               is.fixef[s] <- TRUE
       
-              iEranef[[s]] <- data.frame(Est=fixef(ifit)[1], SE=sqrt(diag(vcov(ifit))[1]))
+              iEranef[[s]] <- data.frame(Est=fixef(ifit)[1], SE=sqrt(diag(as.matrix(vcov(ifit)))[1]))
               is.ranef[s] <- TRUE
             }
               
@@ -428,12 +430,12 @@ GLMM_MCMCifit <- function(do.init, na.complete,
               
                 iintcpt[s, "Est"] <- 0
                 iintcpt[s, "SE"]  <- 0
-      
-                ifixef[[s]] <- data.frame(Est=fixef(ifit)[2:(1+ncol(x[[s]]))], SE=sqrt(diag(vcov(ifit))[2:(1+ncol(x[[s]]))]))
+
+                ifixef[[s]] <- data.frame(Est=fixef(ifit)[2:(1+ncol(x[[s]]))], SE=sqrt(diag(as.matrix(vcov(ifit)))[2:(1+ncol(x[[s]]))]))
                 is.fixef[s] <- TRUE
       
                 iRAND <- c(1, (2+ncol(x[[s]])):(1+ncol(x[[s]])+ncol(z[[s]])))
-                iEranef[[s]] <- data.frame(Est=fixef(ifit)[iRAND], SE=sqrt(diag(vcov(ifit))[iRAND]))
+                iEranef[[s]] <- data.frame(Est=fixef(ifit)[iRAND], SE=sqrt(diag(as.matrix(vcov(ifit)))[iRAND]))
                 is.ranef[s] <- TRUE
               }  
               
@@ -515,7 +517,7 @@ GLMM_MCMCifit <- function(do.init, na.complete,
               #CXtX   = CXtX)      ## REMOVED ON 21/10/2009
               #CZitZi = CZitZi)    ## REMOVED ON 20/10/2009
 
-  if (do.init){
+  if (do.init){    
     names(ifixef) <- names(iEranef) <- names(iSDranef) <- names(ib) <- colnames(y)
     
     RET$iintcpt    <- iintcpt
@@ -543,33 +545,46 @@ GLMM_MCMCifit <- function(do.init, na.complete,
           iSDranefVec <- c(iSDranefVec, iSDranef[[s]])
           if (ibempty){
             ibMat <- ib[[s]]
+            ibMat2 <- ib[[s]] + matrix(rnorm(nrow(ib[[s]])*ncol(ib[[s]]), mean=0, sd=rep(iSDranef[[s]], each=nrow(ib[[s]]))), ncol=ncol(ib[[s]]))
             ibempty <- FALSE
           }else{
             ibMat <- cbind(ibMat, ib[[s]])
+            ibMat2 <- cbind(ibMat2, ib[[s]] + matrix(rnorm(nrow(ib[[s]])*ncol(ib[[s]]), mean=0, sd=rep(iSDranef[[s]], each=nrow(ib[[s]]))), ncol=ncol(ib[[s]])))
           }  
         }  
       }
-      rownames(ibMat) <- paste(1:nrow(ibMat))
-      colnames(ibMat) <- paste("b", 1:dimb, sep="")
+      rownames(ibMat) <- rownames(ibMat2) <- paste(1:nrow(ibMat))
+      colnames(ibMat) <- colnames(ibMat2) <- paste("b", 1:dimb, sep="")
     }else{
-      iEranefVec <- iSEranefVec <- iSDranefVec <- ibMat <- 0
+      iEranefVec <- iSEranefVec <- iSDranefVec <- ibMat <- ibMat2 <- 0
     }        
     
     if (lalpha){
-      ialpha <- numeric(0)
+      ialpha <- ialpha2 <- iSEalpha <- numeric(0)
       for (s in 1:R){
-        if (is.intcpt[s]) ialpha <- c(ialpha, iintcpt[s, "Est"])
-        if (is.fixef[s])  ialpha <- c(ialpha, ifixef[[s]][, "Est"])
+        if (is.intcpt[s]){
+          ialpha  <- c(ialpha, iintcpt[s, "Est"])
+          ialpha2 <- c(ialpha2, rnorm(1, mean=iintcpt[s, "Est"], sd=3*iintcpt[s, "SE"]))
+          iSEalpha <- c(iSEalpha, iintcpt[s, "SE"])
+        }  
+        if (is.fixef[s]){
+          ialpha  <- c(ialpha, ifixef[[s]][, "Est"])
+          ialpha2 <- c(ialpha2, rnorm(nrow(ifixef[[s]]), mean=ifixef[[s]][, "Est"], sd=3*ifixef[[s]][, "SE"]))
+          iSEalpha <- c(iSEalpha, ifixef[[s]][, "SE"])
+        }  
       }  
     }else{
-      ialpha <- 0
+      ialpha <- ialpha2 <- iSEalpha <- 0
     }  
 
     RET$ibMat       <- ibMat
+    RET$ibMat2      <- ibMat2
     RET$iEranefVec  <- iEranefVec
     RET$iSEranefVec <- iSEranefVec
     RET$iSDranefVec <- iSDranefVec
-    RET$ialpha      <- ialpha    
+    RET$ialpha      <- ialpha
+    RET$ialpha2     <- ialpha2
+    RET$iSEalpha    <- iSEalpha
   }              
 
   return(RET)  

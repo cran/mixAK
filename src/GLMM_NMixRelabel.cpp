@@ -331,7 +331,7 @@ GLMM_NMixRelabel(const int*    type,
   double *sqrt_w_phi = Calloc(N, double);
   AK_Basic::fillArray(sqrt_w_phi, 0.0, N);  
 
-  double *dwork_GLMM_Deviance = Calloc((max_N_i + dim_b) * (dim_b + 3) + dim_b * 5 + max_N_i * (dim_b + 1) + LT_b, double);
+  double *dwork_GLMM_Deviance = Calloc((max_N_i + dim_b) * (dim_b + 3) + dim_b * 6 + max_N_i * (3 * dim_b + 5) + LT_b, double);
   int    *iwork_GLMM_Deviance = Calloc(dim_b > 0 ? dim_b : 1, int);
 
   /***** Create ZS matrices *****/
@@ -501,7 +501,7 @@ GLMM_NMixRelabel(const int*    type,
                    iwork_GLMM_Deviance, dwork_GLMM_Deviance, err,
                    Y_cresp,  Y_dresp,  dYresp,  eta_fixedresp,  eta_randomresp,  meanYresp , Zresp,  nresp,
                    ZS, shift_b, scale_b, q, randIntcpt, q_ri, &dim_b, &LT_b, R_c, R_d, dist, I, N_i, &max_N_i, l_ZS,
-                   chsigma_epsP, K_b, chw_bP, logw_b, chmu_bP, chLi_bP, log_dets_b, bscaled);
+                   chsigma_epsP, K_b, chw_bP, logw_b, chmu_bP, chLi_bP, log_dets_b, bscaled, &AK_Basic::_ONE_INT);
 
     //if (iteration == iter_show){
     //  Rprintf("  --- marg_Li[%d] = %g --- \n", clus_show, marg_L_i[clus_show]);

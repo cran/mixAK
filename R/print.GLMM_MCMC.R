@@ -6,9 +6,9 @@
 ##  AUTHOR:    Arnost Komarek (LaTeX: Arno\v{s}t Kom\'arek)
 ##             arnost.komarek[AT]mff.cuni.cz
 ##
-##  CREATED:               18/07/2009
+##  CREATED:    18/07/2009
 ##
-##  FUNCTIONS:  GLMM_MCMC
+##  FUNCTIONS:  print.GLMM_MCMC
 ##
 ## ================================================================================================
 
@@ -27,8 +27,8 @@ print.GLMM_MCMC <- function(x, ...)
   cat("\n-----------------------------------------------\n")
   pr.Dev <- x$summ.Deviance[, "Deviance"]
   names(pr.Dev) <- rownames(x$summ.Deviance)
-  print(pr.Dev)
-    
+  print(pr.Dev, ...)
+      
   if (x$lalpha){
     cat("\nPosterior summary statistics for fixed effects:")
     cat("\n-----------------------------------------------\n")

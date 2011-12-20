@@ -71,7 +71,7 @@ GLMM_MCMCifit(do.init, na.complete,
   \item{z}{a list resulting from the original argument z after removal of
      observations with some missing information
      additionaly, intercept column is added if random intercept included in the model}
-  \item{I}{number of clusters in the original data (before removing NA's)}
+  \item{I}{number of subjects (grouped observations) in the original data (before removing NA's)}
   \item{n}{a list of length R, each component is a vector or length I (may contain zeros
      if some cluster disappears for particular response due to NA's)}
   \item{Cn}{vectorized n}
@@ -109,11 +109,20 @@ GLMM_MCMCifit(do.init, na.complete,
   \item{is.fixef}{logical vector of length R}
   \item{is.ranef}{logical vector of length R}  
   \item{is.sigma}{logical vector of length R}
-  \item{ibMat}{matrix with initial values of random effects (EB estimates from (RE)ML fits)}
+  \item{ibMat}{matrix with initial values of random effects (EB
+    estimates from (RE)ML fits)}
+  \item{ibMat2}{matrix with alternative initial values of random effects}  
   \item{iEranefVec}{vector with estimated means of random effects}
-  \item{iSEranefVec}{vector with standard errors of estimated means of random effects}
-  \item{iSDranefVec}{vector with estimated standard deviations of random effects}
-  \item{ialpha}{vector with initial values of alpha's (including fixed intercepts)}
+  \item{iSDranefVec}{vector with estimated standard deviations of random
+    effects}
+  \item{iSEranefVec}{vector with standard errors of estimated means of
+    random effects}  
+  \item{ialpha}{vector with initial values of alpha's (including fixed
+    intercepts)}
+  \item{ialpha2}{vector with alternative initial values of alpha's (including fixed
+    intercepts)}  
+  \item{iSEalpha}{vector with standard errors of estimated values of
+    fixed effects}
 }
 \seealso{
   \code{\link{GLMM_MCMC}}.

@@ -16,6 +16,11 @@ TO DO LIST:
   --> more or less solved on 03/12/2010
 
 ======================================================================================================================
+
+18/12/2011:
+GLMM_MCMC creates by default two parallel chains and calculates also PED, support for parallel computation 
+on multicore CPUs using snow package added
+
 20/01/2011:
 beta in GLMM_MCMC function (and all related) was renamed to alpha to be in agreement with papers
 

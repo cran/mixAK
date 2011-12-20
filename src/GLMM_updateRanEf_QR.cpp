@@ -190,7 +190,7 @@ updateRanEf_QR(double* b,
     MCMC::Moments_NormalApprox_QR(mu_full, tR_full, log_dets_full, 
                                   QR_full, uwork, rsd, tQu, &rank, iwork, QRaux, dwork_dqrls, err, 
                                   bscaled_i, uwork1, Zwork1, 
-                                  mu_i, Li_i, N_iP, dim_b, fname);
+                                  mu_i, Li_i, N_iP, dim_b, &AK_Basic::_ONE_DOUBLE, fname);
 
 
     /*** Propose the new value of the (scaled) random effects                             ***/
@@ -251,7 +251,7 @@ updateRanEf_QR(double* b,
         MCMC::Moments_NormalApprox_QR(mu_full_prop, tR_full_prop, log_dets_full_prop, 
                                       QR_full, uwork, rsd, tQu, &rank, iwork, QRaux, dwork_dqrls, err, 
                                       bscaled_prop, uwork1_prop, Zwork1_prop, 
-                                      mu_i, Li_i, N_iP, dim_b, fname);
+                                      mu_i, Li_i, N_iP, dim_b, &AK_Basic::_ONE_DOUBLE, fname);
 
 
         /*** Calculate the log-density of the reversal proposal (for the acceptance ratio) ***/

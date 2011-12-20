@@ -9,10 +9,11 @@
 //             14/11/2007
 //
 //  FUNCTIONS:
-//     * yBar_s      05/11/2007:   Compute sample means and standard deviations from a sample
-//                                 from a (multivariate) distribution. For both, ML etimates are provided,
-//                                 that is, we always divide by "n".
-//     * shiftScale  09/07/2009:   Shift and scale columns of a data matrix
+//     * yBar_s          05/11/2007:   Compute sample means and standard deviations from a sample
+//                                     from a (multivariate) distribution. For both, ML etimates are provided,
+//                                     that is, we always divide by "n".
+//     * shiftScale      09/07/2009:   Shift and scale columns of a data matrix
+//     * inv_shiftScale  26/11/2011:   Inverse operation to shiftScale
 //
 // =========================================================================================================
 //
@@ -45,6 +46,7 @@ yBar_s(double* yBar,  double* ySD,  const double* y,  const int* dimy);
 /***** *************************************************************************************************** *****/
 //
 // yscaled[n*p]:   shifted and scaled data (in ROW major order)
+//                 = (y - shift) / scale
 //
 // y[n*p]:         original data (in ROW major order)
 //
@@ -58,6 +60,29 @@ yBar_s(double* yBar,  double* ySD,  const double* y,  const int* dimy);
 //
 void
 shiftScale(double* yscaled,  const double* y,  const double* shift,  const double* scale,  const int* n,  const int* p);
+
+
+/***** *************************************************************************************************** *****/
+/***** AK_BSTAT::inv_shiftScale                                                                            *****/
+/***** *************************************************************************************************** *****/
+//
+// y[n*p]:         calculated data (in ROW major order)
+//                 = shift + scale * yscaled
+//
+// yscaled[n*p]:   shifted and scaled data (in ROW major order)
+//                 = (y - shift) / scale
+//
+// shift[p]:       shift for each column
+//
+// scale[p]:       scale for each column
+//
+// n[1]:           number of rows in y and yscaled
+//
+// p[1]:           number of columns in y and y scaled
+//
+void
+inv_shiftScale(double* y,  const double* yscaled,  const double* shift,  const double* scale,  const int* n,  const int* p);
+
 
 }  /*** end of namespace AK_BSTAT ***/
 

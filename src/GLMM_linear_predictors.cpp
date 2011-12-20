@@ -243,6 +243,117 @@ linear_predictors_fixed_updated(double* eta_fixed,
 
 
 /***** ***************************************************************************************** *****/
+/***** GLMM::linear_predictors_random_updated                                                    *****/
+/***** ***************************************************************************************** *****/
+void
+linear_predictors_random_updated(double* eta_random,      
+                                 double* eta,      
+                                 double* meanY,
+                                 const double* eta_fixed,  
+                                 const double* Z,  
+                                 const double* b,        
+                                 const int*    q,     
+                                 const int*    randIntcpt,  
+                                 const int*    dist,
+                                 const int*    n,       
+                                 const int*    R,            
+                                 const int*    I,
+                                 const int*    dim_b)
+{
+  static int s, i, j, k;
+
+  static double *eta_randomP, *etaP, *meanYP;
+
+  static const double *eta_fixedP;
+  static const double *zP;
+  static const double *b_start_s, *b_cluster, *bP;
+  static const int *qP, *randIntcptP, *distP;
+  static const int *nP;
+
+  double
+  (*meanFun)(const double&);            // declaration of the mean function (inverse link)
+
+  eta_fixedP  = eta_fixed;
+  etaP        = eta;
+  meanYP      = meanY;
+  eta_randomP = eta_random;
+
+  distP = dist;
+
+  zP = Z;
+  b_start_s = b;
+
+  qP          = q;
+  randIntcptP = randIntcpt;
+
+  nP = n;
+
+  for (s = 0; s < *R; s++){                /* loop over responses                   */
+
+    switch (*distP){
+      case GLMM::GAUSS_IDENTITY:
+        meanFun = AK_Basic::ident_AK;
+	break;
+
+      case GLMM::BERNOULLI_LOGIT:
+        meanFun = AK_Basic::invlogit_AK;
+        break;
+
+      case GLMM::POISSON_LOG:
+        meanFun = AK_Basic::exp_AK;
+	break;
+
+      default:
+        error("GLMM::linear_predictors_random_updated: Unimplemented distributional type (%d).\n", *distP);
+    }
+
+
+    b_cluster = b_start_s;                    /* start of the random effect vector for response s */
+
+    for (i = 0; i < *I; i++){                 /* loop over clusters */
+
+      if (*nP){
+        for (j = 0; j < *nP; j++){              /* loop over observations within cluster */
+          bP     = b_cluster;
+          *eta_randomP = 0.0;
+          if (*randIntcptP){
+            *eta_randomP += *bP;
+            bP++;
+          }
+          for (k = 0; k < *qP; k++){              /* loop over random effects covariates */
+            *eta_randomP += *bP * *zP;
+            bP++;
+            zP++;
+          }
+
+          *etaP = *eta_fixedP + *eta_randomP;
+          *meanYP = meanFun(*etaP); 
+
+          eta_fixedP++;
+          eta_randomP++;
+          etaP++;
+          meanYP++;
+        }
+      }
+      else{                  /* *nP == 0 */
+        bP = b_cluster + (*randIntcptP + *qP);
+      }
+
+      nP++;
+      b_cluster = bP + (*dim_b - *randIntcptP - *qP);
+    }     /* end of loop over clusters */
+
+    b_start_s += (*randIntcptP + *qP);
+    distP++;
+    qP++;
+    randIntcptP++;
+  }
+
+  return;
+}
+
+
+/***** ***************************************************************************************** *****/
 /***** GLMM::linear_predictor_fixed                                                              *****/
 /***** ***************************************************************************************** *****/
 void

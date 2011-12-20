@@ -12,7 +12,7 @@
 GLMM_MCMCprior.alpha(prior.alpha, lalpha)
 }
 \arguments{
-  \item{prior.alpha}{see argument\code{prior.alpha} of
+  \item{prior.alpha}{see argument \code{prior.alpha} of
     \code{\link{GLMM_MCMC}} function}
   \item{lalpha}{see output element \code{lalpha} of \code{\link{GLMM_MCMCdata}}
     function}  
