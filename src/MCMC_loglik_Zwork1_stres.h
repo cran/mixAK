@@ -2,16 +2,17 @@
 //  PURPOSE:   Subcode used primarily in GLMM_updateRanEf_QR.cpp
 //             and in GLMM_Deviance.cpp
 //
-//  AUTHOR:    Arnost Komarek (LaTeX: Arno\v{s}t Kom\'arek)
+//  AUTHOR:    Arnošt Komárek (LaTeX: Arno\v{s}t Kom\'arek)
 //             arnost.komarek[AT]mff.cuni.cz
 //
-//  CREATED:   12/04/2010
+//  LOG:   20100412  created
 //
 //  FUNCTIONS:  
 //     *   12/04/2010:  MCMC:loglik_Zwork1_stres (PROTOTYPE 1)
 //     *   12/04/2010:  MCMC:loglik_Zwork1_stres (PROTOTYPE 2)
 //     *   14/04/2010:  MCMC:loglik_Zwork1 (PROTOTYPE 2)
 //     *   14/04/2010:  MCMC:loglik (PROTOTYPE 2)
+//     *   25/01/2012:  MCMC:Zwork1_stres2UI 
 //
 // =================================================================================
 //
@@ -219,6 +220,34 @@ loglik(double*  loglik,
        const int* dist,
        const int* R_c,
        const int* R_d);
+
+
+/***** *************************************************** *****/
+/***** MCMC::Zwork1_stres2UI                               *****/
+/***** *************************************************** *****/
+//
+//  U[sum(q_ri)]:     INPUT:  whatsever
+//                   OUTPUT:  calculated score vector
+//
+//  I[LT(sum(q_ri))]  INPUT:  whatsever
+//                   OUTPUT:  lower triangle of the information matrix
+//
+void
+Zwork1_stres2UI(double*  U,
+                double*  I,
+                int*     err,
+                int**    nresp,                      // this is in fact const
+                const double* Zwork1,
+                const double* stres,
+                const double* sqrt_w_phi,
+                const double* ZS,
+                const int* N_i,
+                const int* q_ri,
+                const int* dim_b,
+                const int* dist,
+                const int* R_c,
+                const int* R_d);
+
 
 }  // end of namespace MCMC
 

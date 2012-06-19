@@ -7,7 +7,7 @@
 \usage{
 \method{fitted}{GLMM_MCMC}(object, x, z,
   statistic=c("median", "mean", "Q1", "Q3", "2.5\%", "97.5\%"),
-  overall=FALSE, \dots)
+  overall=FALSE, glmer=FALSE, nAGQ=10, x2, z2, \dots)
 }
 \arguments{
   \item{object}{object of class \code{\link{GLMM_MCMC}}.}
@@ -27,6 +27,13 @@
     given mixture component are calculated. Note that this depends on
     used re-labelling of the mixture components and hence might be
     misleading if re-labelling is not succesfull!}
+  \item{glmer}{a logical value. If \code{TRUE}, the real marginal means
+    are calculated using Gaussian quadrature.}
+  \item{nAGQ}{number of quadrature points used when \code{glmer} is
+    \code{TRUE}.}
+  \item{x2, z2}{matrices of lists of matrices with the same structure as
+  \code{x} and \code{z}. They are used in the approximate calculation
+  when \code{glmer} is \code{TRUE}.}
   \item{\dots}{possibly extra arguments. Nothing useful at this moment.}
 }
 \value{

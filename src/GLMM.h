@@ -1,10 +1,11 @@
 //
 //  PURPOSE:   Constants etc. for namespace GLMM
 //
-//  AUTHOR:    Arnost Komarek (LaTeX: Arno\v{s}t Kom\'arek)
+//  AUTHOR:    Arnošt Komárek (LaTeX: Arno\v{s}t Kom\'arek)
 //             arnost.komarek[AT]mff.cuni.cz
 //
-//  CREATED:   03/07/2009
+//  LOG:   20090703  created
+//         20120124  _Random_effect_dist added
 //
 // ======================================================================
 //

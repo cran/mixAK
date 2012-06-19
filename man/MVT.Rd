@@ -1,5 +1,6 @@
 \name{MVT}
 \alias{MVT}
+\alias{dMVT}
 \alias{rMVT}
 \title{
   Multivariate Student t distribution
@@ -32,6 +33,8 @@
   \eqn{\frac{\nu}{\nu - 2}\Sigma}{(nu / (nu - 2)) * Sigma}.        
 }
 \usage{
+dMVT(x, df, mu=0, Q=1, Sigma, log=FALSE)
+
 rMVT(n, df, mu=0, Q=1, Sigma)
 }
 \arguments{
@@ -44,16 +47,16 @@ rMVT(n, df, mu=0, Q=1, Sigma)
     is computed from \eqn{\Sigma}{Sigma} as
     \eqn{Q = \Sigma^{-1}}{Q = Sigma^{-1}}.}
   \item{n}{number of observations to be sampled.}
-  %\item{x}{vector or matrix of the points where the density should be
-  %  evaluated.}
-%  \item{log}{logical; if \code{TRUE}, log-density is computed}
+  \item{x}{vector or matrix of the points where the density should be
+    evaluated.}
+  \item{log}{logical; if \code{TRUE}, log-density is computed}
 }
 \value{
 Some objects.
 }
-%\section{Value for dMVT}{
-%  A vector with evaluated values of the (log-)density
-%}  
+\section{Value for dMVT}{
+  A vector with evaluated values of the (log-)density
+}  
 \section{Value for rMVT}{
   A list with the components:
   \describe{
@@ -75,8 +78,9 @@ set.seed(1977)
 
 ### Univariate central t distribution
 z <- rMVT(10, df=1, mu=0, Q=1)
+ldz <- dMVT(z$x, df=1, log=TRUE)
 boxplot(as.numeric(z$x))
-cbind(z$log.dens, dt(as.numeric(z$x), df=1, log=TRUE))
+cbind(z$log.dens, ldz, dt(as.numeric(z$x), df=1, log=TRUE))
 
 ### Multivariate t distribution
 mu <- c(1, 2, 3)
@@ -88,10 +92,14 @@ z <- rMVT(1000, df=nu, mu=mu, Sigma=Sigma)
 apply(z$x, 2, mean)              ## should be close to mu
 ((nu - 2) / nu) * var(z$x)       ## should be close to Sigma            
 
+dz <- dMVT(z$x, df=nu, mu=mu, Sigma=Sigma)
+ldz <- dMVT(z$x, df=nu, mu=mu, Sigma=Sigma, log=TRUE)
+
 ### Compare with mvtnorm package
 #require(mvtnorm)
-#ldz <- dmvt(z$x, sigma=Sigma, df=nu, delta=mu, log=TRUE)
-#plot(z$log.dens, ldz, pch=21, col="red3", bg="orange", xlab="mixAK", ylab="mvtnorm")
+#ldz2 <- dmvt(z$x, sigma=Sigma, df=nu, delta=mu, log=TRUE)
+#plot(z$log.dens, ldz2, pch=21, col="red3", bg="orange", xlab="mixAK", ylab="mvtnorm")
+#plot(ldz, ldz2, pch=21, col="red3", bg="orange", xlab="mixAK", ylab="mvtnorm")
 }
 \keyword{distribution}
 \keyword{multivariate}

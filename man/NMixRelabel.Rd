@@ -182,8 +182,9 @@ NMixRelabel(object, type=c("mean", "weight", "stephens"), par, \dots)
 ## See also additional material available in 
 ## YOUR_R_DIR/library/mixAK/doc/
 ## or YOUR_R_DIR/site-library/mixAK/doc/
-## - files PBCseq.pdf,
-##         PBCseq.R
+## - file PBCseq.R and
+##   http://www.karlin.mff.cuni.cz/~komarek/software/mixAK/PBCseq.pdf
+##
 ## ==============================================
 }
 \keyword{multivariate}

@@ -3,10 +3,10 @@
 ##             and normal mixtures in the distribution of random effects
 ##             - wrapper to main simulation to allow vectorized call and parallel computation
 ##
-##  AUTHOR:    Arnost Komarek (LaTeX: Arno\v{s}t Kom\'arek)
+##  AUTHOR:    Arnošt Komárek (LaTeX: Arno\v{s}t Kom\'arek)
 ##             arnost.komarek[AT]mff.cuni.cz
 ##
-##  CREATED:    02/11/2011
+##  LOG:        20111102 created
 ##
 ##  FUNCTIONS:  GLMM_MCMCwrapper
 ##
@@ -22,6 +22,7 @@ GLMM_MCMCwrapper <- function(chain=1, data,
                              Cpar, nMCMC, store, keep.chains)
 {
   thispackage <- "mixAK"
+
   
   ########## ========== Parameters from inits ========== ##########
   ########## =========================================== ##########
@@ -31,22 +32,24 @@ GLMM_MCMCwrapper <- function(chain=1, data,
     CK_b <- init.b$K
     Cw_b <- c(init.b$w, rep(0, prior.b$Kmax - init.b$K))
     if (data$dimb == 1){
-      Cmu_b<- c(init.b$mu, rep(0, prior.b$Kmax - init.b$K))
-      CLi_b<- c(init.b$Li, rep(0, prior.b$Kmax - init.b$K))
+      Cmu_b <- c(init.b$mu, rep(0, prior.b$Kmax - init.b$K))
+      CLi_b <- c(init.b$Li, rep(0, prior.b$Kmax - init.b$K))
     
     }else{
-      Cmu_b<- c(t(init.b$mu), rep(0, data$dimb*(prior.b$Kmax - init.b$K)))
-      CLi_b<- c(init.b$Li, rep(0, data$LTb*(prior.b$Kmax - init.b$K)))
+      Cmu_b <- c(t(init.b$mu), rep(0, data$dimb*(prior.b$Kmax - init.b$K)))
+      CLi_b <- c(init.b$Li, rep(0, data$LTb*(prior.b$Kmax - init.b$K)))
     }
     CgammaInv_b <- init.b$gammaInv
-    Cr_b <- init.b$r - 1    
-    Cbb  <- as.numeric(t(init.b$b))
+    Cdf_b <- init.b$df
+    Cr_b  <- init.b$r - 1    
+    Cbb   <- as.numeric(t(init.b$b))
   }else{
     CK_b        <- 0
     Cw_b        <- 0
     Cmu_b       <- 0
     CLi_b       <- 0
     CgammaInv_b <- 0
+    Cdf_b       <- 0
     Cr_b        <- 0
     Cbb         <- 0
   }  
@@ -79,9 +82,8 @@ GLMM_MCMCwrapper <- function(chain=1, data,
              priorDouble_eps           = as.double(Cpar$priorDouble_eps),
              priorInt_b                = as.integer(Cpar$priorInt_b),
              priorDouble_b             = as.double(Cpar$priorDouble_b),
-             priorDouble_alpha          = as.double(Cpar$priorDouble_alpha),
-             tune_scale_alpha           = as.double(Cpar$tune_scale_alpha),
-             tune_scale_b              = as.double(Cpar$tune_scale_b),             
+             priorDouble_alpha         = as.double(Cpar$priorDouble_alpha),
+             tune_scale_alpha_b        = as.double(Cpar$tune_scale_alpha_b),
              sigma_eps                 = as.double(Csigma_eps),
              gammaInv_eps              = as.double(CgammaInv_eps),
              K_b                       = as.integer(CK_b),
@@ -91,6 +93,7 @@ GLMM_MCMCwrapper <- function(chain=1, data,
              Sigma_b                   = double(ifelse(data$dimb, data$LTb * prior.b$Kmax, 1)),
              Li_b                      = as.double(CLi_b),
              gammaInv_b                = as.double(CgammaInv_b),
+             df_b                      = as.double(Cdf_b),
              r_b                       = as.integer(Cr_b),
              r_b_first                 = integer(Cpar$I),
              alpha                      = as.double(Calpha),
@@ -105,6 +108,7 @@ GLMM_MCMCwrapper <- function(chain=1, data,
              chSigma_b                 = double(ifelse(data$dimb, data$LTb * prior.b$Kmax * nMCMC["keep"], 1)),
              chLi_b                    = double(ifelse(data$dimb, data$LTb * prior.b$Kmax * nMCMC["keep"], 1)),
              chgammaInv_b              = double(ifelse(data$dimb, data$dimb * nMCMC["keep"], 1)),
+             chdf_b                    = double(ifelse(data$dimb, prior.b$Kmax * nMCMC["keep"], 1)),             
              chorder_b                 = integer(ifelse(data$dimb, prior.b$Kmax * nMCMC["keep"], 1)),
              chrank_b                  = integer(ifelse(data$dimb, prior.b$Kmax * nMCMC["keep"], 1)),
              chMeanData_b              = double(ifelse(data$dimb, data$dimb * nMCMC["keep"], 1)),

@@ -1,7 +1,7 @@
 //
 //  PURPOSE:   Implementation of methods declared in NMix_Utils.h
 //
-//  AUTHOR:    Arnost Komarek (LaTeX: Arno\v{s}t Kom\'arek)
+//  AUTHOR:    Arnošt Komárek (LaTeX: Arno\v{s}t Kom\'arek)
 //             arnost.komarek[AT]mff.cuni.cz
 //
 //  CREATED:   26/11/2007
@@ -49,7 +49,7 @@ Li2log_dets(double* log_dets,  const double* Li,  const int* K,  const int* p)
   for (k = 0; k < *K; k++){
     *log_detsP = 0.0;
     for (i = *p; i > 0; i--){
-      *log_detsP += AK_Basic::log_AK(*LiP);
+      *log_detsP += AK_Basic::log0_AK(*LiP);
       LiP += i;
     }
     log_detsP += 2;
@@ -228,14 +228,28 @@ muLi2beta_sigmaR2(double* beta,  double* sigmaR2,   double* work,
 /***** NMix::Moments                                                                        *****/
 /***** ************************************************************************************ *****/
 void
-Moments(double* Mean,         double* Var,          double* Corr,
-        double* MeanData,     double* VarData,      double* CorrData,
-        const double* w,      const double* mu,     const double* Sigma,  const int* K,  
-        const double* shift,  const double* scale,  const int* p)
+Moments(double* Mean,         
+        double* Var,          
+        double* Corr,
+        double* MeanData,     
+        double* VarData,      
+        double* CorrData,
+        const int* distribution,
+        const double* w,      
+        const double* mu,     
+        const double* Sigma,  
+        const double* df,
+        const int*    K,  
+        const double* shift,  
+        const double* scale,  
+        const int* p)
 {
+  const char *fname = "NMix::Moments";
+
   static int i1, i2, j;
+  static double factor;
   static double *MeanP, *MeanDataP, *VarP, *VarDataP, *CorrP, *CorrDataP;
-  static const double *wP, *muP, *SigmaP, *muP1, *MeanP1, *MeanP2, *sd1P, *sd2P;
+  static const double *wP, *muP, *SigmaP, *dfP, *muP1, *MeanP1, *MeanP2, *sd1P, *sd2P;
   static const double *shiftP, *scaleP1, *scaleP2;
 
   /*** Mean ***/
@@ -264,10 +278,24 @@ Moments(double* Mean,         double* Var,          double* Corr,
   wP     = w;
   muP    = mu;
   SigmaP = Sigma;
+  dfP    = df;
 
   MeanDataP = MeanData;
   shiftP    = shift;
   scaleP1   = scale;
+  
+    /*** j = 0 (the first mixture component) ***/
+  switch (*distribution){
+  case NMix::NORMAL:    
+    factor = 1.0;
+    break;
+  case NMix::MVT:
+    factor = *dfP > 2.0 ? *dfP / (*dfP - 2) : 2.001 / 0.001;
+    dfP++;
+    break;
+  default:
+    error("%s: Unimplemented mixture distribution specified.\n", fname);    
+  }
 
   VarP   = Var;
   MeanP2 = Mean;
@@ -275,7 +303,7 @@ Moments(double* Mean,         double* Var,          double* Corr,
     MeanP1 = MeanP2;
     muP1   = muP;
     for (i1 = i2; i1 < *p; i1++){
-      *VarP = *wP * (*SigmaP + (*muP1 - *MeanP1)*(*muP - *MeanP2));
+      *VarP = *wP * (factor * *SigmaP + (*muP1 - *MeanP1)*(*muP - *MeanP2));
       VarP++;
       SigmaP++;
       MeanP1++;
@@ -291,14 +319,28 @@ Moments(double* Mean,         double* Var,          double* Corr,
     muP++;    
   }
   wP++;
+
+    /*** j = 0 remaining mixture components ***/  
   for (j = 1; j < *K; j++){
+    switch (*distribution){
+    case NMix::NORMAL:    
+      factor = 1.0;
+      break;
+    case NMix::MVT:
+      factor = *dfP > 2.0 ? *dfP / (*dfP - 2) : 2.001 / 0.001;
+      dfP++;
+      break;
+    default:
+      error("%s: Unimplemented mixture distribution specified.\n", fname);    
+    }
+
     VarP   = Var;
     MeanP2 = Mean;
     for (i2 = 0; i2 < *p; i2++){
       MeanP1 = MeanP2;
       muP1   = muP;
       for (i1 = i2; i1 < *p; i1++){
-        *VarP += *wP * (*SigmaP + (*muP1 - *MeanP1)*(*muP - *MeanP2));
+        *VarP += *wP * (factor * *SigmaP + (*muP1 - *MeanP1)*(*muP - *MeanP2));
         VarP++;
         SigmaP++;
         MeanP1++;
@@ -520,11 +562,25 @@ ySum_SSm_j(double* mixsumy,  double* mixSSm,  const double* y,  const int* r,  c
 /***** NMix::prior_derived1                                                                 *****/
 /***** ************************************************************************************ *****/
 void
-prior_derived(const int* p,      const int* priorK,  const int* priormuQ,  const int* Kmax,     const double* lambda,  
-              const double* xi,  const double* c,    const double* Dinv,   const double* zeta,
-              double* logK,  double* log_lambda,
-              double* c_xi,  double* log_c,       double* sqrt_c,      double* log_Wishart_const,
-              double* D_Li,  double* Dinv_xi,     double* log_dets_D,  int* err)
+prior_derived(const int* p,      
+              const int* priorK,  
+              const int* priormuQ,  
+              const int* Kmax,     
+              const double* lambda,  
+              const double* xi,  
+              const double* c,    
+              const double* Dinv,   
+              const double* zeta,
+              double* logK,  
+              double* log_lambda,
+              double* c_xi,  
+              double* log_c,       
+              double* sqrt_c,      
+              double* log_Wishart_const,
+              double* D_Li,  
+              double* Dinv_xi,     
+              double* log_dets_D,  
+              int*    err)
 {
   const char *fname = "NMix::prior_derived";
   const int LTp = (*p * (*p + 1))/2;
@@ -653,13 +709,30 @@ prior_derived(const int* p,      const int* priorK,  const int* priormuQ,  const
 /***** NMix::init_derived                                                                        *****/
 /***** ***************************************************************************************** *****/
 void
-init_derived(const int* p,         const int* Kmax,      const int* K,  
-             const double* w,      const double* mu,     const double* Li,
-             const double* shift,  const double* scale,  const double* gammaInv,   
-             double* log_dets,  double* logw,               double* Q,         double* Sigma,
-             double* Mean,      double* Var,                double* Corr,
-             double* MeanData,  double* VarData,            double* CorrData,
-             double* XiInv,     double* log_sqrt_detXiInv,  int* err)
+init_derived(const int* p,         
+             const int* Kmax,      
+             const int* K,  
+             const int* distribution,
+             const double* w,      
+             const double* mu,     
+             const double* Li,
+             const double* df,
+             const double* shift,  
+             const double* scale,  
+             const double* gammaInv,   
+             double* log_dets,  
+             double* logw,               
+             double* Q,         
+             double* Sigma,
+             double* Mean,      
+             double* Var,                
+             double* Corr,
+             double* MeanData,  
+             double* VarData,            
+             double* CorrData,
+             double* XiInv,     
+             double* log_sqrt_detXiInv,  
+             int*    err)
 {
   const char *fname = "NMix::init_derived";
   const int LTp = (*p * (*p + 1))/2;
@@ -668,7 +741,10 @@ init_derived(const int* p,         const int* Kmax,      const int* K,
 
   /***** log_dets:  log_dets for mixture covariance matrices                                    *****/
   const double *LiP = Li;
+  const double *dfP = df;
   double *log_detsP = log_dets;
+
+  /*** Real inits ***/
   for (j = 0; j < *K; j++){
     *log_detsP = 0.0;                                   /*** log_dets[0, j] will be log(|Sigma[j]|^{-1/2}) = sum(log(Li_{j}[l,l]))   ***/
     for (l = *p; l > 0; l--){
@@ -676,9 +752,23 @@ init_derived(const int* p,         const int* Kmax,      const int* K,
       LiP += l;
     }
     log_detsP++;
-    *log_detsP = -(*p) * M_LN_SQRT_2PI;                 /*** log_dets[1, j] = -p * log(sqrt(2*pi)) ***/
+
+    switch (*distribution){
+    case NMix::NORMAL:    
+      *log_detsP = -(*p) * M_LN_SQRT_2PI;                 /*** log_dets[1, j] = -p * log(sqrt(2*pi)) ***/
+      break;
+    case NMix::MVT:
+      *log_detsP = lgamma((*dfP + *p)/2) - lgamma(*dfP / 2) - (*p) * (0.5 * log(*dfP) + M_LN_SQRT_PI);
+      dfP++;
+      break;
+    default:
+      *err = 1;
+      error("%s: Unimplemented mixture distribution specified.\n", fname);    
+    }
     log_detsP++;
   }
+
+  /*** Only fill-in the remaining space which is used only if the reversible-jump algorithm is used ***/
   for (j = *K; j < *Kmax; j++){
     *log_detsP = 0.0;
     log_detsP++;
@@ -705,8 +795,7 @@ init_derived(const int* p,         const int* Kmax,      const int* K,
   /***** Mean, MeanData:  Mixture overall means                                                 *****/
   /***** Var, VarData:    Mixture overall variance                                              *****/
   /***** Corr, CorrData:  Mixture overall std. deviations and correlations                      *****/
-  NMix::Moments(Mean, Var, Corr, MeanData, VarData, CorrData, w, mu, Sigma, K, shift, scale, p);
-
+  NMix::Moments(Mean, Var, Corr, MeanData, VarData, CorrData, distribution, w, mu, Sigma, df, K, shift, scale, p);
 
 
   /***** XiInv:              Diagonal matrix with gamma^{-1}'s on a diagonal                    *****/

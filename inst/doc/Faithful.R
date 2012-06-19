@@ -1,3 +1,9 @@
+###
+###  Full pdf document describing the code included here is available at
+###  http://www.karlin.mff.cuni.cz/~komarek/software/mixAK/Faithful.pdf
+###
+### ==============================================================================
+
 ### R code from vignette source 'Faithful.Rnw'
 
 ###################################################

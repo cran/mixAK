@@ -716,8 +716,12 @@ NMixMCMC(y0, y1, censor, scale, prior,
 ## See also additional material available in 
 ## YOUR_R_DIR/library/mixAK/doc/
 ## or YOUR_R_DIR/site-library/mixAK/doc/
-## - files Galaxy.pdf, Faithful.pdf, Tandmob.pdf
-##         Galaxy.R, Faithful.R, Tandmob.R
+## - files Galaxy.R, Faithful.R, Tandmob.R and
+## http://www.karlin.mff.cuni.cz/~komarek/software/mixAK/Galaxy.pdf
+## http://www.karlin.mff.cuni.cz/~komarek/software/mixAK/Faithful.pdf
+## http://www.karlin.mff.cuni.cz/~komarek/software/mixAK/Tandmob.pdf
+##
+
 ## ==============================================
 
 ## Simple analysis of Anderson's iris data

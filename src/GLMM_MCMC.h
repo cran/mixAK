@@ -152,22 +152,26 @@ extern "C" {
 //                       
 //
 //  priorDouble_b[]:     double prior (hyper)parameters for distribution of random effects b
-//                       * priorDouble[0]  = lambda 
+//                       * priorDouble_b[0]  = lambda 
 //                                     * expectation of the Poisson distribution if the truncated Poisson is used as a prior for K
-//                       * priorDouble[+1] = delta 
+//                       * priorDouble_b[+1] = delta 
 //                                     * prior "sample size" for the Dirichlet prior on weights
-//                       * priorDouble[+dimb*Kmax] = xi[j] (j=0, Kmax-1) 
+//                       * priorDouble_b[+dimb*Kmax] = xi[j] (j=0, Kmax-1) 
 //                                          * prior means for the mixture means
-//                       * priorDouble[+Kmax]   = c[j] (j=0, Kmax-1)
+//                       * priorDouble_b[+Kmax]   = c[j] (j=0, Kmax-1)
 //                                          * prior scale parameters for the mixture means if natural conjugate prior is used
-//                       * priorDouble[+LT(dimb)*Kmax]  = D[j]^{-1} (j=0, ..., Kmax-1)                 
+//                       * priorDouble_b[+LT(dimb)*Kmax]  = D[j]^{-1} (j=0, ..., Kmax-1)                 
 //                                          * prior inverse variances for the mixture means if independent conjugate prior is used
-//                       * priorDouble[+1]      = zeta
-//                                          * prior degrees of freedom of the Wishart prior on Sigma[j]^{-1}
-//                       * priorDouble[+dimb]      = g
-//                                          * parameters of gamma hyperpriors above Sigma[j]^{-1}
-//                       * priorDouble[+dimb]      = h
-//                                          * parameters of gamma hyperpriors above Sigma[j]^{-1}
+//                       * priorDouble_b[+1]      = zeta
+//                                          * prior degrees of freedom of the Wishart prior on D[j]^{-1}
+//                       * priorDouble_b[+dimb]      = gD
+//                                          * parameters of gamma hyperpriors above D[j]^{-1}
+//                       * priorDouble_b[+dimb]      = hD
+//                                          * parameters of gamma hyperpriors above D[j]^{-1}
+//                       * priorDouble_b[+1]         = gdf
+//                                          * shape parameter of gamma prior for MVT degrees of freedom
+//                       * priorDouble_b[+1]         = hdf
+//                                          * rate parameter of gamma prior for MVT degrees of freedom
 //
 //  priorDouble_beta[]:  prior (hyper)parameters for distribution of fixed effects beta
 //                       * prior_beta[l_beta]  = prior means for beta's
@@ -177,12 +181,14 @@ extern "C" {
 //  PARAMETERS TO TUNE MCMC
 //  ================================================================
 //
-//  tune_scale_beta[R_d]:  scale parameters for each DISCRETE response profile by which we multiply
+//  tune_scale_beta_b[R_d + 1]:  
+//            tune_scale_beta[R_d]:           
+//                         scale parameters for each DISCRETE response profile by which we multiply
 //                         the proposal covariance matrix when updating the 'fixed' effects
 //                         of DISCRETE response profiles
 //
-//  tune_scale_b[1]:       scale paramater by which we multiply the proposal covariance matrix when updating
-//                         the fixed effects
+//            tune_scale_b[1]:       
+//                         scale paramater by which we multiply the proposal covariance matrix when updating the fixed effects
 //                         * used only when there are some discrete response profiles
 //                         * ignored when there are only continuous responses since then the Gibbs move is used
 //                           to update random effects
@@ -218,6 +224,10 @@ extern "C" {
 //
 //  gammaInv_b[q]:            INPUT:  initial value of the inverse of the gamma hyperparameter for the distribution of random effects
 //                           OUTPUT:  last sampled value of the inverse of the gamma hyperparameter for the distruibution of random effects
+//
+//  df_b[Kmax_b]:             INPUT:  initial values of the degrees of freedom in the distribution of random effects
+//                                    if the MVT is assumed for them
+//                           OUTPUT:  last sampled values of the degrees of freedom of random effects
 //
 //  r_b[I]:                   INPUT:  initial allocations for random effects
 //                           OUTPUT:  last values of allocations
@@ -261,6 +271,8 @@ extern "C" {
 //  chLi_b[]
 //
 //  chgammaInv_b[]
+//
+//  chdf_b[]
 //
 //  chorder_b[]
 //
@@ -357,8 +369,7 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
           const int*    priorInt_b,           
           const double* priorDouble_b,
           const double* priorDouble_beta, 
-          const double* tune_scale_beta,
-          const double* tune_scale_b,
+          const double* tune_scale_beta_b,
           double* sigma_eps,     
           double* gammaInv_eps,
           int*    K_b,              
@@ -368,6 +379,7 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
           double* Sigma_b,    
           double* Li_b,
           double* gammaInv_b,    
+          double* df_b,
           int*    r_b,
           int*    r_b_first,
           double* beta,          
@@ -382,6 +394,7 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
           double* chSigma_b,  
           double* chLi_b,
           double* chgammaInv_b,  
+          double* chdf_b, 
           int*    chorder_b,          
           int*    chrank_b,
           double* chMeanData_b,      

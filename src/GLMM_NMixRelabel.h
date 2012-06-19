@@ -102,6 +102,9 @@ extern "C" {
 //
 //  chsigma_eps[R_c, keepMCMC]            sampled values of standard deviations of each continuous response
 //
+//  distribution_b[1]                     assumed distribution of random effects
+//                                        * see _Random_effect_dist in GLMM.h 
+//
 //  K_b[1]                                number of mixture components
 //
 //  chw_b[K_b, keepMCMC]                  sampled mixture weights
@@ -113,6 +116,9 @@ extern "C" {
 //  chSigma_b[LT(dim_b), K_b, keepMCMC]   sampled mixture variances
 //
 //  chLi_b[LT(dim_b), K_b, keepMCMC]      sampled Cholesky decompositions of mixture inverse variances
+//
+//  chdf_b[K_b, keepMCMC]                 sampled values of degrees of freedom if random effects are assumed to follow
+//                                        the MVT distribution
 //
 //  chbeta[#fixed effects, keepMCMC]      sampled values of fixed effects
 //
@@ -213,12 +219,14 @@ GLMM_NMixRelabel(const int*    type,
                  const int*    info,
                  const double* tune_scale_b,
                  const double* chsigma_eps,
+                 const int*    distribution_b,
                  const int*    K_b,
                  const double* chw_b,
                  const double* chmu_b,
                  const double* chQ_b,
                  const double* chSigma_b,
                  const double* chLi_b,
+                 const double* chdf_b,
                  const double* chbeta,                  
                  int*    chorder_b,
                  int*    chrank_b,

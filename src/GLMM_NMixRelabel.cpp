@@ -38,12 +38,14 @@ GLMM_NMixRelabel(const int*    type,
                  const int*    info,
                  const double* tune_scale_b,
                  const double* chsigma_eps,
+                 const int*    distribution_b,
                  const int*    K_b,
                  const double* chw_b,
                  const double* chmu_b,
                  const double* chQ_b,
                  const double* chSigma_b,
                  const double* chLi_b,
+                 const double* chdf_b,
                  const double* chbeta,                  
                  int*    chorder_b,
                  int*    chrank_b,
@@ -105,6 +107,19 @@ GLMM_NMixRelabel(const int*    type,
     error("%s:  No random effects in the model, nothing to re-label.\n", fname);
   }
 
+  switch (*distribution_b){
+  case NMix::NORMAL:
+    break;
+  case NMix::MVT:
+    *err = 1;
+    error("%s: Multivariate t-distribution for random effects not (yet) implemented.\n", fname);
+    break;
+  default:
+    *err = 1;
+    error("%s: Unimplemented distribution for random effects specified.\n", fname);    
+  }
+
+
   /***** Some input checks *****/
   switch (*type){
   case NMix::MEAN:
@@ -152,6 +167,7 @@ GLMM_NMixRelabel(const int*    type,
   const double *chQ_bP       = chQ_b;
   //const double *chSigma_bP   = chSigma_b;
   const double *chLi_bP      = chLi_b;
+  const double *chdf_bP      = chdf_b;
   const double *chbetaP      = chbeta;
   
   int    *chorder_bP = chorder_b;
@@ -253,7 +269,8 @@ GLMM_NMixRelabel(const int*    type,
   /***** Quantities needed by a routine which updates random effects             *****/
   double log_dets_ranef[2]; 
   log_dets_ranef[0] = 0.0;
-  log_dets_ranef[1] = -dim_b * M_LN_SQRT_2PI;
+  log_dets_ranef[1] = -dim_b * M_LN_SQRT_2PI;         // This is a value for normal random effects.
+                                                      // It will be re-calculated at each step for MVT random effects.
 
   double *dwork_ranef = NULL;                        /*** working space for GLMM::updateRanEf  ***/  
   dwork_ranef = Calloc(*K_b * dim_b + 5 * dim_b + 3 * LT_b + dim_b * dim_b + 2 * max_N_i, double);
@@ -272,8 +289,9 @@ GLMM_NMixRelabel(const int*    type,
 
   /***** log_dets_b:  Space to calculate log_dets for MVN functions         *****/
   double *log_dets_b = Calloc(2 * *K_b, double);  
-  for (j = 0; j < *K_b; j++) log_dets_b[2*j + 1] = -dim_b * M_LN_SQRT_2PI;
-  NMix::Li2log_dets(log_dets_b, chLi_b, K_b, &dim_b);
+  for (j = 0; j < *K_b; j++) log_dets_b[2*j + 1] = -dim_b * M_LN_SQRT_2PI;     
+  NMix::Li2log_dets(log_dets_b, chLi_b, K_b, &dim_b);         // This are the values for normal random effects.
+                                                              // They will be re-calculated at each step for MVT random effects.
 
   /***** dwork_MVN:  Working space for MVN functions                       *****/
   double *dwork_MVN = Calloc(dim_b, double);
@@ -331,7 +349,7 @@ GLMM_NMixRelabel(const int*    type,
   double *sqrt_w_phi = Calloc(N, double);
   AK_Basic::fillArray(sqrt_w_phi, 0.0, N);  
 
-  double *dwork_GLMM_Deviance = Calloc((max_N_i + dim_b) * (dim_b + 3) + dim_b * 6 + max_N_i * (3 * dim_b + 5) + LT_b, double);
+  double *dwork_GLMM_Deviance = Calloc((max_N_i + dim_b) * (dim_b + 3) + dim_b * 8 + max_N_i * (3 * dim_b + 6) + 3 * LT_b, double);
   int    *iwork_GLMM_Deviance = Calloc(dim_b > 0 ? dim_b : 1, int);
 
   /***** Create ZS matrices *****/
@@ -501,7 +519,9 @@ GLMM_NMixRelabel(const int*    type,
                    iwork_GLMM_Deviance, dwork_GLMM_Deviance, err,
                    Y_cresp,  Y_dresp,  dYresp,  eta_fixedresp,  eta_randomresp,  meanYresp , Zresp,  nresp,
                    ZS, shift_b, scale_b, q, randIntcpt, q_ri, &dim_b, &LT_b, R_c, R_d, dist, I, N_i, &max_N_i, l_ZS,
-                   chsigma_epsP, K_b, chw_bP, logw_b, chmu_bP, chLi_bP, log_dets_b, bscaled, &AK_Basic::_ONE_INT);
+                   chsigma_epsP, 
+                   distribution_b, K_b, chw_bP, logw_b, chmu_bP, chLi_bP, chQ_bP, chdf_bP, 
+                   log_dets_b, bscaled, &AK_Basic::_ONE_INT, &iter);
 
     //if (iteration == iter_show){
     //  Rprintf("  --- marg_Li[%d] = %g --- \n", clus_show, marg_L_i[clus_show]);
@@ -544,6 +564,7 @@ GLMM_NMixRelabel(const int*    type,
     chLi_bP      += LT_b * *K_b;
     chQ_bP       += LT_b * *K_b;
     //chSigma_bP   += LT_b * *K_b;
+    chdf_bP      += *K_b;
     chbetaP      += l_beta;
 
     /***** Shift pointers in r_bAll, Pr_b_b, Pr_obs *****/

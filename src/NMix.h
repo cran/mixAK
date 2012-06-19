@@ -22,6 +22,12 @@ enum _NMix_sampler_action {GIBBS_K, SPLIT_COMBINE, BIRTH_DEATH};               /
 
 enum _NMix_relabel_algorithm {IDENTITY, MEAN, WEIGHT, STEPHENS};                /** possible re-labeling algorithms **/
 
+enum _NMix_mixture_dist {NORMAL, MVT};
+         /* possible mixture distributions        */
+         /*   0 = NORMAL:   multivariate normal distribution */
+         /*   1 = MVT:      multivariate t-distribution      */
+
+
 }    /*** end of namespace NMix ***/
 
 #endif

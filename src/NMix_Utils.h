@@ -1,10 +1,11 @@
 //
 //  PURPOSE:   Normal mixture model, smaller utilities
 //
-//  AUTHOR:    Arnost Komarek (LaTeX: Arno\v{s}t Kom\'arek)
+//  AUTHOR:    Arnošt Komárek (LaTeX: Arno\v{s}t Kom\'arek)
 //             arnost.komarek[AT]mff.cuni.cz
 //
-//  CREATED:   26/11/2007
+//  LOG:      20071126  created
+//            20120126  stuff needed for MVT mixture added
 //
 //  FUNCTIONS:  
 //     * w2logw                       26/11/2007:  
@@ -167,6 +168,15 @@ muLi2beta_sigmaR2(double* beta,  double* sigmaR2,   double* work,
 // * Mean = sum_j w_j * mu_j
 // * Var  = sum_j w_j (Sigma_j + (mu_j - Mean)*t(mu_j - Mean)')
 //
+// For MVT distribution: 
+//          Mean of one mixture component is equal to mu_j provided that df_j > 1.
+//          This function calculates "Mean" as sum_j w_j * mu_j even if df_j <= 1.
+//
+//          Variance of one mixture component is equal to (df_j / (df_j - 2)) * Sigma_j provided that df_j > 2.
+//          If df_j <= 2, this function calculates "Var" using 2.001/0.001 * Sigma_j.
+//
+//          Hence for MVT, use calculated results with care!
+//
 // Mean[p]
 //
 // Var[LT(p)]
@@ -196,10 +206,21 @@ muLi2beta_sigmaR2(double* beta,  double* sigmaR2,   double* work,
 // p[1]
 //
 void
-Moments(double* Mean,         double* Var,          double* Corr,
-        double* MeanData,     double* VarData,      double* CorrData,
-        const double* w,      const double* mu,     const double* Sigma,  const int* K,  
-        const double* shift,  const double* scale,  const int* p);
+Moments(double* Mean,         
+        double* Var,          
+        double* Corr,
+        double* MeanData,     
+        double* VarData,      
+        double* CorrData,
+        const int* distribution,
+        const double* w,      
+        const double* mu,     
+        const double* Sigma,  
+        const double* df,
+        const int*    K,  
+        const double* shift,  
+        const double* scale,  
+        const int* p);
 
 
 /***** ***************************************************************************************** *****/
@@ -295,11 +316,25 @@ ySum_SSm_j(double* mixsumy,  double* mixSSm,  const double* y,  const int* r,  c
 //  log_dets_D[2*Kmax]
 //
 void
-prior_derived(const int* p,      const int* priorK,  const int* priormuQ,  const int* Kmax,     const double* lambda,
-              const double* xi,  const double* c,    const double* Dinv,   const double* zeta,
-              double* logK,  double* log_lambda,
-              double* c_xi,  double* log_c,       double* sqrt_c,      double* log_Wishart_const,
-              double* D_Li,  double* Dinv_xi,     double* log_dets_D,  int* err);
+prior_derived(const int* p,      
+              const int* priorK,  
+              const int* priormuQ,  
+              const int* Kmax,     
+              const double* lambda,  
+              const double* xi,  
+              const double* c,    
+              const double* Dinv,   
+              const double* zeta,
+              double* logK,  
+              double* log_lambda,
+              double* c_xi,  
+              double* log_c,       
+              double* sqrt_c,      
+              double* log_Wishart_const,
+              double* D_Li,  
+              double* Dinv_xi,     
+              double* log_dets_D,  
+              int*    err);
 
 
 /***** ***************************************************************************************** *****/
@@ -323,9 +358,11 @@ prior_derived(const int* p,      const int* priorK,  const int* priormuQ,  const
 // p[1]
 // Kmax[1]
 // K[1]
+// distribution[1]     assumed mixture distribution (NORMAL or MVT)
 // w[K]
 // mu[p*K]
 // Li[LT(p)*K]
+// df[K]               initial degrees of freedom for each mixture component (not used when distribution == NMix::NORMAL)
 // shift[p]
 // scale[p]
 // gammaInv[p]
@@ -345,13 +382,30 @@ prior_derived(const int* p,      const int* priorK,  const int* priormuQ,  const
 // err[1]
 //
 void
-init_derived(const int* p,         const int* Kmax,      const int* K,  
-             const double* w,      const double* mu,     const double* Li,
-             const double* shift,  const double* scale,  const double* gammaInv,   
-             double* log_dets,  double* logw,               double* Q,         double* Sigma,
-             double* Mean,      double* Var,                double* Corr,
-             double* MeanData,  double* VarData,            double* CorrData,
-             double* XiInv,     double* log_sqrt_detXiInv,  int* err);
+init_derived(const int* p,         
+             const int* Kmax,      
+             const int* K,  
+             const int* distribution,
+             const double* w,      
+             const double* mu,     
+             const double* Li,
+             const double* df,
+             const double* shift,  
+             const double* scale,  
+             const double* gammaInv,   
+             double* log_dets,  
+             double* logw,               
+             double* Q,         
+             double* Sigma,
+             double* Mean,      
+             double* Var,                
+             double* Corr,
+             double* MeanData,  
+             double* VarData,            
+             double* CorrData,
+             double* XiInv,     
+             double* log_sqrt_detXiInv,  
+             int*    err);
 
 
 }    /*** end of namespace NMix ***/

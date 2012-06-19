@@ -51,12 +51,15 @@ GLMM_PED(double*       PED,
          const double* X, 
          double*       Z,                                  // this is in fact const, not declared as const to be able to use **
          const int*    p_fI_q_rI,
+         const int*    distribution_b,
          const double* shiftScale_b,
          const double* chsigma_eps1,   
          const int*    chK_b1,            
          const double* chw_b1,           
          const double* chmu_b1,
          const double* chLi_b1,
+         const double* chQ_b1,
+         const double* chdf_b1,
          const double* chbeta1,
          const double* bhat1,
          const double* chsigma_eps2,   
@@ -64,6 +67,8 @@ GLMM_PED(double*       PED,
          const double* chw_b2,           
          const double* chmu_b2,
          const double* chLi_b2,
+         const double* chQ_b2,
+         const double* chdf_b2,
          const double* chbeta2,        
          const double* bhat2,
          const int*    M,
@@ -120,6 +125,20 @@ GLMM_PED(double*       PED,
   int dim_b     = AK_Basic::sum(randIntcpt, R) + AK_Basic::sum(q, R);                   /* dimension of random effects                       */
   int LT_b      = (dim_b * (dim_b + 1)) / 2;                                            /* length of lower triangle of matrix dim_b x dim_b  */
 
+  if (dim_b){
+    switch (*distribution_b){
+    case NMix::NORMAL:
+      break;
+    case NMix::MVT:
+      *err = 1;
+      error("%s: Multivariate t-distribution for random effects not (yet) implemented.\n", fname);
+      break;
+    default:
+      *err = 1;
+      error("%s: Unimplemented distribution for random effects specified.\n", fname);    
+    }
+  }
+
   /***** Shift and scale for random effects *****/
   const double *shift_b = shiftScale_b;
   const double *scale_b = shift_b + dim_b;
@@ -130,6 +149,8 @@ GLMM_PED(double*       PED,
   const double *w_b1       = chw_b1;
   const double *mu_b1      = chmu_b1;
   const double *Li_b1      = chLi_b1;
+  const double *Q_b1       = chQ_b1;
+  const double *df_b1      = chdf_b1;
   const double *beta1      = chbeta1;
 
   const double *sigma_eps2 = chsigma_eps2;
@@ -137,6 +158,8 @@ GLMM_PED(double*       PED,
   const double *w_b2       = chw_b2;
   const double *mu_b2      = chmu_b2;
   const double *Li_b2      = chLi_b2;
+  const double *Q_b2       = chQ_b2;
+  const double *df_b2      = chdf_b2;
   const double *beta2      = chbeta2;
 
   double *GLMMLogL1 = chGLMMLogL1;
@@ -622,7 +645,7 @@ GLMM_PED(double*       PED,
   double *stres      = Calloc(N, double);
   double *sqrt_w_phi = Calloc(N, double);
 
-  double *dwork_GLMM_Deviance = Calloc((max_N_i + dim_b) * (dim_b + 3) + dim_b * 6 + max_N_i * (3 * dim_b + 5) + LT_b, double);
+  double *dwork_GLMM_Deviance = Calloc((max_N_i + dim_b) * (dim_b + 3) + dim_b * 8 + max_N_i * (3 * dim_b + 6) + 3 * LT_b, double);
   int    *iwork_GLMM_Deviance = Calloc(dim_b > 0 ? dim_b : 1, int);
  
 
@@ -659,7 +682,7 @@ GLMM_PED(double*       PED,
   /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/ 
 
   /***** Loop over sampled values *****/
-  for (t = 0; t < *M; t++){                        /** loop t **/
+  for (t = 1; t <= *M; t++){                        /** loop t **/
     //iteration = t;
 
     /***** Mixture specific derived variables *****/
@@ -687,13 +710,15 @@ GLMM_PED(double*       PED,
                    iwork_GLMM_Deviance, dwork_GLMM_Deviance, err,
                    Y_cresp, Y_dresp, dYresp, eta_fixed1resp, eta_random1resp, meanY1resp, Zresp, nresp,
                    ZS, shift_b, scale_b, q, randIntcpt, q_ri, &dim_b, &LT_b, R_c, R_d, dist, I, N_i, &max_N_i, l_ZS,
-                   sigma_eps1, K_b1, w_b1, logw_b1, mu_b1, Li_b1, log_dets_b1, bhatscaled1, &AK_Basic::_ONE_INT);
+                   sigma_eps1, 
+                   distribution_b, K_b1, w_b1, logw_b1, mu_b1, Li_b1, Q_b1, df_b1, log_dets_b1, bhatscaled1, &AK_Basic::_ONE_INT, &t);
     GLMM::Deviance(GLMMLogL2, marg_ll2_i, pi_ik, cond_ll, cond_ll_i, stres, sqrt_w_phi, 
                    Y_crespP, Y_drespP, dYrespP, eta_fixedrespP, eta_randomrespP, meanYrespP, ZrespP, nrespP, 
                    iwork_GLMM_Deviance, dwork_GLMM_Deviance, err,
                    Y_cresp, Y_dresp, dYresp, eta_fixed2resp, eta_random2resp, meanY2resp, Zresp, nresp,
                    ZS, shift_b, scale_b, q, randIntcpt, q_ri, &dim_b, &LT_b, R_c, R_d, dist, I, N_i, &max_N_i, l_ZS,
-                   sigma_eps2, K_b2, w_b2, logw_b2, mu_b2, Li_b2, log_dets_b2, bhatscaled2, &AK_Basic::_ONE_INT);
+                   sigma_eps2, 
+                   distribution_b, K_b2, w_b2, logw_b2, mu_b2, Li_b2, Q_b2, df_b2, log_dets_b2, bhatscaled2, &AK_Basic::_ONE_INT, &t);
 
 
     /***** Generate replicated data *****/
@@ -723,13 +748,15 @@ GLMM_PED(double*       PED,
                    iwork_GLMM_Deviance, dwork_GLMM_Deviance, err,
                    Y_c_repl1resp, Y_d_repl1resp, dY_repl1resp, eta_fixed1resp, eta_random_repl1resp, meanY_repl1resp, Zresp, nresp,
                    ZS, shift_b, scale_b, q, randIntcpt, q_ri, &dim_b, &LT_b, R_c, R_d, dist, I, N_i, &max_N_i, l_ZS,
-                   sigma_eps1, K_b1, w_b1, logw_b1, mu_b1, Li_b1, log_dets_b1, bscaled_repl1, &AK_Basic::_ONE_INT);
+                   sigma_eps1, 
+                   distribution_b, K_b1, w_b1, logw_b1, mu_b1, Li_b1, Q_b1, df_b1, log_dets_b1, bscaled_repl1, &AK_Basic::_ONE_INT, &t);
     GLMM::Deviance(GLMMLogL_repl2_ch2, marg_ll_repl2_ch2_i, pi_ik, cond_ll, cond_ll_i, stres, sqrt_w_phi, 
                    Y_crespP, Y_drespP, dYrespP, eta_fixedrespP, eta_randomrespP, meanYrespP, ZrespP, nrespP, 
                    iwork_GLMM_Deviance, dwork_GLMM_Deviance, err,
                    Y_c_repl2resp, Y_d_repl2resp, dY_repl2resp, eta_fixed2resp, eta_random_repl2resp, meanY_repl2resp, Zresp, nresp,
                    ZS, shift_b, scale_b, q, randIntcpt, q_ri, &dim_b, &LT_b, R_c, R_d, dist, I, N_i, &max_N_i, l_ZS,
-                   sigma_eps2, K_b2, w_b2, logw_b2, mu_b2, Li_b2, log_dets_b2, bscaled_repl2, &AK_Basic::_ONE_INT);
+                   sigma_eps2, 
+                   distribution_b, K_b2, w_b2, logw_b2, mu_b2, Li_b2, Q_b2, df_b2, log_dets_b2, bscaled_repl2, &AK_Basic::_ONE_INT, &t);
 
 
     /***** Deviances of replicated data, given the other chain                          *****/
@@ -739,13 +766,15 @@ GLMM_PED(double*       PED,
                    iwork_GLMM_Deviance, dwork_GLMM_Deviance, err,
                    Y_c_repl1resp, Y_d_repl1resp, dY_repl1resp, eta_fixed2resp, eta_random_repl1resp, meanY_repl1_ch2resp, Zresp, nresp,
                    ZS, shift_b, scale_b, q, randIntcpt, q_ri, &dim_b, &LT_b, R_c, R_d, dist, I, N_i, &max_N_i, l_ZS,
-                   sigma_eps2, K_b2, w_b2, logw_b2, mu_b2, Li_b2, log_dets_b2, bscaled_repl1, &AK_Basic::_ONE_INT);
+                   sigma_eps2, 
+                   distribution_b, K_b2, w_b2, logw_b2, mu_b2, Li_b2, Q_b2, df_b2, log_dets_b2, bscaled_repl1, &AK_Basic::_ONE_INT, &t);
     GLMM::Deviance(GLMMLogL_repl2_ch1, marg_ll_repl2_ch1_i, pi_ik, cond_ll, cond_ll_i, stres, sqrt_w_phi, 
                    Y_crespP, Y_drespP, dYrespP, eta_fixedrespP, eta_randomrespP, meanYrespP, ZrespP, nrespP, 
                    iwork_GLMM_Deviance, dwork_GLMM_Deviance, err,
                    Y_c_repl2resp, Y_d_repl2resp, dY_repl2resp, eta_fixed1resp, eta_random_repl2resp, meanY_repl2_ch1resp, Zresp, nresp,
                    ZS, shift_b, scale_b, q, randIntcpt, q_ri, &dim_b, &LT_b, R_c, R_d, dist, I, N_i, &max_N_i, l_ZS,
-                   sigma_eps1, K_b1, w_b1, logw_b1, mu_b1, Li_b1, log_dets_b1, bscaled_repl2, &AK_Basic::_ONE_INT);
+                   sigma_eps1, 
+                   distribution_b, K_b1, w_b1, logw_b1, mu_b1, Li_b1, Q_b1, df_b1, log_dets_b1, bscaled_repl2, &AK_Basic::_ONE_INT, &t);
 
 
     /***** Store and calculate all final quantities (loop over grouped observations)    *****/
@@ -845,14 +874,22 @@ GLMM_PED(double*       PED,
     beta1 += l_beta;
     beta2 += l_beta;
 
-    w_b1  += *K_b1;
+    w_b1 += *K_b1;
     w_b2 += *K_b2;
+
+    if (*distribution_b == NMix::MVT){
+      df_b1 += *K_b1;
+      df_b2 += *K_b2;
+    }   
 
     mu_b1 += dim_b * *K_b1;
     mu_b2 += dim_b * *K_b2;
 
     Li_b1 += LT_b * *K_b1;  
     Li_b2 += LT_b * *K_b2;
+
+    Q_b1 += LT_b * *K_b1;  
+    Q_b2 += LT_b * *K_b2;
 
     //K_b1++;   /*** only needed when K_b is random (NOT ALLOWED YET) ***/   
     //K_b2++;   /*** only needed when K_b is random (NOT ALLOWED YET) ***/

@@ -126,6 +126,9 @@ extern "C" {
 //
 //  p_fI_q_rI[4*R]        see GLMM_MCMC.h
 //
+//  distribution_b[1]     assumed distribution of random effects
+//                        * see _Random_effect_dist in GLMM.h 
+//
 //  shiftScale_b[2*dim_b] see GLMM_MCMC.h
 //
 //
@@ -141,6 +144,8 @@ extern "C" {
 //  chmu_b1[dim_b * K_b1 * M]       Sampled mixture means, chain 1
 //
 //  chLi_b1[LT(dim_b) * K_b1 * M]   Cholesky factors of sampled inverse mixture variances, chain 1
+//
+//  chdf_b1[K_b1 * M]               Sampled values of MVT degrees of freedom (chain 1) if it is assumed that b has a MVT distribution
 //
 //  chbeta1[ * M]                   Sampled values of regression coefficients, chain 1
 //
@@ -158,6 +163,8 @@ extern "C" {
 //  chmu_b2[dim_b* K_b2 * M]        Sampled mixture means, chain 2
 //
 //  chLi_b2[LT(dim_b) * K_b2 * M]   Cholesky factors of sampled inverse mixture variances, chain 2
+//
+//  chdf_b2[K_b1 * M]               Sampled values of MVT degrees of freedom (chain 2) if it is assumed that b has a MVT distribution
 //
 //  chbeta2[ * M]                   Sampled values of regression coefficients, chain 2
 //
@@ -197,12 +204,15 @@ GLMM_PED(double*       PED,
          const double* X, 
          double*       Z,                                  // this is in fact const, not declared as const to be able to use **
          const int*    p_fI_q_rI,
-         const double* shiftScale_b,
+         const int*    distribution_b,
+         const double* shiftScale_b,    
          const double* chsigma_eps1,   
          const int*    chK_b1,            
          const double* chw_b1,           
          const double* chmu_b1,
          const double* chLi_b1,
+         const double* chQ_b1,
+         const double* chdf_b1,
          const double* chbeta1,        
          const double* bhat1,
          const double* chsigma_eps2,   
@@ -210,6 +220,8 @@ GLMM_PED(double*       PED,
          const double* chw_b2,           
          const double* chmu_b2,
          const double* chLi_b2,
+         const double* chQ_b2,
+         const double* chdf_b2,
          const double* chbeta2,        
          const double* bhat2,
          const int*    M,

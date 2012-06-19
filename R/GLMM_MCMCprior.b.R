@@ -3,10 +3,10 @@
 ##
 ##             THIS IS A HELP FUNCTION, NOT TO BE CALLED BY ORDINARY USERS
 ##
-##  AUTHOR:    Arnost Komarek (LaTeX: Arno\v{s}t Kom\'arek)
+##  AUTHOR:    Arnošt Komárek (LaTeX: Arno\v{s}t Kom\'arek)
 ##             arnost.komarek[AT]mff.cuni.cz
 ##
-##  CREATED:    05/08/2009
+##  LOG:        20090805
 ##
 ##  FUNCTIONS:  GLMM_MCMCprior.b
 ##
@@ -44,18 +44,29 @@ GLMM_MCMCprior.b <- function(prior.b, scale.b, dimb, iEranefVec, iSDranefVec)
     if (!is.list(prior.b)) stop("prior.b must be a list")
 
     inprior.b <- names(prior.b)
-    ib.priorK   <- match("priorK", inprior.b, nomatch=NA)
-    ib.priormuQ <- match("priormuQ", inprior.b, nomatch=NA)
-    ib.Kmax     <- match("Kmax", inprior.b, nomatch=NA)
-    ib.lambda   <- match("lambda", inprior.b, nomatch=NA)
-    ib.delta    <- match("delta", inprior.b, nomatch=NA)
-    ib.xi       <- match("xi", inprior.b, nomatch=NA)
-    ib.ce       <- match("ce", inprior.b, nomatch=NA)
-    ib.D        <- match("D", inprior.b, nomatch=NA)
-    ib.zeta     <- match("zeta", inprior.b, nomatch=NA)
-    ib.g        <- match("g", inprior.b, nomatch=NA)
-    ib.h        <- match("h", inprior.b, nomatch=NA)                
+    ib.distribution <- match("distribution", inprior.b, nomatch=NA)    
+    ib.priorK       <- match("priorK",       inprior.b, nomatch=NA)
+    ib.priormuQ     <- match("priormuQ",     inprior.b, nomatch=NA)
+    ib.Kmax         <- match("Kmax",         inprior.b, nomatch=NA)
+    ib.lambda       <- match("lambda",       inprior.b, nomatch=NA)
+    ib.delta        <- match("delta",        inprior.b, nomatch=NA)
+    ib.xi           <- match("xi",           inprior.b, nomatch=NA)
+    ib.ce           <- match("ce",           inprior.b, nomatch=NA)
+    ib.D            <- match("D",            inprior.b, nomatch=NA)
+    ib.zeta         <- match("zeta",         inprior.b, nomatch=NA)
+    ib.gD           <- match("gD",           inprior.b, nomatch=NA)
+    ib.hD           <- match("hD",           inprior.b, nomatch=NA)
+    ib.gdf          <- match("gdf",          inprior.b, nomatch=NA)
+    ib.hdf          <- match("hdf",          inprior.b, nomatch=NA)                
+    
 
+    ##### prior.b:  distribution
+    ##### -----------------------------------------------
+    if (is.na(ib.distribution)) prior.b$distribution <- "normal"
+    if (length(prior.b$distribution) != 1) stop("prior.b$distribution must be of length 1")
+    Cbdistribution <- pmatch(prior.b$distribution, table=c("normal", "MVT"), nomatch=0) - 1
+    if (Cbdistribution == -1) stop("prior.b$distribution must be one of normal/MVT")
+    
     ##### prior.b:  priorK
     ##### -----------------------------------------------
     if (is.na(ib.priorK)) prior.b$priorK <- "fixed"
@@ -207,36 +218,54 @@ GLMM_MCMCprior.b <- function(prior.b, scale.b, dimb, iEranefVec, iSDranefVec)
     Cbzeta <- as.numeric(prior.b$zeta)
     names(Cbzeta) <- "zeta"
 
-    ##### prior.b:  g
+    ##### prior.b:  gD
     ##### -----------------------------------------------
-    if (is.na(ib.g)) prior.b$g <- rep(0.2, dimb)
-    if (length(prior.b$g) == 1) prior.b$g <- rep(prior.b$g, dimb)
-    if (length(prior.b$g) != dimb) stop(paste("prior.b$g must be of length ", dimb, sep=""))  
-    if (any(is.na(prior.b$g))) stop("NA in prior.b$g")
-    if (any(prior.b$g <= 0)) stop("prior.b$g must be positive")
-    Cbg <- as.numeric(prior.b$g)
-    names(Cbg) <- paste("g", 1:dimb, sep="")
+    if (is.na(ib.gD)) prior.b$gD <- rep(0.2, dimb)
+    if (length(prior.b$gD) == 1) prior.b$gD <- rep(prior.b$gD, dimb)
+    if (length(prior.b$gD) != dimb) stop(paste("prior.b$gD must be of length ", dimb, sep=""))  
+    if (any(is.na(prior.b$gD))) stop("NA in prior.b$gD")
+    if (any(prior.b$gD <= 0)) stop("prior.b$gD must be positive")
+    CbgD <- as.numeric(prior.b$gD)
+    names(CbgD) <- paste("g", 1:dimb, sep="")
 
-    ##### prior.b:  h
+    ##### prior.b:  hD
     ##### -----------------------------------------------
-    if (is.na(ib.h)) prior.b$h <- 10/(Rbb^2)
-    if (length(prior.b$h) == 1) prior.b$h <- rep(prior.b$h, dimb)
-    if (length(prior.b$h) != dimb) stop(paste("prior.b$h must be of length ", dimb, sep=""))  
-    if (any(is.na(prior.b$h))) stop("NA in prior.b$h")
-    if (any(prior.b$h <= 0)) stop("prior.b$h must be positive")
-    Cbh <- as.numeric(prior.b$h)
-    names(Cbh) <- paste("h", 1:dimb, sep="")
+    if (is.na(ib.hD)) prior.b$hD <- 10/(Rbb^2)
+    if (length(prior.b$hD) == 1) prior.b$hD <- rep(prior.b$hD, dimb)
+    if (length(prior.b$hD) != dimb) stop(paste("prior.b$hD must be of length ", dimb, sep=""))  
+    if (any(is.na(prior.b$hD))) stop("NA in prior.b$hD")
+    if (any(prior.b$hD <= 0)) stop("prior.b$hD must be positive")
+    CbhD <- as.numeric(prior.b$hD)
+    names(CbhD) <- paste("h", 1:dimb, sep="")
+
+    ##### prior.b:  gdf
+    ##### -----------------------------------------------
+    if (is.na(ib.gdf)) prior.b$gdf <- 1
+    if (length(prior.b$gdf) != 1) prior.b$gdf <- prior.b$gdf[1]
+    if (any(is.na(prior.b$gdf))) stop("NA in prior.b$gdf")
+    if (any(prior.b$gdf <= 0)) stop("prior.b$gdf must be positive")
+    Cbgdf <- as.numeric(prior.b$gdf)
+    names(Cbgdf) <- "gdf"
+
+    ##### prior.b:  hdf
+    ##### -----------------------------------------------
+    if (is.na(ib.hdf)) prior.b$hdf <- 0.005
+    if (length(prior.b$hdf) != 1) prior.b$hdf <- prior.b$hdf[1]
+    if (any(is.na(prior.b$hdf))) stop("NA in prior.b$hdf")
+    if (any(prior.b$hdf <= 0)) stop("prior.b$hdf must be positive")
+    Cbhdf <- as.numeric(prior.b$hdf)
+    names(Cbhdf) <- "hdf"
     
     ##### put all together
     ##### -----------------------------------------------
-    CpriorInt_b <- c(CbpriorK, CbpriormuQ, CbKmax)
-    names(CpriorInt_b) <- c("priorK", "priormuQ", "Kmax")  
-    CpriorDouble_b<- c(Cblambda, Cbdelta, Cbxi, Cbce, CbDinv, Cbzeta, Cbg, Cbh)
+    CpriorInt_b <- c(Cbdistribution, CbpriorK, CbpriormuQ, CbKmax)
+    names(CpriorInt_b) <- c("distribution", "priorK", "priormuQ", "Kmax")  
+    CpriorDouble_b<- c(Cblambda, Cbdelta, Cbxi, Cbce, CbDinv, Cbzeta, CbgD, CbhD, Cbgdf, Cbhdf)
   }else{
     prior.b <- list(priorK="fixed", priormuQ="independentC", Kmax=0,
-                    lambda=0, delta=0, xi=0, ce=0, D=0, zeta=0, g=0, h=0)
+                    lambda=0, delta=0, xi=0, ce=0, D=0, zeta=0, gD=0, hD=0, gdf=0, hdf=0)
     CpriorInt_b <- c(0, 1, 0)
-    CpriorDouble_b <- rep(0, 8)
+    CpriorDouble_b <- rep(0, 10)
   }  
 
   RET <- list(prior.b        = prior.b,

@@ -12,16 +12,22 @@
 //             E(T)     = mu for nu > 1
 //             var(T)   = (nu/(nu - 2)) * Sigma for nu > 2
 //
-//             * random numbers, ...
+//             * random numbers, density
 //
 //
 //  AUTHOR:    Arnošt Komárek (LaTeX: Arno\v{s}t Kom\'arek)
 //             arnost.komarek[AT]mff.cuni.cz
 //
-//  LOG:       20111208  created
+//  LOG:       20111208  functions for random numbers generation written
+//             20120124  functions for evaluation of a density added
 //
 //  FUNCTIONS:
-//     * rMVT  20111208:   Random numbers from MVT distribution
+//     * rMVT1           20111208:   Random numbers from MVT distribution  
+//     * ldMVT1          20120124:   Density of the MVT distribution
+//     * deriv_ldMVT_x   20120124
+//     * rMVT1_R         20111208:   Wrapper of rMVT1 to R
+//     * dMVT1_R         20120124:   Wrapper of the ldMVT1 to R
+//
 // 
 // ===================================================================================================
 //
@@ -69,9 +75,82 @@ rMVT1(double*       x,
       const int*    nx);
 
 
+/***** ***************************************************************************************** *****/
+/***** Dist::rMVT1                                                                               *****/
+/***** ***************************************************************************************** *****/
+//
+//  log_dens[1]   INPUT:  whatsever
+//               OUTPUT:  value of the log-density evaluated at x
+//
+//  work[nx]     working array
+//
+//  x[nx]        point to evaluate the density
+//
+//  nu[1]        degrees of freedom of the MVT distribution
+//
+//  mu[nx]       location parameter of the MVT distribution
+//
+//  Li[LT(nx)]   lower triangle of lower triangular matrix Li, where Q = Sigma^{-1} = Li %*% t(Li)
+//
+//  log_dets[1]  log_dets[0] = log(|Q|^{1/2}) = log(|Sigma|^{-1/2}) = sum(log(Li[j,j]))
+//               log_dets[1] = lgamma((nu + nx)/2) - lgamma(nu/2) - (nx/2)*(log(nu) + log(pi)) 
+//
+//  nx[1]        dimension of the MVT distribution 
+//
+void
+ldMVT1(double*       log_dens,
+       double*       work,
+       const double* x,    
+       const double* nu,
+       const double* mu,
+       const double* Li,
+       const double *log_dets,
+       const int*    nx);
+
+
+/***** ***************************************************************************************** *****/
+/***** Dist::deriv_ldMVT_x                                                                       *****/
+/***** ***************************************************************************************** *****/
+//
+//  Function to calculate the first and the second derivatives w.r.t. x
+//  of the (-(nu + p)/2) * log(1 + (t(x-mu) %*% Sigma^{-1} %*% (x-mu))/nu)
+//  part of the log-density of the MVT distribution.
+//  Needed when evaluating the Laplace approximation of the log-likelihood in a model
+//  with random effects having the MVT distribution.
+//
+//  gradient[nx]     INPUT:  whatsever
+//                  OUTPUT:  calculated first derivatives
+//
+//  Hessian[LT(nx)]  INPUT:  whatsever
+//                  OUTPUT:  calculated second derivatives (lower triangle)
+//
+//  x[nx]        point to evaluate the derivatives
+//
+//  nu[1]        degrees of freedom of the MVT distribution
+//
+//  mu[nx]       location parameter of the MVT distribution
+//
+//  Q[LT(nx)]    lower triangle of a symmetric matrix Q = Sigma^{-1}
+//
+//  Li[LT(nx)]   lower triangle of lower triangular matrix Li, where Q = Sigma^{-1} = Li %*% t(Li)
+//
+//  nx[1]        dimension
+//
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+void
+deriv_ldMVT_x(double*       gradient,
+              double*       Hessian,
+              const double* x,    
+              const double* nu,
+              const double* mu,
+              const double* Q,
+              const double* Li,
+              const int*    nx);
+
+
 
 /***** ***************************************************************************************** *****/
 /***** Dist::rMVT1_R                                                                           *****/
@@ -103,6 +182,46 @@ rMVT1_R(double* x,
         const double* nu,
         const double* mu,  
         const int*    nx,
+        const int*    npoints);
+
+
+/***** ***************************************************************************************** *****/
+/***** Dist::dMVT1_R                                                                           *****/
+/***** ***************************************************************************************** *****/
+//
+//  log_dens[1]   INPUT:  whatsever
+//               OUTPUT:  value of the log-density at x values
+//
+//  Q[LT(nx)]     INPUT:  precission matrix Q = Sigma^{-1/2} (its lower traingle)
+//               OUTPUT:  Cholesky decomposition of Q
+//
+//  work[nx]     working array
+//
+//  err[1]       error flag
+//
+//  x[nx, npoints]   values to evaluate the density
+//
+//  unlog[1]     0 if log-density should be returned
+//               1 if density should be returned
+//
+//  nu[1]        degrees of freedom of the MVT distribution
+//
+//  mu[nx]       location parameter of the MVT distribution
+//
+//  nx[1]        dimension of the MVT distribution 
+//
+//  npoints[1]   number of points to evaluate the density
+  //
+void
+dMVT1_R(double*       log_dens,  
+        double*       Q,              
+        double*       work,       
+        int*          err,
+        const double* x,   
+        const int*    unlog,
+        const double* nu,
+        const double* mu,      
+        const int*    nx,     
         const int*    npoints);
 
 #ifdef __cplusplus

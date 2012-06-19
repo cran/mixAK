@@ -1,3 +1,9 @@
+###
+###  Full pdf document describing the code included here is available at
+###  http://www.karlin.mff.cuni.cz/~komarek/software/mixAK/Tandmob.pdf
+###
+### ==============================================================================
+
 ###################################################
 ### chunk number 1: What should be created in this Sweave run
 ###################################################

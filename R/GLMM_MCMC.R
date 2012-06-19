@@ -134,13 +134,16 @@ GLMM_MCMC <- function(y, dist="gaussian", id, x, z, random.intercept,
   intuneMCMC <- names(tuneMCMC)
   itune.alpha <- match("alpha", intuneMCMC, nomatch=NA)
   itune.b    <- match("b", intuneMCMC, nomatch=NA)
-  
+
+  tuneMCMC_alpha_b <- numeric()
   if (dd$Rd){
     if (is.na(itune.alpha)) tuneMCMC$alpha <- rep(1, dd$Rd)
     if (length(tuneMCMC$alpha) == 1) tuneMCMC$alpha <- rep(tuneMCMC$alpha, dd$Rd)
     if (length(tuneMCMC$alpha) != dd$Rd) stop(paste("tuneMCMC$alpha must be of length ", dd$Rd, sep=""))
     if (any(is.na(tuneMCMC$alpha))) stop("NA in tuneMCMC$alpha")        
-    if (any(tuneMCMC$alpha <= 0)) stop("tuneMCMC$alpha must be all positive")            
+    if (any(tuneMCMC$alpha <= 0)) stop("tuneMCMC$alpha must be all positive")
+    
+    tuneMCMC_alpha_b <- c(tuneMCMC_alpha_b, tuneMCMC$alpha)
   }else{
     tuneMCMC$alpha <- 1
   }  
@@ -149,10 +152,14 @@ GLMM_MCMC <- function(y, dist="gaussian", id, x, z, random.intercept,
     if (is.na(itune.b)) tuneMCMC$b <- 1
     if (length(tuneMCMC$b) != 1) stop(paste("tuneMCMC$b must be of length ", 1, sep=""))
     if (any(is.na(tuneMCMC$b))) stop("NA in tuneMCMC$b")        
-    if (any(tuneMCMC$b <= 0)) stop("tuneMCMC$b must be all positive")                
-  }else{
+    if (any(tuneMCMC$b <= 0)) stop("tuneMCMC$b must be all positive")
+
+    tuneMCMC_alpha_b <- c(tuneMCMC_alpha_b, tuneMCMC$b)
+  }else{    
     tuneMCMC$b <- 1
   }  
+
+  if (length(tuneMCMC_alpha_b) == 0) tuneMCMC_alpha_b <- 1
   
   
 ########## ========== store ========== ##########
@@ -174,22 +181,23 @@ GLMM_MCMC <- function(y, dist="gaussian", id, x, z, random.intercept,
   p_fI_q_rI <- c(dd$p, dd$CfixedIntcpt, dd$q, dd$CrandomIntcpt)
   names(p_fI_q_rI) <- paste(rep(c("p", "fixedIntcpt", "q", "randomIntcpt"), each=sum(R_cd)), rep(1:sum(R_cd), 4), sep="")
   
-  Cpar <- list(Y_c               = ifit$Cy_c,
-               Y_d               = ifit$Cy_d,
-               R_cd              = R_cd,
-               dist              = dd$ndist,
-               I                 = ifit$I,
-               n                 = ifit$Cn,
-               sumCn             = ifit$sumCn,
-               X                 = ifit$CX,
-               Z                 = ifit$CZ,
-               p_fI_q_rI         = p_fI_q_rI,
-               priorDouble_eps   = peps$CpriorDouble_eps,
-               priorInt_b        = pbb$CpriorInt_b,
-               priorDouble_b     = pbb$CpriorDouble_b,
-               priorDouble_alpha = palpha$CpriorDouble_alpha,
-               tune_scale_alpha  = tuneMCMC$alpha,
-               tune_scale_b      = tuneMCMC$b)
+  Cpar <- list(Y_c                = ifit$Cy_c,
+               Y_d                = ifit$Cy_d,
+               R_cd               = R_cd,
+               dist               = dd$ndist,
+               I                  = ifit$I,
+               n                  = ifit$Cn,
+               sumCn              = ifit$sumCn,
+               X                  = ifit$CX,
+               Z                  = ifit$CZ,
+               p_fI_q_rI          = p_fI_q_rI,
+               priorDouble_eps    = peps$CpriorDouble_eps,
+               priorInt_b         = pbb$CpriorInt_b,
+               priorDouble_b      = pbb$CpriorDouble_b,
+               priorDouble_alpha  = palpha$CpriorDouble_alpha,
+               tune_scale_alpha   = tuneMCMC$alpha,
+               tune_scale_b       = tuneMCMC$b,               
+               tune_scale_alpha_b = tuneMCMC_alpha_b)
   ifit$Cy_c <- NULL
   ifit$Cy_d <- NULL
   ifit$C_n  <- NULL
@@ -258,19 +266,24 @@ GLMM_MCMC <- function(y, dist="gaussian", id, x, z, random.intercept,
                              X                    = as.double(Cpar$X),
                              Z                    = as.double(Cpar$Z),
                              p_fI_q_rI            = as.integer(Cpar$p_fI_q_rI),
+                             distribution_b       = as.integer(Cpar$priorInt_b["distribution"]),
                              shiftScale_b         = if (dd$dimb) as.double(c(scale.b$shift, scale.b$scale)) else as.double(c(0, 1)),
                              chsigma_eps1         = if (dd$Rc) as.double(t(RET[[1]]$sigma_eps)) else as.double(0),
                              chK_b1               = if (dd$dimb) as.integer(RET[[1]]$K_b) else as.double(0),
                              chw_b1               = if (dd$dimb) as.double(t(RET[[1]]$w_b)) else as.double(0),
                              chmu_b1              = if (dd$dimb) as.double(t(RET[[1]]$mu_b)) else as.double(0),
-                             chLi_b1              = if (dd$dimb) as.double(t(RET[[1]]$Li)) else as.double(0),
+                             chLi_b1              = if (dd$dimb) as.double(t(RET[[1]]$Li_b)) else as.double(0),
+                             chQ_b1               = if (dd$dimb) as.double(t(RET[[1]]$Q_b)) else as.double(0),                 
+                             chdf_b1              = if (dd$dimb & Cpar$priorInt_b["distribution"] == 1) as.double(t(RET[[1]]$df_b)) else as.double(0),
                              chbeta1              = if (dd$lalpha) as.double(t(RET[[1]]$alpha)) else as.double(0),
                              bhat1                = if (dd$dimb) as.double(t(RET[[1]]$poster.mean.profile[, 1:dd$dimb])) else as.double(0),
                              chsigma_eps2         = if (dd$Rc) as.double(t(RET[[2]]$sigma_eps)) else as.double(0),
                              chK_b2               = if (dd$dimb) as.integer(RET[[2]]$K_b) else as.double(0),
                              chw_b2               = if (dd$dimb) as.double(t(RET[[2]]$w_b)) else as.double(0),
                              chmu_b2              = if (dd$dimb) as.double(t(RET[[2]]$mu_b)) else as.double(0),
-                             chLi_b2              = if (dd$dimb) as.double(t(RET[[2]]$Li)) else as.double(0),
+                             chLi_b2              = if (dd$dimb) as.double(t(RET[[2]]$Li_b)) else as.double(0),
+                             chQ_b2               = if (dd$dimb) as.double(t(RET[[2]]$Q_b)) else as.double(0),                 
+                             chdf_b2              = if (dd$dimb & Cpar$priorInt_b["distribution"] == 1) as.double(t(RET[[2]]$df_b)) else as.double(0),
                              chbeta2              = if (dd$lalpha) as.double(t(RET[[2]]$alpha)) else as.double(0),
                              bhat2                = if (dd$dimb) as.double(t(RET[[2]]$poster.mean.profile[, 1:dd$dimb])) else as.double(0),
                              M                    = as.integer(nMCMC["keep"]),

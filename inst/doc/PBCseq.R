@@ -1,3 +1,9 @@
+###
+###  Full pdf document describing the code included here is available at
+###  http://www.karlin.mff.cuni.cz/~komarek/software/mixAK/PBCseq.pdf
+###
+### ==============================================================================
+
 ###################################################
 ### code chunk number 1: Options
 ###################################################

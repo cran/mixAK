@@ -36,11 +36,11 @@ citEntry(entry   = "Article",
          title   = "Clustering for multivariate continuous and discrete longitudinal data",
          author  = "Arno\\v{s}t Kom\\'arek, Lenka Kom\\'arkov\\'a",
          journal = "Submitted for publication",
-         year    = "2011",
+         year    = "2012",
          volume  = "00",
          number  = "0",
          pages   = "000-000",
          doi     = "000000",
-         textVersion = "Komarek, A. and Komarkova, L. (2011).
+         textVersion = "Komarek, A. and Komarkova, L. (2012).
                         Clustering for multivariate continuous and discrete longitudinal data.
                         Submitted for publication.")

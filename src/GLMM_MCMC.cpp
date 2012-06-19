@@ -14,9 +14,9 @@
 extern "C" {
 #endif
 
-  //  int clus_show = 8;     /** global variable for debugging purposes **/
-  //  int iter_show = 1611;
-  //  int iteration = 0;
+      int clus_show = 0;     /** global variable for debugging purposes **/
+      int iter_show = 2;
+      //int iteration;
 
 /***** ***************************************************************************************** *****/
 /***** GLMM_MCMC                                                                                 *****/
@@ -34,8 +34,7 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
           const int*    priorInt_b,           
           const double* priorDouble_b,
           const double* priorDouble_beta, 
-          const double* tune_scale_beta,
-          const double* tune_scale_b,
+          const double* tune_scale_beta_b,
           double* sigma_eps,     
           double* gammaInv_eps,
           int*    K_b,              
@@ -45,6 +44,7 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
           double* Sigma_b,    
           double* Li_b,
           double* gammaInv_b,    
+          double* df_b,
           int*    r_b,
           int*    r_b_first,
           double* beta,          
@@ -58,7 +58,8 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
           double* chQ_b,  
           double* chSigma_b,  
           double* chLi_b,
-          double* chgammaInv_b,  
+          double* chgammaInv_b, 
+          double* chdf_b, 
           int*    chorder_b,          
           int*    chrank_b,
           double* chMeanData_b,      
@@ -112,7 +113,7 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
   const int *R_d    = R_c + 1;
   const int *dist   = R_d + 1;
 
-  const int R   = *R_c + *R_d;                                                          /* total number of response variables                */
+  const int R   = *R_c + *R_d;                                                          /* total number of response variables */
   const int R_I = R * *I;
 
   const int *p           = p_fI_q_rI;
@@ -136,6 +137,9 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
   int dim_b     = AK_Basic::sum(randIntcpt, R) + AK_Basic::sum(q, R);                   /* dimension of random effects                       */
   int LT_b      = (dim_b * (dim_b + 1)) / 2;                                            /* length of lower triangle of matrix dim_b x dim_b  */
 
+  /***** Tuning scale parameters *****/
+  const double *tune_scale_beta = tune_scale_beta_b;
+  const double *tune_scale_b    = tune_scale_beta + *R_d;
 
   /* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
   if (DEBUG == 1) Rprintf((char*)("R=%d, I=%d, N=%d, l_beta=%d, max_p_fi=%d, dim_b=%d, LT_b=%d\n"), R, *I, N, l_beta, max_p_fi, dim_b, LT_b);
@@ -150,24 +154,44 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
   /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/
   /***** Prior distribution for random effects and derived needed parameters *****/
   /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/
-  const int *priorK_b   = priorInt_b;
-  const int *priormuQ_b = priorK_b + 1;
-  const int *Kmax_b     = priormuQ_b + 1;
-  if (*priorK_b > NMix::K_FIXED && dim_b > 1){
-    *err = 1;
-    error("%s: Dimension of the random effects must not be higher than %d when K is random.\n", fname, 1);
-  }
-  switch (*priorK_b){
-  case NMix::K_FIXED:
-    break;
-  case NMix::K_UNIF:
-  case NMix::K_TPOISS:
-    *err = -1;
-    error("%s:  RJ-MCMC for K in the distribution of random effects not (yet) implemented.\n", fname);
-    //break;
-  default:
-    *err = 1;
-    error("%s:  Unimplemented type of the prior for K in the distribution of random effects.\n", fname);
+  const int *distribution_b = priorInt_b;
+  const int *priorK_b       = distribution_b + 1;
+  const int *priormuQ_b     = priorK_b + 1;
+  const int *Kmax_b         = priormuQ_b + 1;
+
+  if (dim_b){
+    switch (*distribution_b){
+    case NMix::NORMAL:
+      break;
+    case NMix::MVT:
+      //*err = 1;
+      warning("%s: Multivariate t-distribution for random effects not (yet) fully implemented. Do not believe the results!!!\n", fname);
+      break;
+    default:
+      *err = 1;
+      error("%s: Unimplemented distribution for random effects specified.\n", fname);    
+    }
+
+    if (dim_b > 1 && *priorK_b > NMix::K_FIXED){
+      *err = 1;
+      error("%s: Dimension of the random effects must not be higher than %d when K is random.\n", fname, 1);
+    }
+    if (*distribution_b != NMix::NORMAL && *priorK_b > NMix::K_FIXED){
+      *err = 1;
+      error("%s: Only normally distributed random effects are allowed when K is random.\n", fname, 1);
+    }
+
+    switch (*priorK_b){
+    case NMix::K_FIXED:
+      break;
+    case NMix::K_UNIF:
+    case NMix::K_TPOISS:
+      *err = -1;
+      error("%s:  RJ-MCMC for K in the distribution of random effects not (yet) implemented.\n", fname);
+    default:
+      *err = 1;
+      error("%s:  Unimplemented type of the prior for K in the distribution of random effects.\n", fname);
+    }
   }  
 
   /*** Functions related to update of means and variances under different priors for (mu, Q) ***/
@@ -213,6 +237,8 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
   const double *zeta_b   = Dinv_b + LT_b * *Kmax_b;
   const double *g_b      = zeta_b + 1;
   const double *h_b      = g_b + dim_b;
+  const double *g_df     = h_b + dim_b;
+  const double *h_df     = g_df + 1;  
 
   double *logK_b       = NULL;            /** log(1), log(2), ..., log(Kmax_b)                                                           **/
   double log_lambda_b[1];                 /** log(lambda_b)                                                                              **/
@@ -247,7 +273,7 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
 
   if (dim_b){
     log_dets_ranef[0] = 0.0;
-    log_dets_ranef[1] = -dim_b * M_LN_SQRT_2PI;
+    log_dets_ranef[1] = -dim_b * M_LN_SQRT_2PI;     // only init, for MVT will be re-calculated when needed
   }
 
 
@@ -322,7 +348,7 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
     XiInv_b    = Calloc(LT_b, double);
     Mean_b     = Calloc(dim_b, double);
     Corr_b     = Calloc(LT_b, double);
-    NMix::init_derived(&dim_b, Kmax_b, K_b, w_b, mu_b, Li_b, shift_b, scale_b, gammaInv_b,   
+    NMix::init_derived(&dim_b, Kmax_b, K_b, distribution_b, w_b, mu_b, Li_b, df_b, shift_b, scale_b, gammaInv_b,   
                        log_dets_b, logw_b, Q_b, Sigma_b, Mean_b, Var_b, Corr_b, chMeanData_b, VarData_b, chCorrData_b,
                        XiInv_b, log_sqrt_detXiInv_b, err);
     if (*err) error("%s:  Something went wrong.\n", fname);
@@ -424,7 +450,10 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
 
   /***** Pointers to start of Y_c, Y_d, meanY, dY, eta_fixed, eta_random, eta_zs, eta, Z, n for each response                      *****/
   /***** Y_crespP, Y_drespP, mean_Y_drespP, dY_drespP, eta_fixedrespP, eta_randomrespP, eta_zsrespP, ZrespP, nrespP will be used   *****/
-  /***** as a working array in function which updates random effects                                                               *****/
+  /***** as a working array in function which updates random effects                                                               *****/  
+  /*****                                                                                                                           *****/
+  /***** nresp[s][i] = number of observations in the s-th response profile for cluster i                                           *****/
+  /***** etc.                                                                                                                      *****/
   double **Y_cresp  = NULL;
   double **Y_crespP = NULL;
   int **Y_dresp  = NULL;
@@ -576,7 +605,7 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
   double *stres      = Calloc(N, double);
   double *sqrt_w_phi = Calloc(N, double);
 
-  double *dwork_GLMM_Deviance = Calloc((max_N_i + dim_b) * (dim_b + 3) + dim_b * 6 + max_N_i * (3 * dim_b + 5) + LT_b, double);
+  double *dwork_GLMM_Deviance = Calloc((max_N_i + dim_b) * (dim_b + 3) + dim_b * 8 + max_N_i * (3 * dim_b + 6) + 3 * LT_b, double);
   int    *iwork_GLMM_Deviance = Calloc(dim_b > 0 ? dim_b : 1, int);
 
   double **stresclus  = Calloc(*I, double*);
@@ -690,7 +719,7 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
     order_b = Calloc(*Kmax_b, int);
     rank_b  = Calloc(*Kmax_b, int);
 
-    NMix::orderComp(order_b, rank_b, dwork_orderComp_b, &AK_Basic::_ZERO_INT, K_b, mu_b, &dim_b);
+    NMix::orderComp(order_b, rank_b, dwork_orderComp_b, &AK_Basic::_ZERO_INT, K_b, mu_b, &dim_b);   // simple ordering using the first elements of mixture means
     AK_Basic::fillArray(order_b + *K_b, 0, *Kmax_b - *K_b);
     AK_Basic::fillArray(rank_b  + *K_b, 0, *Kmax_b - *K_b);
   }
@@ -739,6 +768,7 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
 
   int *chK_bP           = chK_b;
   double *chw_bP        = chw_b;
+  double *chdf_bP       = chdf_b;
   double *chmu_bP       = chmu_b;
   double *chQ_bP        = chQ_b;
   double *chSigma_bP    = chSigma_b;
@@ -753,7 +783,7 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
   double *chbP          = chb;
 
   /***** Related pointers used to loop   *****/
-  const double *w_bP, *mu_bP, *Q_bP, *Sigma_bP, *Li_bP, *gammaInv_bP;
+  const double *w_bP, *df_bP, *mu_bP, *Q_bP, *Sigma_bP, *Li_bP, *gammaInv_bP;
   const int *order_bP, *rank_bP; 
   const double *bP;
   const double *betaP;
@@ -917,12 +947,15 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
     /***** ------------------------------------------------ *****/
 
     /*** GLMM log-likelihood, marginal and conditional ***/
+    //Rprintf("\nalpha <- ");  AK_Basic::printVec4R(beta, l_beta);
     GLMM::Deviance(chGLMMLogLP, marg_ll_i, pi_ik, chLogLP, cond_ll_i, stres, sqrt_w_phi, 
                    Y_crespP, Y_drespP, dYrespP, eta_fixedrespP, eta_randomrespP, meanYrespP, ZrespP, nrespP,
                    iwork_GLMM_Deviance, dwork_GLMM_Deviance, err,
                    Y_cresp,  Y_dresp,  dYresp,  eta_fixedresp,  eta_randomresp,  meanYresp , Zresp,  nresp,
                    ZS, shift_b, scale_b, q, randIntcpt, q_ri, &dim_b, &LT_b, R_c, R_d, dist, I, N_i, &max_N_i, l_ZS,
-                   sigma_eps, K_b, w_b, logw_b, mu_b, Li_b, log_dets_b, bscaled, &AK_Basic::_ONE_INT);
+                   sigma_eps, 
+                   distribution_b, K_b, w_b, logw_b, mu_b, Li_b, Q_b, df_b,
+                   log_dets_b, bscaled, &AK_Basic::_ONE_INT, iter);
     //if (*iter > 110 & *iter < 113){
     //  Rprintf("\nchGLMMLogLP=%g\n, mll <- ", *chGLMMLogLP);
     //  AK_Basic::printVec4R(marg_ll_i, *I);
@@ -937,10 +970,11 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
       chK_bP++;
 
       w_bP     = w_b;
+      df_bP    = df_b;
       mu_bP    = mu_b;
       Q_bP     = Q_b;      
       Sigma_bP = Sigma_b;
-      Li_bP    = Li_b;
+      Li_bP    = Li_b;      
       order_bP = order_b;
       rank_bP  = rank_b;
 
@@ -948,6 +982,12 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
         *chw_bP = *w_bP;
         chw_bP++;
         w_bP++;
+
+        if (*distribution_b == NMix::MVT){
+          *chdf_bP = *df_bP;
+          chdf_bP++;
+          df_bP++;
+        }
 
         for (j = 0; j < dim_b; j++){
           *chmu_bP = *mu_bP;
@@ -987,7 +1027,7 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
       }
 
       /*** Update chMeanData and chCorrData and store them ***/
-      NMix::Moments(Mean_b, Var_b, Corr_b, chMeanData_bP, VarData_b, chCorrData_bP, w_b, mu_b, Sigma_b, K_b, shift_b, scale_b, &dim_b);
+      NMix::Moments(Mean_b, Var_b, Corr_b, chMeanData_bP, VarData_b, chCorrData_bP, distribution_b, w_b, mu_b, Sigma_b, df_b, K_b, shift_b, scale_b, &dim_b);
       chMeanData_bP += dim_b;
       chCorrData_bP += LT_b;
 

@@ -1138,4 +1138,24 @@ chol_solve_backward_system(double* x,  const double* L,  const int* nx,  const i
   return;
 }
 
+
+/***** ********************************************************************************** *****/
+/***** AK_LAPACK::chol2logDet                                                             *****/
+/***** ********************************************************************************** *****/
+void
+chol2logDet(double* logdetL,  const double* L,  const int* p)
+{
+  static int i;
+  static const double *LP;
+
+  LP = L;
+  *logdetL = 0.0;
+  for (i = *p; i > 0; i--){
+    *logdetL += AK_Basic::log0_AK(*LP);
+    LP += i;
+  }
+
+  return;
+}
+
 }  /*** end of namespace AK_LAPACK ***/

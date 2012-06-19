@@ -2,7 +2,7 @@
 //  PURPOSE:   Linear Algebra Package (like-LAPACK)
 //
 //
-//  AUTHOR:    Arnost Komarek (LaTeX: Arno\v{s}t Kom\'arek)
+//  AUTHOR:    Arnošt Komárek (LaTeX: Arno\v{s}t Kom\'arek)
 //             arnost.komarek[AT]mff.cuni.cz
 //
 //  CREATED:   05/11/2007 as AK_Utils.h
@@ -63,6 +63,8 @@
 //                      
 //     * chol_solve_backward_system  12/11/2007:  Solve t(L)*X = B
 //                                                * taken from AK_BLAS_LAPACK.{h,cpp}[glmmAK]
+//
+//     * chol2logDet                 26/01/2012  Log(determinant) from a Cholesky decomposition
 //
 // ======================================================================
 //
@@ -556,6 +558,26 @@ chol_solve_backward(double* x,  const double* L,  const int* nx);
 //
 void
 chol_solve_backward_system(double* x,  const double* L,  const int* nx,  const int* neq);
+
+
+/***** ********************************************************************************** *****/
+/***** AK_LAPACK::chol2logDet                                                             *****/
+/***** ********************************************************************************** *****/
+/*                                                                                            */
+/* Calculate the log(determinant) of a lower triangular matrix L  (Cholesky decomposition).   */
+/* It is assumed that all diagonal elements of L are positive.                                */
+/*                                                                                            */
+//
+//  logdetLtL[1]    INPUT: whatsever
+//                 OUTPUT: log(determinant) of matrix L
+//
+//  L[LT(p)]        lower triangle of the lower triangular matrix
+//
+//  p[1]            number of rows and columns of L
+//
+void
+chol2logDet(double* logdetL,  const double* L,  const int* p);
+
 
 }  /*** end of namespace AK_LAPACK ***/
 

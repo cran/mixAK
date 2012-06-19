@@ -13,6 +13,16 @@
 //
 //     * ddot2            05/11/2007:    Scalar product t(x) %*% x
 //
+//     * vecPlusEqual     25/01/2012:    y += x
+//
+//     * vecMinusEqual    25/01/2012:    y -= x
+//
+//     * vecnumTimesEqual 25/01/2012:    x *= a
+//
+//     * vecPlusvec       25/01/2012:    z = x + y
+//
+//     * vecMinusvec      25/01/2012:    z = x - y
+//
 //     * transposition    12/11/2007:    Transpose a general matrix
 //                                       * taken from AK_BLAS_LAPACK.{h,cpp}[glmmAK]
 //
@@ -130,6 +140,118 @@ ddot2(double* RES, const double* x, const int& nx)
     *RES += (*xP) * (*xP);
   }
 
+  return;
+}
+
+
+/***** ********************************************************************************* *****/
+/***** AK_BLAS::vecPlusEqual:  RES += x                                                  *****/
+/***** ********************************************************************************* *****/
+inline void
+vecPlusEqual(double* RES, const double* x, const int& nx)
+{
+  static int j;
+  static double* RES_P;
+  static const double* xP;
+
+  xP    = x;
+  RES_P = RES;
+  for (j = 0; j < nx; j++){
+    *RES_P += *xP;
+    RES_P++;
+    xP++;
+  }
+ 
+  return;
+}
+
+
+/***** ********************************************************************************* *****/
+/***** AK_BLAS::vecMinusEqual:  RES -= x                                                 *****/
+/***** ********************************************************************************* *****/
+inline void
+vecMinusEqual(double* RES, const double* x, const int& nx)
+{
+  static int j;
+  static double* RES_P;
+  static const double* xP;
+
+  xP    = x;
+  RES_P = RES;
+  for (j = 0; j < nx; j++){
+    *RES_P -= *xP;
+    RES_P++;
+    xP++;
+  }
+ 
+  return;
+}
+
+
+/***** ********************************************************************************* *****/
+/***** AK_BLAS::vecnumTimesEqual:  RES *= a                                              *****/
+/***** ********************************************************************************* *****/
+inline void
+vecnumTimesEqual(double* RES, const double& a, const int& nx)
+{
+  static int j;
+  static double *RES_P;
+
+  RES_P = RES;
+  for (j = 0; j < nx; j++){
+    *RES_P *= a;
+    RES_P++;
+  }
+ 
+  return;
+}
+
+
+
+/***** ********************************************************************************* *****/
+/***** AK_BLAS::vecPlusvec:  RES = x + y                                                 *****/
+/***** ********************************************************************************* *****/
+inline void
+vecPlusvec(double* RES, const double* x, const double* y, const int& nx)
+{
+  static int j;
+  static double *RES_P;
+  static const double *xP, *yP;
+
+  xP    = x;
+  yP    = y;
+  RES_P = RES;
+  for (j = 0; j < nx; j++){
+    *RES_P = *xP + *yP;
+    RES_P++;
+    xP++;
+    yP++;
+  }
+ 
+  return;
+}
+
+
+/***** ********************************************************************************* *****/
+/***** AK_BLAS::vecMinusvec:  RES = x + y                                                *****/
+/***** ********************************************************************************* *****/
+inline void
+vecMinusvec(double* RES, const double* x, const double* y, const int& nx)
+{
+  static int j;
+  static double *RES_P;
+  static const double *xP, *yP;
+
+  xP    = x;
+  yP    = y;
+  RES_P = RES;
+  for (j = 0; j < nx; j++){
+    *RES_P = *xP - *yP;
+    RES_P++;
+    xP++;
+    yP++;
+  }
+ 
   return;
 }
 

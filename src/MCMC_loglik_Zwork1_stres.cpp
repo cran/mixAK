@@ -12,6 +12,7 @@
 
 namespace MCMC{
 
+
 /***** ***************************************************************************************** *****/
 /***** MCMC::loglik_Zwork1_stres (PROTOTYPE 1)                                                  *****/
 /***** ***************************************************************************************** *****/
@@ -542,6 +543,142 @@ loglik(double*  loglik,
     q_ri_s++;
     dist_s++;      
   }                                              /*** end of loop over response profiles ***/
+
+  return;
+}
+
+
+/***** *************************************************** *****/
+/***** MCMC::Zwork1_stres2UI                               *****/
+/***** *************************************************** *****/
+void
+Zwork1_stres2UI(double*  U,
+                double*  I,
+                int*     err,
+                int**    nresp,                      // this is in fact const
+                const double* Zwork1,
+                const double* stres,
+                const double* sqrt_w_phi,
+                const double* ZS,
+                const int* N_i,
+                const int* q_ri,
+                const int* dim_b,
+                const int* dist,
+                const int* R_c,
+                const int* R_d)
+{
+  //int iU, lmI;
+  //Rprintf("\nEntering Zwork1_stres2UI:\n========================\n");
+
+  const char *fname = "MCMC::Zwork1_stres2UI";
+
+  static int s, j, m, l, skip_s, below_s;
+  static double *U_m, *I_lm;
+
+  static const int *dist_s, *q_ri_s;
+  static const double *stres_s, *stres_sj, *sqrt_w_phi_s, *sqrt_w_phi_sj, *ZS_sj, *Zwork1_s, *Zwork1_c1, *Zwork1_c2, *Zwork1P1, *Zwork1P2;
+
+  dist_s = dist;
+  q_ri_s = q_ri; 
+
+  skip_s       = 0;                  // number of rows with zeros in the beginning of columns of Zwork1 for the s-th response
+  below_s      = *dim_b;             // number of rows with zeros at the end of columns of I for the s-th response 
+  stres_s      = stres;
+  sqrt_w_phi_s = sqrt_w_phi;
+  ZS_sj        = ZS;
+  Zwork1_s     = Zwork1;     // the first element (possibly zero) in the first column in Zwork1 which corresponds to s-th response 
+  U_m          = U;            //iU = 0;
+  I_lm         = I;            //lmI = 0;
+
+  for (s = 0; s < *R_c + *R_d; s++){             /*** loop over response profiles ***/
+    below_s -= *q_ri_s;
+    Zwork1_c1 = Zwork1_s + skip_s;
+
+    switch (*dist_s){
+    case GLMM::GAUSS_IDENTITY:
+
+      for (m = 0; m < *q_ri_s; m++){                   // elements of U, columns of I
+        *U_m = 0.0;                          //Rprintf("U[%d]=0\n", iU);
+        stres_sj      = stres_s;
+        sqrt_w_phi_sj = sqrt_w_phi_s;
+        for (j = 0; j < *nresp[s]; j++){
+          *U_m += *stres_sj * *ZS_sj;        //Rprintf("U[%d]+=stres*ZS (%g, %g) \n", iU, *stres_sj, *ZS_sj);
+          ZS_sj++;
+          stres_sj++;
+          sqrt_w_phi_sj++;
+        }
+        U_m++;                               //iU++;
+
+        Zwork1_c2 = Zwork1_c1;
+        for (l = m; l < *q_ri_s; l++){                 // rows of I with non-zero elements
+          *I_lm = 0.0;                       //Rprintf("I[%d]=0\n", lmI);  
+          Zwork1P1 = Zwork1_c1;              
+          Zwork1P2 = Zwork1_c2;
+	  for (j = 0; j < *nresp[s]; j++){
+            *I_lm += *Zwork1P1 * *Zwork1P2;  //Rprintf("I[%d]+=Zwork*Zwork (%g, %g)\n", lmI, *Zwork1P1, *Zwork1P2);
+            Zwork1P1++;
+            Zwork1P2++;
+          }          
+          I_lm++;                            //lmI++;
+          Zwork1_c2 += *N_i;
+        }
+        for (l = 0; l < below_s; l++){  // rows of I with zero elements
+          *I_lm = 0.0;                       //Rprintf("I[%d]=0\n", lmI);  
+          I_lm++;                            //lmI++;
+        }
+        Zwork1_c1 += *N_i;
+      }      
+      break;
+
+    case GLMM::BERNOULLI_LOGIT:
+    case GLMM::POISSON_LOG:
+      for (m = 0; m < *q_ri_s; m++){                   // elements of U, columns of I
+        *U_m = 0.0;                                            //Rprintf("U[%d]=0\n", iU);
+        stres_sj      = stres_s;
+        sqrt_w_phi_sj = sqrt_w_phi_s;
+        for (j = 0; j < *nresp[s]; j++){
+          *U_m += *sqrt_w_phi_sj * *stres_sj * *ZS_sj;         //Rprintf("U[%d]+=sqrtw*stres*ZS (%g, %g, %g) \n", iU, *sqrt_w_phi_sj, *stres_sj, *ZS_sj);
+          ZS_sj++;
+          stres_sj++;
+          sqrt_w_phi_sj++;
+        }
+        U_m++;                                                 //iU++;
+
+        Zwork1_c2 = Zwork1_c1;
+        for (l = m; l < *q_ri_s; l++){                 // rows of I with non-zero elements
+          *I_lm = 0.0;                                         //Rprintf("I[%d]=0\n", lmI);  
+          Zwork1P1 = Zwork1_c1;
+          Zwork1P2 = Zwork1_c2;
+	  for (j = 0; j < *nresp[s]; j++){     
+            *I_lm += *Zwork1P1 * *Zwork1P2;                    //Rprintf("I[%d]+=Zwork*Zwork (%g, %g)\n", lmI, *Zwork1P1, *Zwork1P2);
+            //if (iteration == iter_show) Rprintf("\ns=%d, (%d, %d): += %g * %g", s+1, l+1, m+1, *Zwork1P1, *Zwork1P2);
+            Zwork1P1++;
+            Zwork1P2++;
+          }          
+          I_lm++;                                              //lmI++;
+          Zwork1_c2 += *N_i;
+        }
+        for (l = 0; l < below_s; l++){  // rows of I with zero elements
+          *I_lm = 0.0;                                         //Rprintf("I[%d]=0\n", lmI);  
+          I_lm++;                                              //lmI++;
+        }
+        Zwork1_c1 += *N_i;
+      }      
+      break;
+
+    default:
+      *err = 1;
+      error("%s: Unimplemented distributional type (%d).\n", fname, *dist_s);
+    }
+
+    stres_s      = stres_sj;
+    sqrt_w_phi_s = sqrt_w_phi_sj;
+
+    skip_s   += *nresp[s];
+    Zwork1_s += *N_i * *q_ri_s;    
+    dist_s++;
+    q_ri_s++;
+  }
 
   return;
 }

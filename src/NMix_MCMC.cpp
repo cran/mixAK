@@ -179,6 +179,11 @@ NMix_MCMC(const double* y0,
   const int *priormuQ = priorK + 1; 
   const int *Kmax     = priormuQ + 1; 
 
+  const int distribution[1] = {NMix::NORMAL};
+  double *df;
+  df = Calloc(*Kmax, double);
+  AK_Basic::fillArray(df, 1000, *Kmax);
+
   //const int p_Kmax   = *p * *Kmax;
   //const int LTp_Kmax = LTp * *Kmax;
 
@@ -374,7 +379,8 @@ NMix_MCMC(const double* y0,
   double *VarData  = Calloc(LTp, double);
   double *XiInv    = Calloc(LTp, double);
   double log_sqrt_detXiInv[1];
-  NMix::init_derived(p, Kmax, K, w, mu, Li, shift, scale, gammaInv,   
+  NMix::init_derived(p, Kmax, K, distribution,
+                     w, mu, Li, df, shift, scale, gammaInv,   
                      log_dets, logw, Q, Sigma, chMeanP, Var, chCorrP, chMeanDataP, VarData, chCorrDataP,
                      XiInv, log_sqrt_detXiInv, err);                                                               /* declared in NMix_Utils.h */
   if (*err) error("%s:  Something went wrong.\n", fname);
@@ -847,7 +853,7 @@ NMix_MCMC(const double* y0,
     }
 
     /*** Update chMean and chCorr ***/
-    NMix::Moments(chMeanP, Var, chCorrP, chMeanDataP, VarData, chCorrDataP, w, mu, Sigma, K, shift, scale, p);
+    NMix::Moments(chMeanP, Var, chCorrP, chMeanDataP, VarData, chCorrDataP, distribution, w, mu, Sigma, df, K, shift, scale, p);
     chMeanP     += *p;
     chCorrP     += LTp;
     chMeanDataP += *p;
@@ -1034,6 +1040,7 @@ NMix_MCMC(const double* y0,
   Free(P);
   Free(u);
 
+  Free(df);
   return;
 }    /** end of function MCMC_Nmixture **/
 

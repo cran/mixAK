@@ -3,20 +3,22 @@
 //             and conditional (given random effects) log-likelihood.
 //             Marginal likelihood is calculated using the Laplacian approximation.
 //
-//  AUTHOR:    Arnost Komarek (LaTeX: Arno\v{s}t Kom\'arek)
+//  AUTHOR:    Arnošt Komárek (LaTeX: Arno\v{s}t Kom\'arek)
 //             arnost.komarek[AT]mff.cuni.cz
 //
 //  CREATED:   14/04/2010
 //
 //  FUNCTIONS:  
-//     * GLMM_Deviance   ??/04/2010
-//                       14/06/2010:  log_AK changed to log0_AK and exp_AK changed to exp0_AK
+//     * GLMM_Deviance   201004??
+//                       20100614:  log_AK changed to log0_AK and exp_AK changed to exp0_AK
 //                                    when calculating the log-likelihood
 //                                    -> it leads to finite likelihood even with likelihood of 1e-305
-//                       02/12/2010:  arguments sum_Yd_i and sum_Yd (typically containing sum(log(y!)) for Poisson response)
+//                       20101202:  arguments sum_Yd_i and sum_Yd (typically containing sum(log(y!)) for Poisson response)
 //                                    added to make corrections to log-likelihoods before exp to avoid exp(-Inf)
-//                       02/12/2011:  argument iterate_to_mode added which allows for more than one Newton-Raphson step
+//                       20111202:  argument iterate_to_mode added which allows for more than one Newton-Raphson step
 //                                    when searching (for each k) for the mode of p(y_i | b, psi)*p(b | theta, u_i=k)
+//                       20120125:  implementation for MVT random effects started (finished on 20120126)
+//                       
 //
 //     * TO DO:  
 //       Commands:  *marg_ll_iP += *w_k * AK_Basic::exp0_AK(loglik_k);  (around line 239)
@@ -40,6 +42,9 @@
 
 #include "MCMC_loglik_Zwork1_stres.h"
 #include "MCMC_Moments_NormalApprox_QR.h"
+
+#include "NMix.h"
+#include "Dist_MVT.h"
 
 namespace GLMM{
 
@@ -103,6 +108,7 @@ const int max_stephalf_Deviance = 10;
 //                        >0 --> At most GLMM::max_NRstep_Deviance Newton-Raphson steps are performed when searching for the mode of f(b).
 //                               Iterations stops when |log f(b[t+1]) - log f(b[t])|/|log f(b[t+1])| < GLMM::toler_NRstep_Deviance.
 //                                
+//  iterNum[1]       Iteraion number (for error messages)
 //
 void
 Deviance(double* marg_ll,
@@ -147,14 +153,18 @@ Deviance(double* marg_ll,
          const int*    max_N_i,
          const int*    l_ZS,
          const double* sigma,
+         const int*    distribution_b,
          const int*    K,              
          const double* w,
          const double* logw,
          const double* mu,         
          const double* Li,
+         const double* Q,
+         const double* df,
          const double* log_dets,
          const double* bscaled,
-         const int*    iterate_to_mode);
+         const int*    iterate_to_mode,
+         const int*    iterNum);
 
 }    // end of namespace GLMM
 

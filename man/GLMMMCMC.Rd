@@ -69,7 +69,7 @@ GLMM_MCMC(y, dist="gaussian", id, x, z, random.intercept,
   \item{prior.alpha}{a list which specifies prior distribution for fixed
     effects (not the means of random effects). The prior distribution is
     normal and the user can specify the mean and variances.
-    The list \code{prior.b} can have the components listed below.
+    The list \code{prior.alpha} can have the components listed below.
     \describe{
       \item{mean}{a vector with prior means, defaults to zeros.}
       \item{var}{a vector with prior variances, defaults to 10000 for
@@ -93,8 +93,8 @@ GLMM_MCMC(y, dist="gaussian", id, x, z, random.intercept,
     are given as components of the list \code{scale.b}. The components
     are named:
     \describe{
-      \item{shift}{see vignette PBCseq.pdf for details}
-      \item{scale}{see vignette PBCseq.pdf for details}
+      \item{shift}{see vignette \href{http://www.karlin.mff.cuni.cz/~komarek/software/mixAK/PBCseq.pdf}{PBCseq.pdf} for details}
+      \item{scale}{see vignette \href{http://www.karlin.mff.cuni.cz/~komarek/software/mixAK/PBCseq.pdf}{PBCseq.pdf} for details}
     }          
   }  
   \item{prior.b}{a list which specifies prior distribution for (shifted
@@ -107,6 +107,10 @@ GLMM_MCMC(y, dist="gaussian", id, x, z, random.intercept,
     argument \code{prior} of function \code{\link{NMixMCMC}} (see
     therein for details).
     \describe{
+      \item{distribution}{a character string which specifies the assumed
+        prior distribution for random effects. It can be either
+	\dQuote{normal} (multivaruate normal - default) or \dQuote{MVT}
+	(multivariate Student t distribution).}
       \item{priorK}{a character string which specifies the type of the
 	prior for \eqn{K} (the number of mixture components).
       }
@@ -114,20 +118,45 @@ GLMM_MCMC(y, dist="gaussian", id, x, z, random.intercept,
         prior for mixture means and mixture variances.
       }
       \item{Kmax}{maximal number of mixture components.}
-      \item{lambda}{see vignette PBCseq.pdf for details}
-      \item{delta}{see vignette PBCseq.pdf for details}
-      \item{xi}{see vignette PBCseq.pdf for details}
-      \item{ce}{see vignette PBCseq.pdf for details}
-      \item{D}{see vignette PBCseq.pdf for details}
-      \item{zeta}{see vignette PBCseq.pdf for details}
-      \item{g}{see vignette PBCseq.pdf for details}
-      \item{h}{see vignette PBCseq.pdf for details}            
+      \item{lambda}{see vignette
+	\href{http://www.karlin.mff.cuni.cz/~komarek/software/mixAK/PBCseq.pdf}{PBCseq.pdf} for details}
+      \item{delta}{see vignette
+	\href{http://www.karlin.mff.cuni.cz/~komarek/software/mixAK/PBCseq.pdf}{PBCseq.pdf} for details}
+      \item{xi}{see vignette
+	\href{http://www.karlin.mff.cuni.cz/~komarek/software/mixAK/PBCseq.pdf}{PBCseq.pdf} for details}
+      \item{ce}{see vignette
+	\href{http://www.karlin.mff.cuni.cz/~komarek/software/mixAK/PBCseq.pdf}{PBCseq.pdf} for details}
+      \item{D}{see vignette
+	\href{http://www.karlin.mff.cuni.cz/~komarek/software/mixAK/PBCseq.pdf}{PBCseq.pdf} for details}
+      \item{zeta}{see vignette
+	\href{http://www.karlin.mff.cuni.cz/~komarek/software/mixAK/PBCseq.pdf}{PBCseq.pdf} for details}
+      \item{gD}{see vignette
+	\href{http://www.karlin.mff.cuni.cz/~komarek/software/mixAK/PBCseq.pdf}{PBCseq.pdf} for details}
+      \item{hD}{see vignette
+	\href{http://www.karlin.mff.cuni.cz/~komarek/software/mixAK/PBCseq.pdf}{PBCseq.pdf} for details}
+      \item{gdf}{shape parameter of the prior distribution for the
+	degrees of freedom if the random effects are assumed to follow
+	the MVT distribution}
+      \item{hdf}{rate parameter of the prior distribution for the
+	degrees of freedom if the random effects are assumed to follow
+	the MVT distribution}
     }  
   }
   \item{init.b}{a list with initial values of the first chain for parameters related to the
     distribution of random effects and random effects
     themselves. Sensible initial values are determined by the function
     itself and do not have to be given by the user.
+    \describe{
+      \item{b}{}
+      \item{K}{}
+      \item{w}{}
+      \item{mu}{}
+      \item{Sigma}{}
+      \item{Li}{}
+      \item{gammaInv}{}
+      \item{df}{}
+      \item{r}{}                  
+    }  
   }
   \item{init2.b}{a list with initial values of the second chain for parameters related to the
     distribution of random effects and random effects
@@ -138,9 +167,12 @@ GLMM_MCMC(y, dist="gaussian", id, x, z, random.intercept,
      value leading to weakly informative prior distribution can be
      determined by the function.
      \describe{
-       \item{zeta}{see vignette PBCseq.pdf for details}
-       \item{g}{see vignette PBCseq.pdf for details}
-       \item{h}{see vignette PBCseq.pdf for details}       
+       \item{zeta}{see vignette
+	 \href{http://www.karlin.mff.cuni.cz/~komarek/software/mixAK/PBCseq.pdf}{PBCseq.pdf} for details}
+       \item{g}{see vignette
+	 \href{http://www.karlin.mff.cuni.cz/~komarek/software/mixAK/PBCseq.pdf}{PBCseq.pdf} for details}
+       \item{h}{see vignette
+	 \href{http://www.karlin.mff.cuni.cz/~komarek/software/mixAK/PBCseq.pdf}{PBCseq.pdf} for details}       
      }  
   }
   \item{init.eps}{a list with initial values of the first chain for parameters related to the
@@ -469,7 +501,7 @@ GLMM_MCMC(y, dist="gaussian", id, x, z, random.intercept,
 ## See also additional material available in 
 ## YOUR_R_DIR/library/mixAK/doc/
 ## or YOUR_R_DIR/site-library/mixAK/doc/
-## - files PBCseq.pdf,
+## - files http://www.karlin.mff.cuni.cz/~komarek/software/mixAK/PBCseq.pdf,
 ##         PBCseq.R
 ## ==============================================
 }

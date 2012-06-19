@@ -23,14 +23,15 @@ GLMM_MCMCinit.b <- function(init.b, prior.b, scale.b, id, dimb, LTb, naamLTb, I,
     if (!is.list(init.b)) stop("init.b must be a list")
 
     ininit.b    <- names(init.b)
-    ib.b        <- match("b", ininit.b, nomatch=NA)
-    ib.K        <- match("K", ininit.b, nomatch=NA)
-    ib.w        <- match("w", ininit.b, nomatch=NA)
-    ib.mu       <- match("mu", ininit.b, nomatch=NA)
-    ib.Sigma    <- match("Sigma", ininit.b, nomatch=NA)
-    ib.Li       <- match("Li", ininit.b, nomatch=NA)
+    ib.b        <- match("b",        ininit.b, nomatch=NA)
+    ib.K        <- match("K",        ininit.b, nomatch=NA)
+    ib.w        <- match("w",        ininit.b, nomatch=NA)
+    ib.mu       <- match("mu",       ininit.b, nomatch=NA)
+    ib.Sigma    <- match("Sigma",    ininit.b, nomatch=NA)
+    ib.Li       <- match("Li",       ininit.b, nomatch=NA)
     ib.gammaInv <- match("gammaInv", ininit.b, nomatch=NA)
-    ib.r        <- match("r", ininit.b, nomatch=NA)
+    ib.df       <- match("df",       ininit.b, nomatch=NA)    
+    ib.r        <- match("r",        ininit.b, nomatch=NA)
 
     ##### init.b:  b (not scaled and not shifted!!!)
     ##### ----------------------------------------------------  
@@ -205,13 +206,27 @@ GLMM_MCMCinit.b <- function(init.b, prior.b, scale.b, id, dimb, LTb, naamLTb, I,
     ##### ----------------------------------------------------  
     if (is.na(ib.gammaInv)){
       if (dimb == 1) init.b$gammaInv <- prior.b$zeta * bbVar
-      else              init.b$gammaInv <- prior.b$zeta * diag(bbVar)
+      else           init.b$gammaInv <- prior.b$zeta * diag(bbVar)
     }
     init.b$gammaInv <- as.numeric(init.b$gammaInv)
     if (length(init.b$gammaInv) == 1) init.b$gammaInv <- rep(init.b$gammaInv, dimb)
     if (length(init.b$gammaInv) != dimb) stop(paste("init", number, ".b$gammaInv must be of length ", dimb, sep=""))
     if (any(is.na(init.b$gammaInv))) stop(paste("NA in init", number, ".b$gammaInv"), sep="")
+    if (any(init.b$gammaInv <= 0)) stop(paste("non-positive values in init", number, ".b$gammaInv"), sep="")    
     names(init.b$gammaInv) <- paste("gammaInv", 1:dimb, sep="")
+
+    ##### init.b:  df
+    ##### ----------------------------------------------------  
+    if (is.na(ib.df)){
+      if (prior.b$distribution == "MVT") init.b$df <- rgamma(init.b$K, shape=prior.b$gdf, rate=prior.b$hdf)
+      else                               init.b$df <- rep(1000, init.b$K)
+    }
+    init.b$df <- as.numeric(init.b$df)
+    if (length(init.b$df) == 1) init.b$df <- rep(init.b$df, init.b$K)
+    if (length(init.b$df) != init.b$K) stop(paste("init", number, ".b$df must be of length ", init.b$K, sep=""))
+    if (any(is.na(init.b$df))) stop(paste("NA in init", number, ".b$df"), sep="")
+    if (any(init.b$df <= 0)) stop(paste("non-positive values in init", number, ".b$df"), sep="")        
+    names(init.b$df) <- paste("df", 1:init.b$K, sep="")
     
     ##### init.b:  r
     ##### ----------------------------------------------------  
@@ -243,7 +258,7 @@ GLMM_MCMCinit.b <- function(init.b, prior.b, scale.b, id, dimb, LTb, naamLTb, I,
     if (any(init.b$r < 1) | any(init.b$r > init.b$K)) stop(paste("init", number, ".b$r out of the range (must lie between ", 1, " and ", init.b$K, ")", sep=""))
     names(init.b$r) <- paste("r", 1:I, sep="")    
   }else{
-    init.b <- list(b=0, K=0, w=0, mu=0, Sigma=0, Li=0, gammaInv=0, r=0)
+    init.b <- list(b=0, K=0, w=0, mu=0, Sigma=0, Li=0, gammaInv=0, df=0, r=0)
   }  
   
   return(init.b)
