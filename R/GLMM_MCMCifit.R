@@ -545,11 +545,11 @@ GLMM_MCMCifit <- function(do.init, na.complete,
           iSDranefVec <- c(iSDranefVec, iSDranef[[s]])
           if (ibempty){
             ibMat <- ib[[s]]
-            ibMat2 <- ib[[s]] + matrix(rnorm(nrow(ib[[s]])*ncol(ib[[s]]), mean=0, sd=rep(iSDranef[[s]], each=nrow(ib[[s]]))), ncol=ncol(ib[[s]]))
+            ibMat2 <- ib[[s]] + matrix(rnorm(nrow(ib[[s]])*ncol(ib[[s]]), mean=0, sd=rep(0.1*iSDranef[[s]], each=nrow(ib[[s]]))), ncol=ncol(ib[[s]]))
             ibempty <- FALSE
           }else{
             ibMat <- cbind(ibMat, ib[[s]])
-            ibMat2 <- cbind(ibMat2, ib[[s]] + matrix(rnorm(nrow(ib[[s]])*ncol(ib[[s]]), mean=0, sd=rep(iSDranef[[s]], each=nrow(ib[[s]]))), ncol=ncol(ib[[s]])))
+            ibMat2 <- cbind(ibMat2, ib[[s]] + matrix(rnorm(nrow(ib[[s]])*ncol(ib[[s]]), mean=0, sd=rep(0.1*iSDranef[[s]], each=nrow(ib[[s]]))), ncol=ncol(ib[[s]])))
           }  
         }  
       }
@@ -564,12 +564,12 @@ GLMM_MCMCifit <- function(do.init, na.complete,
       for (s in 1:R){
         if (is.intcpt[s]){
           ialpha  <- c(ialpha, iintcpt[s, "Est"])
-          ialpha2 <- c(ialpha2, rnorm(1, mean=iintcpt[s, "Est"], sd=3*iintcpt[s, "SE"]))
+          ialpha2 <- c(ialpha2, rnorm(1, mean=iintcpt[s, "Est"], sd=1*iintcpt[s, "SE"]))
           iSEalpha <- c(iSEalpha, iintcpt[s, "SE"])
         }  
         if (is.fixef[s]){
           ialpha  <- c(ialpha, ifixef[[s]][, "Est"])
-          ialpha2 <- c(ialpha2, rnorm(nrow(ifixef[[s]]), mean=ifixef[[s]][, "Est"], sd=3*ifixef[[s]][, "SE"]))
+          ialpha2 <- c(ialpha2, rnorm(nrow(ifixef[[s]]), mean=ifixef[[s]][, "Est"], sd=1*ifixef[[s]][, "SE"]))
           iSEalpha <- c(iSEalpha, ifixef[[s]][, "SE"])
         }  
       }  

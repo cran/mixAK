@@ -14,8 +14,8 @@
 extern "C" {
 #endif
 
-      int clus_show = 0;     /** global variable for debugging purposes **/
-      int iter_show = 2;
+      //int clus_show = 0;     /** global variable for debugging purposes **/
+      //int iter_show = 2;
       //int iteration;
 
 /***** ***************************************************************************************** *****/

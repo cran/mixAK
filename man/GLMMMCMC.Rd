@@ -12,7 +12,7 @@
   mixtures in the distributions of random effects.
 }  
 \details{
-  See accompanying papers (Komárek et al., 2010, Komárek and Komárková, 2011).  
+  See accompanying papers (Komárek et al., 2010, Komárek and Komárková, 2012).  
 }  
 \usage{
 GLMM_MCMC(y, dist="gaussian", id, x, z, random.intercept,
@@ -244,9 +244,15 @@ GLMM_MCMC(y, dist="gaussian", id, x, z, random.intercept,
   \item{\dots}{additional arguments passed to the default \code{print} method.}  
 }
 \value{
-  An object of class \code{GLMM_MCMC}. It can have the following
+  An object of class \code{GLMM_MCMClist} (if \code{PED} argument is
+  \code{TRUE}) or \code{GLMM_MCMC} (if \code{PED} argument is
+  \code{FALSE}).
+}
+\section{Object of class GLMM_MCMC}{
+  Object of class \code{GLMM_MCMC} can have the following
   components (some of them may be missing according to the context
   of the model):
+  \describe{  %%% describe
   \item{iter}{index of the last iteration performed.}
   \item{nMCMC}{used value of the argument \code{nMCMC}.}
   \item{dist}{a character vector of length R corresponding to the
@@ -475,13 +481,63 @@ GLMM_MCMC(y, dist="gaussian", id, x, z, random.intercept,
     \code{poster.mean.Sigma_b}, \code{poster.mean.Li_b}. 
   }
   \item{Cpar}{a list with components useful to call underlying C++ functions (not
-    interesting for ordinary users).
-  }  
+    interesting for ordinary users).}
+  }
 }
+\section{Object of class GLMM_MCMClist}{
+  Object of class \code{NMixMCMClist} is the list having two components
+  of class \code{NMixMCMC} representing two parallel chains and
+  additionally the following components:
+  \describe{
+  \item{PED}{values of penalized expected deviance and related
+    quantities. It is a vector with five components: \code{D.expect} \eqn{=}
+    estimated expected deviance, where the estimate is based on two
+    parallel chains; \code{popt} \eqn{=} estimated penalty, where the
+    estimate is based on simple MCMC average based on two parallel
+    chains; \code{PED} \eqn{=} estimated penalized expected deviance
+    \eqn{=} \code{D.expect} \eqn{+} \code{popt}; \code{wpopt} \eqn{=}
+    estimated penalty, where the estimate is based on weighted MCMC average
+    (through importance sampling) based on two parallel chains;
+    \code{wPED} \eqn{=} estimated penalized expected deviance \eqn{=}
+    \code{D.expect} \eqn{+} \code{wpopt}.}
+  \item{D}{posterior mean of the deviance for each subject.}
+  \item{popt}{contributions to the unweighted penalty from each subject.}
+  \item{wpopt}{contributions to the weighted penalty from each subject.}
+  \item{inv.D}{for each subject, number of iterations (in both chains), where the
+    deviance was in fact equal to infinity (when the corresponding
+    density was lower than \code{dens.zero}) and was not taken into account when
+    computing \code{D.expect}.}
+  \item{inv.popt}{for each subject, number of iterations, where the
+    penalty was in fact equal to infinity and was not taken into account
+    when computing \code{popt}.
+  }
+  \item{inv.wpopt}{for each subject, number of iterations, where the
+    importance sampling weight was in fact equal to infinity and was not taken into account
+    when computing \code{wpopt}.}
+  \item{sumISw}{for each subject, sum of importance sampling
+    weights.}
+  \item{Deviance1}{sampled value of the observed data deviance from
+    chain 1}
+  \item{Deviance2}{sampled values of the obserbed data deviance from
+    chain 2}
+  \item{Deviance_repl1_ch1}{sampled values of the deviance of data
+    replicated according to the chain 1 evaluated under the parameters
+    from chain 1}
+  \item{Deviance_repl1_ch2}{sampled values of the deviance of data
+    replicated according to the chain 1 evaluated under the parameters
+    from chain 2}
+  \item{Deviance_repl2_ch1}{sampled values of the deviance of data
+    replicated according to the chain 2 evaluated under the parameters
+    from chain 1}
+  \item{Deviance_repl2_ch2}{sampled values of the deviance of data
+    replicated according to the chain 2 evaluated under the parameters
+    from chain 2}  
+  }
+}  
 \references{
-  Komárek, A. and Komárková, L. (2011).
+  Komárek, A. and Komárková, L. (2012).
   Clustering for Multivariate Continuous and Discrete Longitudinal Data.
-  \emph{Submitted for publication}.
+  \emph{The Annals of Applied Statistics,} to appear.
 
   Komárek, A., Hansen, B. E., Kuiper, E. M. M., van Buuren, H. R., and Lesaffre, E. (2010).
   Discriminant analysis using a multivariate linear mixed model with a normal mixture in the random effects distribution.

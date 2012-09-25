@@ -91,7 +91,7 @@ GLMM_MCMC <- function(y, dist="gaussian", id, x, z, random.intercept,
 ########## ========== Initial values for parameters related to the distribution of error terms of gaussian responses ========== ##########
 ########## ==================================================================================================================== #########
   init.eps  <- GLMM_MCMCinit.eps(init.eps=init.eps,  prior.eps=peps$prior.eps, Rc=dd$Rc, isigma=ifit$isigma[ifit$is.sigma],                        number="")
-  init2.eps <- GLMM_MCMCinit.eps(init.eps=init2.eps, prior.eps=peps$prior.eps, Rc=dd$Rc, isigma=runif(dd$Rc, 0.5, 1.5)*ifit$isigma[ifit$is.sigma], number=2)  
+  init2.eps <- GLMM_MCMCinit.eps(init.eps=init2.eps, prior.eps=peps$prior.eps, Rc=dd$Rc, isigma=runif(dd$Rc, 0.9, 1.1)*ifit$isigma[ifit$is.sigma], number=2)  
   
   
 ########## ========== Initial values for parameters related to the distribution of random effects ========== ##########
@@ -102,8 +102,8 @@ GLMM_MCMC <- function(y, dist="gaussian", id, x, z, random.intercept,
   init2.b <- GLMM_MCMCinit.b(init.b=init2.b, prior.b=pbb$prior.b, scale.b=scale.b, 
                              id=dd$id, dimb=dd$dimb, LTb=dd$LTb, naamLTb=dd$naamLTb,
                              I=ifit$I, ibMat=ifit$ibMat2,
-                             iEranefVec=rnorm(length(ifit$iEranefVec), mean=ifit$iEranefVec, sd=3*ifit$iSEranefVec),
-                             iSDranefVec=runif(length(ifit$iSDranefVec), 0.5, 1.5)*ifit$iSDranefVec,
+                             iEranefVec=rnorm(length(ifit$iEranefVec), mean=ifit$iEranefVec, sd=1*ifit$iSEranefVec),
+                             iSDranefVec=runif(length(ifit$iSDranefVec), 0.9, 1.1)*ifit$iSDranefVec,
                              number=2)
   
   
@@ -223,18 +223,18 @@ GLMM_MCMC <- function(y, dist="gaussian", id, x, z, random.intercept,
       cat(paste("MCMC sampling started on ", date(), ".\n", sep=""))      
       RET <- sfLapply(1:2, GLMM_MCMCwrapper,
                            data=dd,
-                           prior.alpha=palpha$prior.alpha, init.alpha=init.alpha,
-                           scale.b=scale.b, prior.b=pbb$prior.b, init.b=init.b,
-                           prior.eps=peps$prior.eps, init.eps=init.eps,
+                           prior.alpha=palpha$prior.alpha, init.alpha=list(init.alpha, init2.alpha),
+                           scale.b=scale.b, prior.b=pbb$prior.b, init.b=list(init.b, init2.b),
+                           prior.eps=peps$prior.eps, init.eps=list(init.eps, init2.eps),
                            Cpar=Cpar, nMCMC=nMCMC, store=store, keep.chains=keep.chains)
       cat(paste("MCMC sampling finished on ", date(), ".\n", sep=""))      
       sfStop()      
     }else{
       RET <- lapply(1:2, GLMM_MCMCwrapper,
                          data=dd,
-                         prior.alpha=palpha$prior.alpha, init.alpha=init.alpha,
-                         scale.b=scale.b, prior.b=pbb$prior.b, init.b=init.b,
-                         prior.eps=peps$prior.eps, init.eps=init.eps,
+                         prior.alpha=palpha$prior.alpha, init.alpha=list(init.alpha, init2.alpha),
+                         scale.b=scale.b, prior.b=pbb$prior.b, init.b=list(init.b, init2.b),
+                         prior.eps=peps$prior.eps, init.eps=list(init.eps, init2.eps),
                          Cpar=Cpar, nMCMC=nMCMC, store=store, keep.chains=keep.chains)
     }
 
@@ -315,9 +315,9 @@ GLMM_MCMC <- function(y, dist="gaussian", id, x, z, random.intercept,
     class(RET) <- "GLMM_MCMClist"    
   }else{    
     RET <- GLMM_MCMCwrapper(chain=1, data=dd,
-                            prior.alpha=palpha$prior.alpha, init.alpha=init.alpha,
-                            scale.b=scale.b, prior.b=pbb$prior.b, init.b=init.b,
-                            prior.eps=peps$prior.eps, init.eps=init.eps,
+                            prior.alpha=palpha$prior.alpha, init.alpha=list(init.alpha),
+                            scale.b=scale.b, prior.b=pbb$prior.b, init.b=list(init.b),
+                            prior.eps=peps$prior.eps, init.eps=list(init.eps),
                             Cpar=Cpar, nMCMC=nMCMC, store=store, keep.chains=keep.chains)
   }
   

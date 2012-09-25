@@ -455,8 +455,10 @@ NMixMCMC(y0, y1, censor, scale, prior,
   Object of class \code{NMixMCMC} is returned if \code{PED} is
   \code{FALSE}. Object of class \code{NMixMCMClist} is returned if
   \code{PED} is \code{TRUE}. 
-
+}
+\section{Object of class NMixMCMC}{
   Objects of class \code{NMixMCMC} have the following components:
+  \describe{  %%% describe
   \item{iter}{index of the last iteration performed.}
   \item{nMCMC}{used value of the argument \code{nMCMC}.}
   \item{dim}{dimension \eqn{p} of the distribution of data}
@@ -631,9 +633,10 @@ NMixMCMC(y0, y1, censor, scale, prior,
   }
   \item{Cpar}{a list with components useful to call underlying C++ functions (not
     interesting for ordinary users).}
+  }
 }
 \section{Object of class NMixMCMClist}{
-  Objects of class \code{NMixMCMClist} is the list having two components
+  Object of class \code{NMixMCMClist} is the list having two components
   of class \code{NMixMCMC} representing two parallel chains and
   additionally the following components:
   \describe{

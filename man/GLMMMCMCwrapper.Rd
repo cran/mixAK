@@ -21,12 +21,12 @@ GLMM_MCMCwrapper(chain=1, data,
     of this function, usually number like 1, 2, \ldots}
   \item{data}{}
   \item{prior.alpha}{}
-  \item{init.alpha}{}
+  \item{init.alpha}{a list of \code{init.alpha} objects for all chains}
   \item{scale.b}{}
   \item{prior.b}{}
-  \item{init.b}{}
+  \item{init.b}{a list of \code{init.b} objects for all chains}
   \item{prior.eps}{}
-  \item{init.eps}{}
+  \item{init.eps}{a list of \code{init.eps} objects for all chains}
   \item{Cpar}{}
   \item{nMCMC}{}
   \item{store}{}

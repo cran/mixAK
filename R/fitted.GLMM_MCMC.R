@@ -8,6 +8,7 @@
 ##  CREATED:   24/02/2010 (as a stand alone function)
 ##             26/11/2010:  added to the mixAK package
 ##             27/12/2010:  argument statistic added
+##             17/09/2012:  warning for code under overall=TRUE added
 ##
 ##  FUNCTIONS: fitted.GLMM_MCMC
 ##
@@ -20,6 +21,17 @@
 fitted.GLMM_MCMC <- function(object, x, z, statistic=c("median", "mean", "Q1", "Q3", "2.5%", "97.5%"), overall=FALSE,
                              glmer=FALSE, nAGQ=10, x2, z2, ...)
 {
+  if (overall){
+    warning("with overall=FALSE this function might be imprecise.")
+    cat("The fitted longitudinal profiles for response variables are calculated\n")
+    cat("as if the random effects are normally distributed with the mean given\n")
+    cat("by the posterior summary statistic of the random effects overall mean\n")
+    cat("and the covariance matrix given by the posterior summary statistic\n")
+    cat("of the random effects overall covariance matrix.\n")
+    cat("That is, the original normal mixture is approximated\n")
+    cat("by a one-component normal distribution.\n")
+  }  
+  
   statistic <- match.arg(statistic)
   
   if (statistic == "median") Stat <- "Median"
@@ -223,7 +235,7 @@ fitted.GLMM_MCMC <- function(object, x, z, statistic=c("median", "mean", "Q1", "
               fdata <- data.frame(y=rep(1, 2), id=1:2)
               fixef.start <- Eb[k, 1]
               ST.start <- list(matrix(sqrt(Vb[[k]]), nrow=1, ncol=1))     ## contains standard deviation of b              
-              OPT <- options(warn=-1)              
+              OPT <- options(warn=-1)
               fitEY <- glmer(y ~ (1 | id), family=binomial(link=logit), data=fdata, nAGQ=nAGQ,
                              start=list(fixef=fixef.start, ST=ST.start), control=list(maxIter=0))
               options(OPT)              
@@ -275,19 +287,25 @@ fitted.GLMM_MCMC <- function(object, x, z, statistic=c("median", "mean", "Q1", "
             ### Random intercept is the only random effect in a model + there are some fixed effects as well
             if (object$random.intercept[r] & object$q[r] == 0 & object$p[r] > 0){
               mfit[[r]] <- matrix(NA, nrow=nrow(x[[r]]), ncol=K_b)
+              mfit2 <- matrix(NA, nrow=nrow(x[[r]]), ncol=K_b)
               for (k in 1:K_b){                        
                 if (object$dist[r] == "binomial(logit)"){
                   fixef.start <- c(Eb[k, ], alpha_r)
                   ST.start <- list(matrix(sqrt(Vb[[k]]), nrow=1, ncol=1))     ## contains standard deviation of b
                   for (i in 1:nrow(mfit[[r]])){
+
+                    
                     X <- rbind(x[[r]][i,], x2[[r]][i,])
                     colnames(X) <- paste("V", 1:ncol(X), sep="")
                     fdata <- cbind(data.frame(y=rep(1, 2), id=1:2), X)
+                    ###cat("i=", i, ", k=", k, ":\n"); print(fdata)
+                    ###if (i == 1 & k == 1) browser()
                     OPT <- options(warn=-1)              
                     fitEY <- glmer(formula(paste("y ~ ", paste(paste("V", 1:ncol(X), sep=""), collapse=" + ", sep=""), " + (1 | id)", sep="")),
                                            family=binomial(link=logit), data=fdata, nAGQ=nAGQ,
                                            start=list(fixef=fixef.start, ST=ST.start), control=list(maxIter=0))
-                    options(OPT)              
+                    options(OPT)
+                    
                     mfit[[r]][i, k] <- as.numeric(exp(logLik(fitEY) / 2))
                   }
                 }else{
@@ -325,7 +343,7 @@ fitted.GLMM_MCMC <- function(object, x, z, statistic=c("median", "mean", "Q1", "
     }
 
   }     ### end of loop (rr)
- 
+  
   return(fit)  
 }  
 

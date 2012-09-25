@@ -11,8 +11,8 @@
 #include "GLMM_Deviance.h"
 
 //extern int iteration;
-extern int iter_show;
-extern int clus_show;
+//extern int iter_show;
+//extern int clus_show;
 
 namespace GLMM{
 
@@ -307,15 +307,15 @@ Deviance(double* marg_ll,
               /*** Final score and Hessian ***/
 	      AK_BLAS::vecPlusEqual(U_g, U_glmm, *dim_b);
 	      AK_BLAS::vecMinusEqual(H_g, I_glmm, *LT_b);
-              if (i == clus_show && *iterNum == iter_show){
-	        Rprintf("\n(k=%d), g_k(%d)=%g\n", k+1, iter, g_k0); 
+              //if (i == clus_show && *iterNum == iter_show){
+	        //Rprintf("\n(k=%d), g_k(%d)=%g\n", k+1, iter, g_k0); 
                 //Rprintf(" Uglmm  <- "); AK_Basic::printVec4R(U_glmm, *dim_b); 
                 //Rprintf(" Iglmm <- "); AK_Basic::printSP4R(I_glmm, *dim_b); 
                 //Rprintf(" Umvt  <- "); AK_Basic::printVec4R(U_g, *dim_b); 
                 //Rprintf(" Hmvt  <- "); AK_Basic::printSP4R(H_g, *dim_b); 
-                Rprintf(" U <- "); AK_Basic::printVec4R(U_g, *dim_b); 
+	        //Rprintf(" U <- "); AK_Basic::printVec4R(U_g, *dim_b); 
                 //Rprintf(" H <- "); AK_Basic::printSP4R(H_g, *dim_b); 
-              }
+              //}
 
               /*** Newton-Raphson step (store it in U_g) to be subtracted from current value ***/
               /*** !!! dspsv destroys H_g !!!                                                ***/
@@ -381,7 +381,7 @@ Deviance(double* marg_ll,
               /*** ++++++++++++ ***/
               half_factor = 0.5;
               for (stephalf = 0; stephalf < GLMM::max_stephalf_Deviance; stephalf++){
-                if (i == clus_show && *iterNum == iter_show) Rprintf("\n   stephalf no. %d, g_k1 = %g, criter = %g", stephalf, g_k1, criter);
+                //if (i == clus_show && *iterNum == iter_show) Rprintf("\n   stephalf no. %d, g_k1 = %g, criter = %g", stephalf, g_k1, criter);
 
                 switch (*distribution_b){
                 case NMix::NORMAL:
@@ -475,21 +475,21 @@ Deviance(double* marg_ll,
                 /*** Score and Hessian of the MVT part ***/
 	        Dist::deriv_ldMVT_x(U_g, H_g, bscaled_hat, df_k, mu_k, Q_k, Li_k, dim_b);                                              
 
-                if (i == clus_show && *iterNum == iter_show){
-                  Rprintf("\n(k=%d), g_k(maximized)=%g\n", k+1, g_k1); 
-                  Rprintf(" Uglmm  <- "); AK_Basic::printVec4R(U_glmm, *dim_b); 
-                  Rprintf(" Iglmm <- "); AK_Basic::printSP4R(I_glmm, *dim_b); 
-                  Rprintf(" Umvt  <- "); AK_Basic::printVec4R(U_g, *dim_b); 
-                  Rprintf(" Hmvt  <- "); AK_Basic::printSP4R(H_g, *dim_b); 
-                }
+                //if (i == clus_show && *iterNum == iter_show){
+                //  Rprintf("\n(k=%d), g_k(maximized)=%g\n", k+1, g_k1); 
+                //  Rprintf(" Uglmm  <- "); AK_Basic::printVec4R(U_glmm, *dim_b); 
+                //  Rprintf(" Iglmm <- "); AK_Basic::printSP4R(I_glmm, *dim_b); 
+                //  Rprintf(" Umvt  <- "); AK_Basic::printVec4R(U_g, *dim_b); 
+                //  Rprintf(" Hmvt  <- "); AK_Basic::printSP4R(H_g, *dim_b); 
+                //}
 
                 /*** I_glmm -= H_g = minus Hessian, should be positive definite since we are at maximum ***/
 	        AK_BLAS::vecMinusEqual(I_glmm, H_g, *LT_b);
-                if (i == clus_show && *iterNum == iter_show){
-    	          AK_BLAS::vecPlusEqual(U_g, U_glmm, *dim_b);
-                  Rprintf(" U <- "); AK_Basic::printVec4R(U_g, *dim_b); 
-                  Rprintf(" I <- "); AK_Basic::printSP4R(I_glmm, *dim_b); 
-                }
+                //if (i == clus_show && *iterNum == iter_show){
+    	        //  AK_BLAS::vecPlusEqual(U_g, U_glmm, *dim_b);
+                //  Rprintf(" U <- "); AK_Basic::printVec4R(U_g, *dim_b); 
+                //  Rprintf(" I <- "); AK_Basic::printSP4R(I_glmm, *dim_b); 
+                //}
 
                 /*** Cholesky decomposition of the minus Hessian ***/
                 F77_CALL(dpptrf)("L", dim_b, I_glmm, err);   

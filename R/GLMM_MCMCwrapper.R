@@ -26,23 +26,23 @@ GLMM_MCMCwrapper <- function(chain=1, data,
   
   ########## ========== Parameters from inits ========== ##########
   ########## =========================================== ##########
-  Csigma_eps    <- init.eps$sigma
-  CgammaInv_eps <- init.eps$gammaInv
+  Csigma_eps    <- init.eps[[chain]]$sigma
+  CgammaInv_eps <- init.eps[[chain]]$gammaInv
   if (data$dimb){  
-    CK_b <- init.b$K
-    Cw_b <- c(init.b$w, rep(0, prior.b$Kmax - init.b$K))
+    CK_b <- init.b[[chain]]$K
+    Cw_b <- c(init.b[[chain]]$w, rep(0, prior.b$Kmax - init.b[[chain]]$K))
     if (data$dimb == 1){
-      Cmu_b <- c(init.b$mu, rep(0, prior.b$Kmax - init.b$K))
-      CLi_b <- c(init.b$Li, rep(0, prior.b$Kmax - init.b$K))
+      Cmu_b <- c(init.b[[chain]]$mu, rep(0, prior.b$Kmax - init.b[[chain]]$K))
+      CLi_b <- c(init.b[[chain]]$Li, rep(0, prior.b$Kmax - init.b[[chain]]$K))
     
     }else{
-      Cmu_b <- c(t(init.b$mu), rep(0, data$dimb*(prior.b$Kmax - init.b$K)))
-      CLi_b <- c(init.b$Li, rep(0, data$LTb*(prior.b$Kmax - init.b$K)))
+      Cmu_b <- c(t(init.b[[chain]]$mu), rep(0, data$dimb*(prior.b$Kmax - init.b[[chain]]$K)))
+      CLi_b <- c(init.b[[chain]]$Li, rep(0, data$LTb*(prior.b$Kmax - init.b[[chain]]$K)))
     }
-    CgammaInv_b <- init.b$gammaInv
-    Cdf_b <- init.b$df
-    Cr_b  <- init.b$r - 1    
-    Cbb   <- as.numeric(t(init.b$b))
+    CgammaInv_b <- init.b[[chain]]$gammaInv
+    Cdf_b <- init.b[[chain]]$df
+    Cr_b  <- init.b[[chain]]$r - 1    
+    Cbb   <- as.numeric(t(init.b[[chain]]$b))
   }else{
     CK_b        <- 0
     Cw_b        <- 0
@@ -53,7 +53,7 @@ GLMM_MCMCwrapper <- function(chain=1, data,
     Cr_b        <- 0
     Cbb         <- 0
   }  
-  Calpha <- init.alpha
+  Calpha <- init.alpha[[chain]]
     
   
   ########## ========== Some additional parameters ##########
@@ -277,19 +277,18 @@ GLMM_MCMCwrapper <- function(chain=1, data,
               dimb             = data$dimb,
               prior.alpha      = prior.alpha,
               prior.b          = prior.b,
-              prior.eps        = prior.eps,
-              init.eps         = init.eps)
+              prior.eps        = prior.eps)
 
 
   if (data$lalpha){
-    RET$init.alpha        <- init.alpha
+    RET$init.alpha        <- init.alpha[[chain]]
     RET$state.first.alpha <- state_first.alpha    
     RET$state.last.alpha  <- state.alpha
     RET$prop.accept.alpha <- prop.accept.alpha    
   }  
   
   if (data$dimb){
-    RET$init.b  <- init.b
+    RET$init.b  <- init.b[[chain]]
     RET$state.first.b <- list(b        = state_first.b,               
                               K        = as.numeric(MCMC$chK_b[1]),  
                               w        = state_first.w_b,             
@@ -315,7 +314,7 @@ GLMM_MCMCwrapper <- function(chain=1, data,
   }                                 
 
   if (Cpar$R_cd["R_c"]){
-    RET$init.eps <- init.eps
+    RET$init.eps <- init.eps[[chain]]
     RET$state.first.eps <- list(sigma    = state_first.sigma_eps,
                                 gammaInv = state_first.gammaInv_eps)
     RET$state.last.eps <- list(sigma    = state.sigma_eps,

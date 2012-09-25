@@ -1,6 +1,6 @@
 Package: mixAK
-Version: 2.4
-Date: 2012-06-19
+Version: 2.6
+Date: 2012-09-25
 Title: Mixture of methods including mixtures
 Author: Arnošt Komárek <arnost.komarek@mff.cuni.cz>
 Maintainer: Arnošt Komárek <arnost.komarek@mff.cuni.cz>
@@ -11,6 +11,6 @@ Description: This package contains a mixture of statistical methods
 Encoding: UTF-8
 License: GPL (>= 2)
 URL: http://www.karlin.mff.cuni.cz/~komarek
-Packaged: 2012-06-19 08:33:47 UTC; komarek
+Packaged: 2012-09-25 11:28:34 UTC; komarek
 Repository: CRAN
-Date/Publication: 2012-06-19 09:20:04
+Date/Publication: 2012-09-25 11:51:44
