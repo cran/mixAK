@@ -8,7 +8,7 @@
 .onAttach <- function(libname, pkgname)
 #.First.lib <- function(libname, pkgname)
 {
-   library.dynam("mixAK", pkgname, libname)
+   ##library.dynam("mixAK", pkgname, libname)   ## no more needed, load is provided by useDynLib in the NAMESPACE
 
    packageStartupMessage(paste(
        "\n",

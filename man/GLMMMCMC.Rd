@@ -535,7 +535,7 @@ GLMM_MCMC(y, dist="gaussian", id, x, z, random.intercept,
   }
 }  
 \references{
-  Komárek, A. and Komárková, L. (2012).
+  Komárek, A. and Komárková, L. (2013).
   Clustering for Multivariate Continuous and Discrete Longitudinal Data.
   \emph{The Annals of Applied Statistics,} to appear.
 
