@@ -1,6 +1,6 @@
 ###
 ###  Full pdf document describing the code included here is available at
-###  http://www.karlin.mff.cuni.cz/~komarek/software/mixAK/PBCseq.pdf
+###  http://msekce.karlin.mff.cuni.cz/~komarek/software/mixAK/PBCseq.pdf
 ###
 ### ==============================================================================
 
@@ -15,7 +15,7 @@ OPT <- options(width = 135, digits = 3)
 ### code chunk number 5: load package and data
 ###################################################
 library("mixAK")
-data(PBCseq, package="mixAK")
+data("PBCseq", package="mixAK")
 
 
 ###################################################
@@ -113,62 +113,37 @@ names(mod[[1]])
 
 
 ###################################################
-### code chunk number 15: shift vector and scale matrix for chain 1
+### code chunk number 15: shift vector and scale matrix for chains 1 and 2
 ###################################################
 print(mod[[1]]$scale.b)
-
-
-###################################################
-### code chunk number 16: shift vector and scale matrix for chain 2 - the same as for chain 1
-###################################################
 print(mod[[2]]$scale.b)
 
 
 ###################################################
-### code chunk number 17: prior for theta for chain 1
+### code chunk number 17: prior for theta for chains 1 and 2
 ###################################################
 print(mod[[1]]$prior.b)
-
-
-###################################################
-### code chunk number 18: prior for theta for chain 2 - the same as for chain 1
-###################################################
 print(mod[[2]]$prior.b)
 
 
 ###################################################
-### code chunk number 19: prior for alpha for chain 1
+### code chunk number 19: prior for alpha for chains 1 and 2
 ###################################################
 print(mod[[1]]$prior.alpha)
-
-
-###################################################
-### code chunk number 20: prior for alpha for chain 2 - the same as for chain 1
-###################################################
 print(mod[[2]]$prior.alpha)
 
 
 ###################################################
-### code chunk number 21: prior for dispersion parameter for chain 1
+### code chunk number 21: prior for dispersion parameter for chains 1 and 2
 ###################################################
 print(mod[[1]]$prior.eps)
-
-
-###################################################
-### code chunk number 22: prior for dispersion parameter for chain 2 - the same as for chain 1
-###################################################
 print(mod[[2]]$prior.eps)
 
 
 ###################################################
-### code chunk number 23: initial values for random effects and mixture parameters - chain 1
+### code chunk number 23: initial values for random effects and mixture parameters - chains 1 and 2
 ###################################################
 print(mod[[1]]$init.b)
-
-
-###################################################
-### code chunk number 24: initial values for random effects and mixture parameters
-###################################################
 print(mod[[2]]$init.b)
 
 
@@ -238,7 +213,7 @@ modContinue <- GLMM_MCMC(y = PBC910[, c("lbili", "platelet", "spiders")],
     init.eps = mod[[1]]$state.last.eps,
     init2.eps = mod[[2]]$state.last.eps,                   
     nMCMC = c(burn = 0, keep = 1000, thin = 10, info = 100),
-    parallel = FALSE)
+    parallel = TRUE)
 
 
 ###################################################
@@ -316,6 +291,7 @@ tracePlots(mod[[1]], param = "Deviance")
 ###################################################
 ### code chunk number 45: traceplot of fixed effects and residual standard deviation (eval = FALSE)
 ###################################################
+par(mar = c(4, 4, 4, 1) + 0.1, bty = "n")
 tracePlots(mod[[1]], param = "alpha")
 tracePlots(mod[[1]], param = "sigma_eps")
 
@@ -557,8 +533,8 @@ pHPDupper <- matrix(pHPD[, "upper"], ncol=2, byrow=TRUE)
 rownames(pHPDlower) <- rownames(pHPDupper) <- IDS
 #
 groupHPD <- rep(NA, nrow(pHPDlower))
-groupHPD[pHPDlower[, 1] > 0.75] <- 1
-groupHPD[pHPDlower[, 2] > 0.75] <- 2
+groupHPD[pHPDlower[, 1] > 0.5] <- 1
+groupHPD[pHPDlower[, 2] > 0.5] <- 2
 c(table(groupHPD), NAs=sum(is.na(groupHPD)))
 
 
@@ -685,7 +661,7 @@ for (K in 1:4){
   if (K == 2){
     modK <- mod
   }else{    
-    set.seed(20042007)
+    set.seed(20042008)
     modK <- GLMM_MCMC(y = PBC910[, c("lbili", "platelet", "spiders")], 
        dist = c("gaussian", "poisson(log)", "binomial(logit)"), 
        id = PBC910[, "id"],
@@ -698,7 +674,7 @@ for (K in 1:4){
        random.intercept = rep(TRUE, 3),
        prior.b = list(Kmax = K), 
        nMCMC = c(burn = 100, keep = 1000, thin = 10, info = 100),
-       parallel = FALSE)
+       parallel = TRUE)
   }  
   Devs1[[K]] <- modK[["Deviance1"]]
   Devs2[[K]] <- modK[["Deviance2"]]

@@ -9,6 +9,7 @@
 ##              03/08/2009:  version for continuous responses working
 ##              10/11/2009:  version for combined discrete and continuous responses working
 ##              20/01/2011:  beta variables have been re-named to alpha variables
+##              08/02/2013:  snow/snowfall support for parallel computation replaced by parallel package
 ##
 ##  FUNCTIONS:  GLMM_MCMC
 ##
@@ -216,31 +217,27 @@ GLMM_MCMC <- function(y, dist="gaussian", id, x, z, random.intercept,
 ########## ============================== ##########
   if (PED){
     if (parallel){
-      require("snow")
-      require("snowfall")
+      require("parallel")
 
-      sfInit(parallel=TRUE, cpus=2)
-      cat(paste("MCMC sampling started on ", date(), ".\n", sep=""))      
-      RET <- sfLapply(1:2, GLMM_MCMCwrapper,
-                           data=dd,
-                           prior.alpha=palpha$prior.alpha, init.alpha=list(init.alpha, init2.alpha),
-                           scale.b=scale.b, prior.b=pbb$prior.b, init.b=list(init.b, init2.b),
-                           prior.eps=peps$prior.eps, init.eps=list(init.eps, init2.eps),
-                           Cpar=Cpar, nMCMC=nMCMC, store=store, keep.chains=keep.chains)
-      cat(paste("MCMC sampling finished on ", date(), ".\n", sep=""))      
-      sfStop()      
+      if (detectCores() < 2) warning("It does not seem that at least 2 CPU cores are available needed for efficient parallel generation of the two chains.")      
+      cl <- makeCluster(2)      
+      cat(paste("Parallel MCMC sampling of two chains started on ", date(), ".\n", sep=""))      
+      RET <- parLapply(cl, 1:2, GLMM_MCMCwrapper,
+                       data = dd,
+                       prior.alpha = palpha$prior.alpha, init.alpha = list(init.alpha, init2.alpha),
+                       scale.b = scale.b, prior.b = pbb$prior.b, init.b = list(init.b, init2.b),
+                       prior.eps = peps$prior.eps, init.eps = list(init.eps, init2.eps),
+                       Cpar = Cpar, nMCMC = nMCMC, store = store, keep.chains = keep.chains)
+      cat(paste("Parallel MCMC sampling finished on ", date(), ".\n", sep=""))
+      stopCluster(cl)
     }else{
       RET <- lapply(1:2, GLMM_MCMCwrapper,
-                         data=dd,
-                         prior.alpha=palpha$prior.alpha, init.alpha=list(init.alpha, init2.alpha),
-                         scale.b=scale.b, prior.b=pbb$prior.b, init.b=list(init.b, init2.b),
-                         prior.eps=peps$prior.eps, init.eps=list(init.eps, init2.eps),
-                         Cpar=Cpar, nMCMC=nMCMC, store=store, keep.chains=keep.chains)
+                         data = dd,
+                         prior.alpha = palpha$prior.alpha, init.alpha = list(init.alpha, init2.alpha),
+                         scale.b = scale.b, prior.b = pbb$prior.b, init.b = list(init.b, init2.b),
+                         prior.eps = peps$prior.eps, init.eps = list(init.eps, init2.eps),
+                         Cpar = Cpar, nMCMC = nMCMC, store = store, keep.chains = keep.chains)
     }
-
-    #browser()
-    #class(RET) <- "GLMM_MCMClist"        
-    #return(RET)
     
     cat(paste("\nComputation of penalized expected deviance started on ", date(), ".\n", sep=""))
     resPED <- .C("GLMM_PED", PED                  = double(5),

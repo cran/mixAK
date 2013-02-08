@@ -3,7 +3,7 @@
 ##             and normal mixtures in the distribution of random effects
 ##             - wrapper to main simulation to allow vectorized call and parallel computation
 ##
-##  AUTHOR:    Arnošt Komárek (LaTeX: Arno\v{s}t Kom\'arek)
+##  AUTHOR:    Arnost Komarek (LaTeX: Arno\v{s}t Kom\'arek)
 ##             arnost.komarek[AT]mff.cuni.cz
 ##
 ##  LOG:        20111102 created

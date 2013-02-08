@@ -1,7 +1,7 @@
 ##
 ##  PURPOSE:   Random number generation from the multivariate Student t distribution
 ##
-##  AUTHOR:    Arnošt Komárek (LaTeX: Arno\v{s}t Kom\'arek)
+##  AUTHOR:    Arnost Komarek (LaTeX: Arno\v{s}t Kom\'arek)
 ##             arnost.komarek[AT]mff.cuni.cz
 ##
 ##  LOG:       20111208  created

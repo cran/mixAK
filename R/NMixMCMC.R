@@ -5,8 +5,11 @@
 ##             arnost.komarek[AT]mff.cuni.cz
 ##
 ##  CREATED:                  29/10/2007
+##
 ##  IMPORTANT MODIFICATIONS:  03/11/2008  (computation of penalized expected deviance added)
-##                                        (basic support for parallel computation on multicore CPUs added)
+##                                        (basic support for parallel computation on multicore CPUs added using packages snowfall/snow)
+##                            08/02/2013  snow/snowfall support for parallel computation replaced by parallel package
+##
 ##  MINOR MODIFICATION:       26/04/2009  computation of initial values of censored observations
 ##                                        and init2$mu changed (variable tmpsd computed in other way
 ##                                        as suggested by referee of the paper)
@@ -928,22 +931,22 @@ NMixMCMC <- function(y0, y1, censor, scale, prior,
   ########## ============================== ##########
   if (PED){
     if (parallel){
-      require("snow")
-      require("snowfall")
-      
-      sfInit(parallel=TRUE, cpus=2)
-      cat(paste("MCMC sampling started on ", date(), ".\n", sep=""))      
-      RET <- sfLapply(1:2, NMixMCMCwrapper,
-                           scale=scale, prior=prior, inits=list(init, init2), Cpar=Cpar, RJMCMC=RJMCMC, CRJMCMC=CRJMCMC,
-                           actionAll=actionAll, nMCMC=nMCMC, keep.chains=keep.chains, PED=TRUE,
-                           dens.zero=dens.zero)
-      cat(paste("MCMC sampling finished on ", date(), ".\n", sep=""))      
-      sfStop()
+      require("parallel")
+
+      if (detectCores() < 2) warning("It does not seem that at least 2 CPU cores are available needed for efficient parallel generation of the two chains.")      
+      cl <- makeCluster(2)      
+      cat(paste("Parallel MCMC sampling of two chains started on ", date(), ".\n", sep=""))      
+      RET <- parLapply(cl, 1:2, NMixMCMCwrapper,
+                                scale = scale, prior = prior, inits = list(init, init2), Cpar = Cpar, RJMCMC = RJMCMC, CRJMCMC = CRJMCMC,
+                                actionAll = actionAll, nMCMC = nMCMC, keep.chains = keep.chains, PED = TRUE,
+                                dens.zero = dens.zero)
+      cat(paste("Parallel MCMC sampling finished on ", date(), ".\n", sep=""))
+      stopCluster(cl)      
     }else{
       RET <- lapply(1:2, NMixMCMCwrapper,
-                         scale=scale, prior=prior, inits=list(init, init2), Cpar=Cpar, RJMCMC=RJMCMC, CRJMCMC=CRJMCMC,
-                         actionAll=actionAll, nMCMC=nMCMC, keep.chains=keep.chains, PED=TRUE,
-                         dens.zero=dens.zero)
+                         scale = scale, prior = prior, inits = list(init, init2), Cpar = Cpar, RJMCMC = RJMCMC, CRJMCMC = CRJMCMC,
+                         actionAll = actionAll, nMCMC = nMCMC, keep.chains = keep.chains, PED = TRUE,
+                         dens.zero = dens.zero)
     }
     
     cat(paste("\nComputation of penalized expected deviance started on ", date(), ".\n", sep=""))

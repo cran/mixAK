@@ -238,8 +238,8 @@ GLMM_MCMC(y, dist="gaussian", id, x, z, random.intercept,
     deviance related quantities.
   }  
   \item{parallel}{a logical value which indicates whether parallel
-    computation (based on packages \code{snow} and
-    \code{\link[snowfall]{snowfall-a-package}}) should be used when
+    computation (based on a package \code{parallel}) and
+    should be used when
     running two chains for the purpose of \code{PED} calculation}
   \item{\dots}{additional arguments passed to the default \code{print} method.}  
 }

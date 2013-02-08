@@ -1,6 +1,6 @@
 ###
 ###  Full pdf document describing the code included here is available at
-###  http://www.karlin.mff.cuni.cz/~komarek/software/mixAK/Tandmob.pdf
+###  http://msekce.karlin.mff.cuni.cz/~komarek/software/mixAK/Tandmob.pdf
 ###
 ### ==============================================================================
 

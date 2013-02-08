@@ -77,6 +77,5 @@ import(
   lme4,
   mnormt,
   coda,
-  snow,
-  snowfall
+  parallel
 )
