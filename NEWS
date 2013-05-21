@@ -16,6 +16,8 @@ TO DO LIST:
   --> more or less solved on 03/12/2010
 
 ======================================================================================================================
+14/05/2014 (version 3.6):
+Minor changes related to the final JSS submission.
 
 22/09/2013 (version 3.5):
 Gauss-Hermite quadrature inside the fitted.GLMM_MCMC function implemented using the 

@@ -16,7 +16,7 @@
 // ======================================================================
 //
 #ifndef _GLMM_UPDATE_RANDOM_EFFECTS_H_
-#define _GLMM_UPDATE_RANDON_EFFECTS_H_
+#define _GLMM_UPDATE_RANDOM_EFFECTS_H_
 
 #include <R.h>
 #include <Rmath.h>

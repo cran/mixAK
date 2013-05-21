@@ -30,8 +30,8 @@ getProfiles <- function(t, y, id, data)
   RET <- list()
   for (i in 1:nID){
     RET[[i]] <- data.frame(T[(cumID[i]+1):cumID[i+1]])
-    colnames(RET[[i]]) <- t
     RET[[i]] <- cbind(RET[[i]], data[(cumID[i]+1):cumID[i+1], y])
+    colnames(RET[[i]]) <- c(t, y)
   }
   names(RET) <- names(tabID)
   return(RET)

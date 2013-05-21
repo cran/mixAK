@@ -79,8 +79,8 @@ export("rSamplePair")
 importFrom(splines,  "bs")               ## In: BsBasis
 importFrom(mnormt,   "pmnorm")           ## In: NMixPseudoGOF.default
 importFrom(parallel, "detectCores", "makeCluster", "parLapply", "stopCluster")      ## In: GLMM_MCMC, NMixMCMC, NMixRelabel.GLMM_MCMClist
-importFrom(lme4, "lmer", "glmer", "fixef", "VarCorr", "ranef", "glmerControl")      ## In: GLMM_MCMCifit
-importClassesFrom(lme4, "glmerMod", "lmerMod", "merMod")
+#importFrom(lme4, "lmer", "glmer", "fixef", "VarCorr", "ranef", "glmerControl")      ## In: GLMM_MCMCifit
+#importClassesFrom(lme4, "glmerMod", "lmerMod", "merMod")
      ### From lme4, we additionally use: vcov, which is defined in the lme4 (1.0-4) NAMESPACE as:
      ###   importFrom(stats, vcov)
      ###   S3method(vcov, merMod)
@@ -91,4 +91,7 @@ importClassesFrom(lme4, "glmerMod", "lmerMod", "merMod")
 importFrom(fastGHQuad, "gaussHermiteData", "aghQuad")           ## In: fitted.GLMM_MCMC
 
 # Import full packages where more functions are used
+# as of 3.6: I again import full lme4 since selective import above did not import
+# everything needed...
 import(colorspace)
+import(lme4)

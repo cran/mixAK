@@ -44,3 +44,12 @@ citEntry(entry   = "Article",
          textVersion = "Komarek, A. and Komarkova, L. (2013).
                         Clustering for multivariate continuous and discrete longitudinal data.
                         The Annals of Applied Statistics, 7(1), 177-200. doi: 10.1214/12-AOAS580.")
+
+citEntry(entry   = "Article",
+         title   = "Capabilities of R package mixAK for clustering based on multivariate continuous and discrete longitudinal data",
+         author  = "Arno\\v{s}t Kom\\'arek, Lenka Kom\\'arkov\\'a",
+         journal = "Journal of Statistical Software",
+         year    = "2014",
+         textVersion = "Komarek, A. and Komarkova, L. (2014).
+                        Capabilities of R package mixAK for clustering based on multivariate continuous and discrete longitudinal data.
+                        Journal of Statistical Software, accepted for publication.")

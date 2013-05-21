@@ -7,7 +7,7 @@
 \usage{
 \method{fitted}{GLMM_MCMC}(object, x, z,
   statistic=c("median", "mean", "Q1", "Q3", "2.5\%", "97.5\%"),
-  overall=FALSE, glmer=FALSE, nAGQ=100, \dots)
+  overall=FALSE, glmer=TRUE, nAGQ=100, \dots)
 }
 \arguments{
   \item{object}{object of class \code{\link{GLMM_MCMC}}.}

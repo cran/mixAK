@@ -270,9 +270,11 @@ GLMM_MCMCifit <- function(do.init, na.complete,
           
           if (do.init){          
             FORM <- formula(paste("y ~ 1 +", paste(colnames(z[[s]]), collapse=" + "), " + (-1 +", paste(colnames(z[[s]]), collapse=" + "), " | id)"))
+            OPT <- options(warn = -1)                      ### added on 20140521 (version 3.6)
             if (dist[s] %in% c("gaussian"))               ifit <- lme4::lmer(FORM, data=dta)
             else if (dist[s] %in% c("binomial(logit)"))   ifit <- lme4::glmer(FORM, family=binomial(link=logit), data=dta)
-                 else if (dist[s] %in% c("poisson(log)")) ifit <- lme4::glmer(FORM, family=poisson(link=log), data=dta)            
+                 else if (dist[s] %in% c("poisson(log)")) ifit <- lme4::glmer(FORM, family=poisson(link=log), data=dta)
+            options(OPT)                                   ### added on 20140521 (version 3.6)
 
             iintcpt[s, "Est"] <- lme4::fixef(ifit)["(Intercept)"]
             iintcpt[s, "SE"]  <- as.numeric(sqrt(vcov(ifit)[1, 1]))                                           ### lme4::vcov
@@ -292,9 +294,11 @@ GLMM_MCMCifit <- function(do.init, na.complete,
 
             if (do.init){            
               FORM <- formula("y ~ 1 + (1 | id)")
+              OPT <- options(warn = -1)                      ### added on 20140521 (version 3.6)
               if (dist[s] %in% c("gaussian"))               ifit <- lme4::lmer(FORM, data=dta)
               else if (dist[s] %in% c("binomial(logit)"))   ifit <- lme4::glmer(FORM, family=binomial(link=logit), data=dta)
-                   else if (dist[s] %in% c("poisson(log)")) ifit <- lme4::glmer(FORM, family=poisson(link=log), data=dta)                          
+                   else if (dist[s] %in% c("poisson(log)")) ifit <- lme4::glmer(FORM, family=poisson(link=log), data=dta)
+              options(OPT)                                   ### added on 20140521 (version 3.6)              
 
               iintcpt[s, "Est"] <- 0
               iintcpt[s, "SE"]  <- 0
@@ -321,10 +325,12 @@ GLMM_MCMCifit <- function(do.init, na.complete,
               
               if (do.init){              
                 FORM <- formula(paste("y ~ 1 +", paste(colnames(z[[s]]), collapse=" + "), " + (1 +", paste(colnames(z[[s]]), collapse=" + "), " | id)"))
+                OPT <- options(warn = -1)                      ### added on 20140521 (version 3.6)                
                 if (dist[s] %in% c("gaussian"))               ifit <- lme4::lmer(FORM, data=dta)
                 else if (dist[s] %in% c("binomial(logit)"))   ifit <- lme4::glmer(FORM, family=binomial(link=logit), data=dta)
-                     else if (dist[s] %in% c("poisson(log)")) ifit <- lme4::glmer(FORM, family=poisson(link=log), data=dta)                            
-
+                     else if (dist[s] %in% c("poisson(log)")) ifit <- lme4::glmer(FORM, family=poisson(link=log), data=dta)
+                options(OPT)                                   ### added on 20140521 (version 3.6)
+                
                 iintcpt[s, "Est"] <- 0
                 iintcpt[s, "SE"]  <- 0
 
@@ -362,9 +368,11 @@ GLMM_MCMCifit <- function(do.init, na.complete,
           
           if (do.init){          
             FORM <- formula(paste("y ~ 1 +", paste(colnames(x[[s]]), collapse=" + "), " + ", paste(colnames(z[[s]]), collapse=" + "), " + (-1 +", paste(colnames(z[[s]]), collapse=" + "), " | id)"))
+            OPT <- options(warn = -1)                      ### added on 20140521 (version 3.6)           
             if (dist[s] %in% c("gaussian"))               ifit <- lme4::lmer(FORM, data=dta)
             else if (dist[s] %in% c("binomial(logit)"))   ifit <- lme4::glmer(FORM, family=binomial(link=logit), data=dta)
-                 else if (dist[s] %in% c("poisson(log)")) ifit <- lme4::glmer(FORM, family=poisson(link=log), data=dta)                        
+                 else if (dist[s] %in% c("poisson(log)")) ifit <- lme4::glmer(FORM, family=poisson(link=log), data=dta)
+            options(OPT)                                   ### added on 20140521 (version 3.6)            
 
             iintcpt[s, "Est"] <- lme4::fixef(ifit)["(Intercept)"]
             iintcpt[s, "SE"]  <- as.numeric(sqrt(vcov(ifit)[1, 1]))                                                                                  ### lme4::vcov
@@ -392,10 +400,12 @@ GLMM_MCMCifit <- function(do.init, na.complete,
                                                          ### REMOVED ON 20/10/2009
             if (do.init){            
               FORM <- formula(paste("y ~ 1 +", paste(colnames(x[[s]]), collapse=" + "), " + (1 | id)"))
+              OPT <- options(warn = -1)                      ### added on 20140521 (version 3.6)
               if (dist[s] %in% c("gaussian"))               ifit <- lme4::lmer(FORM, data=dta)
               else if (dist[s] %in% c("binomial(logit)"))   ifit <- lme4::glmer(FORM, family=binomial(link=logit), data=dta)
                    else if (dist[s] %in% c("poisson(log)")) ifit <- lme4::glmer(FORM, family=poisson(link=log), data=dta)                          
-            
+              options(OPT)                                   ### added on 20140521 (version 3.6)
+              
               iintcpt[s, "Est"] <- 0
               iintcpt[s, "SE"]  <- 0
 
@@ -424,10 +434,12 @@ GLMM_MCMCifit <- function(do.init, na.complete,
               
               if (do.init){
                 FORM <- formula(paste("y ~ 1 +", paste(colnames(x[[s]]), collapse=" + "), " + ", paste(colnames(z[[s]]), collapse=" + "), " + (1 +", paste(colnames(z[[s]]), collapse=" + "), " | id)"))
+                OPT <- options(warn = -1)                      ### added on 20140521 (version 3.6)
                 if (dist[s] %in% c("gaussian"))               ifit <- lme4::lmer(FORM, data=dta)
                 else if (dist[s] %in% c("binomial(logit)"))   ifit <- lme4::glmer(FORM, family=binomial(link=logit), data=dta)
                      else if (dist[s] %in% c("poisson(log)")) ifit <- lme4::glmer(FORM, family=poisson(link=log), data=dta)                            
-              
+                options(OPT)                                   ### added on 20140521 (version 3.6)
+                
                 iintcpt[s, "Est"] <- 0
                 iintcpt[s, "SE"]  <- 0
 

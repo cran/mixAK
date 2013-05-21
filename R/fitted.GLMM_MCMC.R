@@ -21,7 +21,7 @@
 ## *************************************************************
 ##
 fitted.GLMM_MCMC <- function(object, x, z, statistic=c("median", "mean", "Q1", "Q3", "2.5%", "97.5%"), overall=FALSE,
-                             glmer=FALSE, nAGQ=100, ...)
+                             glmer=TRUE, nAGQ=100, ...)
 {
   if (overall){
     warning("with overall=FALSE this function might be imprecise.")
