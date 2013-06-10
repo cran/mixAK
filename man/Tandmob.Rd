@@ -20,9 +20,9 @@
   al. (2000).
 
   This data set was used in the analyses presented in
-  \eqn{\mbox{Kom\'{a}rek}}{Komarek} et al. (2005), in
-  Lesaffre, \eqn{\mbox{Kom\'{a}rek}}{Komarek}, and Declerck (2005) and in
-  \eqn{\mbox{Kom\'{a}rek}}{Komarek} and Lesaffre (2007).
+  Komárek et al. (2005), in
+  Lesaffre, Komárek, and Declerck (2005) and in
+  Komárek and Lesaffre (2007).
 
   \bold{IMPORTANT NOTICE:} It is possible to use these data for your
   research work under the condition that each manuscript is first
@@ -71,8 +71,7 @@
     }  
   }
   \item{FLUOR}{binary covariate, 0 = no, 1 = yes. This is the covariate
-    \emph{fluorosis} used in the paper \eqn{\mbox{Kom\'{a}rek}}{Komarek}
-    et al. (2005).
+    \emph{fluorosis} used in the paper Komárek et al. (2005).
   }
   \item{BAD.xx}{binary, indicator whether a deciduous tooth xx was
     removed becaues of orthodontical reasons or not.

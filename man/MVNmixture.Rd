@@ -115,11 +115,13 @@ xxSample2 <- xxSample2$x
 par(mfrow=c(2, 2), bty="n")
 plot(xx, yyA, type="l", col="red", xlab="x", ylab="f(x)")
 points(xx, yyB, col="darkblue")
-hist(xxSample, col="lightblue", prob=TRUE, xlab="x", xlim=range(xx), ylim=c(0, max(yyA)), main="Sampled values")
+hist(xxSample, col="lightblue", prob=TRUE, xlab="x", xlim=range(xx), ylim=c(0, max(yyA)),
+     main="Sampled values")
 lines(xx, yyA, col="red")
 plot(xx, yyC, type="l", col="red", xlab="x", ylab="f(x)")
 points(xx, yyD, col="darkblue")
-hist(xxSample2, col="sandybrown", prob=TRUE, xlab="x", xlim=range(xx), ylim=c(0, max(yyA)), main="Sampled values")
+hist(xxSample2, col="sandybrown", prob=TRUE, xlab="x", xlim=range(xx), ylim=c(0, max(yyA)),
+     main="Sampled values")
 lines(xx, yyC, col="red")
 
 
@@ -142,7 +144,8 @@ Xlim <- c(-3, 2.5)
 Ylim <- c(-2.5, 2.5)
 
 mu <- matrix(c(1,1, -1,-1), nrow=2, byrow=TRUE)
-Sigma <- list(diag(c(sd11^2, sd12^2)), matrix(c(sd21^2, rho2*sd21*sd22, rho2*sd21*sd22, sd22^2), nrow=2))
+Sigma <- list(diag(c(sd11^2, sd12^2)),
+              matrix(c(sd21^2, rho2*sd21*sd22, rho2*sd21*sd22, sd22^2), nrow=2))
 Q <- list(chol2inv(chol(Sigma[[1]])), chol2inv(chol(Sigma[[2]])))
 w <- c(0.3, 0.7)
 

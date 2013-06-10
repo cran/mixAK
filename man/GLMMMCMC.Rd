@@ -12,17 +12,17 @@
   mixtures in the distributions of random effects.
 }  
 \details{
-  See accompanying papers (Komárek et al., 2010, Komárek and Komárková, 2012).  
+  See accompanying papers (Komárek et al., 2010, Komárek and Komárková, 2013).  
 }  
 \usage{
-GLMM_MCMC(y, dist="gaussian", id, x, z, random.intercept,
-          prior.alpha, init.alpha, init2.alpha,                      
-          scale.b,     prior.b,    init.b,      init2.b,
-          prior.eps,   init.eps,   init2.eps,
-          nMCMC=c(burn=10, keep=10, thin=1, info=10),
-          tuneMCMC=list(alpha=1, b=1),
-          store=c(b=FALSE), PED=TRUE, keep.chains=TRUE,
-          dens.zero=1e-300, parallel=FALSE)
+GLMM_MCMC(y, dist = "gaussian", id, x, z, random.intercept,
+     prior.alpha, init.alpha, init2.alpha,                      
+     scale.b,     prior.b,    init.b,      init2.b,
+     prior.eps,   init.eps,   init2.eps,
+     nMCMC = c(burn = 10, keep = 10, thin = 1, info = 10),
+     tuneMCMC = list(alpha = 1, b = 1),
+     store = c(b = FALSE), PED = TRUE, keep.chains = TRUE,
+     dens.zero = 1e-300, parallel = FALSE, silent = FALSE)
 
 \method{print}{GLMM_MCMC}(x, \dots)
 
@@ -239,8 +239,9 @@ GLMM_MCMC(y, dist="gaussian", id, x, z, random.intercept,
   }  
   \item{parallel}{a logical value which indicates whether parallel
     computation (based on a package \code{parallel}) and
-    should be used when
-    running two chains for the purpose of \code{PED} calculation}
+    should be used when running two chains for the purpose of \code{PED} calculation.}
+  \item{silent}{a logical value indicating whether the information on
+    the MCMC progress is to be supressed.}
   \item{\dots}{additional arguments passed to the default \code{print} method.}  
 }
 \value{
@@ -536,8 +537,8 @@ GLMM_MCMC(y, dist="gaussian", id, x, z, random.intercept,
 }  
 \references{
   Komárek, A. and Komárková, L. (2013).
-  Clustering for Multivariate Continuous and Discrete Longitudinal Data.
-  \emph{The Annals of Applied Statistics,} to appear.
+  Clustering for multivariate continuous and discrete longitudinal data.
+  \emph{The Annals of Applied Statistics}, \bold{7}(1), 177--200.
 
   Komárek, A., Hansen, B. E., Kuiper, E. M. M., van Buuren, H. R., and Lesaffre, E. (2010).
   Discriminant analysis using a multivariate linear mixed model with a normal mixture in the random effects distribution.

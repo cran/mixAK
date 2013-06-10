@@ -92,7 +92,8 @@ exam2 <- function(n, mu, sigma, rho, a, b, trunc)
   layout(matrix(c(0,1,1,0, 2,2,3,3), nrow=2, byrow=TRUE))
   contour(x1.gr, x2.gr, dens.z, col="darkblue", xlab="x[1]", ylab="x[2]")
   points(x[,1], x[,2], col="red")
-  title(sub=paste("Sample mean = ", MEAN[1], ", ", MEAN[2], ",  Sample SD = ", SD[1], ", ", SD[2], ",  Sample rho = ", RHO, sep=""))
+  title(sub=paste("Sample mean = ", MEAN[1], ", ", MEAN[2], ",  Sample SD = ", SD[1], ", ", SD[2],
+                  ",  Sample rho = ", RHO, sep=""))
   plot(1:n, x[,1], type="l", xlab="Iteration", ylab="x[1]", col="darkgreen")
   plot(1:n, x[,2], type="l", xlab="Iteration", ylab="x[2]", col="darkgreen")
 
@@ -101,15 +102,20 @@ exam2 <- function(n, mu, sigma, rho, a, b, trunc)
 
 x1 <- exam2(1000, mu=c(-1, 1), sigma=c(1, sqrt(2)), rho=0, a=c(-6, -9), b=c(4, 11), trunc=c(3, 3))
 x2 <- exam2(1000, mu=c(-1, 1), sigma=c(1, sqrt(2)), rho=0.7, a=c(-6, -9), b=c(4, 11), trunc=c(3, 3))
-x3 <- exam2(1000, mu=c(-1, 1), sigma=c(1, sqrt(2)), rho=0.7, a=c(-100, -100), b=c(100, 100), trunc=c(3, 3))
-x4 <- exam2(1000, mu=c(-1, 1), sigma=c(1, sqrt(2)), rho=-0.7, a=c(-6, -9), b=c(4, 11), trunc=c(3, 3))
-x5 <- exam2(1000, mu=c(-1, 1), sigma=c(1, sqrt(2)), rho=-0.9, a=c(-6, -9), b=c(4, 11), trunc=c(3, 3))
+x3 <- exam2(1000, mu=c(-1, 1), sigma=c(1, sqrt(2)), rho=0.7, a=c(-100, -100), b=c(100, 100),
+            trunc=c(3, 3))
+x4 <- exam2(1000, mu=c(-1, 1), sigma=c(1, sqrt(2)), rho=-0.7, a=c(-6, -9), b=c(4, 11),
+            trunc=c(3, 3))
+x5 <- exam2(1000, mu=c(-1, 1), sigma=c(1, sqrt(2)), rho=-0.9, a=c(-6, -9), b=c(4, 11),
+            trunc=c(3, 3))
 
 x6 <- exam2(1000, mu=c(-1, 1), sigma=c(1, sqrt(2)), rho=0.7, a=c(0, 0), trunc=c(0, 2))
 x7 <- exam2(1000, mu=c(-1, 1), sigma=c(1, sqrt(2)), rho=0.7, a=c(-1, 1), trunc=c(0, 2))
 x8 <- exam2(1000, mu=c(-1, 1), sigma=c(1, sqrt(2)), rho=0.7, a=c(-1, 1), trunc=c(1, 2))
-x9 <- exam2(1000, mu=c(-1, 1), sigma=c(1, sqrt(2)), rho=0.7, a=c(-1.5, 0.5), b=c(-0.5, 1.5), trunc=c(3, 3))
-x10 <- exam2(1000, mu=c(-1, 1), sigma=c(1, sqrt(2)), rho=0.7, a=c(-1.5, 0.5), b=c(-0.5, 1.5), trunc=c(4, 3))
+x9 <- exam2(1000, mu=c(-1, 1), sigma=c(1, sqrt(2)), rho=0.7, a=c(-1.5, 0.5), b=c(-0.5, 1.5),
+            trunc=c(3, 3))
+x10 <- exam2(1000, mu=c(-1, 1), sigma=c(1, sqrt(2)), rho=0.7, a=c(-1.5, 0.5), b=c(-0.5, 1.5),
+             trunc=c(4, 3))
 }
 }
 \keyword{distribution}

@@ -62,9 +62,18 @@ GLMM_MCMCdata <- function(y, dist, id, time, x, z, random.intercept)
   TAB.RESP <- c("gaussian", "binomial(logit)", "poisson(log)")
   if (length(dist) == 1) dist <- rep(dist, R)
   if (length(dist) != R) stop("dist argument has incorrect length")
-  ndist <- pmatch(dist, table=TAB.RESP, nomatch=0, duplicates.ok=TRUE)
-  if (any(!ndist)) stop(paste("dist must all be from ", paste(paste("\"", TAB.RESP, "\"", sep=""), collapse=", "), sep=""))
+  ndist <- pmatch(dist, table = c(TAB.RESP, "binomial (logit)", "poisson (log)"), nomatch = 0, duplicates.ok = TRUE)
+  ndist[ndist == 4] <- 2  
+  ndist[ndist == 5] <- 3
+  if (any(!ndist)) stop(paste("Incorrect dist argument, possible dist values are: ", paste(paste("\"", TAB.RESP, "\"", sep=""), collapse=", "), ".", sep=""))
   ndist <- ndist - 1   ## 0 = gaussian etc.
+
+  ### Make dist a full string (added on 20130311)
+  dist <- as.character(rep(NA, length(ndist)))
+  for (i in 1:length(ndist)) dist[i] <- switch (as.character(ndist[i]),
+                                                "0" = "gaussian",
+                                                "1" = "binomial(logit)",
+                                                "2" = "poisson(log)")
   
   Rc <- sum(ndist %in% c(0))
   Rd <- sum(ndist %in% c(1, 2))
@@ -120,7 +129,8 @@ GLMM_MCMCdata <- function(y, dist, id, time, x, z, random.intercept)
   p <- rep(0, R)
   for (s in 1:R){
     if (!is.matrix(x[[s]]) & !is.data.frame(x[[s]])){
-      if (x[[s]][1] == "empty"){
+      if (is.character(x[[s]][1])){
+        if (x[[s]][1] != "empty") stop("x[[", s, "]] is character not being equal to ", dQuote("empty"), ". The only possible character value is ", dQuote("empty"), ".", sep = "")
         xempty[s] <- TRUE
         p[s] <- 0
         next
@@ -151,7 +161,8 @@ GLMM_MCMCdata <- function(y, dist, id, time, x, z, random.intercept)
   q <- rep(0, R)
   for (s in 1:R){
     if (!is.matrix(z[[s]]) & !is.data.frame(z[[s]])){
-      if (z[[s]][1] == "empty"){
+      if (is.character(z[[s]][1])){
+        if (z[[s]][1] != "empty") stop("z[[", s, "]] is character not being equal to ", dQuote("empty"), ". The only possible character value is ", dQuote("empty"), ".", sep = "")
         zempty[s] <- TRUE
         q[s] <- 0
         next

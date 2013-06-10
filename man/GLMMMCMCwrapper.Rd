@@ -10,11 +10,12 @@
   THIS FUNCTION IS NOT TO BE CALLED BY ORDINARY USERS.
 }  
 \usage{
-GLMM_MCMCwrapper(chain=1, data,
+GLMM_MCMCwrapper(chain = 1, data,
      prior.alpha, init.alpha,
      scale.b, prior.b, init.b,
      prior.eps, init.eps,
-     Cpar, nMCMC, store, keep.chains)
+     Cpar, nMCMC, store, keep.chains,
+     silent)
 }
 \arguments{
   \item{chain}{identification of the chain sampled in a particular call
@@ -30,7 +31,8 @@ GLMM_MCMCwrapper(chain=1, data,
   \item{Cpar}{}
   \item{nMCMC}{}
   \item{store}{}
-  \item{keep.chains}{}      
+  \item{keep.chains}{}
+  \item{silent}{}        
 }  
 \value{
   A list having almost the same components as object returned by

@@ -21,13 +21,14 @@
 \usage{
 NMixRelabel(object, type=c("mean", "weight", "stephens"), par, \dots)
 
-\method{NMixRelabel}{default}(object, type=c("mean", "weight", "stephens"), par, \dots)
+\method{NMixRelabel}{default}(object, type = c("mean", "weight", "stephens"), par, \dots)
 
-\method{NMixRelabel}{NMixMCMC}(object, type=c("mean", "weight","stephens"), par,
-   prob=c(0.025, 0.5, 0.975), keep.comp.prob=FALSE, info, \dots)
+\method{NMixRelabel}{NMixMCMC}(object, type = c("mean", "weight","stephens"), par,
+   prob=c(0.025, 0.5, 0.975), keep.comp.prob = FALSE, info, \dots)
 
-\method{NMixRelabel}{GLMM_MCMC}(object, type=c("mean", "weight", "stephens"), par,
-   prob=c(0.025, 0.5, 0.975), keep.comp.prob=FALSE, info, \dots)
+\method{NMixRelabel}{GLMM_MCMC}(object, type = c("mean", "weight", "stephens"), par,
+   prob = c(0.025, 0.5, 0.975), keep.comp.prob = FALSE, info,
+   silent = FALSE, \dots)
 }
 \arguments{
   \item{object}{an object of apropriate class.}
@@ -63,6 +64,8 @@ NMixRelabel(object, type=c("mean", "weight", "stephens"), par, \dots)
   \item{info}{number which specifies frequency used to re-display the
     iteration counter during the computation.
   }
+  \item{silent}{a logical value indicating whether the information on
+    the MCMC progress is to be supressed.}  
   \item{\dots}{optional additional arguments.}
 }  
 \value{

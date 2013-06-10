@@ -68,9 +68,10 @@ extern "C" {
 //
 //  Y_d[]:                   discrete integer response
 //
-//  keepChain_nMCMC_R_cd_dist[]:
-//                           0: keepChain = 0/1 indicating whether we should keep chains of "optional" parameters
-//                              keepChain[0] = keep sampled values of random effects?
+//  nonSilent_keepChain_nMCMC_R_cd_dist[]:
+//                           0: nonSilent, if != 0 then messages are printed during MCMC
+//                           +1: keepChain = 0/1 indicating whether we should keep chains of "optional" parameters
+//                               keepChain[0] = keep sampled values of random effects?
 //                           +1: nMCMC[4] = length of MCMC, see NMix_MCMC.h
 //                           +4: R_c = number of continuous response variables
 //                           +1: R_d = number of discrete response variables
@@ -359,7 +360,7 @@ extern "C" {
 void
 GLMM_MCMC(double*       Y_c,                                // this is in fact const, not declared as const to be able to use **
           int*          Y_d,                                // this is in fact const, not declared as const to be able to use **
-          const int*    keepChain_nMCMC_R_cd_dist,  
+          const int*    nonSilent_keepChain_nMCMC_R_cd_dist,  
           int*          I_n,                                // this is in fact const, not declared as const to be able to use **
           const double* X, 
           double*       Z,                                  // this is in fact const, not declared as const to be able to use **

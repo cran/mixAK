@@ -24,7 +24,7 @@ extern "C" {
 void
 GLMM_MCMC(double*       Y_c,                                // this is in fact const, not declared as const to be able to use **
           int*          Y_d,                                // this is in fact const, not declared as const to be able to use **
-          const int*    keepChain_nMCMC_R_cd_dist,  
+          const int*    nonSilent_keepChain_nMCMC_R_cd_dist,  
           int*          I_n,                                // this is in fact const, not declared as const to be able to use **
           const double* X, 
           double*       Z,                                  // this is in fact const, not declared as const to be able to use **
@@ -103,15 +103,16 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
   const int *I = I_n;
   int       *n = I_n + 1;
 
-  /***** Storage of optional parameters, length of MCMC, addtional dimensionality parameters *****/
-  const int *keep_b = keepChain_nMCMC_R_cd_dist;  
-  const int *Mburn  = keep_b + 1;
-  const int *Mkeep  = Mburn + 1;
-  const int *Mthin  = Mkeep + 1;
-  const int *Minfo  = Mthin + 1;
-  const int *R_c    = Minfo + 1;
-  const int *R_d    = R_c + 1;
-  const int *dist   = R_d + 1;
+  /***** Storage of optional parameters, length of MCMC, addtional parameters *****/
+  const int *nonSilent = nonSilent_keepChain_nMCMC_R_cd_dist;
+  const int *keep_b    = nonSilent + 1;  
+  const int *Mburn     = keep_b + 1;
+  const int *Mkeep     = Mburn + 1;
+  const int *Mthin     = Mkeep + 1;
+  const int *Minfo     = Mthin + 1;
+  const int *R_c       = Minfo + 1;
+  const int *R_d       = R_c + 1;
+  const int *dist      = R_d + 1;
 
   const int R   = *R_c + *R_d;                                                          /* total number of response variables */
   const int R_I = R * *I;
@@ -142,7 +143,7 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
   const double *tune_scale_b    = tune_scale_beta + *R_d;
 
   /* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
-  if (DEBUG == 1) Rprintf((char*)("R=%d, I=%d, N=%d, l_beta=%d, max_p_fi=%d, dim_b=%d, LT_b=%d\n"), R, *I, N, l_beta, max_p_fi, dim_b, LT_b);
+  //if (DEBUG == 1) Rprintf((char*)("R=%d, I=%d, N=%d, l_beta=%d, max_p_fi=%d, dim_b=%d, LT_b=%d\n"), R, *I, N, l_beta, max_p_fi, dim_b, LT_b);
   /* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 
 
@@ -826,10 +827,10 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
 
   /***** Burn-in                                          *****/
   /***** ------------------------------------------------ *****/
-  Rprintf((char*)("Burn-in iteration "));
+  if (*nonSilent) Rprintf((char*)("Burn-in iteration "));
   while (*iter < lastIterBurn){
     (*iter)++;
-    AK_Utils::printIterInfo(writeAll, backs, *iter, *Minfo, lastIterBurn);
+    if (*nonSilent) AK_Utils::printIterInfo(writeAll, backs, *iter, *Minfo, lastIterBurn);
 
     /***** Thinning loop *****/    
     for (witer = 0; witer < *Mthin; witer++){
@@ -875,7 +876,7 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
       }
     }  /** end of thinning loop (for (witer)) **/
   }  /** end of burn-in (while (*iter < lastIterBurn)) **/
-  Rprintf((char*)("\n"));
+  if (*nonSilent) Rprintf((char*)("\n"));
 
 
   /***** Scans to keep                                    *****/
@@ -892,11 +893,11 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
   writeAll = 0;
   bool first_keep_iter = true;
       
-  Rprintf((char*)("Iteration "));
+  if (*nonSilent) Rprintf((char*)("Iteration "));
   while (*iter < lastIter){
     (*iter)++;
     //iteration = *iter;                       // iteration is a global variable defined for debugging purposes
-    AK_Utils::printIterInfo(writeAll, backs, *iter, *Minfo, lastIter);
+    if (*nonSilent) AK_Utils::printIterInfo(writeAll, backs, *iter, *Minfo, lastIter);
 
     /***** Thinning loop *****/
     for (witer = 0; witer < *Mthin; witer++){          
@@ -1188,7 +1189,7 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
       }
     }
   }                             /*** end of while (*iter < lastIter) ***/
-  Rprintf((char*)("\n"));
+  if (*nonSilent) Rprintf((char*)("\n"));
   PutRNGstate();
 
 

@@ -19,7 +19,7 @@ GLMM_MCMCwrapper <- function(chain=1, data,
                              prior.alpha, init.alpha,
                              scale.b, prior.b, init.b,
                              prior.eps, init.eps,
-                             Cpar, nMCMC, store, keep.chains)
+                             Cpar, nMCMC, store, keep.chains, silent)
 {
   thispackage <- "mixAK"
 
@@ -66,12 +66,14 @@ GLMM_MCMCwrapper <- function(chain=1, data,
   
 ########## ========== MCMC simulation                              ========== ##########
 ########## ================================================================== ##########
-  cat(paste("\nChain number ", chain, "\n==============\n", sep=""))  
-  cat(paste("MCMC sampling started on ", date(), ".\n", sep=""))  
+  if (!silent){
+    cat(paste("\nChain number ", chain, "\n==============\n", sep=""))  
+    cat(paste("MCMC sampling started on ", date(), ".\n", sep=""))
+  }  
   MCMC <- .C("GLMM_MCMC",
              Y_c                       = as.double(Cpar$Y_c),
              Y_d                       = as.integer(Cpar$Y_d),
-             keepChain_nMCMC_R_cd_dist = as.integer(c(store, nMCMC, Cpar$R_cd, Cpar$dist)),
+             nonSilent_keepChain_nMCMC_R_cd_dist = as.integer(c(as.integer(!silent), store, nMCMC, Cpar$R_cd, Cpar$dist)),
              I_n                       = as.integer(c(Cpar$I, Cpar$n)),
              X                         = as.double(Cpar$X),
              #XtX                       = as.double(ifit$CXtX),               ### REMOVED ON 21/10/2009, XtX is computed directly in C++
@@ -137,7 +139,7 @@ GLMM_MCMCwrapper <- function(chain=1, data,
              iter                      = as.integer(0),
              err                       = as.integer(0),
              PACKAGE=thispackage)            
-  cat(paste("MCMC sampling finished on ", date(), ".\n", sep=""))
+  if (!silent) cat(paste("MCMC sampling finished on ", date(), ".\n", sep=""))
   if (MCMC$err) stop("Something went wrong.")
 
 

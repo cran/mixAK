@@ -14,11 +14,14 @@
 ## *************************************************************
 ## NMixRelabel.GLMM_MCMC
 ## *************************************************************
-NMixRelabel.GLMM_MCMC <- function(object, type=c("mean", "weight", "stephens"), par,
-                                  prob=c(0.025, 0.5, 0.975), keep.comp.prob=FALSE, info, ...)
+NMixRelabel.GLMM_MCMC <- function(object, type = c("mean", "weight", "stephens"), par,
+                                  prob = c(0.025, 0.5, 0.975), keep.comp.prob = FALSE, info, silent = FALSE, ...)
 {
   thispackage <- "mixAK"
 
+  silent <- as.logical(silent[1])
+  if (is.na(silent)) silent <- FALSE
+  
   if (!object$dimb) stop("No random effects in object, nothing to re-label.")
   LTp <- object$dimb * (object$dimb + 1)/2
   I   <- object$Cpar$I
@@ -64,6 +67,7 @@ NMixRelabel.GLMM_MCMC <- function(object, type=c("mean", "weight", "stephens"), 
   MCMC <- .C("GLMM_NMixRelabel",
              type           = as.integer(RAlg$Ctype),
              iparam         = as.integer(RAlg$iparam),
+             nonSilent      = as.integer(!silent),
              Y_c            = as.double(object$Cpar$Y_c),
              Y_d            = as.integer(object$Cpar$Y_d),
              R_cd           = as.integer(object$Cpar$R_cd),

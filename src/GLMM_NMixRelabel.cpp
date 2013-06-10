@@ -24,6 +24,7 @@ extern "C" {
 void
 GLMM_NMixRelabel(const int*    type,
                  const int*    iparam,
+                 const int*    nonSilent,
                  double*       Y_c,                                // this is in fact const, not declared as const to be able to use **
                  int*          Y_d,                                // this is in fact const, not declared as const to be able to use **
                  const int*    R_cd,  
@@ -472,13 +473,13 @@ GLMM_NMixRelabel(const int*    type,
   Pr_obsP   = Pr_obs;
 
   GetRNGstate();  
-  Rprintf((char*)("MCMC Iteration (simple re-labelling) "));
+  if (*nonSilent) Rprintf((char*)("MCMC Iteration (simple re-labelling) "));
   for (iter = 1; iter <= *keepMCMC; iter++){
 
     //iteration = iter;         // iteration is a global variable for debugging purposes
 
     /***** Progress information *****/
-    if (!(iter % *info) || iter == *keepMCMC){
+    if (*nonSilent && (!(iter % *info) || iter == *keepMCMC)){
       for (i = 0; i < iter_backs; i++) Rprintf((char*)("\b"));
       Rprintf((char*)("%d"), iter);
       iter_backs = int(log10(double(iter))) + 1;
@@ -572,7 +573,7 @@ GLMM_NMixRelabel(const int*    type,
     Pr_b_bP += (*I * *K_b); 
     Pr_obsP += (*I * *K_b); 
   }
-  Rprintf((char*)("\n"));
+  if (*nonSilent) Rprintf((char*)("\n"));
   PutRNGstate();
 
 
@@ -593,7 +594,7 @@ GLMM_NMixRelabel(const int*    type,
     *iter_relabel = 0;
     nchanges      = 1;
     nchangeP      = nchange;
-    Rprintf((char*)("Stephens' re-labelling iteration (number of labelling changes): "));
+    if (*nonSilent) Rprintf((char*)("Stephens' re-labelling iteration (number of labelling changes): "));
 
     switch (iparam[3]){
     case 0:                   /***** TRANSPORTATION version of the Stephens' algorithm *****/                 
@@ -620,7 +621,7 @@ GLMM_NMixRelabel(const int*    type,
         *iter_relabel += 1;
 
         /***** Progress information *****/
-        Rprintf((char*)("%d"), *iter_relabel);
+        if (*nonSilent) Rprintf((char*)("%d"), *iter_relabel);
 
         /***** Step 1 of Stephens' algorithm                  *****/
         /***** = computation of hat{q}_{i,j}                  *****/
@@ -637,7 +638,7 @@ GLMM_NMixRelabel(const int*    type,
         nchangeP++;
 
         /***** Number of labelling changes  *****/
-        Rprintf((char*)(" (%d)  "), nchanges);
+        if (*nonSilent) Rprintf((char*)(" (%d)  "), nchanges);
       }
 
       /***** Cleaning of the space allocated for search version of the Stephens' algorithm *****/
@@ -670,7 +671,7 @@ GLMM_NMixRelabel(const int*    type,
         *iter_relabel += 1;
 
         /***** Progress information *****/
-        Rprintf((char*)("%d"), *iter_relabel);
+        if (*nonSilent) Rprintf((char*)("%d"), *iter_relabel);
 
         /***** Step 1 of Stephens' algorithm                  *****/
         /***** = computation of hat{q}_{i,j}                  *****/
@@ -685,7 +686,7 @@ GLMM_NMixRelabel(const int*    type,
         nchangeP++;
 
         /***** Number of labelling changes  *****/
-        Rprintf((char*)(" (%d)  "), nchanges);
+        if (*nonSilent) Rprintf((char*)(" (%d)  "), nchanges);
       }
 
       /***** Cleaning of the space allocated for search version of the Stephens' algorithm *****/
@@ -695,7 +696,7 @@ GLMM_NMixRelabel(const int*    type,
       Free(order_perm);
       break;                   /*** break case 1              ***/
     }                          /*** end of switch (iparam[3]) ***/
-    Rprintf((char*)("\n"));    
+    if (*nonSilent) Rprintf((char*)("\n"));    
 
     /***** Re-calculate hatPr_forStephens if there is no convergence to ensure that it corresponds to returned values of chorder and chrank *****/    
     if (*iter_relabel == iparam[2] && nchanges){

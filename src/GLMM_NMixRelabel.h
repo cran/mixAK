@@ -61,6 +61,8 @@ extern "C" {
 //  iparam[]                              integer parameters for the re-labeling algorithm
 //                                        * see NMix_NMixRelabel.h for details
 //
+//  nonSilent[1]                          if != 0 then some information is printed during computation
+//
 //  Y_c[]                                 continuous response 
 //                                        * see GLMM_MCMC.h for details
 //
@@ -205,6 +207,7 @@ extern "C" {
 void
 GLMM_NMixRelabel(const int*    type,
                  const int*    iparam,
+                 const int*    nonSilent,
                  double*       Y_c,                                // this is in fact const, not declared as const to be able to use **
                  int*          Y_d,                                // this is in fact const, not declared as const to be able to use **
                  const int*    R_cd,  

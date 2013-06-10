@@ -10,6 +10,7 @@
 ##              10/11/2009:  version for combined discrete and continuous responses working
 ##              20/01/2011:  beta variables have been re-named to alpha variables
 ##              08/02/2013:  snow/snowfall support for parallel computation replaced by parallel package
+##              01/06/2013:  minor changes following the review in JSS
 ##
 ##  FUNCTIONS:  GLMM_MCMC
 ##
@@ -19,33 +20,36 @@
 ## GLMM_MCMC
 ## *************************************************************
 ##
-GLMM_MCMC <- function(y, dist="gaussian", id, x, z, random.intercept,
+GLMM_MCMC <- function(y, dist = "gaussian", id, x, z, random.intercept,
                       prior.alpha, init.alpha, init2.alpha,                      
                       scale.b,     prior.b,    init.b,      init2.b,
                       prior.eps,   init.eps,   init2.eps,
-                      nMCMC=c(burn=10, keep=10, thin=1, info=10),
-                      tuneMCMC=list(alpha=1, b=1),
-                      store=c(b=FALSE), PED=TRUE, keep.chains=TRUE,
-                      dens.zero=1e-300, parallel=FALSE)
+                      nMCMC = c(burn = 10, keep = 10, thin = 1, info = 10),
+                      tuneMCMC = list(alpha = 1, b = 1),
+                      store = c(b = FALSE), PED = TRUE, keep.chains = TRUE,
+                      dens.zero = 1e-300, parallel = FALSE, silent = FALSE)
 {
   require("lme4")
   thispackage <- "mixAK"
   
-  DEBUG <- FALSE  
+  DEBUG <- FALSE
+
+  silent <- as.logical(silent[1])
+  if (is.na(silent)) silent <- FALSE
 
   EMin <- -100         ## exp(-(D1+D2)) = exp(-EMin) when computing importance sampling weights
                        ## which are equal to exp(-(D1+D2))
                        ## if D1 + D2 < EMin, where D1 = log(f(y|theta1)), D2 = log(f(y|theta2))
     ## -> these constants are passed to .C("GLMM_PED")
-
+  
   
 ########## ========== Data ========== ##########
 ########## ========================== ##########
-  dd <- GLMM_MCMCdata(y=y, dist=dist, id=id, x=x, z=z, random.intercept=random.intercept)
+  dd <- GLMM_MCMCdata(y = y, dist = dist, id = id, x = x, z = z, random.intercept = random.intercept)
   rm(list=c("y", "dist", "id", "x", "z", "random.intercept"))
      ### use dd$y, dd$dist, dd$id, dd$x, dd$z, dd$random.intercept instead
      ### REMARK:  dd$x, dd$z are still without intercept column
-
+  
   
 ########## ========== Initial fits ======================================== ##########
 ########## ========== and design information to be passed to C++ ========== ##########
@@ -214,21 +218,21 @@ GLMM_MCMC <- function(y, dist="gaussian", id, x, z, random.intercept,
 
 
 ########## ========== Run MCMC ========== ##########
-########## ============================== ##########
+########## ============================== ##########  
   if (PED){
     if (parallel){
       require("parallel")
 
       if (detectCores() < 2) warning("It does not seem that at least 2 CPU cores are available needed for efficient parallel generation of the two chains.")      
       cl <- makeCluster(2)      
-      cat(paste("Parallel MCMC sampling of two chains started on ", date(), ".\n", sep=""))      
+      if (!silent) cat(paste("Parallel MCMC sampling of two chains started on ", date(), ".\n", sep=""))      
       RET <- parLapply(cl, 1:2, GLMM_MCMCwrapper,
                        data = dd,
                        prior.alpha = palpha$prior.alpha, init.alpha = list(init.alpha, init2.alpha),
                        scale.b = scale.b, prior.b = pbb$prior.b, init.b = list(init.b, init2.b),
                        prior.eps = peps$prior.eps, init.eps = list(init.eps, init2.eps),
-                       Cpar = Cpar, nMCMC = nMCMC, store = store, keep.chains = keep.chains)
-      cat(paste("Parallel MCMC sampling finished on ", date(), ".\n", sep=""))
+                       Cpar = Cpar, nMCMC = nMCMC, store = store, keep.chains = keep.chains, silent = silent)
+      if (!silent) cat(paste("Parallel MCMC sampling finished on ", date(), ".\n", sep=""))
       stopCluster(cl)
     }else{
       RET <- lapply(1:2, GLMM_MCMCwrapper,
@@ -236,10 +240,10 @@ GLMM_MCMC <- function(y, dist="gaussian", id, x, z, random.intercept,
                          prior.alpha = palpha$prior.alpha, init.alpha = list(init.alpha, init2.alpha),
                          scale.b = scale.b, prior.b = pbb$prior.b, init.b = list(init.b, init2.b),
                          prior.eps = peps$prior.eps, init.eps = list(init.eps, init2.eps),
-                         Cpar = Cpar, nMCMC = nMCMC, store = store, keep.chains = keep.chains)
+                         Cpar = Cpar, nMCMC = nMCMC, store = store, keep.chains = keep.chains, silent = silent)
     }
     
-    cat(paste("\nComputation of penalized expected deviance started on ", date(), ".\n", sep=""))
+    if (!silent) cat(paste("\nComputation of penalized expected deviance started on ", date(), ".\n", sep=""))
     resPED <- .C("GLMM_PED", PED                  = double(5),
                              pm.indDevObs         = double(Cpar$I),
                              pm.indpopt           = double(Cpar$I),
@@ -287,7 +291,7 @@ GLMM_MCMC <- function(y, dist="gaussian", id, x, z, random.intercept,
                              Dens_ZERO            = as.double(dens.zero),
                              EMin                 = as.double(EMin),
                  PACKAGE = thispackage)    
-    cat(paste("Computation of penalized expected deviance finished on ", date(), ".\n", sep=""))
+    if (!silent) cat(paste("Computation of penalized expected deviance finished on ", date(), ".\n", sep=""))
     if (resPED$err) stop("Something went wrong.")
 
     names(resPED$PED) <- c("D.expect", "p(opt)", "PED", "wp(opt)", "wPED")
@@ -311,11 +315,11 @@ GLMM_MCMC <- function(y, dist="gaussian", id, x, z, random.intercept,
     
     class(RET) <- "GLMM_MCMClist"    
   }else{    
-    RET <- GLMM_MCMCwrapper(chain=1, data=dd,
-                            prior.alpha=palpha$prior.alpha, init.alpha=list(init.alpha),
-                            scale.b=scale.b, prior.b=pbb$prior.b, init.b=list(init.b),
-                            prior.eps=peps$prior.eps, init.eps=list(init.eps),
-                            Cpar=Cpar, nMCMC=nMCMC, store=store, keep.chains=keep.chains)
+    RET <- GLMM_MCMCwrapper(chain = 1, data = dd,
+                            prior.alpha = palpha$prior.alpha, init.alpha = list(init.alpha),
+                            scale.b = scale.b, prior.b = pbb$prior.b, init.b = list(init.b),
+                            prior.eps = peps$prior.eps, init.eps = list(init.eps),
+                            Cpar = Cpar, nMCMC = nMCMC, store = store, keep.chains = keep.chains, silent = silent)
   }
   
   return(RET)    
