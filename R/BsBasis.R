@@ -31,7 +31,7 @@ BsBasis <- function(degree, ninner, knotsBound, knots, intercept=FALSE, x, tgrid
   }  
 
   ## B-spline basis
-  BsData <- bs(x, degree=degree, knots=knotsInner, Boundary.knots=knotsBound, intercept=intercept)
+  BsData <- splines::bs(x, degree=degree, knots=knotsInner, Boundary.knots=knotsBound, intercept=intercept)
   nBs <- ncol(BsData)
   labelBs <- paste(Bname, 1:nBs, sep="")
 
@@ -42,7 +42,7 @@ BsBasis <- function(degree, ninner, knotsBound, knots, intercept=FALSE, x, tgrid
 
   ## Figure of the B-spline basis
   if (missing(tgrid)) tgrid <- seq(knotsBound[1], knotsBound[2], length=1000)
-  Bs <- bs(x=tgrid, degree=degree, knots=knotsInner, Boundary.knots=knotsBound, intercept=intercept)
+  Bs <- splines::bs(x=tgrid, degree=degree, knots=knotsInner, Boundary.knots=knotsBound, intercept=intercept)
   
   if (plot){
     #par(mfrow=c(1, 1), bty="n")

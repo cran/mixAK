@@ -270,15 +270,15 @@ GLMM_MCMCifit <- function(do.init, na.complete,
           
           if (do.init){          
             FORM <- formula(paste("y ~ 1 +", paste(colnames(z[[s]]), collapse=" + "), " + (-1 +", paste(colnames(z[[s]]), collapse=" + "), " | id)"))
-            if (dist[s] %in% c("gaussian"))               ifit <- lmer(FORM, data=dta)
-            else if (dist[s] %in% c("binomial(logit)"))   ifit <- glmer(FORM, family=binomial(link=logit), data=dta)
-                 else if (dist[s] %in% c("poisson(log)")) ifit <- glmer(FORM, family=poisson(link=log), data=dta)            
+            if (dist[s] %in% c("gaussian"))               ifit <- lme4::lmer(FORM, data=dta)
+            else if (dist[s] %in% c("binomial(logit)"))   ifit <- lme4::glmer(FORM, family=binomial(link=logit), data=dta)
+                 else if (dist[s] %in% c("poisson(log)")) ifit <- lme4::glmer(FORM, family=poisson(link=log), data=dta)            
 
-            iintcpt[s, "Est"] <- fixef(ifit)["(Intercept)"]
-            iintcpt[s, "SE"]  <- as.numeric(sqrt(vcov(ifit)[1, 1]))
+            iintcpt[s, "Est"] <- lme4::fixef(ifit)["(Intercept)"]
+            iintcpt[s, "SE"]  <- as.numeric(sqrt(lme4::vcov(ifit)[1, 1]))
             is.intcpt[s] <- TRUE        
          
-            iEranef[[s]] <- data.frame(Est=fixef(ifit)[-1], SE=sqrt(diag(as.matrix(vcov(ifit)))[-1]))
+            iEranef[[s]] <- data.frame(Est=lme4::fixef(ifit)[-1], SE=sqrt(diag(as.matrix(lme4::vcov(ifit)))[-1]))
             is.ranef[s] <- TRUE
           }
             
@@ -292,14 +292,14 @@ GLMM_MCMCifit <- function(do.init, na.complete,
 
             if (do.init){            
               FORM <- formula("y ~ 1 + (1 | id)")
-              if (dist[s] %in% c("gaussian"))               ifit <- lmer(FORM, data=dta)
-              else if (dist[s] %in% c("binomial(logit)"))   ifit <- glmer(FORM, family=binomial(link=logit), data=dta)
-                   else if (dist[s] %in% c("poisson(log)")) ifit <- glmer(FORM, family=poisson(link=log), data=dta)                          
+              if (dist[s] %in% c("gaussian"))               ifit <- lme4::lmer(FORM, data=dta)
+              else if (dist[s] %in% c("binomial(logit)"))   ifit <- lme4::glmer(FORM, family=binomial(link=logit), data=dta)
+                   else if (dist[s] %in% c("poisson(log)")) ifit <- lme4::glmer(FORM, family=poisson(link=log), data=dta)                          
 
               iintcpt[s, "Est"] <- 0
               iintcpt[s, "SE"]  <- 0
 
-              iEranef[[s]] <- data.frame(Est=fixef(ifit), SE=sqrt(diag(as.matrix(vcov(ifit)))))
+              iEranef[[s]] <- data.frame(Est=lme4::fixef(ifit), SE=sqrt(diag(as.matrix(lme4::vcov(ifit)))))
               is.ranef[s] <- TRUE
             }
               
@@ -321,14 +321,14 @@ GLMM_MCMCifit <- function(do.init, na.complete,
               
               if (do.init){              
                 FORM <- formula(paste("y ~ 1 +", paste(colnames(z[[s]]), collapse=" + "), " + (1 +", paste(colnames(z[[s]]), collapse=" + "), " | id)"))
-                if (dist[s] %in% c("gaussian"))               ifit <- lmer(FORM, data=dta)
-                else if (dist[s] %in% c("binomial(logit)"))   ifit <- glmer(FORM, family=binomial(link=logit), data=dta)
-                     else if (dist[s] %in% c("poisson(log)")) ifit <- glmer(FORM, family=poisson(link=log), data=dta)                            
+                if (dist[s] %in% c("gaussian"))               ifit <- lme4::lmer(FORM, data=dta)
+                else if (dist[s] %in% c("binomial(logit)"))   ifit <- lme4::glmer(FORM, family=binomial(link=logit), data=dta)
+                     else if (dist[s] %in% c("poisson(log)")) ifit <- lme4::glmer(FORM, family=poisson(link=log), data=dta)                            
 
                 iintcpt[s, "Est"] <- 0
                 iintcpt[s, "SE"]  <- 0
 
-                iEranef[[s]] <- data.frame(Est=fixef(ifit), SE=sqrt(diag(as.matrix(vcov(ifit)))))
+                iEranef[[s]] <- data.frame(Est=lme4::fixef(ifit), SE=sqrt(diag(as.matrix(lme4::vcov(ifit)))))
                 is.ranef[s] <- TRUE
               }
                 
@@ -362,18 +362,18 @@ GLMM_MCMCifit <- function(do.init, na.complete,
           
           if (do.init){          
             FORM <- formula(paste("y ~ 1 +", paste(colnames(x[[s]]), collapse=" + "), " + ", paste(colnames(z[[s]]), collapse=" + "), " + (-1 +", paste(colnames(z[[s]]), collapse=" + "), " | id)"))
-            if (dist[s] %in% c("gaussian"))               ifit <- lmer(FORM, data=dta)
-            else if (dist[s] %in% c("binomial(logit)"))   ifit <- glmer(FORM, family=binomial(link=logit), data=dta)
-                 else if (dist[s] %in% c("poisson(log)")) ifit <- glmer(FORM, family=poisson(link=log), data=dta)                        
+            if (dist[s] %in% c("gaussian"))               ifit <- lme4::lmer(FORM, data=dta)
+            else if (dist[s] %in% c("binomial(logit)"))   ifit <- lme4::glmer(FORM, family=binomial(link=logit), data=dta)
+                 else if (dist[s] %in% c("poisson(log)")) ifit <- lme4::glmer(FORM, family=poisson(link=log), data=dta)                        
 
-            iintcpt[s, "Est"] <- fixef(ifit)["(Intercept)"]
-            iintcpt[s, "SE"]  <- as.numeric(sqrt(vcov(ifit)[1, 1]))
+            iintcpt[s, "Est"] <- lme4::fixef(ifit)["(Intercept)"]
+            iintcpt[s, "SE"]  <- as.numeric(sqrt(lme4::vcov(ifit)[1, 1]))
             is.intcpt[s] <- TRUE
       
-            ifixef[[s]] <- data.frame(Est=fixef(ifit)[2:(1+ncol(x[[s]]))], SE=sqrt(diag(as.matrix(vcov(ifit)))[2:(1+ncol(x[[s]]))]))
+            ifixef[[s]] <- data.frame(Est=lme4::fixef(ifit)[2:(1+ncol(x[[s]]))], SE=sqrt(diag(as.matrix(lme4::vcov(ifit)))[2:(1+ncol(x[[s]]))]))
             is.fixef[s] <- TRUE
       
-            iEranef[[s]] <- data.frame(Est=fixef(ifit)[-(1:(1+ncol(x[[s]])))], SE=sqrt(diag(as.matrix(vcov(ifit)))[-(1:(1+ncol(x[[s]])))]))
+            iEranef[[s]] <- data.frame(Est=lme4::fixef(ifit)[-(1:(1+ncol(x[[s]])))], SE=sqrt(diag(as.matrix(lme4::vcov(ifit)))[-(1:(1+ncol(x[[s]])))]))
             is.ranef[s] <- TRUE
           }
             
@@ -392,17 +392,17 @@ GLMM_MCMCifit <- function(do.init, na.complete,
                                                          ### REMOVED ON 20/10/2009
             if (do.init){            
               FORM <- formula(paste("y ~ 1 +", paste(colnames(x[[s]]), collapse=" + "), " + (1 | id)"))
-              if (dist[s] %in% c("gaussian"))               ifit <- lmer(FORM, data=dta)
-              else if (dist[s] %in% c("binomial(logit)"))   ifit <- glmer(FORM, family=binomial(link=logit), data=dta)
-                   else if (dist[s] %in% c("poisson(log)")) ifit <- glmer(FORM, family=poisson(link=log), data=dta)                          
+              if (dist[s] %in% c("gaussian"))               ifit <- lme4::lmer(FORM, data=dta)
+              else if (dist[s] %in% c("binomial(logit)"))   ifit <- lme4::glmer(FORM, family=binomial(link=logit), data=dta)
+                   else if (dist[s] %in% c("poisson(log)")) ifit <- lme4::glmer(FORM, family=poisson(link=log), data=dta)                          
             
               iintcpt[s, "Est"] <- 0
               iintcpt[s, "SE"]  <- 0
 
-              ifixef[[s]] <- data.frame(Est=fixef(ifit)[-1], SE=sqrt(diag(as.matrix(vcov(ifit)))[-1]))
+              ifixef[[s]] <- data.frame(Est=lme4::fixef(ifit)[-1], SE=sqrt(diag(as.matrix(lme4::vcov(ifit)))[-1]))
               is.fixef[s] <- TRUE
       
-              iEranef[[s]] <- data.frame(Est=fixef(ifit)[1], SE=sqrt(diag(as.matrix(vcov(ifit)))[1]))
+              iEranef[[s]] <- data.frame(Est=lme4::fixef(ifit)[1], SE=sqrt(diag(as.matrix(lme4::vcov(ifit)))[1]))
               is.ranef[s] <- TRUE
             }
               
@@ -424,18 +424,18 @@ GLMM_MCMCifit <- function(do.init, na.complete,
               
               if (do.init){
                 FORM <- formula(paste("y ~ 1 +", paste(colnames(x[[s]]), collapse=" + "), " + ", paste(colnames(z[[s]]), collapse=" + "), " + (1 +", paste(colnames(z[[s]]), collapse=" + "), " | id)"))
-                if (dist[s] %in% c("gaussian"))               ifit <- lmer(FORM, data=dta)
-                else if (dist[s] %in% c("binomial(logit)"))   ifit <- glmer(FORM, family=binomial(link=logit), data=dta)
-                     else if (dist[s] %in% c("poisson(log)")) ifit <- glmer(FORM, family=poisson(link=log), data=dta)                            
+                if (dist[s] %in% c("gaussian"))               ifit <- lme4::lmer(FORM, data=dta)
+                else if (dist[s] %in% c("binomial(logit)"))   ifit <- lme4::glmer(FORM, family=binomial(link=logit), data=dta)
+                     else if (dist[s] %in% c("poisson(log)")) ifit <- lme4::glmer(FORM, family=poisson(link=log), data=dta)                            
               
                 iintcpt[s, "Est"] <- 0
                 iintcpt[s, "SE"]  <- 0
 
-                ifixef[[s]] <- data.frame(Est=fixef(ifit)[2:(1+ncol(x[[s]]))], SE=sqrt(diag(as.matrix(vcov(ifit)))[2:(1+ncol(x[[s]]))]))
+                ifixef[[s]] <- data.frame(Est=lme4::fixef(ifit)[2:(1+ncol(x[[s]]))], SE=sqrt(diag(as.matrix(lme4::vcov(ifit)))[2:(1+ncol(x[[s]]))]))
                 is.fixef[s] <- TRUE
       
                 iRAND <- c(1, (2+ncol(x[[s]])):(1+ncol(x[[s]])+ncol(z[[s]])))
-                iEranef[[s]] <- data.frame(Est=fixef(ifit)[iRAND], SE=sqrt(diag(as.matrix(vcov(ifit)))[iRAND]))
+                iEranef[[s]] <- data.frame(Est=lme4::fixef(ifit)[iRAND], SE=sqrt(diag(as.matrix(lme4::vcov(ifit)))[iRAND]))
                 is.ranef[s] <- TRUE
               }  
               
@@ -448,11 +448,11 @@ GLMM_MCMCifit <- function(do.init, na.complete,
 
       if (do.init){      
         if (dist[s] %in% c("gaussian")){
-          isigma[s] <- attr(VarCorr(ifit), "sc")
+          isigma[s] <- attr(lme4::VarCorr(ifit), "sc")
           is.sigma[s] <- TRUE
         }  
 
-        iSDranef[[s]] <- attr(VarCorr(ifit)[["id"]], "stddev")
+        iSDranef[[s]] <- attr(lme4::VarCorr(ifit)[["id"]], "stddev")
 
         if (length(iSDranef[[s]]) == 1) bb <- data.frame(b1=rnorm(I, iEranef[[s]][,"Est"], iSDranef[[s]]))
         else{
@@ -460,7 +460,7 @@ GLMM_MCMCifit <- function(do.init, na.complete,
           bb <- as.data.frame(rMVN(I, iEranef[[s]][,"Est"], Sigma=Vb)[["x"]])
         }
         rownames(bb) <- names(TAB)
-        bb[names(dTAB),] <- ranef(ifit)[["id"]] + matrix(rep(iEranef[[s]][,"Est"], nrow(ranef(ifit)[["id"]])), ncol=ncol(ranef(ifit)[["id"]]), byrow=TRUE)
+        bb[names(dTAB),] <- lme4::ranef(ifit)[["id"]] + matrix(rep(iEranef[[s]][,"Est"], nrow(lme4::ranef(ifit)[["id"]])), ncol=ncol(lme4::ranef(ifit)[["id"]]), byrow=TRUE)
         ib[[s]] <- bb
       }  
     }                    ## end of else:  there are some random effects

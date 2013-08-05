@@ -593,7 +593,7 @@ NMixMCMC <- function(y0, y1, censor, scale, prior,
     ##### init2:  mu
     ##### ----------------------------------------------------  
     if (is.na(imu2)){
-      tmpsd <- sd(tmpinitz)/init2$K    ## vector of length p      
+      tmpsd <- apply(tmpinitz, 2, sd)/init2$K    ## vector of length p      
       if (dd$p == 1){
         dist <- (zMax2 - zMin2)/(init2$K + 1)
         tmpxi <- seq(zMin2+dist, zMax2-dist, length=init2$K)
@@ -608,7 +608,7 @@ NMixMCMC <- function(y0, y1, censor, scale, prior,
           init2$mu[,j] <- init2$mu[,j][order(init2$mu[,j])]
         }
       }  
-    }
+    }    
     if (any(is.na(init2$mu))) stop("NA in init2$mu")          
     if (dd$p == 1){
       init2$mu <- as.numeric(init2$mu)
@@ -931,17 +931,17 @@ NMixMCMC <- function(y0, y1, censor, scale, prior,
   ########## ============================== ##########
   if (PED){
     if (parallel){
-      require("parallel")
+      #require("parallel")
 
-      if (detectCores() < 2) warning("It does not seem that at least 2 CPU cores are available needed for efficient parallel generation of the two chains.")      
-      cl <- makeCluster(2)      
+      if (parallel::detectCores() < 2) warning("It does not seem that at least 2 CPU cores are available needed for efficient parallel generation of the two chains.")      
+      cl <- parallel::makeCluster(2)      
       cat(paste("Parallel MCMC sampling of two chains started on ", date(), ".\n", sep=""))      
-      RET <- parLapply(cl, 1:2, NMixMCMCwrapper,
-                                scale = scale, prior = prior, inits = list(init, init2), Cpar = Cpar, RJMCMC = RJMCMC, CRJMCMC = CRJMCMC,
-                                actionAll = actionAll, nMCMC = nMCMC, keep.chains = keep.chains, PED = TRUE,
-                                dens.zero = dens.zero)
+      RET <- parallel::parLapply(cl, 1:2, NMixMCMCwrapper,
+                                 scale = scale, prior = prior, inits = list(init, init2), Cpar = Cpar, RJMCMC = RJMCMC, CRJMCMC = CRJMCMC,
+                                 actionAll = actionAll, nMCMC = nMCMC, keep.chains = keep.chains, PED = TRUE,
+                                 dens.zero = dens.zero)
       cat(paste("Parallel MCMC sampling finished on ", date(), ".\n", sep=""))
-      stopCluster(cl)      
+      parallel::stopCluster(cl)      
     }else{
       RET <- lapply(1:2, NMixMCMCwrapper,
                          scale = scale, prior = prior, inits = list(init, init2), Cpar = Cpar, RJMCMC = RJMCMC, CRJMCMC = CRJMCMC,

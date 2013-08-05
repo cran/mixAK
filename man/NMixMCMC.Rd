@@ -559,10 +559,10 @@ NMixMCMC(y0, y1, censor, scale, prior,
     each iteration evaluated at sampled values of latent observations at
     iterations.
   }
-  \item{poster.comp.prob1}{a matrix which is present in the output object
+  \item{poster.comp.prob_u}{a matrix which is present in the output object
     if the number of mixture components in the distribution of random
     effects is fixed and equal to \eqn{K}. In that case,
-    \code{poster.comp.prob1} is a matrix with \eqn{K} columns and \eqn{n}
+    \code{poster.comp.prob_u} is a matrix with \eqn{K} columns and \eqn{n}
     rows with estimated posterior component probabilities
     -- posterior means of the components of the underlying 0/1
     allocation vector.
@@ -575,10 +575,10 @@ NMixMCMC(y0, y1, censor, scale, prior,
     
     %These can be used for possible clustering of the subjects.
   }
-  \item{poster.comp.prob2}{a matrix which is present in the output object
+  \item{poster.comp.prob_b}{a matrix which is present in the output object
     if the number of mixture components in the distribution of random
     effects is fixed and equal to \eqn{K}. In that case,
-    \code{poster.comp.prob2} is a matrix with \eqn{K} columns and \eqn{n}
+    \code{poster.comp.prob_b} is a matrix with \eqn{K} columns and \eqn{n}
     rows  with estimated posterior component probabilities
     -- posterior mean over model parameters.
 
@@ -625,8 +625,8 @@ NMixMCMC(y0, y1, censor, scale, prior,
     summary statistics (see label switching problem mentioned above).
     In any case, they should be used with care.}
   \item{relabel}{a list which specifies the algorithm used to re-label
-    the MCMC output to compute \code{order}, \code{rank}, \code{poster.comp.prob1},
-    \code{poster.comp.prob2}, \code{poster.mean.w},
+    the MCMC output to compute \code{order}, \code{rank}, \code{poster.comp.prob_u},
+    \code{poster.comp.prob_b}, \code{poster.mean.w},
     \code{poster.mean.mu}, \code{poster.mean.Q},
     \code{poster.mean.Sigma}, \code{poster.mean.Li}. 
   }
@@ -804,8 +804,8 @@ par(oldPar)
 ### or on the posterior distribution of component allocations
 ### (these are two equivalent estimators of probabilities of belonging
 ###  to each mixture components for each observation)
-p1 <- fit[[1]]$poster.comp.prob1
-p2 <- fit[[1]]$poster.comp.prob2
+p1 <- fit[[1]]$poster.comp.prob_u
+p2 <- fit[[1]]$poster.comp.prob_b
 
 ### Clustering based on posterior summary statistics of mixture weight, means, variances
 p3 <- NMixPlugDA(fit[[1]], iris[, VARS])

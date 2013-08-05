@@ -3,6 +3,7 @@
 \alias{tracePlots.default}
 \alias{tracePlots.NMixMCMC}
 \alias{tracePlots.GLMM_MCMC}
+\alias{tracePlots.GLMM_MCMClist}
 \title{
   Traceplots for selected parameters
 }
@@ -25,6 +26,12 @@
     "w_b", "mu_b", "sd_b", "gammaInv_b", "gammaInv_eps"),
     relabel=FALSE, order,
     auto.layout=TRUE, xlab="Iteration", ylab, col="slateblue", main="", \dots)
+
+  \method{tracePlots}{GLMM_MCMClist}(x, param=c("Deviance", "Cond.Deviance",
+    "alpha", "Eb", "SDb", "Corb", "sigma_eps",
+    "w_b", "mu_b", "sd_b", "gammaInv_b", "gammaInv_eps"),
+    relabel=FALSE,                             
+    auto.layout=TRUE, xlab="Iteration", ylab, col=c("blue3", "red3"), main="", \dots)
 }
 \arguments{
   \item{x}{an object of class \code{NMixMCMC} or \code{GLMM_MCMC}.}

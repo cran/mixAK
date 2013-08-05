@@ -105,38 +105,38 @@ NMixRelabel.NMixMCMC <- function(object, type=c("mean", "weight", "stephens"), p
   ##### Clustering based on posterior P(alloc = k | y) or on P(alloc = k | theta, y) 
   ##### +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   if (object$K[1] == 1){
-    object$poster.comp.prob1 <- object$poster.comp.prob2 <- matrix(1, nrow = n, ncol = 1)
+    object$poster.comp.prob_u <- object$poster.comp.prob_b <- matrix(1, nrow = n, ncol = 1)
   }else{
 
     ### Using mean(I(r=k))
     MCMC$sum_Ir <- matrix(MCMC$sum_Ir, ncol = object$K[1], nrow = n, byrow = TRUE)
     Denom <- apply(MCMC$sum_Ir, 1, sum)       ### this should be a vector of length n with all elements equal to the number of saved MCMC iterations 
-    object$poster.comp.prob1 <- MCMC$sum_Ir / matrix(rep(Denom, object$K[1]), ncol = object$K[1], nrow = n)
+    object$poster.comp.prob_u <- MCMC$sum_Ir / matrix(rep(Denom, object$K[1]), ncol = object$K[1], nrow = n)
 
     ### Using mean(P(r=k | theta, b, y))
-    object$poster.comp.prob2 <- matrix(MCMC$hatPr_y, ncol = object$K[1], nrow = n, byrow = TRUE)
+    object$poster.comp.prob_b <- matrix(MCMC$hatPr_y, ncol = object$K[1], nrow = n, byrow = TRUE)
   }  
 
   
   ##### Individual sampled values of P(alloc = k | theta, y)
   ##### and related quantiles
   ##### ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  object$comp.prob2 <- matrix(MCMC$Pr_y, ncol = object$K[1] * object$Cpar$dimy[2], nrow=keepMCMC, byrow=TRUE)
-  colnames(object$comp.prob2) <- paste("P(", rep(1:object$Cpar$dimy[2], each=object$K[1]), ",", rep(1:object$K[1], object$Cpar$dimy[2]), ")", sep="")
+  object$comp.prob_b <- matrix(MCMC$Pr_y, ncol = object$K[1] * object$Cpar$dimy[2], nrow=keepMCMC, byrow=TRUE)
+  colnames(object$comp.prob_b) <- paste("P(", rep(1:object$Cpar$dimy[2], each=object$K[1]), ",", rep(1:object$K[1], object$Cpar$dimy[2]), ")", sep="")
   
   if (length(prob)){
-    qq <- apply(object$comp.prob2, 2, quantile, prob=prob)
+    qq <- apply(object$comp.prob_b, 2, quantile, prob=prob)
     if (length(prob) == 1){
-      object$quant.comp.prob2 <- list(matrix(qq, ncol=object$K[1], byrow=TRUE))      
+      object$quant.comp.prob_b <- list(matrix(qq, ncol=object$K[1], byrow=TRUE))      
     }else{
-      object$quant.comp.prob2 <- list()
+      object$quant.comp.prob_b <- list()
       for (i in 1:length(prob)){
-        object$quant.comp.prob2[[i]] <- matrix(qq[i,], ncol=object$K[1], byrow=TRUE)
+        object$quant.comp.prob_b[[i]] <- matrix(qq[i,], ncol=object$K[1], byrow=TRUE)
       }  
     }  
-    names(object$quant.comp.prob2) <- paste(prob*100, "%", sep="")
+    names(object$quant.comp.prob_b) <- paste(prob*100, "%", sep="")
   }
-  if (!keep.comp.prob) object$comp.prob2 <- NULL
+  if (!keep.comp.prob) object$comp.prob_b <- NULL
   
                         
   ##### Posterior means for mixture components

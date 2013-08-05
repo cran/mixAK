@@ -3,6 +3,7 @@
 \alias{NMixRelabel.default}
 \alias{NMixRelabel.NMixMCMC}
 \alias{NMixRelabel.GLMM_MCMC}
+\alias{NMixRelabel.GLMM_MCMClist}
 \title{
   Re-labeling the MCMC output of the mixture model
 }
@@ -12,8 +13,8 @@
   components using selected re-labeling algorithm. It also computes
   posterior summary statistics for mixture means, weights, variances
   which correspond to newly labeled MCMC sample. Further, posterior
-  component probabilities (\code{poster.comp.prob1} and
-  \code{poster.comp.prob2} components of the object \code{object}) are
+  component probabilities (\code{poster.comp.prob_u} and
+  \code{poster.comp.prob_b} components of the object \code{object}) are
   updated according to the newly labeled MCMC sample.
 
   This function only works for models with a fixed number of mixture components.
@@ -29,6 +30,10 @@ NMixRelabel(object, type=c("mean", "weight", "stephens"), par, \dots)
 \method{NMixRelabel}{GLMM_MCMC}(object, type = c("mean", "weight", "stephens"), par,
    prob = c(0.025, 0.5, 0.975), keep.comp.prob = FALSE, info,
    silent = FALSE, \dots)
+
+\method{NMixRelabel}{GLMM_MCMClist}(object, type = c("mean", "weight", "stephens"), par,
+   prob = c(0.025, 0.5, 0.975), keep.comp.prob = FALSE, info, silent = FALSE,
+   parallel = FALSE, \dots)
 }
 \arguments{
   \item{object}{an object of apropriate class.}
@@ -65,7 +70,10 @@ NMixRelabel(object, type=c("mean", "weight", "stephens"), par, \dots)
     iteration counter during the computation.
   }
   \item{silent}{a logical value indicating whether the information on
-    the MCMC progress is to be supressed.}  
+    the MCMC progress is to be supressed.}
+  \item{parallel}{a logical value indicating whether parallel
+    computation (based on a package \code{parallel}) should be used (if
+    possible) for re-labelling of the two chains.}
   \item{\dots}{optional additional arguments.}
 }  
 \value{
@@ -86,15 +94,15 @@ NMixRelabel(object, type=c("mean", "weight", "stephens"), par, \dots)
     \item{poster.mean.Q}{see \code{\link{NMixMCMC}}}
     \item{poster.mean.Sigma}{see \code{\link{NMixMCMC}}}
     \item{poster.mean.Li}{see \code{\link{NMixMCMC}}}
-    \item{poster.comp.prob1}{see \code{\link{NMixMCMC}}}
-    \item{poster.comp.prob2}{see \code{\link{NMixMCMC}}}
+    \item{poster.comp.prob_u}{see \code{\link{NMixMCMC}}}
+    \item{poster.comp.prob_b}{see \code{\link{NMixMCMC}}}
   }
   Additionally, new components are added, namely
   \describe{
-    \item{quant.comp.prob2}{a list with the posterior quantiles of
+    \item{quant.comp.prob_b}{a list with the posterior quantiles of
       component probabilities. One \code{list} component for each
       quantile specified by \code{prob} argument.}
-    \item{comp.prob2}{posterior sample of individual component
+    \item{comp.prob_b}{posterior sample of individual component
       probabilities (also given random effects). It is an \eqn{M \times
 	n\cdot K}{M x n*K} matrix where \eqn{M} is the length of the
       posterior sample, \eqn{n} is the number of subjects, and \eqn{K}
@@ -117,15 +125,15 @@ NMixRelabel(object, type=c("mean", "weight", "stephens"), par, \dots)
     \item{poster.mean.Q_b}{see \code{\link{GLMM_MCMC}}}
     \item{poster.mean.Sigma_b}{see \code{\link{GLMM_MCMC}}}
     \item{poster.mean.Li_b}{see \code{\link{GLMM_MCMC}}}
-    \item{poster.comp.prob1}{see \code{\link{GLMM_MCMC}}}
-    \item{poster.comp.prob2}{see \code{\link{GLMM_MCMC}}}
+    \item{poster.comp.prob_u}{see \code{\link{GLMM_MCMC}}}
+    \item{poster.comp.prob_b}{see \code{\link{GLMM_MCMC}}}
   }
   Additionally, new components are added, namely
   \describe{
-    \item{quant.comp.prob2}{a list with the posterior quantiles of
+    \item{quant.comp.prob_b}{a list with the posterior quantiles of
       component probabilities. One \code{list} component for each
       quantile specified by \code{prob} argument.}
-    \item{comp.prob2}{posterior sample of individual component
+    \item{comp.prob_b}{posterior sample of individual component
       probabilities (also given random effects). It is an \eqn{M \times
 	I\cdot K}{M x I*K} matrix where \eqn{M} is the length of the
       posterior sample, \eqn{I} is the number of subjects, and \eqn{K}
@@ -133,13 +141,13 @@ NMixRelabel(object, type=c("mean", "weight", "stephens"), par, \dots)
       to the re-labelled sample. It is included in the
       resulting object only if \code{keep.comp.prob} argument is
       \code{TRUE}.}
-    \item{poster.comp.prob3}{a matrix with the posterior means of
+    \item{poster.comp.prob}{a matrix with the posterior means of
       component probabilities which are calculated with random effects
       integrated out.}
-    \item{quant.comp.prob3}{a list with the posterior quantiles of
+    \item{quant.comp.prob}{a list with the posterior quantiles of
       component probabilities. One \code{list} component for each
       quantile specified by \code{prob} argument.}
-    \item{comp.prob3}{posterior sample of individual component
+    \item{comp.prob}{posterior sample of individual component
       probabilities (with random effects integrated out). It is an \eqn{M \times
 	I\cdot K}{M x I*K} matrix where \eqn{M} is the length of the
       posterior sample, \eqn{I} is the number of subjects, and \eqn{K}

@@ -236,10 +236,10 @@ fitted.GLMM_MCMC <- function(object, x, z, statistic=c("median", "mean", "Q1", "
               fixef.start <- Eb[k, 1]
               ST.start <- list(matrix(sqrt(Vb[[k]]), nrow=1, ncol=1))     ## contains standard deviation of b              
               OPT <- options(warn=-1)
-              fitEY <- glmer(y ~ (1 | id), family=binomial(link=logit), data=fdata, nAGQ=nAGQ,
-                             start=list(fixef=fixef.start, ST=ST.start), control=list(maxIter=0))
+              fitEY <- lme4::glmer(y ~ (1 | id), family=binomial(link=logit), data=fdata, nAGQ=nAGQ,
+                                   start=list(fixef=fixef.start, ST=ST.start), control=list(maxIter=0))
               options(OPT)              
-              mfit[[r]][1, k] <- as.numeric(exp(logLik(fitEY) / 2))              
+              mfit[[r]][1, k] <- as.numeric(exp(lme4::logLik(fitEY) / 2))              
             }else{
               if (object$dist[r] == "poisson(log)"){
                 mfit[[r]][1, k] <- fit[[r]][1, k] * exp(as.numeric(Vb[[k]])/2)      ## = moment generating function of N in t=1
@@ -265,11 +265,11 @@ fitted.GLMM_MCMC <- function(object, x, z, statistic=c("median", "mean", "Q1", "
                   colnames(Z) <- paste("V", 1:ncol(Z), sep="")
                   fdata <- cbind(data.frame(y=rep(1, 2), id=1:2), Z)
                   OPT <- options(warn=-1)              
-                  fitEY <- glmer(formula(paste("y ~ (1 + ", paste(paste("V", 1:ncol(Z), sep=""), collapse=" + ", sep=""), " | id)", sep="")),
-                                         family=binomial(link=logit), data=fdata, nAGQ=nAGQ,
-                                         start=list(fixef=fixef.start, ST=ST.start), control=list(maxIter=0))
+                  fitEY <- lme4::glmer(formula(paste("y ~ (1 + ", paste(paste("V", 1:ncol(Z), sep=""), collapse=" + ", sep=""), " | id)", sep="")),
+                                       family=binomial(link=logit), data=fdata, nAGQ=nAGQ,
+                                       start=list(fixef=fixef.start, ST=ST.start), control=list(maxIter=0))
                   options(OPT)              
-                  mfit[[r]][i, k] <- as.numeric(exp(logLik(fitEY) / 2))
+                  mfit[[r]][i, k] <- as.numeric(exp(lme4::logLik(fitEY) / 2))
                 }
               }else{
                 if (object$dist[r] == "poisson(log)"){
@@ -301,12 +301,12 @@ fitted.GLMM_MCMC <- function(object, x, z, statistic=c("median", "mean", "Q1", "
                     ###cat("i=", i, ", k=", k, ":\n"); print(fdata)
                     ###if (i == 1 & k == 1) browser()
                     OPT <- options(warn=-1)              
-                    fitEY <- glmer(formula(paste("y ~ ", paste(paste("V", 1:ncol(X), sep=""), collapse=" + ", sep=""), " + (1 | id)", sep="")),
-                                           family=binomial(link=logit), data=fdata, nAGQ=nAGQ,
-                                           start=list(fixef=fixef.start, ST=ST.start), control=list(maxIter=0))
+                    fitEY <- lme4::glmer(formula(paste("y ~ ", paste(paste("V", 1:ncol(X), sep=""), collapse=" + ", sep=""), " + (1 | id)", sep="")),
+                                         family=binomial(link=logit), data=fdata, nAGQ=nAGQ,
+                                         start=list(fixef=fixef.start, ST=ST.start), control=list(maxIter=0))
                     options(OPT)
                     
-                    mfit[[r]][i, k] <- as.numeric(exp(logLik(fitEY) / 2))
+                    mfit[[r]][i, k] <- as.numeric(exp(lme4::logLik(fitEY) / 2))
                   }
                 }else{
                   if (object$dist[r] == "poisson(log)"){

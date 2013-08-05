@@ -17,6 +17,23 @@ TO DO LIST:
 
 ======================================================================================================================
 
+05/08/2013 (version 3.4):
+Most dependencies moved from "Depends" to "Imports" in the DESCRIPTION file
+and solved via importFrom in the NAMESPACE.
+
+18/07/2013 (version 3.2-4):
+Changes of names of some components inside the objects of classes NMixMCMC and GLMM_MCMC:
+comp.prob2 --> comp.prob_b
+comp.prob3 --> comp.prob
+
+poster.comp.prob1 --> poster.comp.prob_u
+poster.comp.prob2 --> poster.comp.prob_b
+poster.comp.prob3 --> poster.comp.prob
+
+quant.comp.prob1 --> quant.comp.prob_u
+quant.comp.prob2 --> quant.comp.prob_b
+quant.comp.prob3 --> quant.comp.prob
+
 08/02/2013:
 Support for parallel computation originally provided by snowfall/snow packages changed to parallel package.
 

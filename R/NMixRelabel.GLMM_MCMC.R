@@ -127,60 +127,60 @@ NMixRelabel.GLMM_MCMC <- function(object, type = c("mean", "weight", "stephens")
   ##### Clustering based on posterior P(alloc = k | y) or on P(alloc = k | theta, b, y) 
   ##### +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   if (object$K_b[1] == 1){
-    object$poster.comp.prob1 <- object$poster.comp.prob2 <- object$poster.comp.prob3 <- matrix(1, nrow = object$Cpar$I, ncol = 1)
+    object$poster.comp.prob_u <- object$poster.comp.prob_b <- object$poster.comp.prob <- matrix(1, nrow = object$Cpar$I, ncol = 1)
   }else{
 
     ### Using mean(I(r=k))
     MCMC$sum_Ir_b <- matrix(MCMC$sum_Ir_b, ncol = object$K_b[1], nrow = object$Cpar$I, byrow = TRUE)
     Denom <- apply(MCMC$sum_Ir_b, 1, sum)       ### this should be a vector of length I with all elements equal to the number of saved MCMC iterations 
-    object$poster.comp.prob1 <- MCMC$sum_Ir_b / matrix(rep(Denom, object$K_b[1]), ncol = object$K_b[1], nrow = object$Cpar$I)
+    object$poster.comp.prob_u <- MCMC$sum_Ir_b / matrix(rep(Denom, object$K_b[1]), ncol = object$K_b[1], nrow = object$Cpar$I)
 
     ### Using mean(P(r=k | theta, b, y))
-    object$poster.comp.prob2 <- matrix(MCMC$hatPr_b_b, ncol = object$K_b[1], nrow = object$Cpar$I, byrow = TRUE)
+    object$poster.comp.prob_b <- matrix(MCMC$hatPr_b_b, ncol = object$K_b[1], nrow = object$Cpar$I, byrow = TRUE)
 
     ### Using mean(P(r=k | theta, y))
-    object$poster.comp.prob3 <- matrix(MCMC$hatPr_obs, ncol = object$K_b[1], nrow = object$Cpar$I, byrow = TRUE)    
+    object$poster.comp.prob <- matrix(MCMC$hatPr_obs, ncol = object$K_b[1], nrow = object$Cpar$I, byrow = TRUE)    
   }  
 
   ##### Individual sampled values of P(alloc = k | theta, b, y)
   ##### and related quantiles
   ##### ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  object$comp.prob2 <- matrix(MCMC$Pr_b_b, ncol = object$K_b[1] * object$Cpar$I, nrow=keepMCMC, byrow=TRUE)
-  colnames(object$comp.prob2) <- paste("P(", rep(1:object$Cpar$I, each=object$K_b[1]), ",", rep(1:object$K_b[1], object$Cpar$I), ")", sep="")
+  object$comp.prob_b <- matrix(MCMC$Pr_b_b, ncol = object$K_b[1] * object$Cpar$I, nrow=keepMCMC, byrow=TRUE)
+  colnames(object$comp.prob_b) <- paste("P(", rep(1:object$Cpar$I, each=object$K_b[1]), ",", rep(1:object$K_b[1], object$Cpar$I), ")", sep="")
   
   if (length(prob)){
-    qq <- apply(object$comp.prob2, 2, quantile, prob=prob)
+    qq <- apply(object$comp.prob_b, 2, quantile, prob=prob)
     if (length(prob) == 1){
-      object$quant.comp.prob2 <- list(matrix(qq, ncol=object$K_b[1], byrow=TRUE))      
+      object$quant.comp.prob_b <- list(matrix(qq, ncol=object$K_b[1], byrow=TRUE))      
     }else{
-      object$quant.comp.prob2 <- list()
+      object$quant.comp.prob_b <- list()
       for (i in 1:length(prob)){
-        object$quant.comp.prob2[[i]] <- matrix(qq[i,], ncol=object$K_b[1], byrow=TRUE)
+        object$quant.comp.prob_b[[i]] <- matrix(qq[i,], ncol=object$K_b[1], byrow=TRUE)
       }  
     }  
-    names(object$quant.comp.prob2) <- paste(prob*100, "%", sep="")
+    names(object$quant.comp.prob_b) <- paste(prob*100, "%", sep="")
   }
-  if (!keep.comp.prob) object$comp.prob2 <- NULL
+  if (!keep.comp.prob) object$comp.prob_b <- NULL
     
   ##### Individual sampled values of P(alloc = k | theta, y), i.e., random effects directly integrated out
   ##### and related quantiles
   ##### ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  object$comp.prob3 <- matrix(MCMC$Pr_obs, ncol = object$K_b[1] * object$Cpar$I, nrow=keepMCMC, byrow=TRUE)
-  colnames(object$comp.prob3) <- paste("P(", rep(1:object$Cpar$I, each=object$K_b[1]), ",", rep(1:object$K_b[1], object$Cpar$I), ")", sep="")
+  object$comp.prob <- matrix(MCMC$Pr_obs, ncol = object$K_b[1] * object$Cpar$I, nrow=keepMCMC, byrow=TRUE)
+  colnames(object$comp.prob) <- paste("P(", rep(1:object$Cpar$I, each=object$K_b[1]), ",", rep(1:object$K_b[1], object$Cpar$I), ")", sep="")
   
   if (length(prob)){
-    qq <- apply(object$comp.prob3, 2, quantile, prob=prob)
+    qq <- apply(object$comp.prob, 2, quantile, prob=prob)
     if (length(prob) == 1){
-      object$quant.comp.prob3 <- list(matrix(qq, ncol=object$K_b[1], byrow=TRUE))      
+      object$quant.comp.prob <- list(matrix(qq, ncol=object$K_b[1], byrow=TRUE))      
     }else{
-      object$quant.comp.prob3 <- list()
+      object$quant.comp.prob <- list()
       for (i in 1:length(prob)){
-        object$quant.comp.prob3[[i]] <- matrix(qq[i,], ncol=object$K_b[1], byrow=TRUE)
+        object$quant.comp.prob[[i]] <- matrix(qq[i,], ncol=object$K_b[1], byrow=TRUE)
       }  
     }  
-    names(object$quant.comp.prob3) <- paste(prob*100, "%", sep="")
+    names(object$quant.comp.prob) <- paste(prob*100, "%", sep="")
   }
-  if (!keep.comp.prob) object$comp.prob3 <- NULL
+  if (!keep.comp.prob) object$comp.prob <- NULL
   
   ##### Posterior means for mixture components
   ##### ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

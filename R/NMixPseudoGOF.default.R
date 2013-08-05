@@ -218,7 +218,7 @@ NMixPseudoGOF.default <- function(x, scale, w, mu, Sigma, breaks, nbreaks=10, di
         ### Distribution function in verteces of rectangles
         ### ----------------------------------------------------
         FF <- rep(0, nrow(Grid))
-        for (g in 1:nrow(Grid)) for (k in 1:K) FF[g] <- FF[g] + w[k] * pmnorm(Grid[g,], mean=mu[k, c(i, j)], varcov=Sigma[[k]][c(i, j), c(i, j)])
+        for (g in 1:nrow(Grid)) for (k in 1:K) FF[g] <- FF[g] + w[k] * mnormt::pmnorm(Grid[g,], mean=mu[k, c(i, j)], varcov=Sigma[[k]][c(i, j), c(i, j)])
         FF <- matrix(FF, nrow=nBreak[i], ncol=nBreak[j])
 
         ### Rectangle probabilities

@@ -28,10 +28,15 @@ S3method(NMixSummComp, "default")
 S3method(NMixSummComp, "NMixMCMC")
 S3method(NMixSummComp, "GLMM_MCMC")
 
+S3method(NMixChainComp, "default")
+S3method(NMixChainComp, "NMixMCMC")
+S3method(NMixChainComp, "GLMM_MCMC")
+
 export("tracePlots")
 S3method(tracePlots, "default")
 S3method(tracePlots, "NMixMCMC")
 S3method(tracePlots, "GLMM_MCMC")
+S3method(tracePlots, "GLMM_MCMClist")
 
 exportClasses("NMixPlugCondDensJoint2", "NMixPlugCondDensMarg", "NMixPlugDensJoint2", "NMixPlugDensMarg", "NMixPredCDFMarg", "NMixPredCondCDFMarg", "NMixPredCondDensJoint2", "NMixPredCondDensMarg", "NMixPredDensJoint2", "NMixPredDensMarg")
 S3method(plot, "NMixPlugCondDensJoint2")
@@ -70,12 +75,11 @@ export("rDirichlet")
 export("rRotationMatrix")
 export("rSamplePair")
 
-# Import all packages listed as Imports or Depends
-import(
-  splines,
-  colorspace,
-  lme4,
-  mnormt,
-  coda,
-  parallel
-)
+# Selective import from other packages
+importFrom(splines,  "bs")               ## In: BsBasis
+importFrom(mnormt,   "pmnorm")           ## In: NMixPseudoGOF.default
+importFrom(parallel, "detectCores", "makeCluster", "parLapply", "stopCluster")            ## In: GLMM_MCMC, NMixMCMC, NMixRelabel.GLMM_MCMClist
+importFrom(lme4, "lmer", "glmer", "fixef", "vcov", "VarCorr", "ranef", "logLik")          ## In: GLMM_MCMCifit, fitted.GLMM_MCMC
+
+# Import full packages where more functions are used
+import(colorspace)

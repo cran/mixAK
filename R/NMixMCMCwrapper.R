@@ -382,17 +382,17 @@ NMixMCMCwrapper <- function(chain=1,
   ########## ======================================================================================================== ##########
   if (prior$priorK == "fixed"){
     if (CK == 1){
-      RET$poster.comp.prob1 <- RET$poster.comp.prob2 <- matrix(1, nrow = n, ncol = 1)
+      RET$poster.comp.prob_u <- RET$poster.comp.prob_b <- matrix(1, nrow = n, ncol = 1)
     }else{
 
       ### Using mean(I(r=k))
       MCMC$sum_Ir <- matrix(MCMC$sum_Ir, ncol = CK, nrow = n, byrow = TRUE)
       Denom <- apply(MCMC$sum_Ir, 1, sum)
-      RET$poster.comp.prob1 <- MCMC$sum_Ir / matrix(rep(Denom, CK), ncol = CK, nrow = n)
+      RET$poster.comp.prob_u <- MCMC$sum_Ir / matrix(rep(Denom, CK), ncol = CK, nrow = n)
 
       ### Using mean(P(r=k | theta, b, y))
       MCMC$sum_Pr_y <- matrix(MCMC$sum_Pr_y, ncol = CK, nrow = n, byrow = TRUE)
-      RET$poster.comp.prob2 <- MCMC$sum_Pr_y/ matrix(rep(Denom, CK), ncol = CK, nrow = n)        
+      RET$poster.comp.prob_b <- MCMC$sum_Pr_y/ matrix(rep(Denom, CK), ncol = CK, nrow = n)        
     }  
   }  
   

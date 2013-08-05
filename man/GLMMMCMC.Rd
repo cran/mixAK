@@ -238,7 +238,7 @@ GLMM_MCMC(y, dist = "gaussian", id, x, z, random.intercept,
     deviance related quantities.
   }  
   \item{parallel}{a logical value which indicates whether parallel
-    computation (based on a package \code{parallel}) and
+    computation (based on a package \code{parallel})
     should be used when running two chains for the purpose of \code{PED} calculation.}
   \item{silent}{a logical value indicating whether the information on
     the MCMC progress is to be supressed.}
@@ -327,10 +327,10 @@ GLMM_MCMC(y, dist = "gaussian", id, x, z, random.intercept,
   \item{summ.sigma_eps}{a matrix with posterior summary statistics for
     standard deviations of the error terms in the (mixed) models of
     continuous responses.}
-  \item{poster.comp.prob1}{a matrix which is present in the output object
+  \item{poster.comp.prob_u}{a matrix which is present in the output object
     if the number of mixture components in the distribution of random
     effects is fixed and equal to \eqn{K}. In that case,
-    \code{poster.comp.prob1} is a matrix with \eqn{K} columns and \eqn{I}
+    \code{poster.comp.prob_u} is a matrix with \eqn{K} columns and \eqn{I}
     rows (\eqn{I} is the number of subjects defining the longitudinal
     profiles or correlated observations) with estimated posterior component probabilities
     -- posterior means of the components of the underlying 0/1
@@ -344,10 +344,10 @@ GLMM_MCMC(y, dist = "gaussian", id, x, z, random.intercept,
     %These can be used for possible clustering of the subjects based on
     %the longitudinal profiles.
   }
-  \item{poster.comp.prob2}{a matrix which is present in the output object
+  \item{poster.comp.prob_b}{a matrix which is present in the output object
     if the number of mixture components in the distribution of random
     effects is fixed and equal to \eqn{K}. In that case,
-    \code{poster.comp.prob2} is a matrix with \eqn{K} columns and \eqn{I}
+    \code{poster.comp.prob_b} is a matrix with \eqn{K} columns and \eqn{I}
     rows (\eqn{I} is the number of subjects defining the longitudinal
     profiles or correlated observations)
     with estimated posterior component probabilities
@@ -476,8 +476,8 @@ GLMM_MCMC(y, dist = "gaussian", id, x, z, random.intercept,
   \item{gammaInv_eps}{matrix with \eqn{dimb} columns with MCMC chain(s) for inverses
     of the hyperparameter \eqn{\boldsymbol{\gamma}_b}{gamma[b]}.}
   \item{relabel_b}{a list which specifies the algorithm used to re-label
-    the MCMC output to compute \code{order_b}, \code{rank_b}, \code{poster.comp.prob1},
-    \code{poster.comp.prob2}, \code{poster.mean.w_b},
+    the MCMC output to compute \code{order_b}, \code{rank_b}, \code{poster.comp.prob_u},
+    \code{poster.comp.prob_b}, \code{poster.mean.w_b},
     \code{poster.mean.mu_b}, \code{poster.mean.Q_b},
     \code{poster.mean.Sigma_b}, \code{poster.mean.Li_b}. 
   }

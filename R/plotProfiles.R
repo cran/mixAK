@@ -6,6 +6,7 @@
 ##
 ##  CREATED:   23/03/2010 (as a stand alone function)
 ##             26/11/2010:  added to the mixAK package
+##             21/06/2013:  highlighting of selected profiles implemented
 ##
 ##  FUNCTIONS: plotProfiles
 ##
@@ -17,14 +18,20 @@
 ##
 plotProfiles <- function(ip, data, var, trans, tvar, gvar,
                          auto.layout=TRUE, lines=TRUE, points=FALSE, add=FALSE,
-                         xlab="Time", ylab, xaxt="s", yaxt="s", xlim, ylim, main, col, bg, lty=1, lwd=1, pch=21)
+                         xlab="Time", ylab, xaxt="s", yaxt="s", xlim, ylim, main,
+                         col, bg, lty=1, lwd=1, pch=21,
+                         cex.points=1,
+                         highlight, lines.highlight=TRUE, points.highlight=TRUE,
+                         col.highlight="red3", bg.highlight="orange",
+                         lty.highlight=1, lwd.highlight=2, pch.highlight=23,
+                         cex.highlight=1)
 {   
   if (lines){
     if (missing(col)) col <- rainbow_hcl(1, start=230, c=40)
   }
 
   if (points){
-    if (missing(col)) col <- "brown"
+    if (missing(col)) col <- "darkblue"
   }    
   if (missing(bg)) bg <- rainbow_hcl(1, start=230, c=40)
   
@@ -73,13 +80,29 @@ plotProfiles <- function(ip, data, var, trans, tvar, gvar,
     }  
     if (missing(trans)){
       if (lines) lines(ip[[i]][, tvar], ip[[i]][, var], col=COL, lty=lty, lwd=lwd)
-      if (points) points(ip[[i]][, tvar], ip[[i]][, var], col=COL, bg=BG, pch=pch)
+      if (points) points(ip[[i]][, tvar], ip[[i]][, var], col=COL, bg=BG, pch=pch, cex=cex.points)
     }else{  
       if (lines) lines(ip[[i]][, tvar], trans(ip[[i]][, var]), col=COL, lty=lty, lwd=lwd)
-      if (points) points(ip[[i]][, tvar], trans(ip[[i]][, var]), col=COL, bg=BG, pch=pch)      
+      if (points) points(ip[[i]][, tvar], trans(ip[[i]][, var]), col=COL, bg=BG, pch=pch, cex=cex.points)      
     }  
   }
   if (!missing(main)) title(main=main)
-    
+
+  if (!missing(highlight)){
+    for (hh in highlight){
+      if (hh < 1 | hh > length(ip)){
+        warning("profile number ", hh, " not highlighted.", sep = "")
+        next
+      }
+      if (missing(trans)){
+        if (lines.highlight)  lines(ip[[hh]][, tvar], ip[[hh]][, var],  col=col.highlight, lty=lty.highlight, lwd=lwd.highlight)
+        if (points.highlight) points(ip[[hh]][, tvar], ip[[hh]][, var], col=col.highlight, bg=bg.highlight, pch=pch.highlight, cex=cex.highlight)
+      }else{
+        if (lines.highlight)  lines(ip[[hh]][, tvar], trans(ip[[hh]][, var]),  col=col.highlight, lty=lty.highlight, lwd=lwd.highlight)
+        if (points.highlight) points(ip[[hh]][, tvar], trans(ip[[hh]][, var]), col=col.highlight, bg=bg.highlight, pch=pch.highlight, cex=cex.highlight)
+      }  
+    }  
+  }  
+  
   return(invisible(ip))
 }  

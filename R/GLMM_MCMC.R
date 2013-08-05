@@ -29,7 +29,7 @@ GLMM_MCMC <- function(y, dist = "gaussian", id, x, z, random.intercept,
                       store = c(b = FALSE), PED = TRUE, keep.chains = TRUE,
                       dens.zero = 1e-300, parallel = FALSE, silent = FALSE)
 {
-  require("lme4")
+  #require("lme4")
   thispackage <- "mixAK"
   
   DEBUG <- FALSE
@@ -221,19 +221,19 @@ GLMM_MCMC <- function(y, dist = "gaussian", id, x, z, random.intercept,
 ########## ============================== ##########  
   if (PED){
     if (parallel){
-      require("parallel")
+      #require("parallel")
 
-      if (detectCores() < 2) warning("It does not seem that at least 2 CPU cores are available needed for efficient parallel generation of the two chains.")      
-      cl <- makeCluster(2)      
+      if (parallel::detectCores() < 2) warning("It does not seem that at least 2 CPU cores are available needed for efficient parallel generation of the two chains.")      
+      cl <- parallel::makeCluster(2)      
       if (!silent) cat(paste("Parallel MCMC sampling of two chains started on ", date(), ".\n", sep=""))      
-      RET <- parLapply(cl, 1:2, GLMM_MCMCwrapper,
-                       data = dd,
-                       prior.alpha = palpha$prior.alpha, init.alpha = list(init.alpha, init2.alpha),
-                       scale.b = scale.b, prior.b = pbb$prior.b, init.b = list(init.b, init2.b),
-                       prior.eps = peps$prior.eps, init.eps = list(init.eps, init2.eps),
-                       Cpar = Cpar, nMCMC = nMCMC, store = store, keep.chains = keep.chains, silent = silent)
+      RET <- parallel::parLapply(cl, 1:2, GLMM_MCMCwrapper,
+                                 data = dd,
+                                 prior.alpha = palpha$prior.alpha, init.alpha = list(init.alpha, init2.alpha),
+                                 scale.b = scale.b, prior.b = pbb$prior.b, init.b = list(init.b, init2.b),
+                                 prior.eps = peps$prior.eps, init.eps = list(init.eps, init2.eps),
+                                 Cpar = Cpar, nMCMC = nMCMC, store = store, keep.chains = keep.chains, silent = silent)
       if (!silent) cat(paste("Parallel MCMC sampling finished on ", date(), ".\n", sep=""))
-      stopCluster(cl)
+      parallel::stopCluster(cl)
     }else{
       RET <- lapply(1:2, GLMM_MCMCwrapper,
                          data = dd,
@@ -291,7 +291,7 @@ GLMM_MCMC <- function(y, dist = "gaussian", id, x, z, random.intercept,
                              Dens_ZERO            = as.double(dens.zero),
                              EMin                 = as.double(EMin),
                  PACKAGE = thispackage)    
-    if (!silent) cat(paste("Computation of penalized expected deviance finished on ", date(), ".\n", sep=""))
+    if (!silent) cat(paste("Computation of penalized expected deviance finished on ", date(), ".\n\n", sep=""))
     if (resPED$err) stop("Something went wrong.")
 
     names(resPED$PED) <- c("D.expect", "p(opt)", "PED", "wp(opt)", "wPED")

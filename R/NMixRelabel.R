@@ -1,6 +1,6 @@
 ##
 ##  PURPOSE:   Re-label mixture components in the MCMC output obtained using the NMixMCMC/GLMM_MCMC function
-##             The function also re-calculates 'poster.comp.prob1' and 'poster.comp.prob2'.
+##             The function also re-calculates 'poster.comp.prob_u' and 'poster.comp.prob_b'.
 ##             It is only applicable for models with fixed number of mixture components.
 ##
 ##  AUTHOR:    Arnost Komarek (LaTeX: Arno\v{s}t Kom\'arek)

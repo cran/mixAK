@@ -406,17 +406,17 @@ GLMM_MCMCwrapper <- function(chain=1, data,
   if (data$dimb){
     if (prior.b$priorK == "fixed"){
       if (CK_b == 1){
-        RET$poster.comp.prob1 <- RET$poster.comp.prob2 <- matrix(1, nrow = Cpar$I, ncol = 1)
+        RET$poster.comp.prob_u <- RET$poster.comp.prob_b <- matrix(1, nrow = Cpar$I, ncol = 1)
       }else{
 
         ### Using mean(I(r=k))
         MCMC$sum_Ir_b <- matrix(MCMC$sum_Ir_b, ncol = CK_b, nrow = Cpar$I, byrow = TRUE)
         Denom <- apply(MCMC$sum_Ir_b, 1, sum)
-        RET$poster.comp.prob1 <- MCMC$sum_Ir_b / matrix(rep(Denom, CK_b), ncol = CK_b, nrow = Cpar$I)
+        RET$poster.comp.prob_u <- MCMC$sum_Ir_b / matrix(rep(Denom, CK_b), ncol = CK_b, nrow = Cpar$I)
 
         ### Using mean(P(r=k | theta, b, y))
         MCMC$sum_Pr_b_b<- matrix(MCMC$sum_Pr_b_b, ncol = CK_b, nrow = Cpar$I, byrow = TRUE)
-        RET$poster.comp.prob2 <- MCMC$sum_Pr_b_b/ matrix(rep(Denom, CK_b), ncol = CK_b, nrow = Cpar$I)        
+        RET$poster.comp.prob_b <- MCMC$sum_Pr_b_b/ matrix(rep(Denom, CK_b), ncol = CK_b, nrow = Cpar$I)        
       }  
     }  
   }  

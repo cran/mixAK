@@ -111,24 +111,24 @@ NMixPredDA <- function(object, y0, y1, censor, inity, info)
   ########## Discriminant analysis based on posterior P(alloc = k | y) or on P(alloc = k | theta, b, y) 
   ########## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   if (object$K[1] == 1){
-    poster.comp.prob1 <- poster.comp.prob2 <- matrix(1, nrow = dd$n, ncol = 1)
+    poster.comp.prob_u <- poster.comp.prob_b <- matrix(1, nrow = dd$n, ncol = 1)
   }else{
 
     ### Using mean(I(r=k))
     MCMC$sum_Ir <- matrix(MCMC$sum_Ir, ncol = object$K[1], nrow = dd$n, byrow = TRUE)
     Denom <- apply(MCMC$sum_Ir, 1, sum)       ### this should be a vector of length n with all elements equal to the number of saved MCMC iterations 
-    poster.comp.prob1 <- MCMC$sum_Ir / matrix(rep(Denom, object$K[1]), ncol = object$K[1], nrow = dd$n)
+    poster.comp.prob_u <- MCMC$sum_Ir / matrix(rep(Denom, object$K[1]), ncol = object$K[1], nrow = dd$n)
 
     ### Using mean(P(r=k | theta, b, y))
-    poster.comp.prob2 <- matrix(MCMC$hatPr_y, ncol = object$K[1], nrow = dd$n, byrow = TRUE)
+    poster.comp.prob_b <- matrix(MCMC$hatPr_y, ncol = object$K[1], nrow = dd$n, byrow = TRUE)
   }  
 
 
-  ########## Use poster.comp.prob2 to discriminate and return
+  ########## Use poster.comp.prob_b to discriminate and return
   ########## ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  colnames(poster.comp.prob2) <- paste("prob", 1:object$K[1], sep="")  
-  RET <- as.data.frame(poster.comp.prob2)
-  RET[,"component"] <- apply(poster.comp.prob2, 1, which.max)  
+  colnames(poster.comp.prob_b) <- paste("prob", 1:object$K[1], sep="")  
+  RET <- as.data.frame(poster.comp.prob_b)
+  RET[,"component"] <- apply(poster.comp.prob_b, 1, which.max)  
   return(RET)
 }
   
