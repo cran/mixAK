@@ -13,7 +13,7 @@ text-align:center;
 a {               /* link */
 /*color:#505050; */
 color:#0000BE;     
-font-weight:bold;
+/*font-weight:bold;*/
 text-decoration:none;
 }
 
@@ -44,6 +44,7 @@ width:100%;
 
 #sitename {
 color:#ffffff;
+background:rgb(204,0,0);
 height:92px;
 margin:0 20px 10px;
 text-align:left;
@@ -191,7 +192,7 @@ width:125px;
 
 /*** Content ***/
 
-#content,#contentalt {
+#content,#contentalt1,#contentalt2,#contentalt3,#contentalt4,#contentalt5,#contentalt6,#contentalt7,#contentalt8,#contentalt9,#contentalt10,#contentalt11,#contentalt12,#contentalt13 {
 background-color:#fafcff;
 border:1px solid #909090;
 color:#2a2a2a;
@@ -199,9 +200,21 @@ padding:15px 20px 5px;
 }
 
 #content {margin:0 200px;}
-#contentalt {margin:0 200px 0 20px;}
+#contentalt1 {margin:0 200px 0 20px;}
+#contentalt2 {margin:0 200px 0 20px;}
+#contentalt3 {margin:0 200px 0 20px;}
+#contentalt4 {margin:0 200px 0 20px;}
+#contentalt5 {margin:0 200px 0 20px;}
+#contentalt6 {margin:0 200px 0 20px;}
+#contentalt7 {margin:0 200px 0 20px;}
+#contentalt8 {margin:0 200px 0 20px;}
+#contentalt9 {margin:0 200px 0 20px;}
+#contentalt10 {margin:0 200px 0 20px;}
+#contentalt11 {margin:0 200px 0 20px;}
+#contentalt12 {margin:0 200px 0 20px;}
+#contentalt13 {margin:0 200px 0 20px;}
 
-#content h1,#content h2,#contentalt h1,#contentalt h2,#content h2.col,#contentalt h2.col {
+#content h1,#content h2,#content h2.col,#contentalt1 h1,#contentalt1 h2,#contentalt1 h2.col,#contentalt2 h1,#contentalt2 h2,#contentalt2 h2.col,#contentalt3 h1,#contentalt3 h2,#contentalt3 h2.col,#contentalt4 h1,#contentalt4 h2,#contentalt4 h2.col,#contentalt5 h1,#contentalt5 h2,#contentalt5 h2.col,#contentalt6 h1,#contentalt6 h2,#contentalt6 h2.col,#contentalt7 h1,#contentalt7 h2,#contentalt7 h2.col,#contentalt8 h1,#contentalt8 h2,#contentalt8 h2.col,#contentalt9 h1,#contentalt9 h2,#contentalt9 h2.col,#contentalt10 h1,#contentalt10 h2,#contentalt10 h2.col,#contentalt11 h1,#contentalt11 h2,#contentalt11 h2.col,#contentalt12 h1,#contentalt12 h2,#contentalt12 h2.col,#contentalt13 h1,#contentalt13 h2,#contentalt13 h2.col{
 background-color:inherit;
 color:#606060;
 font-size:1.8em;
@@ -211,18 +224,18 @@ margin:0 0 15px;
 padding:0;
 }
 
-#content h2,#contentalt h2 {
+#content h2,#contentalt1 h2,#contentalt2 h2,#contentalt3 h2,#contentalt4 h2,#contentalt5 h2,#contentalt6 h2,#contentalt7 h2,#contentalt8 h2,#contentalt9 h2,#contentalt10 h2,#contentalt11 h2,#contentalt12 h2,#contentalt13 h2 {
 font-size:1.6em;
 margin-bottom:10px;
 }
 
-#content h2.col,#contentalt h2.col {
+#content h2.col,#contentalt1 h2.col,#contentalt2 h2.col,#contentalt3 h2.col,#contentalt4 h2.col,#contentalt5 h2.col,#contentalt6 h2.col,#contentalt7 h2.col,#contentalt8 h2.col,#contentalt9 h2.col,#contentalt10 h2.col,#contentalt11 h2.col,#contentalt12 h2.col,#contentalt13 h2.col {
 color:#0000a0;
 font-size:1.6em;
 margin-bottom:10px;
 }
 
-#content img,#contentalt img {
+#content img,#contentalt1 img,#contentalt2 img,#contentalt3 img,#contentalt4 img,#contentalt5 img,#contentalt6 img,#contentalt7 img,#contentalt8 img,#contentalt9 img,#contentalt10 img,#contentalt11 img,#contentalt12 img,#contentalt13 img {
 border:1px solid #b0b0b0;
 /*float:left;*/
 margin:5px 15px 6px;
@@ -330,5 +343,15 @@ border-bottom:1px solid #000080;
 margin:2px 4px 2px 4px;
 /*font-weight:bold; */
 }
+
+a.redb {
+color: rgb(204,0,0);
+background:#ffffff;
+border-bottom:1px solid rgb(204,0,0); 
+/*border:1px solid #000080;*/
+margin:2px 4px 2px 4px;
+font-weight:bold;
+}
+
 
 /*** End of file ***/

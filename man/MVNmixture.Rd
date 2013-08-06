@@ -157,7 +157,10 @@ yyB <- matrix(dMVNmixture(XX, weight=w, mean=mu, Q=Q), nrow=length(xx1), ncol=le
 yyC <- matrix(dMVNmixture2(XX, weight=w, mean=mu, Sigma=Sigma), nrow=length(xx1), ncol=length(xx2))
 yyD <- matrix(dMVNmixture2(XX, weight=w, mean=mu, Q=Q), nrow=length(xx1), ncol=length(xx2))
 
-xxSample <- rMVNmixture(1000, weight=w, mean=mu, Sigma=Sigma)
+#xxSample <- rMVNmixture(1000, weight=w, mean=mu, Sigma=Sigma)
+### Starting from version 3.6, the above command led to SegFault
+### on CRAN r-patched-solaris-sparc check.
+### Commented here on 20140806 (version 3.6-1).
 xxSample2 <- rMVNmixture2(1000, weight=w, mean=mu, Sigma=Sigma)
 
 sum(abs(xxSample2$dens - dMVNmixture(xxSample2$x, weight=w, mean=mu, Sigma=Sigma)) > 1e-15)

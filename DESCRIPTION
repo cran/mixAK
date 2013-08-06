@@ -1,6 +1,6 @@
 Package: mixAK
-Version: 3.6
-Date: 2013-05-21
+Version: 3.6-1
+Date: 2013-08-06
 Title: Multivariate normal mixture models and mixtures of generalized
         linear mixed models including model based clustering
 Author: Arnošt Komárek <arnost.komarek@mff.cuni.cz>
@@ -11,7 +11,7 @@ Description: This package contains a mixture of statistical methods including th
 Encoding: UTF-8
 License: GPL (>= 3)
 URL: http://msekce.karlin.mff.cuni.cz/~komarek
-Packaged: 2014-05-21 09:20:40 UTC; komarek
+Packaged: 2014-08-06 15:09:41 UTC; komarek
 NeedsCompilation: yes
 Repository: CRAN
-Date/Publication: 2014-05-21 11:59:11
+Date/Publication: 2014-08-06 19:34:35
