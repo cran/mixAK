@@ -164,6 +164,7 @@ print(mod[[1]]$mixture_b[1:10,])
 ###################################################
 ### code chunk number 21: Autocorrelation for deviance chains
 ###################################################
+library("coda")
 DevChains <- mcmc.list(mcmc(mod[[1]]$Deviance), mcmc(mod[[2]]$Deviance))
 autocorr(DevChains)
 
@@ -412,12 +413,8 @@ HPDinterval(mcmc(LiSamp1))
 ###################################################
 delta <- 0.3
 tpred <- seq(0, 30, by = delta)
-tpred1 <- tpred - delta/2
-tpred2 <- tpred + delta/2
-fit <- fitted(mod[[1]], x =list("empty", "empty", tpred1), 
+fit <- fitted(mod[[1]], x =list("empty", "empty", tpred), 
                         z =list(tpred, tpred, "empty"),
-                        x2=list("empty", "empty", tpred2),
-                        z2=list(tpred, tpred, "empty"),
               glmer = TRUE)
 names(fit) <- c("lbili", "platelet", "spiders")
 
@@ -426,7 +423,8 @@ names(fit) <- c("lbili", "platelet", "spiders")
 ### code chunk number 56: Inaccurate calculation of cluster specific fitted longitudinal profiles based on posterior means without Gaussian quadrature
 ###################################################
 fit0 <- fitted(mod[[1]], x = list("empty", "empty", tpred), 
-                         z = list(tpred, tpred, "empty"))
+                         z = list(tpred, tpred, "empty"),
+               glmer = FALSE)
 names(fit0) <- c("lbili", "platelet", "spiders")
 
 
@@ -679,7 +677,7 @@ for (K in 1:4){
   if (K == 2){
     modK <- mod
   }else{    
-    set.seed(20042008)
+    set.seed(20042005 + K)
     modK <- GLMM_MCMC(y = PBC910[, c("lbili", "platelet", "spiders")], 
        dist = c("gaussian", "poisson(log)", "binomial(logit)"), 
        id = PBC910[, "id"],

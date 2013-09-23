@@ -70,7 +70,7 @@ export("dMVNmixture", "dMVNmixture2", "rMVNmixture", "rMVNmixture2")
 export("rTMVN")
 export("rTNorm")
 export("dMVT", "rMVT")
-export("dWishart", "rWishart")
+export("dWISHART", "rWISHART")
 export("rDirichlet")
 export("rRotationMatrix")
 export("rSamplePair")
@@ -78,8 +78,17 @@ export("rSamplePair")
 # Selective import from other packages
 importFrom(splines,  "bs")               ## In: BsBasis
 importFrom(mnormt,   "pmnorm")           ## In: NMixPseudoGOF.default
-importFrom(parallel, "detectCores", "makeCluster", "parLapply", "stopCluster")            ## In: GLMM_MCMC, NMixMCMC, NMixRelabel.GLMM_MCMClist
-importFrom(lme4, "lmer", "glmer", "fixef", "vcov", "VarCorr", "ranef", "logLik")          ## In: GLMM_MCMCifit, fitted.GLMM_MCMC
+importFrom(parallel, "detectCores", "makeCluster", "parLapply", "stopCluster")      ## In: GLMM_MCMC, NMixMCMC, NMixRelabel.GLMM_MCMClist
+importFrom(lme4, "lmer", "glmer", "fixef", "VarCorr", "ranef", "glmerControl")      ## In: GLMM_MCMCifit
+importClassesFrom(lme4, "glmerMod", "lmerMod", "merMod")
+     ### From lme4, we additionally use: vcov, which is defined in the lme4 (1.0-4) NAMESPACE as:
+     ###   importFrom(stats, vcov)
+     ###   S3method(vcov, merMod)
+     ###
+     ### Telling importFrom(lme4, "vcov") here causes error: objects `vcov' are not exported by 'namespace:lme4'
+     ### I guess that by importing the merMod class, it is no more necessary import vcov explicitely...
+     ###
+importFrom(fastGHQuad, "gaussHermiteData", "aghQuad")           ## In: fitted.GLMM_MCMC
 
 # Import full packages where more functions are used
 import(colorspace)

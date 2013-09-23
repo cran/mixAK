@@ -17,6 +17,18 @@ TO DO LIST:
 
 ======================================================================================================================
 
+22/09/2013 (version 3.5):
+Gauss-Hermite quadrature inside the fitted.GLMM_MCMC function implemented using the 
+functions from the 'fastGHQuad' package. Arguments x2, z2 are no more needed.
+
+16/08/2013 (version 3.4-2):
+Function NMixRelabel.GLMM_MCMClist allows for a joint processing of two chains
+(jointly = TRUE).
+
+06/08/2013 (version 3.4-1):
+Functions rWishart and dWishart renamed to rWISHART and dWISHART to avoid
+conflicts with rWishart in package stats.
+
 05/08/2013 (version 3.4):
 Most dependencies moved from "Depends" to "Imports" in the DESCRIPTION file
 and solved via importFrom in the NAMESPACE.

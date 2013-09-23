@@ -1,7 +1,7 @@
 \name{Wishart}
 \alias{Wishart}
-\alias{dWishart}
-\alias{rWishart}
+\alias{dWISHART}
+\alias{rWISHART}
 \title{
  Wishart distribution
 }
@@ -13,6 +13,11 @@
   Gelman (2004) is assumed, that is, if
   \eqn{\boldsymbol{W}\sim\mbox{Wishart}(\nu,\,\boldsymbol{S})}{W~Wishart(nu,S)} then
   \deqn{\mbox{E}(\boldsymbol{W}) = \nu \boldsymbol{S}.}{E(W) = nu*S.}
+
+  Prior to version 3.4-1 of this package, functions \code{dWISHART} and
+  \code{rWISHART} were called as \code{dWishart} and \code{rWishart},
+  respectively. The names were changed in order to avoid conflicts with
+  \code{\link[stats]{rWishart}} from a standard package \code{stats}.
 }
 \details{
   The density of the Wishart distribution is the following
@@ -35,9 +40,9 @@
   in Ripley (1987, pp. 99).
 }
 \usage{
-dWishart(W, df, S, log=FALSE)
+dWISHART(W, df, S, log=FALSE)
 
-rWishart(n, df, S)
+rWISHART(n, df, S)
 }
 \arguments{
   \item{W}{Either a matrix with the same number of rows and columns as
@@ -53,10 +58,10 @@ rWishart(n, df, S)
 \value{
   Some objects.
 }
-\section{Value for dWishart}{
+\section{Value for dWISHART}{
  A numeric vector with evaluated (log-)density.
 }
-\section{Value for rWishart}{
+\section{Value for rWISHART}{
   If \code{n} equals 1 then a sampled symmetric matrix W is returned.
   
   If \code{n} > 1 then a matrix with sampled points (lower triangles of
@@ -71,6 +76,9 @@ rWishart(n, df, S)
   \emph{Stochastic Simulation}.
   New York: John Wiley and Sons.  
 }
+\seealso{
+  \code{\link[stats]{rWishart}}.
+}
 \author{
   Arnošt Komárek \email{arnost.komarek[AT]mff.cuni.cz}
 }  
@@ -80,18 +88,18 @@ set.seed(1977)
 df <- 1
 S  <- 3
 
-w <- rWishart(n=1000, df=df, S=S)
+w <- rWISHART(n=1000, df=df, S=S)
 mean(w)    ## should be close to df*S
 var(w)     ## should be close to 2*df*S^2
 
-dWishart(w[1], df=df, S=S)
-dWishart(w[1], df=df, S=S, log=TRUE)
+dWISHART(w[1], df=df, S=S)
+dWISHART(w[1], df=df, S=S, log=TRUE)
 
-dens.w <- dWishart(w, df=df, S=S)
+dens.w <- dWISHART(w, df=df, S=S)
 dens.wG <- dgamma(w, shape=df/2, rate=1/(2*S))
 rbind(dens.w[1:10], dens.wG[1:10])
 
-ldens.w <- dWishart(w, df=df, S=S, log=TRUE)
+ldens.w <- dWISHART(w, df=df, S=S, log=TRUE)
 ldens.wG <- dgamma(w, shape=df/2, rate=1/(2*S), log=TRUE)
 rbind(ldens.w[1:10], ldens.wG[1:10])
 
@@ -100,16 +108,16 @@ rbind(ldens.w[1:10], ldens.wG[1:10])
 df <- 2
 S <- matrix(c(1,3,3,13), nrow=2)
 
-print(w2a <- rWishart(n=1, df=df, S=S))
-dWishart(w2a, df=df, S=S)
+print(w2a <- rWISHART(n=1, df=df, S=S))
+dWISHART(w2a, df=df, S=S)
 
-w2 <- rWishart(n=1000, df=df, S=S)
+w2 <- rWISHART(n=1000, df=df, S=S)
 print(w2[1:10,])
 apply(w2, 2, mean)                ## should be close to df*S
 (df*S)[lower.tri(S, diag=TRUE)]
 
-dens.w2 <- dWishart(w2, df=df, S=S)
-ldens.w2 <- dWishart(w2, df=df, S=S, log=TRUE)
+dens.w2 <- dWISHART(w2, df=df, S=S)
+ldens.w2 <- dWISHART(w2, df=df, S=S, log=TRUE)
 cbind(w2[1:10,], data.frame(Density=dens.w2[1:10], Log.Density=ldens.w2[1:10]))
 
 
@@ -117,16 +125,16 @@ cbind(w2[1:10,], data.frame(Density=dens.w2[1:10], Log.Density=ldens.w2[1:10]))
 df <- 3.5
 S <- matrix(c(1,2,3,2,20,26,3,26,70), nrow=3)
 
-print(w3a <- rWishart(n=1, df=df, S=S))
-dWishart(w3a, df=df, S=S)
+print(w3a <- rWISHART(n=1, df=df, S=S))
+dWISHART(w3a, df=df, S=S)
 
-w3 <- rWishart(n=1000, df=df, S=S)
+w3 <- rWISHART(n=1000, df=df, S=S)
 print(w3[1:10,])
 apply(w3, 2, mean)                ## should be close to df*S
 (df*S)[lower.tri(S, diag=TRUE)]
 
-dens.w3 <- dWishart(w3, df=df, S=S)
-ldens.w3 <- dWishart(w3, df=df, S=S, log=TRUE)
+dens.w3 <- dWISHART(w3, df=df, S=S)
+ldens.w3 <- dWISHART(w3, df=df, S=S, log=TRUE)
 cbind(w3[1:10,], data.frame(Density=dens.w3[1:10], Log.Density=ldens.w3[1:10]))
 }
 \keyword{distribution}

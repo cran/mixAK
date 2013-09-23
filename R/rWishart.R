@@ -8,13 +8,15 @@
 ##  CREATED:   12/11/2007
 ##
 ##  FUNCTION:  rWishart (12/11/2007)
+##              -> renamed to rWISHART on 06/08/2013 (version 3.4-1)
+##                 to avoid conflicts with rWishart from package stats
 ##
 ## ======================================================================
 
 ## *************************************************************
 ## rWishart
 ## *************************************************************
-rWishart <- function(n, df, S)
+rWISHART <- function(n, df, S)
 {
   thispackage <- "mixAK"
 

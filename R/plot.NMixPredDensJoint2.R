@@ -61,7 +61,7 @@ plot.NMixPredDensJoint2 <- function(x, K=0, contour=FALSE, add.contour=TRUE, col
       contour(x$x[[1]], x$x[[2]], dx, col=col, main=main, xlab=xlab, ylab=ylab, lwd=lwd, ...)
     }else{
       if (missing(col)){
-        require("colorspace")
+        #require("colorspace")
         col <- rev(heat_hcl(33, c.=c(80, 30), l=c(30, 90), power=c(1/5, 1.3)))
       }
       image(x$x[[1]], x$x[[2]], dx, col=col, main=main, xlab=xlab, ylab=ylab, ...)
@@ -106,7 +106,7 @@ plot.NMixPredDensJoint2 <- function(x, K=0, contour=FALSE, add.contour=TRUE, col
           contour(x$x[[m0]], x$x[[m1]], dx, col=col, main=main, xlab=xlab, ylab=ylab, lwd=lwd, ...)
         }else{
           if (missing(col)){
-            require("colorspace")
+            #require("colorspace")
             col <- rev(heat_hcl(33, c.=c(80, 30), l=c(30, 90), power=c(1/5, 1.3)))
           }
           image(x$x[[m0]], x$x[[m1]], dx, col=col, main=main, xlab=xlab, ylab=ylab, ...)

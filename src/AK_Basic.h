@@ -73,27 +73,27 @@ const double _TOL_QR = 1e-07;             // tolerance for the QR decomposition
 inline double
 ident_AK(const double& x){
   return(x);
-};
+}
 
 /*** exp(x)/(1 + exp(x)) ***/
 inline double
 invlogit_AK(const double& x){
   const double exp_x=exp(x);
   return (x < _EMIN ? 0.0 : (x > _EMAX ? 1.0 : exp_x/(1 + exp_x)));
-};
+}
 
 /*** exp(x) ***/
 inline double
 exp_AK(const double& x){
   return (x < _EMIN ? 0.0 : (x > _EMAX ? R_PosInf : exp(x)));
-};
+}
 
  
 /*** exp(x), returning something > 0 even for very negative values ***/
 inline double
 exp0_AK(const double& x){
   return (x < _EMIN0 ? 0.0 : (x > _EMAX ? R_PosInf : exp(x)));
-};
+}
 
 /*** log(x) ***/
 inline double

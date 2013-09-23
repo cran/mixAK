@@ -9,6 +9,8 @@
 ##             26/11/2010:  added to the mixAK package
 ##             27/12/2010:  argument statistic added
 ##             17/09/2012:  warning for code under overall=TRUE added
+##             22/09/2013:  Gaussian quadrature provided by package fastGHQuad and no more
+##                          by logLik from glmer
 ##
 ##  FUNCTIONS: fitted.GLMM_MCMC
 ##
@@ -19,7 +21,7 @@
 ## *************************************************************
 ##
 fitted.GLMM_MCMC <- function(object, x, z, statistic=c("median", "mean", "Q1", "Q3", "2.5%", "97.5%"), overall=FALSE,
-                             glmer=FALSE, nAGQ=10, x2, z2, ...)
+                             glmer=FALSE, nAGQ=100, ...)
 {
   if (overall){
     warning("with overall=FALSE this function might be imprecise.")
@@ -31,6 +33,8 @@ fitted.GLMM_MCMC <- function(object, x, z, statistic=c("median", "mean", "Q1", "
     cat("That is, the original normal mixture is approximated\n")
     cat("by a one-component normal distribution.\n")
   }  
+
+  QRule <- fastGHQuad::gaussHermiteData(nAGQ)       ### needed by fastGHQuad::aghQuad function used in case of a binomial response
   
   statistic <- match.arg(statistic)
   
@@ -51,13 +55,6 @@ fitted.GLMM_MCMC <- function(object, x, z, statistic=c("median", "mean", "Q1", "
     if (RR == 1 & !is.list(x)) x <- list(x)
     if (!is.list(x)) stop("x must be a list")
     if (length(x) != RR) stop("x must be a list of length", RR)
-
-    if (glmer){
-      if (missing(x2)) stop("x2 must be given")    
-      if (RR == 1 & !is.list(x2)) x2 <- list(x2)
-      if (!is.list(x2)) stop("x2 must be a list")
-      if (length(x2) != RR) stop("x2 must be a list of length", RR)
-    }      
   }
   
   if (sum(object$q)){
@@ -65,13 +62,6 @@ fitted.GLMM_MCMC <- function(object, x, z, statistic=c("median", "mean", "Q1", "
     if (RR == 1 & !is.list(z)) z <- list(z)
     if (!is.list(z)) stop("z must be a list")
     if (length(z) != RR) stop("z must be a list of length", RR)
-
-    if (glmer){
-      if (missing(z2)) stop("z2 must be given")
-      if (RR == 1 & !is.list(z2)) z2 <- list(z2)
-      if (!is.list(z2)) stop("z2 must be a list")
-      if (length(z2) != RR) stop("z2 must be a list of length", RR)
-    }  
   }    
   
   #### Posterior summary statistic of means of random effects in each component
@@ -149,18 +139,10 @@ fitted.GLMM_MCMC <- function(object, x, z, statistic=c("median", "mean", "Q1", "
         if (object$q[r] == 1){
           if (is.matrix(z[[r]])) if (ncol(z[[r]]) != 1) stop("z[[", r, "]] must have 1 column", sep="") 
           z[[r]] <- matrix(z[[r]], ncol=1)
-          if (glmer){
-            if (is.matrix(z2[[r]])) if (ncol(z2[[r]]) != 1) stop("z2[[", r, "]] must have 1 column", sep="") 
-            z2[[r]] <- matrix(z2[[r]], ncol=1)
-          }  
         }
         
         if (!is.matrix(z[[r]])) stop("z[[", r, "]] must be a matrix", sep="")
         if (ncol(z[[r]]) != object$q[r]) stop("z[[", r, "]] must have ", object$q[r], " columns", sep="")
-        if (glmer){
-          if (!is.matrix(z2[[r]])) stop("z2[[", r, "]] must be a matrix", sep="")
-          if (ncol(z2[[r]]) != object$q[r]) stop("z2[[", r, "]] must have ", object$q[r], " columns", sep="")
-        }  
       }  
 
       if (object$random.intercept[r]){
@@ -189,18 +171,10 @@ fitted.GLMM_MCMC <- function(object, x, z, statistic=c("median", "mean", "Q1", "
           if (object$p[r] == 1){
             if (is.matrix(x[[r]])) if (ncol(x[[r]]) != 1) stop("x[[", r, "]] must have 1 column", sep="")             
             x[[r]] <- matrix(x[[r]], ncol=1)
-            if (glmer){
-              if (is.matrix(x2[[r]])) if (ncol(x2[[r]]) != 1) stop("x2[[", r, "]] must have 1 column", sep="")             
-              x2[[r]] <- matrix(x2[[r]], ncol=1)       
-            }  
           }
           
           if (!is.matrix(x[[r]])) stop("x[[", r, "]] must be a matrix", sep="")
           if (ncol(x[[r]]) != object$p[r]) stop("x[[", r, "]] must have ", object$p[r], " columns", sep="")
-          if (glmer){
-            if (!is.matrix(x2[[r]])) stop("x2[[", r, "]] must be a matrix", sep="")
-            if (ncol(x2[[r]]) != object$p[r]) stop("x2[[", r, "]] must have ", object$p[r], " columns", sep="")            
-          }  
           
           if (object$q[r]){      ## fit[[r]] is n x K matrix
             fit[[r]] <- fit[[r]] + matrix(rep(x[[r]] %*% alpha_r, K_b), ncol=K_b)
@@ -230,16 +204,30 @@ fitted.GLMM_MCMC <- function(object, x, z, statistic=c("median", "mean", "Q1", "
         ### There is only random intercept in a model, nothing else otherwise.
         if (object$random.intercept[r] & object$q[r] == 0 & object$p[r] == 0){
           mfit[[r]] <- matrix(NA, nrow=1, ncol=K_b)                    
-          for (k in 1:K_b){                        
+          for (k in 1:K_b){
+
+            SDbk <- sqrt(as.numeric(Vb[[k]]))            
+            
             if (object$dist[r] == "binomial(logit)"){
-              fdata <- data.frame(y=rep(1, 2), id=1:2)
-              fixef.start <- Eb[k, 1]
-              ST.start <- list(matrix(sqrt(Vb[[k]]), nrow=1, ncol=1))     ## contains standard deviation of b              
-              OPT <- options(warn=-1)
-              fitEY <- lme4::glmer(y ~ (1 | id), family=binomial(link=logit), data=fdata, nAGQ=nAGQ,
-                                   start=list(fixef=fixef.start, ST=ST.start), control=list(maxIter=0))
-              options(OPT)              
-              mfit[[r]][1, k] <- as.numeric(exp(lme4::logLik(fitEY) / 2))              
+
+              ### Integrand
+              Integrand <- function(b){
+                return((exp(b) / (1 + exp(b))) * dnorm(b, mean = Eb[k,], sd = SDbk))
+              }
+
+              ### Mode of the integrand including the Hessian
+              #ModeIntegr <- optimize(f = Integrand, interval = Eb[k,] + c(-7, 7)*SDbk, maximum = TRUE)
+              #muHat <- ModeIntegr$maximum
+              #sigmaHat <- SDbk
+              
+              ModeIntegr <- optim(par = Eb[k,], fn = Integrand, hessian = TRUE, control = list(fnscale = -1), method = "Brent", lower = Eb[k,] - 10*SDbk, upper = Eb[k,] + 10*SDbk)
+              muHat <- ModeIntegr$par
+              Hess <- as.numeric(ModeIntegr$hessian)
+              if (Hess < 0) sigmaHat <- 1/sqrt(-Hess) else sigmaHat <- SDbk
+
+              ### Integral by the Gauss-Hermite quadrature
+              mfit[[r]][1, k] <- fastGHQuad::aghQuad(Integrand, muHat = muHat, sigmaHat = sigmaHat, rule = QRule)
+              
             }else{
               if (object$dist[r] == "poisson(log)"){
                 mfit[[r]][1, k] <- fit[[r]][1, k] * exp(as.numeric(Vb[[k]])/2)      ## = moment generating function of N in t=1
@@ -255,21 +243,23 @@ fitted.GLMM_MCMC <- function(object, x, z, statistic=c("median", "mean", "Q1", "
             mfit[[r]] <- matrix(NA, nrow=nrow(z[[r]]), ncol=K_b)
             for (k in 1:K_b){                        
               if (object$dist[r] == "binomial(logit)"){
-                fixef.start <- Eb[k, ]
-                ##ST.start <-  I DO NOT KNOW HOW TO CREATE ST OBJECT FOR A MATRIX WITH DIMENSION > 1
-                ##             IT IS NOT A USUAL CHOLESKY DECOMPOSITION...
-                warning("Some results may not be correct. AK does not know how to create an ST object for a general matrix.")
-                ST.start <- list(t(chol(Vb[[k]])))      ### TEMPORAR, APPROX. CORRECT?                
+                
                 for (i in 1:nrow(mfit[[r]])){
-                  Z <- rbind(z[[r]][i,], z2[[r]][i,])
-                  colnames(Z) <- paste("V", 1:ncol(Z), sep="")
-                  fdata <- cbind(data.frame(y=rep(1, 2), id=1:2), Z)
-                  OPT <- options(warn=-1)              
-                  fitEY <- lme4::glmer(formula(paste("y ~ (1 + ", paste(paste("V", 1:ncol(Z), sep=""), collapse=" + ", sep=""), " | id)", sep="")),
-                                       family=binomial(link=logit), data=fdata, nAGQ=nAGQ,
-                                       start=list(fixef=fixef.start, ST=ST.start), control=list(maxIter=0))
-                  options(OPT)              
-                  mfit[[r]][i, k] <- as.numeric(exp(lme4::logLik(fitEY) / 2))
+
+                  ### Integrand
+                  Integrand <- function(b){
+                    eta.random <- as.numeric(crossprod(z[[r]][i,], b))
+                    return((exp(eta.random) / (1 + exp(eta.random))) * dMVN(b, mean = Eb[k,], Sigma = Vb[[k]]))
+                  }
+
+                  ### Mode of the integrand including the Hessian
+                  ModeIntegr <- optim(par = Eb[k,], fn = Integrand, hessian = TRUE, control = list(fnscale = -1))
+                  muHat <- ModeIntegr$par
+                  Hess <- ModeIntegr$hessian
+
+                  ### Integral by the Laplace approximation
+                  stop("glmer calculation [random.intercept & q > 0 & p = 0] not yet implemented")                  
+                  #mfit[[r]][i, k] <- 
                 }
               }else{
                 if (object$dist[r] == "poisson(log)"){
@@ -287,27 +277,34 @@ fitted.GLMM_MCMC <- function(object, x, z, statistic=c("median", "mean", "Q1", "
             ### Random intercept is the only random effect in a model + there are some fixed effects as well
             if (object$random.intercept[r] & object$q[r] == 0 & object$p[r] > 0){
               mfit[[r]] <- matrix(NA, nrow=nrow(x[[r]]), ncol=K_b)
-              mfit2 <- matrix(NA, nrow=nrow(x[[r]]), ncol=K_b)
+              
               for (k in 1:K_b){                        
                 if (object$dist[r] == "binomial(logit)"){
-                  fixef.start <- c(Eb[k, ], alpha_r)
-                  ST.start <- list(matrix(sqrt(Vb[[k]]), nrow=1, ncol=1))     ## contains standard deviation of b
+
+                  SDbk <- sqrt(as.numeric(Vb[[k]]))
+                  
                   for (i in 1:nrow(mfit[[r]])){
 
-                    
-                    X <- rbind(x[[r]][i,], x2[[r]][i,])
-                    colnames(X) <- paste("V", 1:ncol(X), sep="")
-                    fdata <- cbind(data.frame(y=rep(1, 2), id=1:2), X)
-                    ###cat("i=", i, ", k=", k, ":\n"); print(fdata)
-                    ###if (i == 1 & k == 1) browser()
-                    OPT <- options(warn=-1)              
-                    fitEY <- lme4::glmer(formula(paste("y ~ ", paste(paste("V", 1:ncol(X), sep=""), collapse=" + ", sep=""), " + (1 | id)", sep="")),
-                                         family=binomial(link=logit), data=fdata, nAGQ=nAGQ,
-                                         start=list(fixef=fixef.start, ST=ST.start), control=list(maxIter=0))
-                    options(OPT)
-                    
-                    mfit[[r]][i, k] <- as.numeric(exp(lme4::logLik(fitEY) / 2))
+                    ### Integrand
+                    eta.fixed <- as.numeric(crossprod(x[[r]][i,], alpha_r))
+                    Integrand <- function(b){
+                      return((exp(b + eta.fixed) / (1 + exp(b + eta.fixed))) * dnorm(b, mean = Eb[k,], sd = SDbk))
+                    }
+
+                    ### Mode of the integrand including the Hessian
+                    #ModeIntegr <- optimize(f = Integrand, interval = Eb[k,] + c(-10, 10)*SDbk, maximum = TRUE)
+                    #muHat <- ModeIntegr$maximum
+                    #sigmaHat <- SDbk
+                
+                    ModeIntegr <- optim(par = Eb[k,], fn = Integrand, hessian = TRUE, control = list(fnscale = -1), method = "Brent", lower = Eb[k,] - 10*SDbk, upper = Eb[k,] + 10*SDbk)
+                    muHat <- ModeIntegr$par
+                    Hess <- as.numeric(ModeIntegr$hessian)
+                    if (Hess < 0) sigmaHat <- 1/sqrt(-Hess) else sigmaHat <- SDbk
+
+                    ### Integral by the Gauss-Hermite quadrature
+                    mfit[[r]][i, k] <- fastGHQuad::aghQuad(Integrand, muHat = muHat, sigmaHat = sigmaHat, rule = QRule)
                   }
+                  
                 }else{
                   if (object$dist[r] == "poisson(log)"){
                     mfit[[r]][, k] <- fit[[r]][, k] * exp(as.numeric(Vb[[k]])/2)      ## = moment generating function of N in t=1

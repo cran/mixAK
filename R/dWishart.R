@@ -8,6 +8,8 @@
 ##  CREATED:   12/11/2007
 ##
 ##  FUNCTIONS:  dWishart (16/01/2008)
+##              -> renamed to dWISHART on 06/08/2013 (version 3.4-1)
+##                 to avoid conflicts with rWishart from package stats
 ##              
 ##
 ## ======================================================================
@@ -15,7 +17,7 @@
 ## *************************************************************
 ## dWishart
 ## *************************************************************
-dWishart <- function(W, df, S, log=FALSE)
+dWISHART <- function(W, df, S, log=FALSE)
 {
   thispackage <- "mixAK"
 

@@ -39,7 +39,7 @@
 }  
 \examples{
 set.seed(770328)
-A <- rWishart(1, 5, diag(4))
+A <- rWISHART(1, 5, diag(4))
 Ainv <- MatMPpinv(A)
 
 ### Check the conditions

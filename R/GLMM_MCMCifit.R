@@ -275,10 +275,10 @@ GLMM_MCMCifit <- function(do.init, na.complete,
                  else if (dist[s] %in% c("poisson(log)")) ifit <- lme4::glmer(FORM, family=poisson(link=log), data=dta)            
 
             iintcpt[s, "Est"] <- lme4::fixef(ifit)["(Intercept)"]
-            iintcpt[s, "SE"]  <- as.numeric(sqrt(lme4::vcov(ifit)[1, 1]))
+            iintcpt[s, "SE"]  <- as.numeric(sqrt(vcov(ifit)[1, 1]))                                           ### lme4::vcov
             is.intcpt[s] <- TRUE        
          
-            iEranef[[s]] <- data.frame(Est=lme4::fixef(ifit)[-1], SE=sqrt(diag(as.matrix(lme4::vcov(ifit)))[-1]))
+            iEranef[[s]] <- data.frame(Est=lme4::fixef(ifit)[-1], SE=sqrt(diag(as.matrix(vcov(ifit)))[-1]))   ### lme4::vcov
             is.ranef[s] <- TRUE
           }
             
@@ -299,7 +299,7 @@ GLMM_MCMCifit <- function(do.init, na.complete,
               iintcpt[s, "Est"] <- 0
               iintcpt[s, "SE"]  <- 0
 
-              iEranef[[s]] <- data.frame(Est=lme4::fixef(ifit), SE=sqrt(diag(as.matrix(lme4::vcov(ifit)))))
+              iEranef[[s]] <- data.frame(Est=lme4::fixef(ifit), SE=sqrt(diag(as.matrix(vcov(ifit)))))   ### lme4::vcov
               is.ranef[s] <- TRUE
             }
               
@@ -328,7 +328,7 @@ GLMM_MCMCifit <- function(do.init, na.complete,
                 iintcpt[s, "Est"] <- 0
                 iintcpt[s, "SE"]  <- 0
 
-                iEranef[[s]] <- data.frame(Est=lme4::fixef(ifit), SE=sqrt(diag(as.matrix(lme4::vcov(ifit)))))
+                iEranef[[s]] <- data.frame(Est=lme4::fixef(ifit), SE=sqrt(diag(as.matrix(vcov(ifit)))))   ### lme4::vcov
                 is.ranef[s] <- TRUE
               }
                 
@@ -367,13 +367,13 @@ GLMM_MCMCifit <- function(do.init, na.complete,
                  else if (dist[s] %in% c("poisson(log)")) ifit <- lme4::glmer(FORM, family=poisson(link=log), data=dta)                        
 
             iintcpt[s, "Est"] <- lme4::fixef(ifit)["(Intercept)"]
-            iintcpt[s, "SE"]  <- as.numeric(sqrt(lme4::vcov(ifit)[1, 1]))
+            iintcpt[s, "SE"]  <- as.numeric(sqrt(vcov(ifit)[1, 1]))                                                                                  ### lme4::vcov
             is.intcpt[s] <- TRUE
       
-            ifixef[[s]] <- data.frame(Est=lme4::fixef(ifit)[2:(1+ncol(x[[s]]))], SE=sqrt(diag(as.matrix(lme4::vcov(ifit)))[2:(1+ncol(x[[s]]))]))
+            ifixef[[s]] <- data.frame(Est=lme4::fixef(ifit)[2:(1+ncol(x[[s]]))], SE=sqrt(diag(as.matrix(vcov(ifit)))[2:(1+ncol(x[[s]]))]))           ### lme4::vcov
             is.fixef[s] <- TRUE
       
-            iEranef[[s]] <- data.frame(Est=lme4::fixef(ifit)[-(1:(1+ncol(x[[s]])))], SE=sqrt(diag(as.matrix(lme4::vcov(ifit)))[-(1:(1+ncol(x[[s]])))]))
+            iEranef[[s]] <- data.frame(Est=lme4::fixef(ifit)[-(1:(1+ncol(x[[s]])))], SE=sqrt(diag(as.matrix(vcov(ifit)))[-(1:(1+ncol(x[[s]])))]))    ### lme4::vcov
             is.ranef[s] <- TRUE
           }
             
@@ -399,10 +399,10 @@ GLMM_MCMCifit <- function(do.init, na.complete,
               iintcpt[s, "Est"] <- 0
               iintcpt[s, "SE"]  <- 0
 
-              ifixef[[s]] <- data.frame(Est=lme4::fixef(ifit)[-1], SE=sqrt(diag(as.matrix(lme4::vcov(ifit)))[-1]))
+              ifixef[[s]] <- data.frame(Est=lme4::fixef(ifit)[-1], SE=sqrt(diag(as.matrix(vcov(ifit)))[-1]))           ### lme4::vcov
               is.fixef[s] <- TRUE
       
-              iEranef[[s]] <- data.frame(Est=lme4::fixef(ifit)[1], SE=sqrt(diag(as.matrix(lme4::vcov(ifit)))[1]))
+              iEranef[[s]] <- data.frame(Est=lme4::fixef(ifit)[1], SE=sqrt(diag(as.matrix(vcov(ifit)))[1]))            ### lme4::vcov
               is.ranef[s] <- TRUE
             }
               
@@ -431,11 +431,11 @@ GLMM_MCMCifit <- function(do.init, na.complete,
                 iintcpt[s, "Est"] <- 0
                 iintcpt[s, "SE"]  <- 0
 
-                ifixef[[s]] <- data.frame(Est=lme4::fixef(ifit)[2:(1+ncol(x[[s]]))], SE=sqrt(diag(as.matrix(lme4::vcov(ifit)))[2:(1+ncol(x[[s]]))]))
+                ifixef[[s]] <- data.frame(Est=lme4::fixef(ifit)[2:(1+ncol(x[[s]]))], SE=sqrt(diag(as.matrix(vcov(ifit)))[2:(1+ncol(x[[s]]))]))     ### lme4::vcov
                 is.fixef[s] <- TRUE
       
                 iRAND <- c(1, (2+ncol(x[[s]])):(1+ncol(x[[s]])+ncol(z[[s]])))
-                iEranef[[s]] <- data.frame(Est=lme4::fixef(ifit)[iRAND], SE=sqrt(diag(as.matrix(lme4::vcov(ifit)))[iRAND]))
+                iEranef[[s]] <- data.frame(Est=lme4::fixef(ifit)[iRAND], SE=sqrt(diag(as.matrix(vcov(ifit)))[iRAND]))                              ### lme4::vcov
                 is.ranef[s] <- TRUE
               }  
               

@@ -34,7 +34,6 @@ plot.NMixPredCondDensJoint2 <- function(x, ixcond, imargin, contour=FALSE, add.c
   if (missing(col)){
     if (contour) col <- "darkblue"
     else{
-      require("colorspace")
       col <- rev(heat_hcl(33, c.=c(80, 30), l=c(30, 90), power=c(1/5, 1.3)))
     }  
   }

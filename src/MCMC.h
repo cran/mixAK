@@ -43,7 +43,7 @@ accept_Metropolis_Hastings(const double& log_prop_ratio){
     }
   }
 
-};
+}
 
 }    // end of namespace MCMC
 
