@@ -65,7 +65,7 @@ GLMM_longitDA(mod, w.prior, y, id, time, x, z, xz.common=TRUE, info)
   E. M. M., van Buuren, H. R., and Lesaffre, E. (2010).
   Discriminant analysis using a multivariate linear mixed model with a
   normal mixture in the random effects distribution.
-  \emph{Statistics in Medicine}, \bold{29}, 3267-3283.
+  \emph{Statistics in Medicine}, \bold{29}(30), 3267--3283.
 }  
 \seealso{
   \code{\link{GLMM_MCMC}}.

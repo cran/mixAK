@@ -45,7 +45,8 @@ GLMM_MCMCdata <- function(y, dist, id, time, x, z, random.intercept)
 ##### Other (potentially useful) variables created here:
 #####             neworder          new ordering of rows of response and design matrices to conform to ordering of 'id'
 #####
-##### ------------------------------------------------------------------------------------------------------------------  
+##### ------------------------------------------------------------------------------------------------------------------
+    
     
   ##### Response
   ##### --------------------------------------------
@@ -68,22 +69,36 @@ GLMM_MCMCdata <- function(y, dist, id, time, x, z, random.intercept)
   if (any(!ndist)) stop(paste("Incorrect dist argument, possible dist values are: ", paste(paste("\"", TAB.RESP, "\"", sep=""), collapse=", "), ".", sep=""))
   ndist <- ndist - 1   ## 0 = gaussian etc.
 
-  ### Make dist a full string (added on 20130311)
+  ### Make dist a full string (added on 20130311).
+  ### Check whether binomial/poisson responses are correct (added here on 20140901),
+  ### originally provided by the following code which causes error when there were two
+  ### or more columns of the same type:
+  ###
+  ###     if (any(ndist == 1)) if (any(!(y[!is.na(y[, dist=="binomial(logit)"]), dist=="binomial(logit)"] %in% c(0, 1)))) stop("binomial response must be 0/1")
+  ###     if (any(ndist == 2)) if (any(!(y[!is.na(y[, dist=="poisson(log)"]), dist=="poisson(log)"] >= 0))) stop("poisson response must be non-negative")
+  ### (problem of indexing operator in the data.frame when we give more than one column index)
+  ###
   dist <- as.character(rep(NA, length(ndist)))
-  for (i in 1:length(ndist)) dist[i] <- switch (as.character(ndist[i]),
-                                                "0" = "gaussian",
-                                                "1" = "binomial(logit)",
-                                                "2" = "poisson(log)")
+  for (i in 1:length(ndist)){
+    switch (as.character(ndist[i]),
+            "0" = {
+                dist[i] <- "gaussian"
+             },
+            "1" = {
+                dist[i] <- "binomial(logit)"
+                if (any(!(y[!is.na(y[, i]), i] %in% c(0, 1)))) stop("binomial response must be 0/1")                           
+             },
+            "2" = {
+                dist[i] <- "poisson(log)"
+                if (any(!(y[!is.na(y[, i]), i] >= 0))) stop("poisson response must be non-negative")                               
+             }
+            )
+  }  
   
   Rc <- sum(ndist %in% c(0))
   Rd <- sum(ndist %in% c(1, 2))
   if (Rc & Rd){   ## check that continuous response comes first
     if (any(ndist[1:Rc] > 0)) stop("continuous response must preceed discrete response in the y matrix")
-  }  
-  
-  if (Rd){
-    if (any(ndist == 1)) if (any(!(y[!is.na(y[, dist=="binomial(logit)"]), dist=="binomial(logit)"] %in% c(0, 1)))) stop("binomial response must be 0/1")
-    if (any(ndist == 2)) if (any(!(y[!is.na(y[, dist=="poisson(log)"]), dist=="poisson(log)"] >= 0))) stop("poisson response must be non-negative")    
   }  
   
   

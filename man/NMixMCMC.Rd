@@ -670,42 +670,42 @@ NMixMCMC(y0, y1, censor, scale, prior,
 \references{
   Celeux, G., Forbes, F., Robert, C. P., and Titterington, D. M. (2006).
   Deviance information criteria for missing data models.
-  \emph{Bayesian Analysis}, \bold{1}, 651-674.
+  \emph{Bayesian Analysis}, \bold{1}(4), 651--674.
   
   Cappé, Robert and Rydén (2003).
   Reversible jump, birth-and-death and more general continuous time Markov chain Monte Carlo samplers.
-  \emph{Journal of the Royal Statistical Society, Series B}, \bold{65}, 679-700.
+  \emph{Journal of the Royal Statistical Society, Series B}, \bold{65}(3), 679--700.
   
   %Dellaportas, P. and Papageorgiou, I. (2006).
   %Multivariate mixtures of normals with unknown number of components.
-  %\emph{Statistics and Computing}, \bold{16}, 57-68.
+  %\emph{Statistics and Computing}, \bold{16}, 57--68.
 
   Diebolt, J. and Robert, C. P. (1994).
   Estimation of finite mixture distributions through Bayesian sampling.
-  \emph{Journal of the Royal Statistical Society, Series B}, \bold{56}, 363--375.
+  \emph{Journal of the Royal Statistical Society, Series B}, \bold{56}(2), 363--375.
 
   Jasra, A., Holmes, C. C., and Stephens, D. A. (2005).
   Markov chain Monte Carlo methods and the label switching problem in
   Bayesian mixture modelling.
-  \emph{Statistical Science}, \bold{20}, 50--67.
+  \emph{Statistical Science}, \bold{20}(1), 50--67.
   
   Komárek, A. (2009).
   A new R package for Bayesian estimation of multivariate normal mixtures allowing for selection 
   of the number of components and interval-censored data.
-  \emph{Computational Statistics and Data Analysis}, \bold{53}, 3932--3947.
+  \emph{Computational Statistics and Data Analysis}, \bold{53}(12), 3932--3947.
 
   Plummer, M. (2008).
   Penalized loss functions for Bayesian model comparison.
-  \emph{Biostatistics}, \bold{9}, 523-539.
+  \emph{Biostatistics}, \bold{9}(3), 523--539.
   
   Richardson, S. and Green, P. J. (1997).
   On Bayesian analysis of mixtures with unknown number of components
   (with Discussion).
-  \emph{Journal of the Royal Statistical Society, Series B}, \bold{59}, 731-792.
+  \emph{Journal of the Royal Statistical Society, Series B}, \bold{59}(4), 731--792.
 
   Spiegelhalter, D. J.,Best, N. G., Carlin, B. P., and van der Linde, A. (2002).
   Bayesian measures of model complexity and fit (with Discussion).
-  \emph{Journal of the Royal Statistical Society, Series B}, \bold{64}, 583-639.
+  \emph{Journal of the Royal Statistical Society, Series B}, \bold{64}(4), 583--639.
 }
 \seealso{
   \code{\link{NMixPredDensMarg}}, \code{\link{NMixPredDensJoint2}}.

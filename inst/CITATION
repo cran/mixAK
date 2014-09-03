@@ -1,55 +1,36 @@
-citHeader("To cite package 'mixAK' in publications, please, use either of the following articles:")
+citHeader("To cite package mixAK in publications use:")
      
 desc <- packageDescription("mixAK")
 year <- sub(".*(2[[:digit:]]{3})-.*", "\\1", desc$Date)
 vers <- paste("R package version", desc$Version)
 
 citEntry(entry   = "Article",
-         title   = "A new R package for Bayesian estimation of multivariate normal mixtures allowing for selection of number of components and interval-censored data",
-         author  = "Arno\\v{s}t Kom\\'arek",
-         journal = "Computational Statistics and Data Analysis",
+         title   = "Capabilities of {R} Package {mixAK} for Clustering Based on Multivariate Continuous and Discrete Longitudinal Data",
+         author  = personList(as.person("Arno\\v{s}t Kom\\'arek"),
+                              as.person("Lenka Kom\\'arkov\\'a")),
+         journal = "Journal of Statistical Software",
+         year    = "2014",
+         volume  = "59",
+         number  = "12",
+         pages   = "1--38",
+         url     = "http://www.jstatsoft.org/v59/i12/",         
+         textVersion = paste(
+                        "Arnošt Komárek, Lenka Komárková (2014).
+                        Capabilities of R Package mixAK for Clustering Based on Multivariate Continuous and Discrete Longitudinal Data.
+                        Journal of Statistical Software, 59(12), 1--38.",
+                        "URL http://www.jstatsoft.org/v59/i12/.")
+         )
+
+citEntry(entry   = "Article",
+         title   = "A New {R} Package for {B}ayesian Estimation of Multivariate Normal Mixtures Allowing for Selection of the Number of Components and Interval-Censored Data",
+         author  = as.person("Arno\\v{s}t Kom\\'arek"),
+         journal = "Computational Statistics \\& Data Analysis",
          year    = "2009",
          volume  = "53",
          number  = "12",
-         pages   = "3932-3947",
+         pages   = "3932--3947",
          doi     = "10.1016/j.csda.2009.05.006",
-         textVersion = "Komarek, A. (2009). 
-                        A new R package for Bayesian estimation of multivariate normal mixtures
-                        allowing for selection of number of components and interval-censored data.
-                        Computational Statistics and Data Analysis, 53(12), 3932-3947. doi: 10.1016/j.csda.2009.05.006.")
-
-citEntry(entry   = "Article",
-         title   = "Discriminant analysis using a multivariate linear mixed model with a normal mixture in the random effects distribution",
-         author  = "Arno\\v{s}t Kom\\'arek, Bettina E. Hansen, Edith M. M. Kuiper, Henk R. van Buuren, Emmanuel Lesaffre",
-         journal = "Statistics in Medicine",
-         year    = "2010",
-         volume  = "29",
-         number  = "30",
-         pages   = "3267-3283",
-         doi     = "10.1002/sim.3849",
-         textVersion = "Komarek, A., Hansen, B. E., Kuiper, E. M. M., van Buuren, H. R., and Lesaffre, E. (2010).
-                        Discriminant analysis using a multivariate linear mixed model with a normal mixture 
-                        in the random effects distribution.
-                        Statistics in Medicine, 29(30), 3267-3283. doi: 10.1002/sim.3849.")
-
-citEntry(entry   = "Article",
-         title   = "Clustering for multivariate continuous and discrete longitudinal data",
-         author  = "Arno\\v{s}t Kom\\'arek, Lenka Kom\\'arkov\\'a",
-         journal = "The Annals of Applied Statistics",
-         year    = "2013",
-         volume  = "7",
-         number  = "1",
-         pages   = "177-200",
-         doi     = "10.1214/12-AOAS580",
-         textVersion = "Komarek, A. and Komarkova, L. (2013).
-                        Clustering for multivariate continuous and discrete longitudinal data.
-                        The Annals of Applied Statistics, 7(1), 177-200. doi: 10.1214/12-AOAS580.")
-
-citEntry(entry   = "Article",
-         title   = "Capabilities of R package mixAK for clustering based on multivariate continuous and discrete longitudinal data",
-         author  = "Arno\\v{s}t Kom\\'arek, Lenka Kom\\'arkov\\'a",
-         journal = "Journal of Statistical Software",
-         year    = "2014",
-         textVersion = "Komarek, A. and Komarkova, L. (2014).
-                        Capabilities of R package mixAK for clustering based on multivariate continuous and discrete longitudinal data.
-                        Journal of Statistical Software, accepted for publication.")
+         textVersion = "Arnošt Komárek (2009). 
+                        A New R package for Bayesian Estimation of Multivariate Normal Mixtures
+                        Allowing for Selection of Number of Components and Interval-Censored Data.
+                        Computational Statistics & Data Analysis, 53(12), 3932--3947. doi: 10.1016/j.csda.2009.05.006.")

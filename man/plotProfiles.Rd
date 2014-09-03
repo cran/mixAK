@@ -7,9 +7,9 @@
 plotProfiles(ip, data, var, trans, tvar, gvar,
              auto.layout=TRUE, lines=TRUE, points=FALSE, add=FALSE,
              xlab="Time", ylab, xaxt="s", yaxt="s", xlim, ylim, main,
-             col, bg, lty=1, lwd=1, pch=21, cex.points=1,
+             lcol, col, bg, lty=1, lwd=1, pch=21, cex.points=1,
              highlight, lines.highlight=TRUE, points.highlight=TRUE,
-             col.highlight="red3", bg.highlight="orange",
+             lcol.highlight="red3", col.highlight="red3", bg.highlight="orange",
              lty.highlight=1, lwd.highlight=2,
              pch.highlight=23, cex.highlight=1)
 
@@ -29,8 +29,11 @@ plotProfiles(ip, data, var, trans, tvar, gvar,
   \item{lines}{logical. If \code{TRUE}, lines are drawn in the plot
     connecting observations within individuals.}
   \item{points}{logical. If \code{TRUE}, points are added to the plot.}
-  \item{add}{logical. If \code{TRUE}, the new plot overlays the old one.}
-  \item{xlab, ylab, xaxt, yaxt, xlim, ylim, main, col, bg, lty, lwd, pch}{arguments passed to
+  \item{add}{logical. If \code{TRUE}, the new plot overlays the old
+    one.}
+  \item{lcol}{color for lines.}
+  \item{col}{color for points.}
+  \item{xlab, ylab, xaxt, yaxt, xlim, ylim, main, bg, lty, lwd, pch}{arguments passed to
     standard plotting functions. \code{col} might also be a vector in
     which case different colors are used for profiles from different
     groups identified by the \code{gvar} variable.}
@@ -42,7 +45,7 @@ plotProfiles(ip, data, var, trans, tvar, gvar,
     using lines.}
   \item{points.highlight}{logical. If \code{TRUE}, highlighting is done
     using points.}  
-  \item{col.highlight, bg.highlight, lty.highlight, lwd.highlight,
+  \item{lcol.highlight, col.highlight, bg.highlight, lty.highlight, lwd.highlight,
     pch.highlight, cex.highlight}{arguments \code{col}, \code{bg}, \code{lty},
     \code{lwd}, \code{pch}, \code{cex} passed to \code{\link{lines}} and/or \code{\link{points}}
     functions which provide highlighting of selected profiles.}

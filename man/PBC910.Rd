@@ -6,7 +6,7 @@ This is a subset of \code{\link{PBCseq}} data which contains only data from
 260 patients known to be alive and without liver transplantation at 910 days of follow-up. Furthermore,
 only a selection of longitudinal measurements is included and only those
 measurements that were obtained by 910 days. The \code{PBC910} dataset was used in
-a paper Komárek and Komárková (2013).
+papers Komárek and Komárková (2013, 2014).
 }
 \usage{data(PBCseq)}
 \format{a data frame with 918 rows and the following
@@ -33,6 +33,11 @@ a paper Komárek and Komárková (2013).
   Komárek, A. and Komárková, L. (2013).
   Clustering for multivariate continuous and discrete longitudinal data.
   \emph{The Annals of Applied Statistics}, \bold{7}(1), 177--200.
+
+  Komárek, A. and Komárková, L. (2014).
+  Capabilities of R package mixAK for clustering based on multivariate continuous and discrete longitudinal data.
+  \emph{Journal of Statistical Software}, \bold{59}(12), 1--38.
+  \url{http://www.jstatsoft.org/v59/i12/}.  
 }
 \seealso{\code{\link{PBC910}}, \code{\link[survival]{pbc}}, \code{\link[survival]{pbcseq}}}
 \examples{

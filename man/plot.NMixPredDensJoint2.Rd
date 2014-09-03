@@ -49,7 +49,7 @@
   Komárek, A. (2009).
   A new R package for Bayesian estimation of multivariate normal mixtures allowing for selection 
   of the number of components and interval-censored data.
-  \emph{Computational Statistics and Data Analysis}, \bold{53}, 3932--3947.
+  \emph{Computational Statistics and Data Analysis}, \bold{53}(12), 3932--3947.
 }
 \seealso{
   \code{\link{NMixPredDensJoint2}}, \code{\link{NMixMCMC}}.

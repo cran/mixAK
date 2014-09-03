@@ -18,14 +18,14 @@ NMixPredDensJoint2(x, \dots)
 
 \method{NMixPredDensJoint2}{NMixMCMC}(x, grid, lgrid=50, scaled=FALSE, \dots)
 
-\method{NMixPredDensJoint2}{NMixMCMC}(x, grid, lgrid=50, scaled=FALSE, \dots)
+\method{NMixPredDensJoint2}{GLMM_MCMC}(x, grid, lgrid=50, scaled=FALSE, \dots)
 }
 \arguments{
   \item{x}{an object of class \code{NMixMCMC} for
     \code{NMixPredDensJoint2.NMixMCMC} function.
 
-    an object of class \code{NMixMCMC} for
-    \code{NMixPlugDensJoint2.NMixMCMC} function.
+    an object of class \code{GLMM_MCMC} for
+    \code{NMixPredDensJoint2.GLMM_MCMC} function.
     
     A list with the grid values (see below) for
     \code{NMixPredDensJoint2.default} function.
@@ -88,10 +88,10 @@ NMixPredDensJoint2(x, \dots)
   There is also a \code{plot} method implemented for the resulting object.
 }
 \references{
-  \eqn{\mbox{Kom\'{a}rek, A.}}{Kom&#225rek, A.}
+  Komárek, A. (2009).    
   A new R package for Bayesian estimation of multivariate normal mixtures allowing for selection 
   of the number of components and interval-censored data.
-  \emph{Computational Statistics and Data Analysis}, \bold{53}, 3932--3947.
+  \emph{Computational Statistics and Data Analysis}, \bold{53}(12), 3932--3947.
 }
 \seealso{
   \code{\link{plot.NMixPredDensJoint2}}, \code{\link{NMixMCMC}},

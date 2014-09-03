@@ -540,13 +540,18 @@ GLMM_MCMC(y, dist = "gaussian", id, x, z, random.intercept,
   Clustering for multivariate continuous and discrete longitudinal data.
   \emph{The Annals of Applied Statistics}, \bold{7}(1), 177--200.
 
+  Komárek, A. and Komárková, L. (2014).
+  Capabilities of R package mixAK for clustering based on multivariate continuous and discrete longitudinal data.
+  \emph{Journal of Statistical Software}, \bold{59}(12), 1--38.
+  \url{http://www.jstatsoft.org/v59/i12/}.
+  
   Komárek, A., Hansen, B. E., Kuiper, E. M. M., van Buuren, H. R., and Lesaffre, E. (2010).
   Discriminant analysis using a multivariate linear mixed model with a normal mixture in the random effects distribution.
-  \emph{Statistics in Medicine}, \bold{29}, 3267-3283.
+  \emph{Statistics in Medicine}, \bold{29}(30), 3267--3283.
 
   Plummer, M. (2008).
   Penalized loss functions for Bayesian model comparison.
-  \emph{Biostatistics}, \bold{9}, 523-539.  
+  \emph{Biostatistics}, \bold{9}(3), 523--539.  
 }  
 \seealso{
   \code{\link{NMixMCMC}}.

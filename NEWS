@@ -16,6 +16,15 @@ TO DO LIST:
   --> more or less solved on 03/12/2010
 
 ======================================================================================================================
+01/09/2014 (version 3.7):
+Bug in GLMM_MCMCdata corrected (it appeared when two or more discrete responses
+of the same type, e.g., binomial, were included in the model).
+
+CITATION file updated (methodological papers removed from there).
+
+21/08/2014 (version 3.7):
+NMixCluster function added (currently only method for class GLMM_MCMC).
+
 06/08/2014 (version 3.6-1):
 Update of index.html in /inst/doc directory, validation using http://validator.w3.org.
 
