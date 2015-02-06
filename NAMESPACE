@@ -1,7 +1,6 @@
 # Load dynamic library
 useDynLib(mixAK)
 
-
 # Export all names
 exportPattern("GLMM_MCMC*")
 exportClasses("GLMM_MCMC", "GLMM_MCMClist")
@@ -30,6 +29,7 @@ export("NMixRelabel")
 S3method(NMixRelabel, "default")
 S3method(NMixRelabel, "NMixMCMC")
 S3method(NMixRelabel, "GLMM_MCMC")
+S3method(NMixRelabel, "GLMM_MCMClist")
 
 export("NMixSummComp")
 S3method(NMixSummComp, "default")
@@ -46,6 +46,56 @@ S3method(tracePlots, "default")
 S3method(tracePlots, "NMixMCMC")
 S3method(tracePlots, "GLMM_MCMC")
 S3method(tracePlots, "GLMM_MCMClist")
+
+export("NMixPlugCondDensJoint2")
+S3method(NMixPlugCondDensJoint2, "default")
+S3method(NMixPlugCondDensJoint2, "NMixMCMC")
+S3method(NMixPlugCondDensJoint2, "GLMM_MCMC")
+
+export("NMixPlugCondDensMarg")
+S3method(NMixPlugCondDensMarg, "default")
+S3method(NMixPlugCondDensMarg, "NMixMCMC")
+S3method(NMixPlugCondDensMarg, "GLMM_MCMC")
+
+export("NMixPlugDensJoint2")
+S3method(NMixPlugDensJoint2, "default")
+S3method(NMixPlugDensJoint2, "NMixMCMC")
+S3method(NMixPlugDensJoint2, "GLMM_MCMC")
+
+export("NMixPlugDensMarg")
+S3method(NMixPlugDensMarg, "default")
+S3method(NMixPlugDensMarg, "NMixMCMC")
+S3method(NMixPlugDensMarg, "GLMM_MCMC")
+
+export("NMixPredCDFMarg")
+S3method(NMixPredCDFMarg, "default")
+S3method(NMixPredCDFMarg, "NMixMCMC")
+S3method(NMixPredCDFMarg, "GLMM_MCMC")
+
+export("NMixPredCondCDFMarg")
+S3method(NMixPredCondCDFMarg, "default")
+S3method(NMixPredCondCDFMarg, "NMixMCMC")
+S3method(NMixPredCondCDFMarg, "GLMM_MCMC")
+
+export("NMixPredCondDensJoint2")
+S3method(NMixPredCondDensJoint2, "default")
+S3method(NMixPredCondDensJoint2, "NMixMCMC")
+S3method(NMixPredCondDensJoint2, "GLMM_MCMC")
+
+export("NMixPredCondDensMarg")
+S3method(NMixPredCondDensMarg, "default")
+S3method(NMixPredCondDensMarg, "NMixMCMC")
+S3method(NMixPredCondDensMarg, "GLMM_MCMC")
+
+export("NMixPredDensJoint2")
+S3method(NMixPredDensJoint2, "default")
+S3method(NMixPredDensJoint2, "NMixMCMC")
+S3method(NMixPredDensJoint2, "GLMM_MCMC")
+
+export("NMixPredDensMarg")
+S3method(NMixPredDensMarg, "default")
+S3method(NMixPredDensMarg, "NMixMCMC")
+S3method(NMixPredDensMarg, "GLMM_MCMC")
 
 exportClasses("NMixPlugCondDensJoint2", "NMixPlugCondDensMarg", "NMixPlugDensJoint2", "NMixPlugDensMarg", "NMixPredCDFMarg", "NMixPredCondCDFMarg", "NMixPredCondDensJoint2", "NMixPredCondDensMarg", "NMixPredDensJoint2", "NMixPredDensMarg")
 S3method(plot, "NMixPlugCondDensJoint2")

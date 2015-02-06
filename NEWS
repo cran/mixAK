@@ -16,6 +16,12 @@ TO DO LIST:
   --> more or less solved on 03/12/2010
 
 ======================================================================================================================
+06/02/2015 (version 3.10):
+NAMESPACE updated by explicit export of some S3 methods.
+
+05/02/2015 (version 3.9):
+CITATION file updated (desc replaced by meta).
+
 01/09/2014 (version 3.7):
 Bug in GLMM_MCMCdata corrected (it appeared when two or more discrete responses
 of the same type, e.g., binomial, were included in the model).

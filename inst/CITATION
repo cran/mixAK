@@ -1,8 +1,7 @@
 citHeader("To cite package mixAK in publications use:")
      
-desc <- packageDescription("mixAK")
-year <- sub(".*(2[[:digit:]]{3})-.*", "\\1", desc$Date)
-vers <- paste("R package version", desc$Version)
+year <- sub(".*(2[[:digit:]]{3})-.*", "\\1", meta$Date)
+vers <- paste("R package version", meta$Version)
 
 citEntry(entry   = "Article",
          title   = "Capabilities of {R} Package {mixAK} for Clustering Based on Multivariate Continuous and Discrete Longitudinal Data",

@@ -182,8 +182,8 @@ NMixRelabel(object, type=c("mean", "weight", "stephens"), par, \dots)
   \emph{Bayesian methods for mixtures of normal distributions. DPhil Thesis.}
   Oxford: University of Oxford.
   (Available from:
-  \url{http://www.stat.washington.edu/stephens/papers.html}  (accessed
-  on 08/02/2010)).
+  \url{http://stephenslab.uchicago.edu/publications.html}
+  (accessed on 05/02/2014)).
   
   Stephens, M. (2000).
   Dealing with label switching in mixture models.
