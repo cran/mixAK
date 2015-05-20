@@ -1,6 +1,7 @@
 //
 //  PURPOSE:   Main function to perform discriminant analysis of longitudinal profiles
 //             based on models fitted with MCMC
+//             - only continuous responses allowed by this function
 //
 //  AUTHOR:    Arnost Komarek (LaTeX: Arno\v{s}t Kom\'arek)
 //             arnost.komarek[AT]mff.cuni.cz

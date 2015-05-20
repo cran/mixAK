@@ -14,7 +14,7 @@
 ## *************************************************************
 ## NMixPredCDFMarg.GLMM_MCMC
 ## *************************************************************
-NMixPredCDFMarg.GLMM_MCMC <- function(x, grid, lgrid=50, scaled=FALSE, ...)
+NMixPredCDFMarg.GLMM_MCMC <- function(x, grid, lgrid=500, scaled=FALSE, ...)
 {
   if (missing(grid)){
     grid <- list()

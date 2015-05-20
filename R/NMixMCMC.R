@@ -7,8 +7,11 @@
 ##  CREATED:                  29/10/2007
 ##
 ##  IMPORTANT MODIFICATIONS:  03/11/2008  (computation of penalized expected deviance added)
-##                                        (basic support for parallel computation on multicore CPUs added using packages snowfall/snow)
+##                                        (basic support for parallel computation on multicore
+##                                         CPUs added using packages snowfall/snow)
 ##                            08/02/2013  snow/snowfall support for parallel computation replaced by parallel package
+##                            26/03/2015  dependence of weights on a categorical covariate started
+##                                        to be implemented
 ##
 ##  MINOR MODIFICATION:       26/04/2009  computation of initial values of censored observations
 ##                                        and init2$mu changed (variable tmpsd computed in other way
@@ -21,10 +24,10 @@
 ## *************************************************************
 ## NMixMCMC
 ## *************************************************************
-NMixMCMC <- function(y0, y1, censor, scale, prior,
+NMixMCMC <- function(y0, y1, censor, x_w, scale, prior,
                      init, init2, RJMCMC,
-                     nMCMC=c(burn=10, keep=10, thin=1, info=10),
-                     PED, keep.chains=TRUE, onlyInit=FALSE, dens.zero=1e-300, parallel=FALSE)
+                     nMCMC = c(burn = 10, keep = 10, thin = 1, info = 10),
+                     PED, keep.chains = TRUE, onlyInit = FALSE, dens.zero = 1e-300, parallel = FALSE)
 {
   thispackage <- "mixAK"
 
@@ -36,9 +39,25 @@ NMixMCMC <- function(y0, y1, censor, scale, prior,
   
   ########## ========== Data ========== ##########
   ########## ========================== ##########
-  dd <- NMixMCMCdata(y0=y0, y1=y1, censor=censor)
+  dd <- NMixMCMCdata(y0 = y0, y1 = y1, censor = censor)
   rm(list=c("y0", "y1", "censor"))
     ### use dd$y0, dd$y1, dd$censor instead  
+
+  ######### ========= Covariates for mixture weights (if any) =========== ############
+  if (missing(x_w)){
+    dd$x_w <- rep(0, dd$n)
+    dd$fx_w <- factor(dd$x_w)
+    dd$nx_w <- 1
+    dd$lx_w <- levels(dd$fx_w)
+  }else{
+    if (length(x_w) != dd$n) stop("argument x_w should be a vector of length ", dd$n, " (it has a length ", length(x_w),").")
+    if (any(is.na(x_w))) stop("NA's in a vector x_w are not allowed.")
+    if (is.factor(x_w)) dd$fx_w <- x_w else dd$fx_w <- factor(x_w)
+    dd$x_w <- as.numeric(dd$fx_w) - 1   ## values 0, 1, ...
+    dd$lx_w <- levels(dd$fx_w)
+    dd$nx_w <- length(dd$lx_w)
+    rm(list = "x_w")
+  }    
 
   
   ######### =========== Temporar initial values (equal to lower limit of right-censored, =========== #########
@@ -88,6 +107,7 @@ NMixMCMC <- function(y0, y1, censor, scale, prior,
   CpriorK <- pmatch(prior$priorK, table=c("fixed", "uniform", "tpoisson"), nomatch=0) - 1
   if (CpriorK == -1) stop("prior$priorK must be one of fixed/uniform/tpoisson")
 
+  if (prior$priorK != "fixed" & dd$nx_w > 1) stop("covariates on mixture weights not allowed if K is not fixed.")
   
   ##### PED
   ##### ----------------------------------------------------
@@ -317,7 +337,7 @@ NMixMCMC <- function(y0, y1, censor, scale, prior,
   Ch <- as.numeric(prior$h)
   names(Ch) <- paste("h", 1:dd$p, sep="")
 
-
+  
   ##### integer, double prior:  concetenate
   ##### ----------------------------------------------------
   Cinteger <- c(CpriorK, CpriormuQ, CKmax)
@@ -338,17 +358,17 @@ NMixMCMC <- function(y0, y1, censor, scale, prior,
 
   
   ##### init:  w
-  ##### ----------------------------------------------------  
+  ##### ----------------------------------------------------
   if (is.na(iw)){
-    init$w <- rep(1, init$K)/init$K
+    init$w <- rep(rep(1, init$K)/init$K, dd$nx_w)    
   }  
   init$w <- as.numeric(init$w)
-  if (length(init$w) == CKmax & CKmax > init$K) init$w <- init$w[1:init$K]  
-  names(init$w) <- paste("w", 1:init$K, sep="")
+  if (length(init$w) == CKmax * dd$nx_w & CKmax > init$K) init$w <- init$w[1:(init$K * dd$nx_w)]
+  if (dd$nx_w > 1) names(init$w) <- paste("w", rep(1:init$K, dd$nx_w), ".", rep(1:dd$nx_w, each = init$K), sep="") else names(init$w) <- paste("w", 1:init$K, sep="")
   if (any(is.na(init$w))) stop("NA in init$w")  
-  if (length(init$w) != init$K) stop(paste("init$w must be of length ", init$K, sep=""))
-  if (any(init$w < 0)) stop("init$w may not be negative")
-  init$w <- init$w / sum(init$w)
+  if (length(init$w) != init$K * dd$nx_w) stop(paste("init$w must be of length ", init$K * dd$nx_w, sep=""))
+  if (any(init$w < 0)) stop("init$w may not be negative")  
+  for (ff in 1:dd$nx_w) init$w[((ff - 1) * init$K + 1):(ff * init$K)] <- init$w[((ff - 1) * init$K + 1):(ff * init$K)] / sum(init$w[((ff - 1) * init$K + 1):(ff * init$K)])
 
   
   ##### init:  mu
@@ -507,9 +527,9 @@ NMixMCMC <- function(y0, y1, censor, scale, prior,
 
   
   ##### init:  r
-  ##### ----------------------------------------------------  
-  if (is.na(ir)) init$r <- NMixMCMCinitr(z=initz, K=init$K, w=init$w, mu=init$mu, Sigma=init$Sigma, p=dd$p, n=dd$n)
-  else           init$r <- NMixMCMCinitr(z=initz, K=init$K, w=init$w, mu=init$mu, Sigma=init$Sigma, p=dd$p, n=dd$n, initr=init$r) 
+  ##### ----------------------------------------------------
+  if (is.na(ir)) init$r <- NMixMCMCinitr(z=initz, K=init$K, w=init$w[1:init$K], mu=init$mu, Sigma=init$Sigma, p=dd$p, n=dd$n)
+  else           init$r <- NMixMCMCinitr(z=initz, K=init$K, w=init$w[1:init$K], mu=init$mu, Sigma=init$Sigma, p=dd$p, n=dd$n, initr=init$r) 
   rm(list="initz")
   
 
@@ -580,16 +600,17 @@ NMixMCMC <- function(y0, y1, censor, scale, prior,
     ##### ----------------------------------------------------  
     if (is.na(iw2)){
       init2$w <- rDirichlet(1, rep(Cdelta, init2$K))
+      if (dd$nx_w > 1) for (ff in 2:dd$nx_w) init2$w <- c(init2$w, rDirichlet(1, rep(Cdelta, init2$K)))
     }  
     init2$w <- as.numeric(init2$w)
-    if (length(init2$w) == CKmax & CKmax > init2$K) init2$w <- init2$w[1:init2$K]  
-    names(init2$w) <- paste("w", 1:init2$K, sep="")
+    if (length(init2$w) == CKmax * dd$nx_w & CKmax > init2$K) init2$w <- init2$w[1:(init2$K * dd$nx_w)]
+    if (dd$nx_w > 1) names(init2$w) <- paste("w", rep(1:init2$K, dd$nx_w), ".", rep(1:dd$nx_w, each = init2$K), sep="") else names(init2$w) <- paste("w", 1:init2$K, sep="")
     if (any(is.na(init2$w))) stop("NA in init2$w")  
-    if (length(init2$w) != init2$K) stop(paste("init2$w must be of length ", init2$K, sep=""))
-    if (any(init2$w < 0)) stop("init2$w may not be negative")
-    init2$w <- init2$w / sum(init2$w)
+    if (length(init2$w) != init2$K * dd$nx_w) stop(paste("init2$w must be of length ", init2$K * dd$nx_w, sep=""))
+    if (any(init2$w < 0)) stop("init2$w may not be negative")  
+    for (ff in 1:dd$nx_w) init2$w[((ff - 1) * init2$K + 1):(ff * init2$K)] <- init2$w[((ff - 1) * init2$K + 1):(ff * init2$K)] / sum(init2$w[((ff - 1) * init2$K + 1):(ff * init2$K)])
 
-      
+    
     ##### init2:  mu
     ##### ----------------------------------------------------  
     if (is.na(imu2)){
@@ -750,10 +771,9 @@ NMixMCMC <- function(y0, y1, censor, scale, prior,
   
     ##### init2:  r
     ##### ----------------------------------------------------
-    if (is.na(ir2)) init2$r <- NMixMCMCinitr(z=initz2, K=init2$K, w=init2$w, mu=init2$mu, Sigma=init2$Sigma, p=dd$p, n=dd$n)
-    else            init2$r <- NMixMCMCinitr(z=initz2, K=init2$K, w=init2$w, mu=init2$mu, Sigma=init2$Sigma, p=dd$p, n=dd$n, initr=init2$r) 
-    rm(list="initz2")    
-      
+    if (is.na(ir2)) init2$r <- NMixMCMCinitr(z=initz2, K=init2$K, w=init2$w[1:init2$K], mu=init2$mu, Sigma=init2$Sigma, p=dd$p, n=dd$n)
+    else            init2$r <- NMixMCMCinitr(z=initz2, K=init2$K, w=init2$w[1:init2$K], mu=init2$mu, Sigma=init2$Sigma, p=dd$p, n=dd$n, initr=init2$r) 
+    rm(list="initz2")      
   }else{  ## end of if (PED)
     init2 <- NULL
   }  
@@ -882,7 +902,7 @@ NMixMCMC <- function(y0, y1, censor, scale, prior,
 
   ########## ========== RETURN if onlyInit ========== ##########
   ########## ======================================== ##########  
-  if (onlyInit) return(list(prior=prior, init=init, scale=scale, RJMCMC=RJMCMC))
+  if (onlyInit) return(list(prior=prior, init=init, init2=init2, scale=scale, RJMCMC=RJMCMC))
   
 
   ########## ========== nMCMC ========== ##########
@@ -920,13 +940,14 @@ NMixMCMC <- function(y0, y1, censor, scale, prior,
   ##### ========================================================================================================================
   Cpar <- list(z0          = z0,
                z1          = z1,
-               censor      = dd$censor,
+               censor      = dd$censor,               
                dimy        = c(p=dd$p, n=dd$n),
                priorInt    = Cinteger,
-               priorDouble = Cdouble)
+               priorDouble = Cdouble,
+               x_w         = as.integer(c(dd$nx_w, dd$x_w)))
   rm(list=c("Cinteger", "Cdouble"))
     
-
+  
   ########## ========== Run MCMC ========== ##########
   ########## ============================== ##########
   if (PED){
@@ -939,14 +960,14 @@ NMixMCMC <- function(y0, y1, censor, scale, prior,
       RET <- parallel::parLapply(cl, 1:2, NMixMCMCwrapper,
                                  scale = scale, prior = prior, inits = list(init, init2), Cpar = Cpar, RJMCMC = RJMCMC, CRJMCMC = CRJMCMC,
                                  actionAll = actionAll, nMCMC = nMCMC, keep.chains = keep.chains, PED = TRUE,
-                                 dens.zero = dens.zero)
+                                 dens.zero = dens.zero, lx_w = dd$lx_w)
       cat(paste("Parallel MCMC sampling finished on ", date(), ".\n", sep=""))
       parallel::stopCluster(cl)      
     }else{
       RET <- lapply(1:2, NMixMCMCwrapper,
                          scale = scale, prior = prior, inits = list(init, init2), Cpar = Cpar, RJMCMC = RJMCMC, CRJMCMC = CRJMCMC,
                          actionAll = actionAll, nMCMC = nMCMC, keep.chains = keep.chains, PED = TRUE,
-                         dens.zero = dens.zero)
+                         dens.zero = dens.zero, lx_w = dd$lx_w)
     }
     
     cat(paste("\nComputation of penalized expected deviance started on ", date(), ".\n", sep=""))
@@ -965,6 +986,7 @@ NMixMCMC <- function(y0, y1, censor, scale, prior,
                                y0                = as.double(t(z0)),
                                y1                = as.double(t(z1)),
                                censor            = as.integer(t(dd$censor)),
+                               nxw_xw            = as.integer(Cpar$x_w),                     
                                dimy              = as.integer(c(dd$p, dd$n)),
                                chK1              = as.integer(RET[[1]]$K),
                                chw1              = as.double(t(RET[[1]]$w)),
@@ -994,6 +1016,7 @@ NMixMCMC <- function(y0, y1, censor, scale, prior,
                                y0                = as.double(t(z0)),
                                y1                = as.double(t(z1)),
                                censor            = as.integer(t(dd$censor)),
+                               nxw_xw            = as.integer(Cpar$x_w),                   
                                dimy              = as.integer(c(dd$p, dd$n)),
                                chK1              = as.integer(RET[[1]]$K),
                                chw1              = as.double(RET[[1]]$w),
@@ -1013,7 +1036,7 @@ NMixMCMC <- function(y0, y1, censor, scale, prior,
     
     cat(paste("Computation of penalized expected deviance finished on ", date(), ".\n", sep=""))
     if (resPED$err) stop("Something went wrong.")
-    
+
     names(resPED$PED) <- c("D.expect", "p(opt)", "PED", "wp(opt)", "wPED")
     RET$PED <- resPED$PED
     
@@ -1036,13 +1059,11 @@ NMixMCMC <- function(y0, y1, censor, scale, prior,
 
     class(RET) <- "NMixMCMClist"
   }else{
-    RET <- NMixMCMCwrapper(chain=1,
-                           scale=scale, prior=prior, inits=list(init), Cpar=Cpar, RJMCMC=RJMCMC, CRJMCMC=CRJMCMC,
-                           actionAll=actionAll, nMCMC=nMCMC, keep.chains=keep.chains,
-                           PED=FALSE, dens.zero=dens.zero)
+    RET <- NMixMCMCwrapper(chain = 1,
+                           scale = scale, prior = prior, inits = list(init), Cpar = Cpar, RJMCMC = RJMCMC, CRJMCMC = CRJMCMC,
+                           actionAll = actionAll, nMCMC = nMCMC, keep.chains = keep.chains,
+                           PED = FALSE, dens.zero = dens.zero, lx_w = dd$lx_w)
   }  
   
   return(RET)
 }
-
-

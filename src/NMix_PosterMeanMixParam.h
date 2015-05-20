@@ -10,6 +10,8 @@
 //
 //  FUNCTIONS:  
 //     * NMix::PosterMeanMixParam  09/02/2010
+//            30/03/2015:  code allowing for a factor covariate on mixture weights added
+//
 //
 // ======================================================================
 //
@@ -26,7 +28,7 @@ namespace NMix{
 /***** NMix::PosterMeanMixParam                                                                  *****/
 /***** ***************************************************************************************** *****/
 //
-// pm_w[K]
+// pm_w[K, nxw]
 //
 // pm_mu[p, K]
 //
@@ -38,7 +40,7 @@ namespace NMix{
 //
 // K[1]
 //
-// chw[K, Mkeep]
+// chw[K, nxw, Mkeep]
 //
 // chmu[p, K, Mkeep]
 //
@@ -54,6 +56,8 @@ namespace NMix{
 //
 // Mkeep[1]
 //
+// nxw[1]
+//
 void
 PosterMeanMixParam(double* pm_w,
                    double* pm_mu,
@@ -68,7 +72,8 @@ PosterMeanMixParam(double* pm_w,
                    const double* chLi,
                    const int*    chorder,
                    const int*    p,
-                   const int*    Mkeep);
+                   const int*    Mkeep,
+                   const int*    nxw);
 
 }    // end of namespace NMix
 

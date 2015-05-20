@@ -127,7 +127,7 @@ NMixRelabel.GLMM_MCMClist <- function(object, type = c("mean", "weight", "stephe
 
     if (!silent){    
       cat("\nRe-labelling chain number 2\n")
-      cat("===========================\n\n")
+      cat("===========================\n")
     }  
     object[[2]] <- NMixRelabel(object[[2]], type = type, par = par, prob = prob, keep.comp.prob = keep.comp.prob, info = info, silent = silent, ...)
     cat("\n")

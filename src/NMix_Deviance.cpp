@@ -36,7 +36,11 @@ Deviance_NC(double* indLogL0,
             const int*    mixN,     
             const int*    p,      
             const int*    n,
-            const int*    K,         
+            const int*    K,
+            const int*    xw,
+            const int*    nxw,
+	    const int*    mixNxw,
+	    const int*    tabxw,
             const double* logw,     
             const double* mu,    
             const double* Q,   
@@ -48,7 +52,7 @@ Deviance_NC(double* indLogL0,
             const double* c_xi,  
             const double* Dinv,   
             const double* Dinv_xi,  
-            const double* zeta,  
+            const double* zeta,
             const double* XiInv)
 {
   const char *fname = "NMix::Deviance_NC";
@@ -69,12 +73,14 @@ Deviance_NC(double* indLogL0,
   mixBary       = mixSumy + *p * *K;
   mixSS         = mixBary + *p * *K;
   fcm_weight    = mixSS + LTp * *K;
-  logfcm_weight = fcm_weight + *K;
-  fcm_mu        = logfcm_weight + *K;
+  logfcm_weight = fcm_weight + *K * *nxw;
+  fcm_mu        = logfcm_weight + *K * *nxw;
   ifcm_Q        = fcm_mu + *p * *K;
   ifcm_L        = ifcm_Q + LTp * *K;
   fcm_log_dets  = ifcm_L + LTp * *K;
   // next = fcm_log_dets + 2 * *K;
+
+  
 
   /*****  mixSumy[,j] = sum_{i: r_i=j} y_i = n_j * ybar_j                 *****/
   /*****  mixBary[,j] = (1/n_j) * sum_{i: r_i=j} y_i = ybar_j             *****/
@@ -84,7 +90,9 @@ Deviance_NC(double* indLogL0,
 
   /***** Full conditional means for mu and Q and related quantities *****/
   NMix::fullCondMean_WeightsMeansVars_NC(fcm_weight, logfcm_weight, fcm_mu, ifcm_Q, ifcm_L, fcm_log_dets, dwork_misc, err, 
-                                         mixSumy, mixBary, mixSS, mixN, p, n, K, Q, delta, c, xi, c_xi, Dinv, Dinv_xi, zeta, XiInv);
+                                         mixSumy, mixBary, mixSS, mixN, p, n, 
+                                         mixNxw, nxw, tabxw,
+                                         K, Q, delta, c, xi, c_xi, Dinv, Dinv_xi, zeta, XiInv);
   if (*err){
     warning("%s: NMix_fullCondMean_MeansVars subroutine failed.\n", fname);
     return;
@@ -248,7 +256,11 @@ Deviance_IC(double* indLogL0,
             const int*    mixN,     
             const int*    p,      
             const int*    n,
-            const int*    K,         
+            const int*    K,  
+            const int*    xw,
+            const int*    nxw,  
+	    const int*    mixNxw,
+	    const int*    tabxw,     
             const double* logw,     
             const double* mu,    
             const double* Q,   
@@ -281,8 +293,8 @@ Deviance_IC(double* indLogL0,
   //mixBary       = mixSumy + *p * *K;
   //mixSS         = mixBary + *p * *K;
   //fcm_weight    = mixSS + LTp * *K;
-  //logfcm_weight = fcm_weight + *K;
-  //fcm_mu        = logfcm_weight + *K;
+  //logfcm_weight = fcm_weight + *K * *nxw;
+  //fcm_mu        = logfcm_weight + * * *nxwK;
   //ifcm_Q        = fcm_mu + *p * *K;
   //ifcm_L        = ifcm_Q + LTp * *K;
   //fcm_log_dets  = ifcm_L + LTp * *K;
@@ -296,7 +308,9 @@ Deviance_IC(double* indLogL0,
 
   /***** Full conditional means for mu and Q and related quantities *****/
   //NMix::fullCondMean_WeightsMeansVars_IC(fcm_weight, logfcm_weight, fcm_mu, ifcm_Q, ifcm_L, fcm_log_dets, dwork_misc, err, 
-  //                                       mixSumy, mixBary, mixSS, mixN, p, n, K, Q, delta, c, xi, c_xi, Dinv, Dinv_xi, zeta, XiInv);
+  //                                       mixSumy, mixBary, mixSS, mixN, p, n, K, 
+  //                                       mixNxw, nxw, tabxw,
+  //                                       Q, delta, c, xi, c_xi, Dinv, Dinv_xi, zeta, XiInv);
   //if (*err){
   //  warning("%s: NMix_fullCondMean_MeansVars subroutine failed.\n", fname);
   //  return;

@@ -81,6 +81,8 @@ GLMM_PED(double*       PED,
 
   const char *fname = "GLMM_PED";
 
+  const int nxw_ONE = 1;
+
   const double logDens_ZERO = log(*Dens_ZERO);
 
   /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/
@@ -276,12 +278,12 @@ GLMM_PED(double*       PED,
 
   //  NMix::Li2Sigma(Sigma_b1, err, Li_b1, K_b1, &dim_b);
   //  NMix::Moments(Ebscaled1, Varbscaled1, Corrbscaled1, Eb1, Varb1, Corrb1, w_b1, mu_b1, Sigma_b1, K_b1, shift_b, scale_b, &dim_b);
-    NMix::w2logw(logw_b1, w_b1, K_b1);
+    NMix::w2logw(logw_b1, w_b1, K_b1, &nxw_ONE);
     NMix::Li2log_dets(log_dets_b1, Li_b1, K_b1, &dim_b);
 
   //  NMix::Li2Sigma(Sigma_b2, err, Li_b2, K_b2, &dim_b);
   //  NMix::Moments(Ebscaled2, Varbscaled2, Corrbscaled2, Eb2, Varb2, Corrb2, w_b2, mu_b2, Sigma_b2, K_b2, shift_b, scale_b, &dim_b);
-    NMix::w2logw(logw_b2, w_b2, K_b2);
+    NMix::w2logw(logw_b2, w_b2, K_b2, &nxw_ONE);
     NMix::Li2log_dets(log_dets_b2, Li_b2, K_b2, &dim_b);
 
     //bhat1 = Calloc(*I * dim_b, double);
@@ -690,8 +692,8 @@ GLMM_PED(double*       PED,
     //  NMix::Li2Sigma(Sigma_b1, err, Li_b1, K_b1, &dim_b);
     //  NMix::Li2Sigma(Sigma_b2, err, Li_b2, K_b2, &dim_b);
 
-    NMix::w2logw(logw_b1, w_b1, K_b1);
-    NMix::w2logw(logw_b2, w_b2, K_b2);
+    NMix::w2logw(logw_b1, w_b1, K_b1, &nxw_ONE);
+    NMix::w2logw(logw_b2, w_b2, K_b2, &nxw_ONE);
 
     NMix::Li2log_dets(log_dets_b1, Li_b1, K_b1, &dim_b);
     NMix::Li2log_dets(log_dets_b2, Li_b2, K_b2, &dim_b);

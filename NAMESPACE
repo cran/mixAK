@@ -9,6 +9,7 @@ S3method(print, "GLMM_MCMC")
 S3method(print, "GLMM_MCMClist")
 
 export("GLMM_longitDA")
+export("GLMM_longitDA2")
 
 exportPattern("NMix*")
 exportClasses("NMixEM", "NMixMCMC", "NMixMCMClist")
@@ -28,6 +29,7 @@ S3method(NMixPseudoGOF, "NMixMCMC")
 export("NMixRelabel")
 S3method(NMixRelabel, "default")
 S3method(NMixRelabel, "NMixMCMC")
+S3method(NMixRelabel, "NMixMCMClist")
 S3method(NMixRelabel, "GLMM_MCMC")
 S3method(NMixRelabel, "GLMM_MCMClist")
 
@@ -44,6 +46,7 @@ S3method(NMixChainComp, "GLMM_MCMC")
 export("tracePlots")
 S3method(tracePlots, "default")
 S3method(tracePlots, "NMixMCMC")
+S3method(tracePlots, "NMixMCMClist")
 S3method(tracePlots, "GLMM_MCMC")
 S3method(tracePlots, "GLMM_MCMClist")
 
@@ -148,7 +151,7 @@ importFrom(parallel, "detectCores", "makeCluster", "parLapply", "stopCluster")  
      ### I guess that by importing the merMod class, it is no more necessary import vcov explicitely...
      ###
 importFrom(fastGHQuad, "gaussHermiteData", "aghQuad")           ## In: fitted.GLMM_MCMC
-importFrom(coda, "mcmc", "HPDinterval")                         ## In: NMixCluster.GLMM_MCMC
+importFrom(coda, "mcmc", "HPDinterval")                         ## In: NMixCluster.GLMM_MCMC, GLMM_longitDA2
 
 # Import full packages where more functions are used
 # as of 3.6: I again import full lme4 since selective import above did not import

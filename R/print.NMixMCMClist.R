@@ -63,15 +63,27 @@ print.NMixMCMClist <- function(x, ped, dic, ...)
   cat("\nPosterior summary statistics for moments of mixture for original data:")
   cat("\n----------------------------------------------------------------------")
   if (x[[1]]$dim == 1){
-    cat("\nMean:\n")
-    xsummyMean <- rbind(x[[1]]$summ.y.Mean, x[[2]]$summ.y.Mean)
-    rownames(xsummyMean) <- chNames    
-    print(xsummyMean, ...)
+    if (x[[1]]$nx_w == 1){        
+      cat("\nMean:\n")
+      xsummyMean <- rbind(x[[1]]$summ.y.Mean, x[[2]]$summ.y.Mean)
+      rownames(xsummyMean) <- chNames    
+      print(xsummyMean, ...)
 
-    cat("\nStandard deviation:\n")
-    xsummySDCorr <- rbind(x[[1]]$summ.y.SDCorr, x[[2]]$summ.y.SDCorr)
-    rownames(xsummySDCorr) <- chNames
-    print(xsummySDCorr, ...)
+      cat("\nStandard deviation:\n")
+      xsummySDCorr <- rbind(x[[1]]$summ.y.SDCorr, x[[2]]$summ.y.SDCorr)
+      rownames(xsummySDCorr) <- chNames
+      print(xsummySDCorr, ...)
+    }else{
+      cat("\nMeans (chain 1):\n")
+      print(x[[1]]$summ.y.Mean, ...)
+      cat("\nMeans (chain 2):\n")
+      print(x[[2]]$summ.y.Mean, ...)
+    
+      cat("\nStandard deviations (chain 1):\n")
+      print(x[[1]]$summ.y.SDCorr, ...)
+      cat("\nStandard deviations (chain 2):\n")
+      print(x[[2]]$summ.y.SDCorr, ...)    
+    }   
   }else{
     cat("\nMeans (chain 1):\n")
     print(x[[1]]$summ.y.Mean, ...)
@@ -87,7 +99,7 @@ print.NMixMCMClist <- function(x, ped, dic, ...)
   if (!is.null(x[[1]]$summ.expy.Mean)){
     cat("\nPosterior summary statistics for mean of exp(data):")
     cat("\n---------------------------------------------------\n")
-    if (x[[1]]$dim == 1){
+    if (x[[1]]$dim == 1 & x[[1]]$nx_w == 1){
       xsummexpyMean <- rbind(x[[1]]$summ.expy.Mean, x[[2]]$summ.expy.Mean)
       rownames(xsummexpyMean) <- chNames    
       print(xsummexpyMean, ...)

@@ -41,11 +41,19 @@ print.NMixMCMC <- function(x, dic, ...)
   cat("\nPosterior summary statistics for moments of mixture for original data:")
   cat("\n----------------------------------------------------------------------")
   if (x$dim == 1){
-    cat("\nMean:\n")
-    print(x$summ.y.Mean, ...)
+    if (x$nx_w == 1){
+      cat("\nMean:\n")
+      print(x$summ.y.Mean, ...)
 
-    cat("\nStandard deviation:\n")
-    print(x$summ.y.SDCorr, ...)
+      cat("\nStandard deviation:\n")
+      print(x$summ.y.SDCorr, ...)
+    }else{
+      cat("\nMeans:\n")
+      print(x$summ.y.Mean, ...)
+
+      cat("\nStandard deviations:\n")
+      print(x$summ.y.SDCorr, ...)
+    }    
   }else{
     cat("\nMeans:\n")
     print(x$summ.y.Mean, ...)

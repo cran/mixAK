@@ -14,9 +14,9 @@
 extern "C" {
 #endif
 
-      //int clus_show = 0;     /** global variable for debugging purposes **/
-      //int iter_show = 2;
-      //int iteration;
+      int clus_show = 0;     /** global variable for debugging purposes **/
+      int iter_show = 2;
+      int iteration;
 
 /***** ***************************************************************************************** *****/
 /***** GLMM_MCMC                                                                                 *****/
@@ -103,6 +103,14 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
   const int *I = I_n;
   int       *n = I_n + 1;
 
+  /***** NOT REALLY USED VARIABLES RELATED TO A FACTOR COVARIATE ON MIXTURE WEIGHTS *****/
+  /***** (not implemented (yet) in GLMM_MCMC)                                       *****/
+  const int nxw_ONE = 1;
+  int *xw = Calloc(*I, int);
+  for (i = 0; i < *I; i++) xw[i] = 0;
+  int *tabxw = Calloc(nxw_ONE, int);
+  tabxw[0] = *I;
+
   /***** Storage of optional parameters, length of MCMC, addtional parameters *****/
   const int *nonSilent = nonSilent_keepChain_nMCMC_R_cd_dist;
   const int *keep_b    = nonSilent + 1;  
@@ -137,6 +145,7 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
   int l_beta    = AK_Basic::sum(fixedIntcpt, R) + AK_Basic::sum(p, R);                  /* length of beta vector                             */
   int dim_b     = AK_Basic::sum(randIntcpt, R) + AK_Basic::sum(q, R);                   /* dimension of random effects                       */
   int LT_b      = (dim_b * (dim_b + 1)) / 2;                                            /* length of lower triangle of matrix dim_b x dim_b  */
+
 
   /***** Tuning scale parameters *****/
   const double *tune_scale_beta = tune_scale_beta_b;
@@ -207,7 +216,8 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
                    double* LogL0,        double* LogL1,      double* DevCompl,      double* DevObs,      double* DevCompl_inHat, 
                    double* pred_dens,    double* Pr,         double* cum_Pr,        double* dwork,       int* err,
                    const double* y,      const int* r,           const int* mixN,     const int* p,      const int* n,
-                   const int* K,         const double* logw,     const double* mu,    const double* Q,   const double* Li,  const double* log_dets,
+                   const int* K,         const int* xw,          const int* nxw,      const int* mixNxw, const int* tabxw,
+                   const double* logw,   const double* mu,       const double* Q,     const double* Li,  const double* log_dets,
                    const double* delta,  const double* c,        const double* xi,    const double* c_xi,  
                    const double* Dinv,   const double* Dinv_xi,  const double* zeta,  const double* XiInv) = NMix::Deviance_NC;
 
@@ -349,7 +359,7 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
     XiInv_b    = Calloc(LT_b, double);
     Mean_b     = Calloc(dim_b, double);
     Corr_b     = Calloc(LT_b, double);
-    NMix::init_derived(&dim_b, Kmax_b, K_b, distribution_b, w_b, mu_b, Li_b, df_b, shift_b, scale_b, gammaInv_b,   
+    NMix::init_derived(&dim_b, &nxw_ONE, Kmax_b, K_b, distribution_b, w_b, mu_b, Li_b, df_b, shift_b, scale_b, gammaInv_b,   
                        log_dets_b, logw_b, Q_b, Sigma_b, Mean_b, Var_b, Corr_b, chMeanData_b, VarData_b, chCorrData_b,
                        XiInv_b, log_sqrt_detXiInv_b, err);
     if (*err) error("%s:  Something went wrong.\n", fname);
@@ -363,6 +373,7 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
   /***** Additional mixture related parameters                               *****/
   /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/
   int *mixN_b    = NULL;
+  int *mixNxw_b  = NULL;
   int **rInv_b   = NULL;
   int **rInv_bPP = NULL;
   int *r_bP      = NULL;
@@ -370,8 +381,10 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
     /***** mixN_b:  Numbers of observations within each component                                       *****/
     /*****          mixN_b[j] (j=0,...,Kmax_b) = number of observations in the j-th component           *****/
     /*****          * initialize mixN_b by 0's                                                          *****/
-    mixN_b = Calloc(*Kmax_b, int);
-    AK_Basic::fillArray(mixN_b, 0, *Kmax_b);
+    mixN_b   = Calloc(*Kmax_b, int);
+    mixNxw_b = Calloc(*Kmax_b * nxw_ONE, int);
+    AK_Basic::fillArray(mixN_b,   0, *Kmax_b);
+    AK_Basic::fillArray(mixNxw_b, 0, *Kmax_b * nxw_ONE);
 
     /***** rInv_b:  "Inverse" allocations                                                                  *****/
     /*****          rInv_b[j][i] (j=0,...,Kmax, i=0,...,mixN_b[j]-1)                                       *****/
@@ -394,6 +407,7 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
       }
       rInv_b[*r_bP][mixN_b[*r_bP]] = i;
       mixN_b[*r_bP]++;
+      mixNxw_b[*r_bP]++;
       r_bP++;
     }
   }
@@ -516,6 +530,7 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
   int l_XtX = 0;                                             // total length of lower triangles of all XtX matrices
   for (s = 0; s < *R_c; s++)             l_XtX += (p_fi[s] * (p_fi[s] + 1)) / 2;  
   for (s = *R_c; s < (*R_c + *R_d); s++) l_XtX += N_s[s] * ((p_fi[s] * (p_fi[s] + 1)) / 2);  
+  if (!l_XtX) l_XtX = 1;
   double *XtX = Calloc(l_XtX, double);
   GLMM::create_XtX(XtX, X, p, fixedIntcpt, R_c, R_d, I, n);
 
@@ -536,6 +551,7 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
     }
   }
   int sum_l_ZS = AK_Basic::sum(l_ZS, *I);                        /* length of array for ZS matrices          */
+  if (!sum_l_ZS) sum_l_ZS = 1;
   double *ZS = Calloc(sum_l_ZS, double);
   GLMM::create_ZS(ZS, ZrespP, nrespP, Zresp, nresp, scale_b, q, randIntcpt, &R, I);
 
@@ -568,7 +584,7 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
   int l_ZitZi = 0;                                           // total length of ZitZi lower triangles of all SZitZiS matrices
   for (s = 0; s < *R_c; s++)             l_ZitZi += *I * ((q_ri[s] * (q_ri[s] + 1)) / 2);
   for (s = *R_c; s < (*R_c + *R_d); s++) l_ZitZi += N_s[s] * ((q_ri[s] * (q_ri[s] + 1)) / 2);
-  if (!dim_b) l_ZitZi = 1;
+  if (!l_ZitZi) l_ZitZi = 1;
   double *SZitZiS = Calloc(l_ZitZi, double);
   GLMM::create_SZitZiS(SZitZiS, ZrespP, Zresp, scale_b, q, randIntcpt, R_c, R_d, I, n);
   //GLMM::scale_ZitZi(SZitZiS, scale_b, q_ri, &R, I);                               // REMOVED ON 20/10/2009 
@@ -598,7 +614,7 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
   //          * to simplify the code which computes pm_stres, we define double pointer stresclus
   //            which will provide starts of stres for each cluster and working double pointer stresclusP
   //
-  double *pi_ik      = Calloc(*Kmax_b * *I, double);
+  double *pi_ik      = Calloc(*Kmax_b ? *Kmax_b * *I : *I, double);
   double *marg_ll_i  = Calloc(*I, double);
   double *marg_ll_iP;
   double *cond_ll_i = Calloc(*I, double);
@@ -660,7 +676,7 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
   double *Pr_b        = NULL;
   double *cum_Pr_b    = NULL;
 
-  const int ldwork_Deviance_b = dim_b + (2 * dim_b + LT_b + 2 + dim_b + 2 * LT_b + 2) * *Kmax_b;
+  const int ldwork_Deviance_b = dim_b + (2 * dim_b + LT_b + 2 * nxw_ONE + dim_b + 2 * LT_b + 2) * *Kmax_b;
   double *dwork_Deviance_b = NULL;
   bool cum_Pr_done_b[1]    = {false};
   if (dim_b){
@@ -679,7 +695,9 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
     NMix_Deviance(indLogL0_b, indLogL1_b, indDevCompl_b, indDevObs_b, indDevCompl_inHat_b, 
                   chLogL0_bP, chLogL1_bP, chDevCompl_bP, chDevObs_bP, chDevCompl_inHat_bP, 
                   pred_dens_b, Pr_b, cum_Pr_b, dwork_Deviance_b, err,
-                  bscaled, r_b, mixN_b, &dim_b, I, K_b, logw_b, mu_b, Q_b, Li_b, log_dets_b, 
+                  bscaled, r_b, mixN_b, &dim_b, I, K_b, 
+                  xw, &nxw_ONE, mixNxw_b, tabxw,
+                  logw_b, mu_b, Q_b, Li_b, log_dets_b, 
                   delta_b, c_b, xi_b, c_xi_b, Dinv_b, Dinv_xi_b, zeta_b, XiInv_b);
     if (*err){
       warning("%s: Calculation of quantities for DIC's failed on init.\n", fname);
@@ -836,12 +854,12 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
     for (witer = 0; witer < *Mthin; witer++){
       if (dim_b){
       /*** Update mixture distribution of random effects ***/
-	NMix::updateAlloc(r_b, mixN_b, rInv_b, cum_Pr_b, dwork_updateAlloc_b, bscaled, &dim_b, I, logw_b, mu_b, Li_b, log_dets_b, K_b, cum_Pr_done_b);
+	NMix::updateAlloc(r_b, mixN_b, mixNxw_b, rInv_b, cum_Pr_b, dwork_updateAlloc_b, bscaled, &dim_b, I, logw_b, mu_b, Li_b, log_dets_b, K_b, cum_Pr_done_b, xw, &nxw_ONE);
         NMix_updateMeansVars(mu_b, Q_b, Li_b, Sigma_b, log_dets_b, order_b, rank_b, dwork_updateMeansVars_b, err, bscaled, r_b, mixN_b,
                              &dim_b, I, K_b, c_b, xi_b, c_xi_b, Dinv_b, Dinv_xi_b, zeta_b, XiInv_b);
         *cum_Pr_done_b = false;
         NMix::updateHyperVars(gammaInv_b, XiInv_b, log_sqrt_detXiInv_b, dwork_updateHyperVars_b, Q_b, K_b, &dim_b, zeta_b, g_b, h_b);
-        NMix::updateWeights(w_b, logw_b, dwork_updateWeights_b, mixN_b, K_b, delta_b);    
+        NMix::updateWeights(w_b, logw_b, dwork_updateWeights_b, mixN_b, K_b, delta_b, mixNxw_b, &nxw_ONE);    
 
       /*** Update random effects ***/
         //if (ranef_QR){
@@ -903,12 +921,12 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
     for (witer = 0; witer < *Mthin; witer++){          
       if (dim_b){
       /*** Update mixture distribution of random effects ***/
-	NMix::updateAlloc(r_b, mixN_b, rInv_b, cum_Pr_b, dwork_updateAlloc_b, bscaled, &dim_b, I, logw_b, mu_b, Li_b, log_dets_b, K_b, cum_Pr_done_b);     
+	NMix::updateAlloc(r_b, mixN_b, mixNxw_b, rInv_b, cum_Pr_b, dwork_updateAlloc_b, bscaled, &dim_b, I, logw_b, mu_b, Li_b, log_dets_b, K_b, cum_Pr_done_b, xw, &nxw_ONE);
         NMix_updateMeansVars(mu_b, Q_b, Li_b, Sigma_b, log_dets_b, order_b, rank_b, dwork_updateMeansVars_b, err, bscaled, r_b, mixN_b,
                              &dim_b, I, K_b, c_b, xi_b, c_xi_b, Dinv_b, Dinv_xi_b, zeta_b, XiInv_b);
         *cum_Pr_done_b = false;
         NMix::updateHyperVars(gammaInv_b, XiInv_b, log_sqrt_detXiInv_b, dwork_updateHyperVars_b, Q_b, K_b, &dim_b, zeta_b, g_b, h_b);
-        NMix::updateWeights(w_b, logw_b, dwork_updateWeights_b, mixN_b, K_b, delta_b);
+        NMix::updateWeights(w_b, logw_b, dwork_updateWeights_b, mixN_b, K_b, delta_b, mixNxw_b, &nxw_ONE);
 
       /*** Update random effects ***/
         //if (ranef_QR){
@@ -957,10 +975,12 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
                    sigma_eps, 
                    distribution_b, K_b, w_b, logw_b, mu_b, Li_b, Q_b, df_b,
                    log_dets_b, bscaled, &AK_Basic::_ONE_INT, iter);
-    //if (*iter > 110 & *iter < 113){
-    //  Rprintf("\nchGLMMLogLP=%g\n, mll <- ", *chGLMMLogLP);
+    //if (*iter == 51){
+    //  Rprintf("\nmarg_ll = %g\n, mll <- ", *chGLMMLogLP);
     //  AK_Basic::printVec4R(marg_ll_i, *I);
     //}
+
+
     chGLMMLogLP++;     // (only shift, not needed to copy it)
     chLogLP++;         // (only shift, not needed to copy it)
 
@@ -1028,7 +1048,7 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
       }
 
       /*** Update chMeanData and chCorrData and store them ***/
-      NMix::Moments(Mean_b, Var_b, Corr_b, chMeanData_bP, VarData_b, chCorrData_bP, distribution_b, w_b, mu_b, Sigma_b, df_b, K_b, shift_b, scale_b, &dim_b);
+      NMix::Moments(Mean_b, Var_b, Corr_b, chMeanData_bP, VarData_b, chCorrData_bP, distribution_b, w_b, mu_b, Sigma_b, df_b, K_b, shift_b, scale_b, &dim_b, &nxw_ONE);
       chMeanData_bP += dim_b;
       chCorrData_bP += LT_b;
 
@@ -1046,7 +1066,9 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
       NMix_Deviance(indLogL0_b, indLogL1_b, indDevCompl_b, indDevObs_b, indDevCompl_inHat_b, 
                     chLogL0_bP, chLogL1_bP, chDevCompl_bP, chDevObs_bP, chDevCompl_inHat_bP, 
                     pred_dens_b, Pr_b, cum_Pr_b, dwork_Deviance_b, err,
-                    bscaled, r_b, mixN_b, &dim_b, I, K_b, logw_b, mu_b, Q_b, Li_b, log_dets_b, 
+                    bscaled, r_b, mixN_b, &dim_b, I, K_b, 
+                    xw, &nxw_ONE, mixNxw_b, tabxw,
+                    logw_b, mu_b, Q_b, Li_b, log_dets_b, 
                     delta_b, c_b, xi_b, c_xi_b, Dinv_b, Dinv_xi_b, zeta_b, XiInv_b);
       *cum_Pr_done_b = true;
       if (*err){
@@ -1198,7 +1220,7 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
   /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/ 
   if (dim_b){
     if (*priorK_b == NMix::K_FIXED){
-      NMix::PosterMeanMixParam(pm_w_b, pm_mu_b, pm_Q_b, pm_Sigma_b, pm_Li_b, Kmax_b, chw_b, chmu_b, chQ_b, chSigma_b, chLi_b, chorder_b, &dim_b, Mkeep);
+      NMix::PosterMeanMixParam(pm_w_b, pm_mu_b, pm_Q_b, pm_Sigma_b, pm_Li_b, Kmax_b, chw_b, chmu_b, chQ_b, chSigma_b, chLi_b, chorder_b, &dim_b, Mkeep, &nxw_ONE);
     }
 
     pm_indLogpbP = pm_indLogpb;
@@ -1262,7 +1284,6 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
   Free(nrespP);
   Free(Zresp);
   Free(ZrespP);
-
   Free(dYresp);
   Free(dYrespP);
   Free(meanYresp);
@@ -1275,6 +1296,7 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
   Free(eta_randomrespP);
   Free(eta_zsresp);
   Free(eta_zsrespP);
+
   if (*R_c){
     Free(Y_cresp);
     Free(Y_crespP);
@@ -1351,6 +1373,8 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
     }
     Free(rInv_b);
     Free(mixN_b);
+    Free(mixNxw_b);
+    Free(xw);
 
     Free(Corr_b);
     Free(Mean_b);

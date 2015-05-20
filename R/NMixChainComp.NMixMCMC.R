@@ -9,6 +9,7 @@
 ##             arnost.komarek[AT]mff.cuni.cz
 ##
 ##  CREATED:   16/07/2013
+##             27/03/2015  mild revision to allow for factor covariates on mixture weights
 ##
 ##  FUNCTION:  NMixChainComp.NMixMCMC
 ##             
@@ -27,10 +28,21 @@ NMixChainComp.NMixMCMC <- function(x, relabel = TRUE, param = c("w", "mu", "var"
   ##### -----------------------------
   if (param == "w"){
     if (relabel){
-      w <- matrix(nrow = nrow(x$w), ncol = x$K[1])
-      for (k in 1:x$K[1]) w[,k] <- x$w[cbind(1:nrow(x$w), x$order[,k])]
-      colnames(w) <- colnames(x$w)
-      return(w)
+      if (x$nx_w == 1){        
+        w <- matrix(nrow = nrow(x$w), ncol = x$K[1])
+        for (k in 1:x$K[1]) w[,k] <- x$w[cbind(1:nrow(x$w), x$order[,k])]
+        colnames(w) <- colnames(x$w)
+        return(w)
+      }else{
+        w <- matrix(nrow = nrow(x$w), ncol = x$K[1] * x$nx_w)
+        for (ixw in 1:x$nx_w){
+          wixw <- x$w[, (ixw-1)*x$K[1] + (1:x$K[1])]
+          for (k in 1:x$K[1]) w[, (ixw-1)*x$K[1] + k] <- wixw[cbind(1:nrow(wixw), x$order[,k])]          
+          rm(list = "wixw")
+        }
+        colnames(w) <- colnames(x$w)
+        return(w)
+      }    
     }else{
       return(x$w)
     }

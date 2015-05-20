@@ -20,6 +20,8 @@ NMixPlugCondDensMarg.NMixMCMC <- function(x, icond, grid, lgrid=50, scaled=FALSE
   if (missing(icond)) stop("icond must be given")
   if (x$dim == 1) stop("not applicable for univariate mixtures")  
   if (x$prior$priorK != "fixed") stop("only implemented for models with fixed number of components")
+
+  if (x$nx_w > 1) stop("This function has not (yet) been implemented if a factor covariate on mixture weights is present.")
   
   if (missing(grid)){
     grid <- list()

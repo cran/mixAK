@@ -2,6 +2,7 @@
 \alias{NMixRelabel}
 \alias{NMixRelabel.default}
 \alias{NMixRelabel.NMixMCMC}
+\alias{NMixRelabel.NMixMCMClist}
 \alias{NMixRelabel.GLMM_MCMC}
 \alias{NMixRelabel.GLMM_MCMClist}
 \title{
@@ -26,6 +27,10 @@ NMixRelabel(object, type=c("mean", "weight", "stephens"), par, \dots)
 
 \method{NMixRelabel}{NMixMCMC}(object, type = c("mean", "weight","stephens"), par,
    prob=c(0.025, 0.5, 0.975), keep.comp.prob = FALSE, info, \dots)
+
+\method{NMixRelabel}{NMixMCMClist}(object, type = c("mean", "weight","stephens"), par,
+   prob=c(0.025, 0.5, 0.975), keep.comp.prob = FALSE, info,
+   silent = FALSE, parallel = FALSE, \dots)
 
 \method{NMixRelabel}{GLMM_MCMC}(object, type = c("mean", "weight", "stephens"), par,
    prob = c(0.025, 0.5, 0.975), keep.comp.prob = FALSE, info,

@@ -10,6 +10,8 @@
 //
 //  FUNCTIONS:  * fullCondMean_MeansVars_NC  08/02/2008
 //
+//       30/03/2015:  code that allows for a factor covariate in mixture weights added
+//
 // ====================================================================================================
 //
 #ifndef _NMIX_FULL_CONDITIONAL_MEAN_MEANS_VARS_H_
@@ -32,9 +34,9 @@ namespace NMix{
 //
 // * code partially taken from NMix::updateMeansVars_NC
 //
-// fcm_weight[K]      Full conditional means for mixture weights
+// fcm_weight[K, nxw]      Full conditional means for mixture weights
 //
-// logfcm_weight[K]   Logarithm of above
+// logfcm_weight[K, nxw]   Logarithm of above
 //
 // fcm_mu[p, K]       Full conditional means for mixture means - E[mu_j|...]
 // 
@@ -58,6 +60,13 @@ namespace NMix{
 // p[1]             dimension of the normal distribution
 //
 // n[1]             number of observations
+//
+// mixNxw[K, nxw]   
+//
+// nxw[1] 
+//
+// tabxw[nxw]       frequency table giving numbers of observations per group
+//                  given by the factor covariate on mixture weights
 //
 // K[1]             current number of components
 //
@@ -89,7 +98,9 @@ fullCondMean_WeightsMeansVars_NC(double* fcm_weight,     double* logfcm_weight, 
                                  double* ifcm_Q,         double* ifcm_L,         double* fcm_log_dets,  
                                  double* dwork,          int* err,
                                  const double* mixSumy,  const double* mixBary,  const double* mixSS,
-                                 const int* mixN,        const int* p,           const int* n,         const int* K,         const double* Q,
+                                 const int* mixN,        const int* p,           const int* n,         
+                                 const int* mixNxw,      const int* nxw,         const int* tabxw,
+                                 const int* K,           const double* Q,
                                  const double* delta,    const double* c,        const double* xi,     const double* c_xi,   
                                  const double* Dinv,     const double* Dinv_xi,  const double* zeta,   const double* XiInv);
 

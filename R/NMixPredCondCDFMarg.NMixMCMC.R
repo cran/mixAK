@@ -18,6 +18,8 @@ NMixPredCondCDFMarg.NMixMCMC <- function(x, icond, prob, grid, lgrid=50, scaled=
 {
   if (missing(icond)) stop("icond must be given")
   if (x$dim == 1) stop("not applicable for univariate mixtures")  
+
+  if (x$nx_w > 1) stop("This function has not (yet) been implemented if a factor covariate on mixture weights is present.")
   
   if (missing(grid)){
     grid <- list()

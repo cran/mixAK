@@ -57,11 +57,11 @@
   improvement of the MCMC algorithm is achieved.   
 }
 \usage{
-NMixMCMC(y0, y1, censor, scale, prior,
+NMixMCMC(y0, y1, censor, x_w, scale, prior,
          init, init2, RJMCMC,
-         nMCMC=c(burn=10, keep=10, thin=1, info=10),
-         PED, keep.chains=TRUE, onlyInit=FALSE, dens.zero=1e-300,
-         parallel=FALSE)
+         nMCMC = c(burn = 10, keep = 10, thin = 1, info = 10),
+         PED, keep.chains = TRUE, onlyInit = FALSE, dens.zero = 1e-300,
+         parallel = FALSE)
 
 \method{print}{NMixMCMC}(x, dic, \dots)
 
@@ -92,6 +92,12 @@ NMixMCMC(y0, y1, censor, scale, prior,
 
     If it is not supplied then it is assumed that all values are exactly
     observed.
+  }
+  \item{x_w}{optional vector providing a categorical covariate that may
+    influence the mixture weights. Internally, it is converted into a
+    \code{factor}.
+
+    Added in version 4.0 (03/2015).
   }
   \item{scale}{a list specifying how to scale the data before running
     MCMC. It should have two components:
@@ -461,6 +467,11 @@ NMixMCMC(y0, y1, censor, scale, prior,
   \item{iter}{index of the last iteration performed.}
   \item{nMCMC}{used value of the argument \code{nMCMC}.}
   \item{dim}{dimension \eqn{p} of the distribution of data}
+  \item{nx_w}{number of levels of a factor covariate on mixture weights
+    (equal to 1 if there were no covariates on mixture weights)}
+%  \item{x_w}{a factor covariate on mixture weights stored as integers 0,
+%	1, \ldots. Only a (scalar) value of 0 if no covariates on
+%	mixture weights}
   \item{prior}{a list containing the used value of the argument \code{prior}.}
   \item{init}{a list containing the used initial values for the MCMC
     (the first iteration of the burn-in).

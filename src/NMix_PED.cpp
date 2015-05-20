@@ -21,15 +21,33 @@ extern "C" {
 /***** ******************************************************************** *****/
 void
 NMix_PED(double* PED,
-         double* pm_indDevObs,    double* pm_indpopt,    double* pm_windpopt,
-         int* invalid_indDevObs,  int* invalid_indpopt,  int* invalid_windpopt,
-         double* sum_ISweight,    // double* ch_ISweight,
+         double* pm_indDevObs,    
+         double* pm_indpopt,    
+         double* pm_windpopt,
+         int* invalid_indDevObs,  
+         int* invalid_indpopt,  
+         int* invalid_windpopt,
+         double* sum_ISweight,    
+         // double* ch_ISweight,
          int* err,
-         const double* y0,         const double* y1,     const int* censor,    const int* dimy,
-         const int* chK1,          const double* chw1,   const double* chmu1,  const double* chLi1,
-         const int* chK2,          const double* chw2,   const double* chmu2,  const double* chLi2,
-         const int* M,             const int* Kmax,      const int* Krandom,
-         const double* Dens_ZERO,  const double* EMin)
+         const double* y0,         
+         const double* y1,     
+         const int* censor,    
+         const int*    nxw_xw,
+         const int* dimy,
+         const int* chK1,          
+         const double* chw1,   
+         const double* chmu1,  
+         const double* chLi1,
+         const int* chK2,          
+         const double* chw2,   
+         const double* chmu2,  
+         const double* chLi2,
+         const int* M,             
+         const int* Kmax,      
+         const int* Krandom,
+         const double* Dens_ZERO,  
+         const double* EMin)
 {
   *err = 0; 
 
@@ -37,7 +55,7 @@ NMix_PED(double* PED,
 
   const char *fname = "NMix_PED";
 
-  int i, t;
+  int i, t, ixw;
   const int *p = dimy;
   const int *n = p + 1;
   const int LTp = (*p * (*p + 1))/2;
@@ -49,6 +67,10 @@ NMix_PED(double* PED,
   const double *y0P = NULL;
   const double *y1P = NULL;
   const int *censorP = NULL;
+
+  const int *nxw = nxw_xw;
+  const int *xw  = nxw_xw + 1;
+  const int *xwP = NULL;
 
   double *Dbar          = PED;
   double *popt          = Dbar + 1;
@@ -67,14 +89,14 @@ NMix_PED(double* PED,
   int *invalid_windpoptP;
  
   /***** work array *****/
-  double *work = Calloc((*Kmax)*6 + (*p)*5 + 6 + 2*(*Kmax)*p_p + 2*(*Kmax)*(*p) + 2*LTp, double);
-  double *sigma1   = work;                  /** std. deviations for chain 1 in univariate case                                            **/
-  double *sigma2   = sigma1 + *Kmax;        /** std. deviations for chain 2 in univariate case                                            **/
-  double *cumw1    = sigma2 + *Kmax;        /** cummulative mixture weights for chain 1                                                   **/
-  double *cumw2    = cumw1 + *Kmax;         /** cummulative mixture weights for chain 2                                                   **/
-  double *w_dets1  = cumw2 + *Kmax;         /** values for Dist::dmixMVN, Dist::rmixMVN                                                   **/
-  double *w_dets2  = w_dets1 + *Kmax;       /** values for Dist::dmixMVN, Dist::rmixMVN                                                   **/
-  double *work_mix = w_dets2 + *Kmax;       /** working array for Dist::dmixMVN, Dist::rmixMVN                                            **/
+  double *work = Calloc((*Kmax)*2 + (*Kmax * *nxw)*4 + (*p)*5 + 6 + 2*(*Kmax)*p_p + 2*(*Kmax)*(*p) + 2*LTp, double);
+  double *sigma1   = work;                         /** std. deviations for chain 1 in univariate case                                            **/
+  double *sigma2   = sigma1 + *Kmax;               /** std. deviations for chain 2 in univariate case                                            **/
+  double *cumw1    = sigma2 + *Kmax;               /** cummulative mixture weights for chain 1                                                   **/
+  double *cumw2    = cumw1 + *Kmax * *nxw;         /** cummulative mixture weights for chain 2                                                   **/
+  double *w_dets1  = cumw2 + *Kmax * *nxw;         /** values for Dist::dmixMVN, Dist::rmixMVN                                                   **/
+  double *w_dets2  = w_dets1 + *Kmax * *nxw;       /** values for Dist::dmixMVN, Dist::rmixMVN                                                   **/
+  double *work_mix = w_dets2 + *Kmax * *nxw;       /** working array for Dist::dmixMVN, Dist::rmixMVN                                            **/
   double *yICrep1  = work_mix + *p;         /** replicate of censored observation sampled from truncated distribution in the first chain  **/
   double *yICrep2  = yICrep1 + *p;          /** replicate of censored observation sampled from truncated distribution in the second chain **/
   double *yrep1    = yICrep2 + *p;          /** replicate sampled from the first chain                                                    **/
@@ -136,8 +158,10 @@ NMix_PED(double* PED,
       /*** Loop over sampled values ***/
       for (t = 0; t < *M; t++){                       /** loop t **/
 
-        AK_Basic::cumsum(cumw1, w1, *K1);
-	AK_Basic::cumsum(cumw2, w2, *K2);
+        for (ixw = 0; ixw < *nxw; ixw++){          
+          AK_Basic::cumsum(cumw1 + ixw * *K1, w1 + ixw * *K1, *K1);
+   	  AK_Basic::cumsum(cumw2 + ixw * *K2, w2 + ixw * *K2, *K2);
+        }
 	NMix::Li2sigma(sigma1, Li1, K1);
 	NMix::Li2sigma(sigma2, Li2, K2);
 
@@ -145,6 +169,8 @@ NMix_PED(double* PED,
         y0P                = y0;
         y1P                = y1;
         censorP            = censor;
+        xwP                = xw;
+
         pm_indDevObsP      = pm_indDevObs;
         pm_indpoptP        = pm_indpopt;
         pm_windpoptP       = pm_windpopt;
@@ -155,19 +181,21 @@ NMix_PED(double* PED,
 
         for (i = 0; i < *n; i++){                       /** loop i **/
 
-	  Dist::rTmixNorm1(yICrep1, K1, cumw1, mu1, sigma1, y0P, y1P, censorP);
-	  Dist::rTmixNorm1(yICrep2, K2, cumw2, mu2, sigma2, y0P, y1P, censorP);
+	  Dist::rTmixNorm1(yICrep1, K1, cumw1 + *xwP * *K1, mu1, sigma1, y0P, y1P, censorP);
+	  Dist::rTmixNorm1(yICrep2, K2, cumw2 + *xwP * *K2, mu2, sigma2, y0P, y1P, censorP);
 
 	  NMix::PED_coreUni(fy_1, fy_2, yrep1, yrep2, fyrep1_1, fyrep1_2, fyrep2_1, fyrep2_2, 
                             pm_indDevObsP, pm_indpoptP, pm_windpoptP, sum_ISweightP,
                             invalid_indDevObsP, invalid_indpoptP, invalid_windpoptP,
-                            yICrep1, K1, w1, cumw1, mu1, sigma1, 
-                            yICrep2, K2, w2, cumw2, mu2, sigma2,
+                            yICrep1, K1, w1 + *xwP * *K1, cumw1 + *xwP * *K1, mu1, sigma1, 
+                            yICrep2, K2, w2 + *xwP * *K2, cumw2 + *xwP * *K2, mu2, sigma2,
                             M, Dens_ZERO, EMin);
 
           y0P++;
           y1P++;
           censorP++;
+          xwP++;
+
           pm_indDevObsP++;
           pm_indpoptP++;
           pm_windpoptP++;
@@ -178,8 +206,8 @@ NMix_PED(double* PED,
           // ch_ISweightP++;
         }                                               /** end of loop i **/
 
-        w1 += *K1;
-        w2 += *K2;
+        w1 += *K1 * *nxw;
+        w2 += *K2 * *nxw;
         mu1 += *K1;
         mu2 += *K2;
         Li1 += *K1;
@@ -197,13 +225,18 @@ NMix_PED(double* PED,
 
       /*** Loop over sampled values ***/
       for (t = 0; t < *M; t++){                       /** loop t **/
-        AK_Basic::cumsum(cumw1, w1, *K1);
-	AK_Basic::cumsum(cumw2, w2, *K2); 
+
+        for (ixw = 0; ixw < *nxw; ixw++){          
+          AK_Basic::cumsum(cumw1 + ixw * *K1, w1 + ixw * *K1, *K1);
+   	  AK_Basic::cumsum(cumw2 + ixw * *K2, w2 + ixw * *K2, *K2);
+        }
 	NMix::Li2sigma(sigma1, Li1, K1);
 	NMix::Li2sigma(sigma2, Li2, K2);
 
         /*** Loop over observations ***/
         y0P                = y0;
+        xwP                = xw;
+ 
         pm_indDevObsP      = pm_indDevObs;
         pm_indpoptP        = pm_indpopt;
         pm_windpoptP       = pm_windpopt;
@@ -216,11 +249,13 @@ NMix_PED(double* PED,
 	  NMix::PED_coreUni(fy_1, fy_2, yrep1, yrep2, fyrep1_1, fyrep1_2, fyrep2_1, fyrep2_2, 
                             pm_indDevObsP, pm_indpoptP, pm_windpoptP, sum_ISweightP,
                             invalid_indDevObsP, invalid_indpoptP, invalid_windpoptP,
-                            y0P, K1, w1, cumw1, mu1, sigma1, 
-                            y0P, K2, w2, cumw2, mu2, sigma2,
+                            y0P, K1, w1 + *xwP * *K1, cumw1 + *xwP * *K1, mu1, sigma1, 
+                            y0P, K2, w2 + *xwP * *K2, cumw2 + *xwP * *K2, mu2, sigma2,
                             M, Dens_ZERO, EMin);
 
           y0P++;
+          xwP++;
+
           pm_indDevObsP++;
           pm_indpoptP++;
           pm_windpoptP++;
@@ -231,8 +266,8 @@ NMix_PED(double* PED,
           // ch_ISweightP++;
         }                                               /** end of loop i **/
 
-        w1 += *K1;
-        w2 += *K2;
+        w1 += *K1 * *nxw;
+        w2 += *K2 * *nxw;
         mu1 += *K1;
         mu2 += *K2;
         Li1 += *K1;
@@ -255,10 +290,12 @@ NMix_PED(double* PED,
       /*** Loop over sampled values ***/
       for (t = 0; t < *M; t++){                       /** loop t **/
 
-        AK_Basic::cumsum(cumw1, w1, *K1);
-	AK_Basic::cumsum(cumw2, w2, *K2);
-	NMix::wLi2w_dets(w_dets1, w1, Li1, K1, p);
-	NMix::wLi2w_dets(w_dets2, w2, Li2, K2, p);
+        for (ixw = 0; ixw < *nxw; ixw++){          
+          AK_Basic::cumsum(cumw1 + ixw * *K1, w1 + ixw * *K1, *K1);
+   	  AK_Basic::cumsum(cumw2 + ixw * *K2, w2 + ixw * *K2, *K2);
+        }
+	NMix::wLi2w_dets(w_dets1, w1, Li1, K1, p, nxw);
+  	NMix::wLi2w_dets(w_dets2, w2, Li2, K2, p, nxw);
 	NMix::muLi2beta_sigmaR2(beta1, sigmaR21, work_reg, K1, mu1, Li1, p, &p_p, &LTp);
 	NMix::muLi2beta_sigmaR2(beta2, sigmaR22, work_reg, K2, mu2, Li2, p, &p_p, &LTp);
 
@@ -266,6 +303,8 @@ NMix_PED(double* PED,
         y0P                = y0;
         y1P                = y1;
         censorP            = censor;
+        xwP                = xw;
+
         pm_indDevObsP      = pm_indDevObs;
         pm_indpoptP        = pm_indpopt;
         pm_windpoptP       = pm_windpopt;
@@ -275,19 +314,22 @@ NMix_PED(double* PED,
         invalid_windpoptP  = invalid_windpopt;
 
         for (i = 0; i < *n; i++){                       /** loop i **/
-	  Dist::rTmixMVN1(yICrep1, K1, cumw1, beta1, sigmaR21, y0P, y1P, censorP, p, &p_p);
-	  Dist::rTmixMVN1(yICrep2, K2, cumw2, beta2, sigmaR22, y0P, y1P, censorP, p, &p_p);
+
+	  Dist::rTmixMVN1(yICrep1, K1, cumw1 + *xwP * *K1, beta1, sigmaR21, y0P, y1P, censorP, p, &p_p);
+	  Dist::rTmixMVN1(yICrep2, K2, cumw2 + *xwP * *K2, beta2, sigmaR22, y0P, y1P, censorP, p, &p_p);
 
 	  NMix::PED_coreMulti(fy_1, fy_2, yrep1, yrep2, fyrep1_1, fyrep1_2, fyrep2_1, fyrep2_2, 
                               pm_indDevObsP, pm_indpoptP, pm_windpoptP, sum_ISweightP,
                               invalid_indDevObsP, invalid_indpoptP, invalid_windpoptP, work_mix,
-                              yICrep1, K1, w_dets1, cumw1, mu1, Li1, 
-                              yICrep2, K2, w_dets2, cumw2, mu2, Li2,
+                              yICrep1, K1, w_dets1 + *xwP * *K1, cumw1 + *xwP * *K1, mu1, Li1, 
+                              yICrep2, K2, w_dets2 + *xwP * *K2, cumw2 + *xwP * *K2, mu2, Li2,
                               p, M, Dens_ZERO, EMin);
 
           y0P += *p;
           y1P += *p;
           censorP++;
+          xwP++;
+
           pm_indDevObsP++;
           pm_indpoptP++;
           pm_windpoptP++;
@@ -298,8 +340,8 @@ NMix_PED(double* PED,
           // ch_ISweightP++;
         }                                               /** end of loop i **/
 
-        w1 += *K1;
-        w2 += *K2;
+        w1 += *K1 * *nxw;
+        w2 += *K2 * *nxw;
         mu1 += *p * *K1;
         mu2 += *p * *K2;
         Li1 += LTp * *K1;
@@ -318,13 +360,17 @@ NMix_PED(double* PED,
       /*** Loop over sampled values ***/
       for (t = 0; t < *M; t++){                       /** loop t **/
 
-        AK_Basic::cumsum(cumw1, w1, *K1);
-	AK_Basic::cumsum(cumw2, w2, *K2);
-	NMix::wLi2w_dets(w_dets1, w1, Li1, K1, p);
-	NMix::wLi2w_dets(w_dets2, w2, Li2, K2, p);
+        for (ixw = 0; ixw < *nxw; ixw++){          
+          AK_Basic::cumsum(cumw1 + ixw * *K1, w1 + ixw * *K1, *K1);
+   	  AK_Basic::cumsum(cumw2 + ixw * *K2, w2 + ixw * *K2, *K2);
+        }
+	NMix::wLi2w_dets(w_dets1, w1, Li1, K1, p, nxw);
+	NMix::wLi2w_dets(w_dets2, w2, Li2, K2, p, nxw);
 
         /*** Loop over observations ***/
         y0P                = y0;
+        xwP                = xw;
+
         pm_indDevObsP      = pm_indDevObs;
         pm_indpoptP        = pm_indpopt;
         pm_windpoptP       = pm_windpopt;
@@ -338,11 +384,13 @@ NMix_PED(double* PED,
 	  NMix::PED_coreMulti(fy_1, fy_2, yrep1, yrep2, fyrep1_1, fyrep1_2, fyrep2_1, fyrep2_2, 
                               pm_indDevObsP, pm_indpoptP, pm_windpoptP, sum_ISweightP,
                               invalid_indDevObsP, invalid_indpoptP, invalid_windpoptP, work_mix,
-                              y0P, K1, w_dets1, cumw1, mu1, Li1, 
-                              y0P, K2, w_dets2, cumw2, mu2, Li2,
+                              y0P, K1, w_dets1 + *xwP * *K1, cumw1 + *xwP * *K1, mu1, Li1, 
+                              y0P, K2, w_dets2 + *xwP * *K2, cumw2 + *xwP * *K2, mu2, Li2,
                               p, M, Dens_ZERO, EMin);
 
           y0P += *p;
+          xwP++;
+
           pm_indDevObsP++;
           pm_indpoptP++;
           pm_windpoptP++;
@@ -353,8 +401,8 @@ NMix_PED(double* PED,
           // ch_ISweightP++;
         }                                               /** end of loop i **/
 
-        w1 += *K1;
-        w2 += *K2;
+        w1 += *K1 * *nxw;
+        w2 += *K2 * *nxw;
         mu1 += *p * *K1;
         mu2 += *p * *K2;
         Li1 += LTp * *K1;

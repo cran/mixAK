@@ -132,7 +132,7 @@ loglik_Zwork1_stres(double*  loglik,
     }                                              /*** end of loop over columns of Zwork1 ***/
 
     stres_s      += *nresp[s];
-    sqrt_w_phi_s = sqrt_w_phiP;
+    sqrt_w_phi_s += *nresp[s];
     q_ri_s++;
     dist_s++;      
   }                                              /*** end of loop over response profiles ***/
@@ -290,7 +290,7 @@ loglik_Zwork1_stres(double*  loglik,
     meanY_s      += *nresp[s];
 
     stres_s      += *nresp[s];
-    sqrt_w_phi_s = sqrt_w_phiP;
+    sqrt_w_phi_s += *nresp[s];
     q_s++;
     randIntcpt_s++;
     q_ri_s++;
@@ -436,7 +436,7 @@ loglik_Zwork1(double*  loglik,
 
     b_s += *q_ri_s;
 
-    sqrt_w_phi_s = sqrt_w_phiP;
+    sqrt_w_phi_s += *nresp[s];
     q_s++;
     randIntcpt_s++;
     q_ri_s++;
@@ -506,6 +506,93 @@ loglik(double*  loglik,
       scale_b_s++;
       bP++;
     }
+
+    /*** Calculate the current value of the (conditional) log-likelihood value ***/
+    switch (*dist_s){
+    case GLMM::GAUSS_IDENTITY:
+      LogLik::Gauss_Identity1(&loglik_s,
+                              eta_fixedresp[s], b_s, sigma_s, Y_cresp[s], NULL, Zresp[s], nresp[s], q_s, randIntcpt_s);
+      sigma_s++;
+      break;
+
+    case GLMM::BERNOULLI_LOGIT:
+      LogLik::Bernoulli_Logit1(&loglik_s,
+                               eta_fixedresp[s], b_s, NULL, Y_dresp[s - *R_c], dYresp[s], Zresp[s], nresp[s], q_s, randIntcpt_s);
+      break;
+
+    case GLMM::POISSON_LOG:
+      LogLik::Poisson_Log1(&loglik_s,
+                           eta_fixedresp[s], b_s, NULL, Y_dresp[s - *R_c], dYresp[s], Zresp[s], nresp[s], q_s, randIntcpt_s);
+      break;
+
+    default:
+      *err = 1;
+      error("%s: Unimplemented distributional type (%d).\n", fname, *dist_s);
+    }
+    if (!R_finite(loglik_s)){
+      *err = 1;
+      return;
+      //error("%s: TRAP, infinite log-likelihood for response profile %d.\n", fname, s + 1);
+    }      
+    *loglik += loglik_s;
+
+    b_s += *q_ri_s;
+
+    q_s++;
+    randIntcpt_s++;
+    q_ri_s++;
+    dist_s++;      
+  }                                              /*** end of loop over response profiles ***/
+
+  return;
+}
+
+
+/***** ***************************************************************************************** *****/
+/***** MCMC::loglik (PROTOTYPE 3)                                                                *****/
+/***** ***************************************************************************************** *****/
+//
+//  Difference to PROTOTYPE 2:  bscaled is not supplied, b must be supplied and it is not calculated
+//
+void
+loglik(double*  loglik,
+       int*     err,
+       double** eta_fixedresp,              // this is in fact const
+       double** dYresp,                     // this is in fact const
+       double** Y_cresp,                    // this is in fact const
+       int**    Y_dresp,                    // this is in fact const
+       int**    nresp,                      // this is in fact const
+       double** Zresp,                      // this is in fact const
+       const double* b,
+       const double* sigma,
+       const int* q,
+       const int* randIntcpt,                          
+       const int* q_ri,
+       const int* dist,
+       const int* R_c,
+       const int* R_d)
+{
+  const char *fname = "MCMC::loglik (PROTOTYPE 3)";
+
+  static int s, s2, l;
+
+  static const int *dist_s, *q_ri_s, *q_s, *randIntcpt_s;
+  static const double *b_s;
+  static const double *sigma_s;
+  
+  static double loglik_s;
+
+  q_s          = q;
+  randIntcpt_s = randIntcpt;
+  q_ri_s       = q_ri;
+  dist_s       = dist;
+
+  *loglik = 0.0;
+
+  b_s       = b;
+
+  sigma_s = sigma;
+  for (s = 0; s < *R_c + *R_d; s++){             /*** loop over response profiles ***/
 
     /*** Calculate the current value of the (conditional) log-likelihood value ***/
     switch (*dist_s){
@@ -671,8 +758,8 @@ Zwork1_stres2UI(double*  U,
       error("%s: Unimplemented distributional type (%d).\n", fname, *dist_s);
     }
 
-    stres_s      = stres_sj;
-    sqrt_w_phi_s = sqrt_w_phi_sj;
+    stres_s      += *nresp[s];
+    sqrt_w_phi_s += *nresp[s];
 
     skip_s   += *nresp[s];
     Zwork1_s += *N_i * *q_ri_s;    

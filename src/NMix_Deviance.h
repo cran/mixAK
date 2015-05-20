@@ -14,6 +14,8 @@
 //
 //     * Deviance_IC      
 //
+//               30/03/2015:  Code that allows for a factor covariate on mixture weights added
+//
 // ===================================================================================
 //
 #ifndef _NMIX_DEVIANCE_H_
@@ -78,7 +80,15 @@ namespace NMix{
 //
 // K[1]:
 //
-// logw[K]:
+// xw[n]:          factor covariate on a mixture weights (values 0, 1, ..., nxw - 1)
+//
+// nxw[1]:         number of levels of a factor covariate on mixture weights
+//
+// mixNxw[K, nxw]
+//
+// tabNxw[nxw]
+//
+// logw[K, nxw]:
 //
 // mu[p, K]:
 //
@@ -131,6 +141,10 @@ Deviance_NC(double* indLogL0,
             const int*    p,      
             const int*    n,
             const int*    K,         
+            const int*    xw,
+            const int*    nxw,
+	    const int*    mixNxw,
+	    const int*    tabxw,
             const double* logw,     
             const double* mu,    
             const double* Q,   
@@ -170,7 +184,11 @@ Deviance_IC(double* indLogL0,
             const int*    mixN,     
             const int*    p,      
             const int*    n,
-            const int*    K,         
+            const int*    K,  
+            const int*    xw,
+            const int*    nxw,       
+	    const int*    mixNxw,
+	    const int*    tabxw,
             const double* logw,     
             const double* mu,    
             const double* Q,   

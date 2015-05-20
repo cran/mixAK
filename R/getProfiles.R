@@ -21,7 +21,10 @@ getProfiles <- function(t, y, id, data)
 ## It is assumed that values for one subject follow each other
   
   T <- data[,t]
-  ID <- data[,id]
+  ID <- as.character(data[,id])     ## as.character added on 20150520
+                                    ## to overcome problems if id is a factor
+                                    ## and data are not sorted in the same order
+                                    ## as levels(id)
 
   tabID <- table(ID)
   nID <- length(tabID)

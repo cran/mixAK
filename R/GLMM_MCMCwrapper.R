@@ -69,7 +69,8 @@ GLMM_MCMCwrapper <- function(chain=1, data,
   if (!silent){
     cat(paste("\nChain number ", chain, "\n==============\n", sep=""))  
     cat(paste("MCMC sampling started on ", date(), ".\n", sep=""))
-  }  
+  }
+
   MCMC <- .C("GLMM_MCMC",
              Y_c                       = as.double(Cpar$Y_c),
              Y_d                       = as.integer(Cpar$Y_d),

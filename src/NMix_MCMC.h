@@ -13,6 +13,9 @@
 //                  29/01/2008:  Version for varying K with p = 1 seems to work
 //                               Version for varying K with p > 1 finished but does not seem to work ;-(
 //                  30/12/2009:  Computation of quantities needed for clustering added
+//                  27/03/2015:  Mild modification to allow for covariates on mixture weights
+//                               (if number of components is fixed)
+//                               - argument nxw_xw added
 //
 // ======================================================================
 //
@@ -72,6 +75,10 @@ extern "C" {
 //                 * 1 = observed
 //                 * 2 = left-censored
 //                 * 3 = interval-censored
+//
+// nxw_xw[1 + n]   information on a factor covariate on mixture weights (ADDED ON 20150327)
+//                 nxw_xw[0]   = nxw = number of covariate levels
+//                 nxw_xw[1:n] = covariate values (numbered 0, 1, ..., nxw - 1)
 //
 // dimy[2]         dimension of the data
 //                 * dimy[0]  = p = dimension of the response
@@ -316,7 +323,8 @@ extern "C" {
 void
 NMix_MCMC(const double* y0,  
           const double* y1,     
-          const int* censor,          
+          const int* censor,    
+	  const int* nxw_xw,      
           const int* dimy,            
           const double* shiftScale,
           const int* nMCMC,  

@@ -1,22 +1,20 @@
-\name{GLMM_longitDA}
-\alias{GLMM_longitDA}
+\name{GLMM_longitDA2}
+\alias{GLMM_longitDA2}
 \title{
   Discriminant analysis for longitudinal profiles based on fitted GLMM's
 }  
 \description{
-  The idea is that we fit (possibly different) GLMM's for data in training 
-  groups using the function \code{\link{GLMM_MCMC}} and then use the fitted 
-  models for discrimination of new observations. For more details we 
-  refer to Komárek et al. (2010).
-
-  Currently, only continuous responses for which linear mixed models are
-  assumed are allowed.  
+  WILL BE ADDED.
 }
 \details{
-  This function complements a paper Komárek et al. (2010).
+  This function complements a paper being currently in preparation.
+
+  \code{GLMM_longitDA2} differs in many aspects from \code{\link{GLMM_longitDA2}}!
 }  
 \usage{
-GLMM_longitDA(mod, w.prior, y, id, time, x, z, xz.common=TRUE, info)
+GLMM_longitDA2(mod, w.prior, y, id, x, z, xz.common = TRUE,
+               keep.comp.prob = FALSE, level = 0.95,
+               info, silent = FALSE)
 }
 \arguments{
   \item{mod}{a list containing models fitted with the
@@ -35,9 +33,6 @@ GLMM_longitDA(mod, w.prior, y, id, time, x, z, xz.common=TRUE, info)
   \item{id}{vector which determines clustered observations (see also
     argument \code{y} of \code{\link{GLMM_MCMC}} function).
   }
-  \item{time}{vector which gives indeces of observations within
-    clusters. It appears (together with \code{id}) in the output as
-    identifier of observations}  
   \item{x}{see \code{xz.common} below.}
   \item{z}{see \code{xz.common} below.}
   \item{xz.common}{a logical value.
@@ -54,24 +49,24 @@ GLMM_longitDA(mod, w.prior, y, id, time, x, z, xz.common=TRUE, info)
     of lists \code{x} and \code{z} has the same structure as arguments
     \code{x} and \code{z} of \code{\link{GLMM_MCMC}} function.
   }
-  \item{info}{interval in which the function prints the progress of computation}
+  \item{keep.comp.prob}{a logical value indicating whether the
+    allocation probabilities should be kept for all MCMC
+    iterations. This may ask for quite some memory but it is necessary
+    if credible intervals etc. should be calculated for the component
+    probabilities.}
+  \item{level}{level of HPD credible intervals that are calculated for
+    the component probabilities if \code{keep.comp.prob} is \code{TRUE}.}
+  \item{info}{interval in which the function prints the progress of
+    computation (unless \code{silent} is \code{TRUE}).}
+  \item{silent}{logical value indicating whether to switch-off printing
+    the information during calculations.}
 }
 \value{
   A list with the following components:
-  \item{ident}{ADD DESCRIPTION}
-  \item{marg}{ADD DESCRIPTION}
-  \item{cond}{ADD DESCRIPTION}
-  \item{ranef}{ADD DESCRIPTION}
+  \item{ADD}{ADD DESCRIPTION}
 }
-\references{
-  Komárek, A., Hansen, B. E., Kuiper,
-  E. M. M., van Buuren, H. R., and Lesaffre, E. (2010).
-  Discriminant analysis using a multivariate linear mixed model with a
-  normal mixture in the random effects distribution.
-  \emph{Statistics in Medicine}, \bold{29}(30), 3267--3283.
-}  
 \seealso{
-  \code{\link{GLMM_MCMC}}, \code{\link{GLMM_longitDA2}}.
+  \code{\link{GLMM_MCMC}}, \code{\link{GLMM_longitDA}}.
 }
 \author{
   Arnošt Komárek \email{arnost.komarek[AT]mff.cuni.cz}

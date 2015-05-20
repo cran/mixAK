@@ -10,10 +10,10 @@
   THIS FUNCTION IS NOT TO BE CALLED BY ORDINARY USERS.
 }  
 \usage{
-NMixMCMCwrapper(chain=1,
+NMixMCMCwrapper(chain = 1,
                 scale, prior, inits, Cpar, RJMCMC, CRJMCMC,
                 actionAll, nMCMC, keep.chains, PED,
-                dens.zero)
+                dens.zero, lx_w)
 }
 \arguments{
   \item{chain}{identification of the chain sampled in a particular call
@@ -28,7 +28,10 @@ NMixMCMCwrapper(chain=1,
       \item{p}{dimension of the response.}
       \item{n}{number of observations.}
       \item{Cinteger}{a numeric vector with integer prior parameters.}
-      \item{Cdouble}{a numeric vector with double precission prior parameters.}      
+      \item{Cdouble}{a numeric vector with double precission prior
+	parameters.} 
+      \item{lx_w}{a character vector with levels of an optional factor
+	covariate on the mixture weights.}
     }  
   }  
   \item{scale}{a list specifying how to scale the data before running

@@ -16,9 +16,9 @@ NMixPredCDFMarg(x, \dots)
 
 \method{NMixPredCDFMarg}{default}(x, scale, K, w, mu, Li, Krandom=TRUE, \dots)
 
-\method{NMixPredCDFMarg}{NMixMCMC}(x, grid, lgrid=50, scaled=FALSE, \dots)
+\method{NMixPredCDFMarg}{NMixMCMC}(x, grid, lgrid=500, scaled=FALSE, \dots)
 
-\method{NMixPredCDFMarg}{GLMM_MCMC}(x, grid, lgrid=50, scaled=FALSE, \dots)
+\method{NMixPredCDFMarg}{GLMM_MCMC}(x, grid, lgrid=500, scaled=FALSE, \dots)
 }
 \arguments{
   \item{x}{an object of class \code{NMixMCMC} for

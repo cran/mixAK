@@ -9,6 +9,7 @@
 //  FUNCTIONS:  
 //     * NMix_NMixRelabel  10/02/2010:  
 //                         29/11/2010:  argument Pr_b_b added and all P(u_i=k | b, theta, y) over all iterations are stored 
+//                         31/03/2015:  factor covariate on mixture weights allowed
 //
 // ======================================================================
 //
@@ -72,6 +73,10 @@ extern "C" {
 //  y1[p, n]                    see NMix_MCMC.h
 //
 //  censor[p, n]                see NMix_MCMC.h
+//
+//  nxw_xw[1 + n]   information on a factor covariate on mixture weights (ADDED ON 20150327)
+//                  nxw_xw[0]   = nxw = number of covariate levels
+//                  nxw_xw[1:n] = covariate values (numbered 0, 1, ..., nxw - 1)
 //
 //  dimy[2]                     see NMix_MCMC.h
 //
@@ -162,6 +167,7 @@ NMix_NMixRelabel(const int*    type,
                  const double* y0,
                  const double* y1,
                  const int*    censor,
+                 const int*    nxw_xw,
                  const int*    dimy,
                  const int*    keepMCMC,
                  const int*    info,

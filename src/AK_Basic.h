@@ -19,6 +19,7 @@
 //       * maxArray (OVERLOADED)
 //       * fillArray (OVERLOADED)
 //       * copyArray (OVERLOADED)
+//       * plusArray (OVERLOADED)
 //       * switchValues (OVERLOADED)
 //       * switchPointers (OVERLOADED)
 //       * printArray (OVERLOADED)
@@ -273,6 +274,43 @@ copyArray(int* to,  const int* from,  const int& length)
   toP = to;
   for (j = 0; j < length; j++){
     *toP = *fromP;
+    toP++;
+    fromP++;
+  }
+
+  return;
+}
+
+/*** Add elements of one array to another one ***/
+inline void
+plusArray(double* to,  const double* from,  const int& length)
+{
+  static int j;
+  static const double *fromP;
+  static double *toP;
+
+  fromP = from;
+  toP = to;
+  for (j = 0; j < length; j++){
+    *toP += *fromP;
+    toP++;
+    fromP++;
+  }
+
+  return;
+}
+
+inline void
+plusArray(int* to,  const int* from,  const int& length)
+{
+  static int j;
+  static const int *fromP;
+  static int *toP;
+
+  fromP = from;
+  toP = to;
+  for (j = 0; j < length; j++){
+    *toP += *fromP;
     toP++;
     fromP++;
   }

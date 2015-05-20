@@ -14,9 +14,9 @@
 ## *************************************************************
 ## tracePlots.GLMM_MCMC
 ## *************************************************************
-tracePlots.GLMM_MCMC <- function(x, param=c("Deviance", "Cond.Deviance", "alpha", "Eb", "SDb", "Corb", "sigma_eps", "w_b", "mu_b", "sd_b", "gammaInv_b", "gammaInv_eps"),
-                                 relabel=FALSE, order,                                 
-                                 auto.layout=TRUE, xlab="Iteration", ylab, col="slateblue", main="", ...)
+tracePlots.GLMM_MCMC <- function(x, param = c("Deviance", "Cond.Deviance", "alpha", "Eb", "SDb", "Corb", "sigma_eps", "w_b", "mu_b", "sd_b", "gammaInv_b", "gammaInv_eps"),
+                                 relabel = FALSE, order,                                 
+                                 auto.layout = TRUE, xlab = "Iteration", ylab, col = "slateblue", main = "", ...)
 {
   param <- match.arg(param)
 

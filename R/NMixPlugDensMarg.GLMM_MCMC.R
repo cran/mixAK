@@ -15,7 +15,7 @@
 ## *************************************************************
 ## NMixPlugDensMarg.GLMM_MCMC
 ## *************************************************************
-NMixPlugDensMarg.GLMM_MCMC <- function(x, grid, lgrid=50, scaled=FALSE, ...)
+NMixPlugDensMarg.GLMM_MCMC <- function(x, grid, lgrid=500, scaled=FALSE, ...)
 {
   if (x$prior.b$priorK != "fixed") stop("only implemented for models with fixed number of components")
   

@@ -6,12 +6,15 @@
 //             arnost.komarek[AT]mff.cuni.cz
 //
 //  LOG:   20100412  created
+//         20150409  bug corrected which was causing a seg. fault
+//                   if for some response there were no random effects
 //
 //  FUNCTIONS:  
 //     *   12/04/2010:  MCMC:loglik_Zwork1_stres (PROTOTYPE 1)
 //     *   12/04/2010:  MCMC:loglik_Zwork1_stres (PROTOTYPE 2)
 //     *   14/04/2010:  MCMC:loglik_Zwork1 (PROTOTYPE 2)
 //     *   14/04/2010:  MCMC:loglik (PROTOTYPE 2)
+//     *   14/04/2015:  MCMC:loglik (PROTOTYPE 3)
 //     *   25/01/2012:  MCMC:Zwork1_stres2UI 
 //
 // =================================================================================
@@ -220,6 +223,32 @@ loglik(double*  loglik,
        const int* dist,
        const int* R_c,
        const int* R_d);
+
+
+/***** ***************************************************************************************** *****/
+/***** MCMC::loglik (PROTOTYPE 3)                                                                *****/
+/***** ***************************************************************************************** *****/
+//
+//  Difference to PROTOTYPE 2:  bscaled is not supplied, b must be supplied and it is not calculated
+//
+void
+loglik(double*  loglik,
+       int*     err,
+       double** eta_fixedresp,              // this is in fact const
+       double** dYresp,                     // this is in fact const
+       double** Y_cresp,                    // this is in fact const
+       int**    Y_dresp,                    // this is in fact const
+       int**    nresp,                      // this is in fact const
+       double** Zresp,                      // this is in fact const
+       const double* b,
+       const double* sigma,
+       const int* q,
+       const int* randIntcpt,                          
+       const int* q_ri,
+       const int* dist,
+       const int* R_c,
+       const int* R_d);
+
 
 
 /***** *************************************************** *****/

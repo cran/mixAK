@@ -11,7 +11,8 @@
 //  FUNCTIONS:  
 //     * updateAlloc  06/11/2007:  Update of the allocations
 //                    21/12/2007:  Validated in R, some crucial bugs fixed
-//                    12/02/2008:  argument cum_Pr and related added
+//                    12/02/2008:  Argument cum_Pr and related added
+//                    30/03/2015:  Factor covariate on mixture weight allowed
 //
 // ===================================================================================
 //
@@ -38,6 +39,10 @@ namespace NMix{
 //                      OUTPUT:  updated numbers of observations belonging to each component
 //                               * mixN[j] = sum_{i=1}^n I[r_i=j]
 //
+// mixNxw[Kmax, nxw]    INPUT:   whatsever
+//                      OUTPUT:  updated numbers of observations belonging to each component
+//                               in case there is a factor covariate included on mixture weights
+// 
 // rInv[KMax][n]        INPUT:   whatsever
 //                      OUTPUT:  indeces of columns of y indicating observations belonging to each component
 //
@@ -69,9 +74,14 @@ namespace NMix{
 //
 // cum_Pr_done[1]       true/false, see above
 //
+// xw[n]                values of a factor covariate
+//
+// nxw[1]               number of levels of a factor covariate
+//
 void 
 updateAlloc(int* r,   
             int* mixN,   
+            int* mixNxw,
             int** rInv,   
             double* cum_Pr,   
             double* dwork_ldMVN,
@@ -83,7 +93,9 @@ updateAlloc(int* r,
             const double* Li,   
             const double* log_dets,  
             const int* K,  
-            const bool* cum_Pr_done);
+            const bool* cum_Pr_done,
+            const int* xw,
+            const int* nxw);
 
 }   /** end of namespace NMix **/
 

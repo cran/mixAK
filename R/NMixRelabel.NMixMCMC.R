@@ -14,8 +14,8 @@
 ## *************************************************************
 ## NMixRelabel.NMixMCMC
 ## *************************************************************
-NMixRelabel.NMixMCMC <- function(object, type=c("mean", "weight", "stephens"), par,
-                                 prob=c(0.025, 0.5, 0.975), keep.comp.prob=FALSE, info, ...)
+NMixRelabel.NMixMCMC <- function(object, type = c("mean", "weight", "stephens"), par,
+                                 prob = c(0.025, 0.5, 0.975), keep.comp.prob = FALSE, info, ...)
 {
   thispackage <- "mixAK"
 
@@ -25,7 +25,7 @@ NMixRelabel.NMixMCMC <- function(object, type=c("mean", "weight", "stephens"), p
   
   ##### Determine re-labeling algorithm to use and additional parameters
   ##### +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  RAlg <- NMixRelabelAlgorithm(type=type, par=par, dim=object$dim)
+  RAlg <- NMixRelabelAlgorithm(type = type, par = par, dim = object$dim)
   object$relabel <- RAlg$relabel                                     ## resulting re-labeling
   
   
@@ -35,10 +35,9 @@ NMixRelabel.NMixMCMC <- function(object, type=c("mean", "weight", "stephens"), p
     stop("object does not contain sampled values")
   }  
   
-  keepMCMC <- length(object$w) / object$K[1]
+  keepMCMC <- length(object$w) / (object$K[1] * object$nx_w)
   if (missing(info)) info <- keepMCMC
   if (info <= 0 | info > keepMCMC) info <- keepMCMC
-
   
   ##### Some input checks
   ##### ++++++++++++++++++++++++++++++++++++++++++++++
@@ -63,6 +62,7 @@ NMixRelabel.NMixMCMC <- function(object, type=c("mean", "weight", "stephens"), p
              y0           = as.double(t(object$Cpar$z0)),
              y1           = as.double(t(object$Cpar$z1)),
              censor       = as.integer(t(object$Cpar$censor)),
+             nxw_xw       = as.integer(object$Cpar$x_w),             
              dimy         = as.integer(object$Cpar$dimy),
              keepMCMC     = as.integer(keepMCMC),
              info         = as.integer(info),
@@ -76,7 +76,7 @@ NMixRelabel.NMixMCMC <- function(object, type=c("mean", "weight", "stephens"), p
              chrank       = integer(object$K[1] * keepMCMC),
              y            = as.double(t(zinit)),
              r            = integer(n),
-             pm_w         = double(object$K[1]),
+             pm_w         = double(object$K[1] * object$nx_w),
              pm_mu        = double(object$dim * object$K[1]),
              pm_Q         = double(LTp * object$K[1]),
              pm_Sigma     = double(LTp * object$K[1]),
@@ -142,7 +142,8 @@ NMixRelabel.NMixMCMC <- function(object, type=c("mean", "weight", "stephens"), p
   ##### Posterior means for mixture components
   ##### ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   object$poster.mean.w <- as.numeric(MCMC$pm_w)
-  names(object$poster.mean.w) <- paste("w", 1:object$K[1], sep="")
+  #names(object$poster.mean.w) <- paste("w", 1:object$K[1], sep="")   ## this one is not nice if covariates on mixture weights
+  names(object$poster.mean.w) <- colnames(object$w)
 
   object$poster.mean.mu <- matrix(MCMC$pm_mu, nrow=object$K[1], ncol=object$dim, byrow=TRUE)
   rownames(object$poster.mean.mu) <- paste("j", 1:object$K[1], sep="")

@@ -7,6 +7,7 @@
 ##
 ##  CREATED:    06/11/2008
 ##              03/11/2011  parameter Cpar added to replace original z0, z1, censor, p, n, Cinteger, Cdouble
+##              27/03/2015  mild revision to allow for factor covariates on mixture weights
 ##
 ##  FUNCTIONS:  NMixMCMCwrapper
 ##
@@ -15,15 +16,16 @@
 ## *************************************************************
 ## NMixMCMCwrapper
 ## *************************************************************
-NMixMCMCwrapper <- function(chain=1,
+NMixMCMCwrapper <- function(chain = 1,
                             scale, prior, inits, Cpar, RJMCMC, CRJMCMC,
                             actionAll, nMCMC, keep.chains, PED,
-                            dens.zero)
+                            dens.zero, lx_w)
 {  
   thispackage <- "mixAK"
 
   p <- Cpar$dimy["p"]
   n <- Cpar$dimy["n"]
+  nx_w <- Cpar$x_w[1]
   
   LTp <- p * (p + 1)/2
   Imat <- diag(p)
@@ -48,7 +50,7 @@ NMixMCMCwrapper <- function(chain=1,
   names(CK) <- "K"
   
   Cw <- c(inits[[chain]]$w, rep(0, CKmax - inits[[chain]]$K))
-  names(Cw) <- paste("w", 1:CKmax, sep="")
+  if (nx_w == 1) names(Cw) <- paste("w", 1:CKmax, sep="") else names(Cw) <- paste(rep(paste("w", 1:CKmax, sep=""), nx_w), "-", rep(lx_w, each = CKmax), sep = "")
   
   if (p == 1){
     Cmu <- c(inits[[chain]]$mu, rep(0, CKmax - inits[[chain]]$K))
@@ -82,6 +84,7 @@ NMixMCMCwrapper <- function(chain=1,
              z0                   = as.double(t(Cpar$z0)),
              z1                   = as.double(t(Cpar$z1)),
              censor               = as.integer(t(Cpar$censor)),
+             nxw_xw               = as.integer(Cpar$x_w),
              dimy                 = as.integer(Cpar$dimy),
              shiftScale           = as.double(CshiftScale),             
              nMCMC                = as.integer(nMCMC),
@@ -101,7 +104,7 @@ NMixMCMCwrapper <- function(chain=1,
              r                    = as.integer(Cr),
              r_first              = integer(n),
              chK                  = integer(nMCMC["keep"]),
-             chw                  = double(CKmax * nMCMC["keep"]),
+             chw                  = double(CKmax * nMCMC["keep"] * nx_w),
              chmu                 = double(p * CKmax * nMCMC["keep"]),
              chQ                  = double(LTp * CKmax * nMCMC["keep"]),
              chSigma              = double(LTp * CKmax * nMCMC["keep"]),             
@@ -109,10 +112,10 @@ NMixMCMCwrapper <- function(chain=1,
              chgammaInv           = double(p * nMCMC["keep"]),
              chorder              = integer(CKmax * nMCMC["keep"]),
              chrank               = integer(CKmax * nMCMC["keep"]),             
-             chMean               = double(p * nMCMC["keep"]),
-             chCorr               = double(LTp * nMCMC["keep"]),
-             chMeanData           = double(p * nMCMC["keep"]),             
-             chCorrData           = double(LTp * nMCMC["keep"]),
+             chMean               = double(p * nMCMC["keep"] * nx_w),
+             chCorr               = double(LTp * nMCMC["keep"] * nx_w),
+             chMeanData           = double(p * nMCMC["keep"] * nx_w),             
+             chCorrData           = double(LTp * nMCMC["keep"] * nx_w),
              chLogL0              = double(nMCMC["keep"]),
              chLogL1              = double(nMCMC["keep"]),
              chDevCompl           = double(nMCMC["keep"]),             
@@ -125,7 +128,7 @@ NMixMCMCwrapper <- function(chain=1,
              pm.indDevObs         = double(n),
              pm.indDevCompl.inHat = double(n),             
              pm.pred.dens         = double(n),             
-             pm.w                 = double(CKmax),
+             pm.w                 = double(CKmax * nx_w),
              pm.mu                = double(p * CKmax),
              pm.Q                 = double(LTp * CKmax),
              pm.Sigma             = double(LTp * CKmax),
@@ -138,6 +141,7 @@ NMixMCMCwrapper <- function(chain=1,
              PACKAGE=thispackage)
   cat(paste("MCMC sampling finished on ", date(), ".\n", sep=""))
   if (MCMC$err) stop("Something went wrong.")
+
   
   ########## ========== State of MCMC (last and first kept) ========== ##########
   ########## ========================================================= ##########  
@@ -259,11 +263,14 @@ NMixMCMCwrapper <- function(chain=1,
   RET <- list(iter          = MCMC$iter,
               nMCMC         = nMCMC,
               dim           = p,
+              nx_w          = nx_w,
+              lx_w          = lx_w,
+              #x_w           = if (nx_w > 1) Cpar$x_w[-1] else 0,
               prior         = prior,
               init          = inits[[chain]],
               state.first   = list(y        = state_first.y,
                                    K        = as.numeric(MCMC$chK[1]),
-                                   w        = as.numeric(MCMC$chw[1:MCMC$chK[1]]),
+                                   w        = as.numeric(MCMC$chw[1:(MCMC$chK[1] * nx_w)]),
                                    mu       = state_first.mu,
                                    Li       = state_first.Li,
                                    Sigma    = state_first.Sigma,
@@ -272,7 +279,7 @@ NMixMCMCwrapper <- function(chain=1,
                                    r        = as.numeric(MCMC$r_first+ 1)),              
               state.last    = list(y        = state.y,
                                    K        = as.numeric(MCMC$K),
-                                   w        = as.numeric(MCMC$w[1:MCMC$K]),
+                                   w        = as.numeric(MCMC$w[1:(MCMC$K * nx_w)]),
                                    mu       = state.mu,
                                    Li       = state.Li,
                                    Sigma    = state.Sigma,
@@ -285,18 +292,24 @@ NMixMCMCwrapper <- function(chain=1,
               propK         = propK,
               DIC           = DIC,
               moves         = moves)
-  names(RET$state.last$w)        <- paste("w", 1:MCMC$K, sep="")
-  names(RET$state.first$w)       <- paste("w", 1:MCMC$chK[1], sep="")  
+  if (nx_w > 1){
+    names(RET$state.last$w)  <- paste("w", rep(1:MCMC$K, nx_w), "-", rep(lx_w, each = MCMC$K), sep="")
+    names(RET$state.first$w) <- paste("w", rep(1:MCMC$chK[1], nx_w), "-", rep(lx_w, each = MCMC$chK[1]), sep="")
+  }else{
+    names(RET$state.last$w)  <- paste("w", 1:MCMC$K, sep="")
+    names(RET$state.first$w) <- paste("w", 1:MCMC$chK[1], sep="")  
+  }    
   names(RET$state.last$gammaInv) <- names(RET$state.first$gammaInv) <- paste("gammaInv", 1:p, sep="")
   names(RET$state.last$r)        <- names(RET$state.first$r)        <- paste("r", 1:n, sep="")
 
+  
   ########## ========== Chains for basic parameters ========== ##########
   ########## ================================================= ##########
   if (keep.chains | PED){
     RET$K <- as.numeric(MCMC$chK)
     MCMC$chK <- NULL
   
-    RET$w <- as.numeric(MCMC$chw[1:nCompTotal])
+    RET$w <- as.numeric(MCMC$chw[1:(nx_w * nCompTotal)])
     MCMC$chw <- NULL
 
     RET$mu <- as.numeric(MCMC$chmu[1:(p*nCompTotal)])
@@ -308,17 +321,29 @@ NMixMCMCwrapper <- function(chain=1,
 
   ########## ========== Chains for mixture (overall) means, std. deviations and correlations ========== ##########
   ########## ========================================================================================== ##########    
-  MCMC$chMean     <- matrix(MCMC$chMean, ncol=p, byrow=TRUE)
-  MCMC$chCorr     <- matrix(MCMC$chCorr, ncol=LTp, byrow=TRUE)
-  MCMC$chMeanData <- matrix(MCMC$chMeanData, ncol=p, byrow=TRUE)
-  MCMC$chCorrData <- matrix(MCMC$chCorrData, ncol=LTp, byrow=TRUE)
-  colnames(MCMC$chMean) <- paste("z.Mean.", 1:p, sep="")
-  colnames(MCMC$chCorr) <- paste("z.Corr", naamLTp, sep="")
-  colnames(MCMC$chCorr)[((0:(p-1))*(2*p - (0:(p-1)) + 1))/2 + 1] <- paste("z.SD.", 1:p, sep="")
-  colnames(MCMC$chMeanData) <- paste("y.Mean.", 1:p, sep="")
-  colnames(MCMC$chCorrData) <- paste("y.Corr", naamLTp, sep="")
-  colnames(MCMC$chCorrData)[((0:(p-1))*(2*p - (0:(p-1)) + 1))/2 + 1] <- paste("y.SD.", 1:p, sep="")  
+  MCMC$chMean     <- matrix(MCMC$chMean,     ncol = p   * nx_w, byrow = TRUE)
+  MCMC$chCorr     <- matrix(MCMC$chCorr,     ncol = LTp * nx_w, byrow = TRUE)
+  MCMC$chMeanData <- matrix(MCMC$chMeanData, ncol = p   * nx_w, byrow = TRUE)
+  MCMC$chCorrData <- matrix(MCMC$chCorrData, ncol = LTp * nx_w, byrow = TRUE)
+  if (nx_w > 1){
+    colnames(MCMC$chMean) <- paste("z.Mean.", rep(1:p, nx_w), "-", rep(lx_w, each = p), sep="")
+    colnames(MCMC$chCorr) <- paste("z.Corr", rep(naamLTp, nx_w), "-", rep(lx_w, each = LTp), sep="")
+    colnames(MCMC$chMeanData) <- paste("y.Mean.", rep(1:p, nx_w), "-", rep(lx_w, each = p), sep="")
+    colnames(MCMC$chCorrData) <- paste("y.Corr", rep(naamLTp, nx_w), "-", rep(lx_w, each = LTp), sep="")
+    for (ixw in 0:(nx_w - 1)){
+      colnames(MCMC$chCorr)[ixw * LTp + ((0:(p-1))*(2*p - (0:(p-1)) + 1))/2 + 1]     <- paste("z.SD.", 1:p, "-", lx_w[ixw + 1], sep="")
+      colnames(MCMC$chCorrData)[ixw * LTp + ((0:(p-1))*(2*p - (0:(p-1)) + 1))/2 + 1] <- paste("y.SD.", 1:p, "-", lx_w[ixw + 1], sep="")      
+    }    
+  }else{    
+    colnames(MCMC$chMean) <- paste("z.Mean.", 1:p, sep="")
+    colnames(MCMC$chCorr) <- paste("z.Corr", naamLTp, sep="")
+    colnames(MCMC$chCorr)[((0:(p-1))*(2*p - (0:(p-1)) + 1))/2 + 1] <- paste("z.SD.", 1:p, sep="")
+    colnames(MCMC$chMeanData) <- paste("y.Mean.", 1:p, sep="")
+    colnames(MCMC$chCorrData) <- paste("y.Corr", naamLTp, sep="")
+    colnames(MCMC$chCorrData)[((0:(p-1))*(2*p - (0:(p-1)) + 1))/2 + 1] <- paste("y.SD.", 1:p, sep="")
+  }  
 
+  
   ######### =========== Work-out the chains further ========== ##########
   ######### ================================================== ##########
   if (keep.chains){
@@ -436,14 +461,18 @@ NMixMCMCwrapper <- function(chain=1,
   ########## ======================================================================== ##########    
   if (prior$priorK == "fixed"){                              ### Chains for order, rank, w, mu, Q, Sigma, Li are returned in a form of matrices
     if (keep.chains | PED){
-      RET$w <- matrix(RET$w, ncol=CKmax, byrow=TRUE)
-      colnames(RET$w) <- paste("w", 1:CKmax, sep="")
+      RET$w <- matrix(RET$w, ncol = CKmax * nx_w, byrow = TRUE)
+      if (nx_w > 1){
+        colnames(RET$w) <- paste("w", rep(1:CKmax, nx_w), "-", rep(lx_w, each = CKmax), sep = "")
+      }else{
+        colnames(RET$w) <- paste("w", 1:CKmax, sep = "")
+      }    
 
-      RET$mu <- matrix(RET$mu, ncol=p*CKmax, byrow=TRUE)
-      colnames(RET$mu) <- paste("mu.", rep(1:CKmax, each=p), ".", rep(1:p, CKmax), sep="")
+      RET$mu <- matrix(RET$mu, ncol = p * CKmax, byrow = TRUE)
+      colnames(RET$mu) <- paste("mu.", rep(1:CKmax, each = p), ".", rep(1:p, CKmax), sep = "")
     
-      RET$Li <- matrix(RET$Li, ncol=LTp*CKmax, byrow=TRUE)
-      colnames(RET$Li) <- paste("Li", rep(1:CKmax, each=LTp), rep(naamLTp, CKmax), sep="")
+      RET$Li <- matrix(RET$Li, ncol = LTp*CKmax, byrow = TRUE)
+      colnames(RET$Li) <- paste("Li", rep(1:CKmax, each = LTp), rep(naamLTp, CKmax), sep = "")
     }  
     
     if (keep.chains){
@@ -465,7 +494,7 @@ NMixMCMCwrapper <- function(chain=1,
   ########## ================================================================================================= ##########
   qProbs <- c(0, 0.025, 0.25, 0.5, 0.75, 0.975, 1)
   nSumm <- c("Mean", "Std.Dev.", "Min.", "2.5%", "1st Qu.", "Median", "3rd Qu.", "97.5%", "Max.")
-  if (p == 1){
+  if (p == 1 & nx_w == 1){
     meanmix.Mean  <- mean(MCMC$chMean, na.rm=TRUE)
     quantmix.Mean <- quantile(MCMC$chMean, prob=qProbs, na.rm=TRUE)    
     sdmix.Mean   <- sd(MCMC$chMean, na.rm=TRUE)
@@ -514,7 +543,7 @@ NMixMCMCwrapper <- function(chain=1,
     sy.SDCorr <- rbind(meany.SDCorr, sdy.SDCorr, quanty.SDCorr)
     rownames(sy.SDCorr) <- nSumm        
   }  
-
+  
   RET$summ.y.Mean <- sy.Mean
   RET$summ.y.SDCorr <- sy.SDCorr  
   
@@ -525,7 +554,7 @@ NMixMCMCwrapper <- function(chain=1,
   MCMC$chCorrData <- NULL
   MCMC$chMean <- NULL
   MCMC$chCorr <- NULL 
-
+  
   ########## ========== Posterior means for mixture components when priorK == "fixed" ========== ##########
   ########## =================================================================================== ##########  
   if (prior$priorK == "fixed"){
@@ -533,7 +562,11 @@ NMixMCMCwrapper <- function(chain=1,
                                                       ##### In any case, they should be used with care
                                                       ##### -----------------------------------------------------------------------------------------
     RET$poster.mean.w <- as.numeric(MCMC$pm.w)
-    names(RET$poster.mean.w) <- paste("w", 1:CKmax, sep="")
+    if (nx_w > 1){
+      names(RET$poster.mean.w) <- paste("w", rep(1:CKmax, nx_w), "-", rep(lx_w, each = CKmax), sep = "")
+    }else{
+      names(RET$poster.mean.w) <- paste("w", 1:CKmax, sep="")
+    }    
 
     RET$poster.mean.mu <- matrix(MCMC$pm.mu, nrow=CKmax, ncol=p, byrow=TRUE)
     rownames(RET$poster.mean.mu) <- paste("j", 1:CKmax, sep="")
@@ -560,10 +593,10 @@ NMixMCMCwrapper <- function(chain=1,
 
   ########## ========== Additional objects (added on 08/02/2010) ========== ##########
   ########## ============================================================== ##########
-  RET$relabel <- list(type="mean", par=1)       #### default re-labeling is performed using the first margin of the mixture means
+  RET$relabel <- list(type = "mean", par = 1)       #### default re-labeling is performed using the first margin of the mixture means
   RET$Cpar <- Cpar
-      
+  
   class(RET) <- "NMixMCMC"
-  return(RET)  
+  return(RET)
 }  
 

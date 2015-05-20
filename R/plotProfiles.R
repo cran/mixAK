@@ -57,15 +57,17 @@ plotProfiles <- function(ip, data, var, trans, tvar, gvar,
     if (length(col) == 1){
       if (length(bg) == 1) col <- rainbow_hcl(length(GROUP)) else col <- rep(col, length(GROUP))     
     }
+    if (length(lty) == 1) lty <- rep(lty, length(GROUP))
     if (length(lcol) == 1) lcol <- rainbow_hcl(length(GROUP))
     if (length(col) != length(GROUP)) stop("incorrect col supplied")
     if (length(lcol) != length(GROUP)) stop("incorrect lcol supplied")    
     if (length(bg) == 1) bg <- rainbow_hcl(length(GROUP))
     if (length(bg) != length(GROUP)) stop("incorrect bg supplied")    
-    names(col) <- names(bg) <- names(lcol) <- GROUP
+    names(col) <- names(bg) <- names(lcol) <- names(lty) <- GROUP
   }else{
     col <- col[1]
     lcol <- lcol[1]
+    lty <- lty[1]
   }  
   
   if (auto.layout & !add){
@@ -78,17 +80,19 @@ plotProfiles <- function(ip, data, var, trans, tvar, gvar,
     if (!missing(gvar)){
       COL <- col[ip[[i]][1, gvar]]
       BG <- bg[ip[[i]][1, gvar]]
-      LCOL <- lcol[ip[[i]][1, gvar]]      
+      LCOL <- lcol[ip[[i]][1, gvar]]
+      LTY <- lty[ip[[i]][1, gvar]]      
     }else{
       COL <- col[1]
       BG <- bg[1]
       LCOL <- lcol[1]
+      LTY <- lty[1]
     }  
     if (missing(trans)){
-      if (lines) lines(ip[[i]][, tvar], ip[[i]][, var], col=LCOL, lty=lty, lwd=lwd)
+      if (lines) lines(ip[[i]][, tvar], ip[[i]][, var], col=LCOL, lty=LTY, lwd=lwd)
       if (points) points(ip[[i]][, tvar], ip[[i]][, var], col=COL, bg=BG, pch=pch, cex=cex.points)
     }else{  
-      if (lines) lines(ip[[i]][, tvar], trans(ip[[i]][, var]), col=LCOL, lty=lty, lwd=lwd)
+      if (lines) lines(ip[[i]][, tvar], trans(ip[[i]][, var]), col=LCOL, lty=LTY, lwd=lwd)
       if (points) points(ip[[i]][, tvar], trans(ip[[i]][, var]), col=COL, bg=BG, pch=pch, cex=cex.points)      
     }  
   }

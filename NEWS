@@ -16,6 +16,10 @@ TO DO LIST:
   --> more or less solved on 03/12/2010
 
 ======================================================================================================================
+26/03 - 02/04/2015 (version 4.0):
+Possibility of having weights dependent on a categorical covariate 
+implemented in NMixMCMC and related functions.
+
 06/02/2015 (version 3.10):
 NAMESPACE updated by explicit export of some S3 methods.
 

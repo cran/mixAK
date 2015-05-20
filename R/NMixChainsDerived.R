@@ -19,7 +19,7 @@ NMixChainsDerived <- function(object)
   thispackage <- "mixAK"
 
   if (!(class(object) %in% c("NMixMCMClist", "NMixMCMC"))) stop("object must be of class NMixMCMClist or NMixMCMC")
-
+  
   ##### Quantiles and names of posterior summary statistics which are computed
   ##### for derived quantities
   qProbs <- c(0, 0.025, 0.25, 0.5, 0.75, 0.975, 1)
@@ -90,6 +90,7 @@ NMixChainsDerived <- function(object)
   
   ##### NMixMCMClist
   if (class(object) == "NMixMCMClist"){
+    if (object[[1]]$nx_w > 1) stop("This function has not (yet) been implemented if a factor covariate on mixture weights is present.")
     for (ch in 1:2){
       object[[ch]] <- NMixChDer(object[[ch]])      
     }
@@ -99,6 +100,7 @@ NMixChainsDerived <- function(object)
 
   ##### NMixMCMC
   if (class(object) == "NMixMCMC"){
+    if (object$nx_w > 1) stop("This function has not (yet) been implemented if a factor covariate on mixture weights is present.")      
     return(NMixChDer(object))
   }
 }  

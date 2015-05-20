@@ -216,7 +216,7 @@ GLMM_MCMC <- function(y, dist = "gaussian", id, x, z, random.intercept,
   #            CLi_b=CLi_b, CgammaInv_b=CgammaInv_b, Cr_b=Cr_b,
   #            ifit=ifit, Calpha=Calpha, Cbb=Cbb))
 
-
+ 
 ########## ========== Run MCMC ========== ##########
 ########## ============================== ##########  
   if (PED){

@@ -20,7 +20,8 @@ extern "C" {
 void
 NMix_MCMC(const double* y0,  
           const double* y1,     
-          const int*    censor,          
+          const int*    censor, 
+	  const int*    nxw_xw,
           const int*    dimy,            
           const double* shiftScale,
           const int*    nMCMC,  
@@ -83,7 +84,7 @@ NMix_MCMC(const double* y0,
   GetRNGstate();
 
   /***** Declarations of variables used below *****/
-  int i, j, l, l2;
+  int i, j, l, l2, ixw;
 
   double *pm_yP, *pm_indLogL0P, *pm_indLogL1P, *pm_indDevComplP, *pm_indDevObsP, *pm_indDevCompl_inHatP, *pm_pred_densP;
   double *indLogL0P, *indLogL1P, *indDevComplP, *indDevObsP, *indDevCompl_inHatP, *pred_densP;
@@ -94,6 +95,9 @@ NMix_MCMC(const double* y0,
   const double *PsplitP, *PbirthP;
   const double *gammaInvP;
   const int *orderP, *rankP;
+
+  const int *nxw = nxw_xw;
+  const int *xw  = nxw_xw + 1;
 
   const int *p = dimy;
   const int *n = p + 1;
@@ -220,7 +224,8 @@ NMix_MCMC(const double* y0,
                    double* LogL0,        double* LogL1,      double* DevCompl,      double* DevObs,      double* DevCompl_inHat, 
                    double* pred_dens,    double* Pr,         double* cum_Pr_y,      double* dwork,       int* err,
                    const double* y,      const int* r,           const int* mixN,     const int* p,      const int* n,
-                   const int* K,         const double* logw,     const double* mu,    const double* Q,   const double* Li,  const double* log_dets,
+                   const int* K,         const int* xw,          const int* nxw,      const int* mixNxw, const int* tabxw,
+                   const double* logw,   const double* mu,       const double* Q,     const double* Li,  const double* log_dets,
                    const double* delta,  const double* c,        const double* xi,    const double* c_xi,  
                    const double* Dinv,   const double* Dinv_xi,  const double* zeta,  const double* XiInv) = NMix::Deviance_NC;
 
@@ -366,20 +371,20 @@ NMix_MCMC(const double* y0,
 /***** Additional mixture related parameters (depending on initial values as well)                        *****/
 /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/ 
 
-  /***** log_dets:  log_dets for mixture covariance matrices                                    *****/
-  /***** logw:  Log-weights                                                                     *****/
-  /***** Q:   Mixture inverse variances - compute them from Li                                  *****/
-  /***** Sigma:   Mixture variances - compute them from Li                                      *****/
-  /***** Var, VarData:  Mixture overall variance                                                *****/
-  /***** XiInv:              Diagonal matrix with gamma^{-1}'s on a diagonal                    *****/
-  /***** log_sqrt_detXiInv:  log|XiInv|^{1/2}                                                   *****/    
+  /***** log_dets:           log_dets for mixture covariance matrices              *****/
+  /***** logw:               Log-weights                                           *****/
+  /***** Q:                  Mixture inverse variances - compute them from Li      *****/
+  /***** Sigma:              Mixture variances - compute them from Li              *****/
+  /***** Var, VarData:       Mixture overall variance                              *****/
+  /***** XiInv:              Diagonal matrix with gamma^{-1}'s on a diagonal       *****/
+  /***** log_sqrt_detXiInv:  log|XiInv|^{1/2}                                      *****/
   double *log_dets = Calloc(2 * *Kmax, double);
-  double *logw     = Calloc(*Kmax, double);
-  double *Var      = Calloc(LTp, double);
-  double *VarData  = Calloc(LTp, double);
+  double *logw     = Calloc(*Kmax * *nxw, double);
+  double *Var      = Calloc(LTp * *nxw, double);
+  double *VarData  = Calloc(LTp * *nxw, double);
   double *XiInv    = Calloc(LTp, double);
   double log_sqrt_detXiInv[1];
-  NMix::init_derived(p, Kmax, K, distribution,
+  NMix::init_derived(p, nxw, Kmax, K, distribution,
                      w, mu, Li, df, shift, scale, gammaInv,   
                      log_dets, logw, Q, Sigma, chMeanP, Var, chCorrP, chMeanDataP, VarData, chCorrDataP,
                      XiInv, log_sqrt_detXiInv, err);                                                               /* declared in NMix_Utils.h */
@@ -408,9 +413,27 @@ NMix_MCMC(const double* y0,
   /***** mixN:  Numbers of observations within each component                                   *****/
   /*****        mixN[j] (j=0,...,Kmax) = number of observations in the j-th component           *****/
   /*****        * initialize mixN by 0's                                                        *****/
+  /*****                                                                                        *****/
+  /***** mixNxw: similar meaning, used if there are factor covariates on mixture weights        *****/
+  /*****                                                                                        *****/   
+  /***** tabxw:  frequency table giving numbers of observations per factor covariate            *****/
+  /*****                                                                                        *****/
   int *mixN = Calloc(*Kmax, int);
   AK_Basic::fillArray(mixN, 0, *Kmax);
   
+  int *mixNxw = Calloc(*Kmax * *nxw, int);
+  AK_Basic::fillArray(mixNxw, 0, *Kmax * *nxw);
+
+  int *tabxw = Calloc(*nxw, int);
+  AK_Basic::fillArray(tabxw, 0, *nxw);
+  if (*nxw == 1) tabxw[0] = *n;
+  else{
+    for (i = 0; i < *n; i++){
+      if (xw[i] < 0 || xw[i] >= *nxw) error("%s: Incorrect value of a factor covariate on mixture weights.\n", fname);
+      tabxw[xw[i]]++;
+    }
+  }
+
   /***** rInv:  "Inverse" allocations                                                               *****/
   /*****         rInv[j][i] (j=0,...,Kmax, i=0,...,mixN[j]-1)                                       *****/
   /*****         = indeces of "columns" of y which are currently allocated in the j-th component    *****/
@@ -435,6 +458,21 @@ NMix_MCMC(const double* y0,
     rP++;
   }
 
+  /***** Fill mixNxw in    *****/
+  const int *xwP = xw;
+  if (*nxw > 1){
+    rP = r;  
+    for (i = 0; i < *n; i++){
+      mixNxw[*rP + *xwP * *K]++;
+      rP++;
+      xwP++;    
+    }
+  }else{
+    for (j = 0; j < *Kmax; j++){
+      mixNxw[j] = mixN[j];
+    }
+  }
+
 
   /***** REMARK:  All indDev variables are NOT multiplied by -2 during the computation.                                         *****/
   /*****          They are multiplied by -2 before exit.                                                                        *****/
@@ -455,12 +493,14 @@ NMix_MCMC(const double* y0,
   double *pred_dens         = Calloc(*n, double);
   double *Pr_y              = Calloc(*Kmax * *n, double);
   double *cum_Pr_y          = Calloc(*Kmax * *n, double);
-  const int ldwork_Deviance = *p + (2 * *p + LTp + 2 + *p + 2 * LTp + 2) * *Kmax;
+  const int ldwork_Deviance = *p + (2 * *p + LTp + 2 * *nxw + *p + 2 * LTp + 2) * *Kmax;
   double *dwork_Deviance    = Calloc(ldwork_Deviance, double);
   NMix_Deviance(indLogL0, indLogL1, indDevCompl, indDevObs, indDevCompl_inHat, 
                 chLogL0P, chLogL1P, chDevComplP, chDevObsP, chDevCompl_inHatP, 
                 pred_dens, Pr_y, cum_Pr_y, dwork_Deviance, err,
-                y, r, mixN, p, n, K, logw, mu, Q, Li, log_dets, delta, c, xi, c_xi, Dinv, Dinv_xi, zeta, XiInv);
+                y, r, mixN, p, n, K, 
+                xw, nxw, mixNxw, tabxw,
+                logw, mu, Q, Li, log_dets, delta, c, xi, c_xi, Dinv, Dinv_xi, zeta, XiInv);
   bool cum_Pr_done[1] = {true};
   if (*err){
     warning("%s: Calculation of quantities for DIC's failed on init.\n", fname);
@@ -628,12 +668,12 @@ NMix_MCMC(const double* y0,
       //Rprintf((char*)("Iter %d (%d): Action %s - "), *iter, witer, samplerAction == 0 ? "Gibbs" : (samplerAction == 1 ? "split/combine" : "birth/death"));
       switch (samplerAction){
       case NMix::GIBBS_K:
-	NMix::updateAlloc(r, mixN, rInv, cum_Pr_y, dwork_updateAlloc, y, p, n, logw, mu, Li, log_dets, K, cum_Pr_done);   // validated in R on 21/12/2007
+	NMix::updateAlloc(r, mixN, mixNxw, rInv, cum_Pr_y, dwork_updateAlloc, y, p, n, logw, mu, Li, log_dets, K, cum_Pr_done, xw, nxw);   // validated in R on 21/12/2007
         NMix_updateMeansVars(mu, Q, Li, Sigma, log_dets, order, rank, dwork_updateMeansVars, err, y, r, mixN,             // partially validated in R on 21/12/2007
                              p, n, K, c, xi, c_xi, Dinv, Dinv_xi, zeta, XiInv);
         *cum_Pr_done = false;
         NMix::updateHyperVars(gammaInv, XiInv, log_sqrt_detXiInv, dwork_updateHyperVars, Q, K, p, zeta, g, h);
-        NMix::updateWeights(w, logw, dwork_updateWeights, mixN, K, delta);
+        NMix::updateWeights(w, logw, dwork_updateWeights, mixN, K, delta, mixNxw, nxw);
         //Rprintf((char*)(K = %d"\n"), *K);
         if (JustOneAction) break;
 
@@ -718,12 +758,12 @@ NMix_MCMC(const double* y0,
       switch (samplerAction){
       case NMix::GIBBS_K:
         (*nGibbs_K)++;
-	NMix::updateAlloc(r, mixN, rInv, cum_Pr_y, dwork_updateAlloc, y, p, n, logw, mu, Li, log_dets, K, cum_Pr_done);
+	NMix::updateAlloc(r, mixN, mixNxw, rInv, cum_Pr_y, dwork_updateAlloc, y, p, n, logw, mu, Li, log_dets, K, cum_Pr_done, xw, nxw);
         NMix_updateMeansVars(mu, Q, Li, Sigma, log_dets, order, rank, dwork_updateMeansVars, err, y, r, mixN,
                              p, n, K, c, xi, c_xi, Dinv, Dinv_xi, zeta, XiInv);
         *cum_Pr_done = false;
         NMix::updateHyperVars(gammaInv, XiInv, log_sqrt_detXiInv, dwork_updateHyperVars, Q, K, p, zeta, g, h);
-        NMix::updateWeights(w, logw, dwork_updateWeights, mixN, K, delta);
+        NMix::updateWeights(w, logw, dwork_updateWeights, mixN, K, delta, mixNxw, nxw);
         //Rprintf((char*)(K = %d"\n"), *K);
         if (JustOneAction) break;
 
@@ -803,13 +843,17 @@ NMix_MCMC(const double* y0,
     LiP    = Li;
   
     orderP = order;
-    rankP  = rank;
+    rankP  = rank;    
 
-    for (j = 0; j < *K; j++){
-      *chwP = *wP;
-      chwP++;
-      wP++;
+    for (ixw = 0; ixw < *nxw; ixw++){      
+      for (j = 0; j < *K; j++){
+        *chwP = *wP;
+        chwP++;
+        wP++;
+      }    
+    }
 
+    for (j = 0; j < *K; j++){     
       *chorderP = *orderP;
       chorderP++;
       orderP++;
@@ -853,11 +897,11 @@ NMix_MCMC(const double* y0,
     }
 
     /*** Update chMean and chCorr ***/
-    NMix::Moments(chMeanP, Var, chCorrP, chMeanDataP, VarData, chCorrDataP, distribution, w, mu, Sigma, df, K, shift, scale, p);
-    chMeanP     += *p;
-    chCorrP     += LTp;
-    chMeanDataP += *p;
-    chCorrDataP += LTp;
+    NMix::Moments(chMeanP, Var, chCorrP, chMeanDataP, VarData, chCorrDataP, distribution, w, mu, Sigma, df, K, shift, scale, p, nxw);
+    chMeanP     += *p * *nxw;
+    chCorrP     += LTp * *nxw;
+    chMeanDataP += *p * *nxw;
+    chCorrDataP += LTp * *nxw;
 
     /*** Update pm_y ***/
     if (anyCensor){
@@ -873,7 +917,9 @@ NMix_MCMC(const double* y0,
     /*** Compute quantities needed to get DIC_3 and DIC_4 from Celeux, Forbes, Robert, Titterington (2006) ***/
     NMix_Deviance(indLogL0, indLogL1, indDevCompl, indDevObs, indDevCompl_inHat, chLogL0P, chLogL1P, chDevComplP, chDevObsP, chDevCompl_inHatP, 
                   pred_dens, Pr_y, cum_Pr_y, dwork_Deviance, err,
-                  y, r, mixN, p, n, K, logw, mu, Q, Li, log_dets, delta, c, xi, c_xi, Dinv, Dinv_xi, zeta, XiInv);
+                  y, r, mixN, p, n, K, 
+                  xw, nxw, mixNxw, tabxw,
+                  logw, mu, Q, Li, log_dets, delta, c, xi, c_xi, Dinv, Dinv_xi, zeta, XiInv);
     *cum_Pr_done = true;
     if (*err){
       warning("%s: Calculation of quantities for DIC's failed in iteration %d.\n", fname, *iter);
@@ -982,7 +1028,7 @@ NMix_MCMC(const double* y0,
   /*** Compute pm_w, pm_mu, pm_Q, pm_Sigma, pm_Li (do it only when K is fixed) ***/
   /*** THESE ARE VERY OFTEN VERY BAD ESTIMATES!!!                              ***/
   if (*priorK == NMix::K_FIXED){ 
-    NMix::PosterMeanMixParam(pm_w, pm_mu, pm_Q, pm_Sigma, pm_Li, Kmax, chw, chmu, chQ, chSigma, chLi, chorder, p, Mkeep);
+    NMix::PosterMeanMixParam(pm_w, pm_mu, pm_Q, pm_Sigma, pm_Li, Kmax, chw, chmu, chQ, chSigma, chLi, chorder, p, Mkeep, nxw);
   }
 
 
@@ -1015,6 +1061,8 @@ NMix_MCMC(const double* y0,
   Free(indLogL1);
   Free(indLogL0);
   Free(mixN);
+  Free(mixNxw);
+  Free(tabxw);
   rInvPP = rInv;
   for (j = 0; j < *Kmax; j++){
     Free(*rInvPP);

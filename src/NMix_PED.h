@@ -9,6 +9,8 @@
 //  FUNCTIONS:  
 //     * NMix_PED  06/11/2008:  
 //
+//           31/03/2015:  possibility to have covariates on mixture weights added
+//
 // ====================================================================================================
 //
 #ifndef _NMIX_PENALIZED_EXPECTED_DEVIANCE_H_
@@ -87,6 +89,10 @@ extern "C" {
 //                 * 2 = left-censored
 //                 * 3 = interval-censored
 //
+// nxw_xw[1 + n]   information on a factor covariate on mixture weights (ADDED ON 20150331)
+//                 nxw_xw[0]   = nxw = number of covariate levels
+//                 nxw_xw[1:n] = covariate values (numbered 0, 1, ..., nxw - 1)
+//
 // dimy[2]         dimension of the data
 //                 * dimy[0]  = p = dimension of the response
 //                 * dimy[+1] = n = number of observations
@@ -118,15 +124,33 @@ extern "C" {
 //
 void
 NMix_PED(double* PED,
-         double* pm_indDevObs,    double* pm_indpopt,    double* pm_windpopt,
-         int* invalid_indDevObs,  int* invalid_indpopt,  int* invalid_windpopt,
-         double* sum_ISweight,    // double* ch_ISweight,
+         double* pm_indDevObs,    
+         double* pm_indpopt,    
+         double* pm_windpopt,
+         int* invalid_indDevObs,  
+         int* invalid_indpopt,  
+         int* invalid_windpopt,
+         double* sum_ISweight,    
+         // double* ch_ISweight,
          int* err,
-         const double* y0,         const double* y1,     const int* censor,    const int* dimy,
-         const int* chK1,          const double* chw1,   const double* chmu1,  const double* chLi1,
-         const int* chK2,          const double* chw2,   const double* chmu2,  const double* chLi2,
-         const int* M,             const int* Kmax,      const int* Krandom,
-         const double* Dens_ZERO,  const double* EMin);
+         const double* y0,         
+         const double* y1,     
+         const int* censor,    
+         const int*    nxw_xw,
+         const int* dimy,
+         const int* chK1,          
+         const double* chw1,   
+         const double* chmu1,  
+         const double* chLi1,
+         const int* chK2,          
+         const double* chw2,   
+         const double* chmu2,  
+         const double* chLi2,
+         const int* M,             
+         const int* Kmax,      
+         const int* Krandom,
+         const double* Dens_ZERO,  
+         const double* EMin);
 
 #ifdef __cplusplus
 }

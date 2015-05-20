@@ -56,6 +56,12 @@ NMix_PredDA(const double* y0,
   const int ly = *p * *n;
   const int LTp = (*p * (*p + 1))/2;
 
+  /***** NOT REALLY USED VARIABLES RELATED TO A FACTOR COVARIATE ON MIXTURE WEIGHTS *****/
+  /***** (not implemented (yet) in NMix_NMixRelabel)                                *****/
+  const int nxw_ONE = 1;
+  int *xw = Calloc(*n, int);
+  for (i = 0; i < *n; i++) xw[i] = 0;
+
   /***** Pointers to sampled values *****/
   const double *chwP     = chw;
   const double *chmuP    = chmu;
@@ -76,7 +82,7 @@ NMix_PredDA(const double* y0,
 
   /***** logw:  Space to store log-weights                                 *****/
   double *logw = Calloc(*K, double);
-  NMix::w2logw(logw, chw, K);  
+  NMix::w2logw(logw, chw, K, &nxw_ONE);  
 
   /***** log_dets:  Space to calculate log_dets for MVN functions         *****/
   double *log_dets = Calloc(2 * *K, double);  
@@ -93,7 +99,7 @@ NMix_PredDA(const double* y0,
   /***** Reset hatPr_y, sum_Ir                                                                *****/
   double *Pr_y     = Calloc(*K * *n, double);
   double *cum_Pr_y = Calloc(*K * *n, double);
-  NMix::Pr_y_and_cum_Pr_y(Pr_y, cum_Pr_y, dwork_MVN, y, p, n, logw, chmu, chLi, log_dets, K);
+  NMix::Pr_y_and_cum_Pr_y(Pr_y, cum_Pr_y, dwork_MVN, y, p, n, logw, chmu, chLi, log_dets, K, xw, &nxw_ONE);
   AK_Basic::fillArray(sum_Ir,  0,   *n * *K);
   AK_Basic::fillArray(hatPr_y, 0.0, *n * *K);
 
@@ -102,14 +108,15 @@ NMix_PredDA(const double* y0,
 
   /***** Component allocations and related quantities *****/
   int *mixN    = Calloc(*K, int);
+  int *mixNxw  = Calloc(*K * nxw_ONE, int);
   int **rInv   = Calloc(*K, int*);
   int **rInvPP = rInv;
   for (j = 0; j < *K; j++){
     *rInvPP = Calloc(*n, int);
     rInvPP++;
   }
-  NMix::updateAlloc(r, mixN, rInv, cum_Pr_y, dwork_MVN,
-                    y, p, n, logw, chmu, chLi, log_dets, K, cum_Pr_done);  
+  NMix::updateAlloc(r, mixN, mixNxw, rInv, cum_Pr_y, dwork_MVN,
+                    y, p, n, logw, chmu, chLi, log_dets, K, cum_Pr_done, xw, &nxw_ONE);  
 
   /***** beta, sigmaR2:   Space for NMix::updateCensObs to store regression coefficients and residual variances  *****/
   /*****                  * initialized by zeros                                                                 *****/
@@ -142,7 +149,7 @@ NMix_PredDA(const double* y0,
     }
 
     /***** Calculate parameter values derived from mixture parameters *****/
-    NMix::w2logw(logw, chwP, K);  
+    NMix::w2logw(logw, chwP, K, &nxw_ONE);  
     NMix::Li2log_dets(log_dets, chLiP, K, p);
 
     /***** Sample new y (if there are censored observations) *****/
@@ -152,11 +159,11 @@ NMix_PredDA(const double* y0,
     }
 
     /***** Compute new Pr_y and cum_Pr_y             *****/
-    NMix::Pr_y_and_cum_Pr_y(Pr_y, cum_Pr_y, dwork_MVN, y, p, n, logw, chmuP, chLiP, log_dets, K);
+    NMix::Pr_y_and_cum_Pr_y(Pr_y, cum_Pr_y, dwork_MVN, y, p, n, logw, chmuP, chLiP, log_dets, K, xw, &nxw_ONE);
 
     /***** Sample new component allocations *****/
-    NMix::updateAlloc(r, mixN, rInv, cum_Pr_y, dwork_MVN,
-                      y, p, n, logw, chmuP, chLiP, log_dets, K, cum_Pr_done);
+    NMix::updateAlloc(r, mixN, mixNxw, rInv, cum_Pr_y, dwork_MVN,
+                      y, p, n, logw, chmuP, chLiP, log_dets, K, cum_Pr_done, xw, &nxw_ONE);
 
     /***** Update sum_Ir, hatPr_y *****/
     NMix::update_sum_Ir_and_sum_Pr_y(sum_Ir, hatPr_y, Pr_y, r, chrankP, K, n);
@@ -192,6 +199,8 @@ NMix_PredDA(const double* y0,
   }
   Free(rInv);
   Free(mixN);
+  Free(mixNxw);
+  Free(xw);
   Free(cum_Pr_y);
   Free(Pr_y);
   Free(dwork_MVN);

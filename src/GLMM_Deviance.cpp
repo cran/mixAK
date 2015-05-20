@@ -10,9 +10,9 @@
 //
 #include "GLMM_Deviance.h"
 
-//extern int iteration;
-//extern int iter_show;
-//extern int clus_show;
+extern int iteration;
+extern int iter_show;
+extern int clus_show;
 
 namespace GLMM{
 
@@ -191,14 +191,14 @@ Deviance(double* marg_ll,
     //  Rprintf("bscaled <- ");
     //  AK_Basic::printVec4R(bscaled_i, *dim_b);
     //  Rprintf("\n");
-      //  for (s = 0; s < *R_c + *R_d; s++){
-      //    Rprintf("meanY[%d] = ", s+1);
-      //    AK_Basic::printVec4R(meanYrespP[s], *nrespP[s]);
-      //    Rprintf("etafixed[%d] = ", s+1);
-      //    AK_Basic::printVec4R(eta_fixedrespP[s], *nrespP[s]);
-      //    Rprintf("etarandom[%d] = ", s+1);
-      //    AK_Basic::printVec4R(eta_randomrespP[s], *nrespP[s]);
-      //  }
+    //  for (s = 0; s < *R_c + *R_d; s++){
+    //    Rprintf("meanY[%d] = ", s+1);
+    //    AK_Basic::printVec4R(meanYrespP[s], *nrespP[s]);
+    //    Rprintf("etafixed[%d] = ", s+1);
+    //    AK_Basic::printVec4R(eta_fixedrespP[s], *nrespP[s]);
+    //    Rprintf("etarandom[%d] = ", s+1);
+    //    AK_Basic::printVec4R(eta_randomrespP[s], *nrespP[s]);
+    //  }
     //}
 
     /*** Calculate the upper part of the Z matrix (Zwork1),                                             ***/

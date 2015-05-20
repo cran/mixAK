@@ -28,6 +28,8 @@ NMixPredDA <- function(object, y0, y1, censor, inity, info)
   if (class(object) != "NMixMCMC") stop("object must be of class NMixMCMC")
   if (object$prior$priorK != "fixed") stop("number of mixture components was not fixed")
 
+  if (object$nx_w > 1) stop("This function has not (yet) been implemented if a factor covariate on mixture weights is present.")
+  
   if (is.null(object$K) | is.null(object$w) | is.null(object$mu) | is.null(object$Li) | is.null(object$Q) | is.null(object$Sigma)){
     stop("object does not contain sampled values")
   }  

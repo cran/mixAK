@@ -19,6 +19,7 @@
 ##
 NMixMCMCinitr <- function(z, K, w, mu, Sigma, p, n, initr)
 {
+    
   ##### Calculate initial r if not given
   if (missing(initr)){
     if (p == 1){
@@ -40,7 +41,7 @@ NMixMCMCinitr <- function(z, K, w, mu, Sigma, p, n, initr)
     PROB    <- PROB / matrix(rep(sumPROB, each=K), ncol=K, byrow=TRUE)
     initr <- apply(PROB, 1, which.max)
   }
-
+  
   ##### Check and format initr
   initr <- as.numeric(initr)
   if (length(initr) != n) stop(paste("init$r must be of length ", n, sep=""))

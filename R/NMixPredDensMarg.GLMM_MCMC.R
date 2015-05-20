@@ -14,7 +14,7 @@
 ## *************************************************************
 ## NMixPredDensMarg.GLMM_MCMC
 ## *************************************************************
-NMixPredDensMarg.GLMM_MCMC <- function(x, grid, lgrid=50, scaled=FALSE, ...)
+NMixPredDensMarg.GLMM_MCMC <- function(x, grid, lgrid=500, scaled=FALSE, ...)
 {
   if (missing(grid)){
     grid <- list()

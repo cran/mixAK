@@ -2,6 +2,7 @@
 \alias{tracePlots}
 \alias{tracePlots.default}
 \alias{tracePlots.NMixMCMC}
+\alias{tracePlots.NMixMCMClist}
 \alias{tracePlots.GLMM_MCMC}
 \alias{tracePlots.GLMM_MCMClist}
 \title{
@@ -21,6 +22,10 @@
     relabel=FALSE, order,
     auto.layout=TRUE, xlab="Iteration", ylab, col="slateblue", main="", \dots)
 
+  \method{tracePlots}{NMixMCMClist}(x, param=c("Emix", "SDmix", "Cormix", "K", "w", "mu", "sd", "gammaInv"),
+    relabel=FALSE,
+    auto.layout=TRUE, xlab="Iteration", ylab, col=c("blue3", "red3"), main="", \dots)
+
   \method{tracePlots}{GLMM_MCMC}(x, param=c("Deviance", "Cond.Deviance",
     "alpha", "Eb", "SDb", "Corb", "sigma_eps",
     "w_b", "mu_b", "sd_b", "gammaInv_b", "gammaInv_eps"),
@@ -34,7 +39,7 @@
     auto.layout=TRUE, xlab="Iteration", ylab, col=c("blue3", "red3"), main="", \dots)
 }
 \arguments{
-  \item{x}{an object of class \code{NMixMCMC} or \code{GLMM_MCMC}.}
+  \item{x}{an object of appropriate class.}
   \item{param}{a character string which specifies which sort of
     parameters is to be plotted.
    

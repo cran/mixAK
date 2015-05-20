@@ -12,6 +12,7 @@
 //
 //  FUNCTIONS:  
 //     * Pr_y_and_cum_Pr_y  10/02/2010:  
+//                          31/03/2015:  Factor covariate on mixture weights allowed 
 //
 // ===================================================================================
 //
@@ -50,7 +51,7 @@ extern "C" {
 //
 //  n[1]            sample size
 //
-//  logw[K]         logarithm of mixture weights
+//  logw[K * nxw]   logarithm of mixture weights
 //
 //  mu[p, K]        mixture means
 //
@@ -59,6 +60,10 @@ extern "C" {
 //  log_dets[2, K]  input for dMVN
 //
 //  K[1]            number of mixture components
+//
+//  xw[n]           covariates (valued 0, 1, ..., nxw - 1) on mixture weights
+//
+//  nxw[1]          number of levels of a factor covariate on mixture weights
 //
 void
 Pr_y_and_cum_Pr_y(double* Pr_y,
@@ -71,7 +76,10 @@ Pr_y_and_cum_Pr_y(double* Pr_y,
                   const double* mu,
                   const double* Li,
                   const double* log_dets,
-                  const int*    K);
+                  const int*    K,
+                  const int*    xw,
+                  const int*    nxw);
+
 
 #ifdef __cplusplus
 }

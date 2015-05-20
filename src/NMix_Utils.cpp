@@ -16,18 +16,20 @@ namespace NMix{
 /***** NMix::w2logw                                                                         *****/
 /***** ************************************************************************************ *****/
 void
-w2logw(double* logw,  const double* w,  const int* K)
+w2logw(double* logw,  const double* w,  const int* K,  const int* nxw)
 {
-  static int j;
+  static int ix, j;
   static double *logwP;
   static const double *wP;
 
   logwP = logw;
   wP    = w;
-  for (j = 0; j < *K; j++){
-    *logwP = AK_Basic::log_AK(*wP);
-    logwP++;
-    wP++;
+  for (ix = 0; ix < *nxw; ix++){
+    for (j = 0; j < *K; j++){
+      *logwP = AK_Basic::log_AK(*wP);
+      logwP++;
+      wP++;
+    }
   }
 
   return;
@@ -63,26 +65,28 @@ Li2log_dets(double* log_dets,  const double* Li,  const int* K,  const int* p)
 /***** NMix::wLi2w_dets                                                                     *****/
 /***** ************************************************************************************ *****/
 void
-wLi2w_dets(double* w_dets,  const double* w,  const double* Li,  const int* K,  const int* p)
+wLi2w_dets(double* w_dets,  const double* w,  const double* Li,  const int* K,  const int* p,  const int* nxw)
 {
-  static int j, k;
+  static int ix, j, k;
   static double *w_detsP;
   static const double *wP, *LiP;
 
   w_detsP = w_dets;
   wP      = w;
-  LiP     = Li;
-  for (k = 0; k < *K; k++){  
-    *w_detsP = -(*p) * M_LN_SQRT_2PI;
-    for (j = *p; j > 0; j--){
-      *w_detsP += AK_Basic::log_AK(*LiP);
-      LiP += j;
-    }
-    *w_detsP = AK_Basic::exp_AK(*w_detsP);
-    *w_detsP *= *wP; 
+  for (ix = 0; ix < *nxw; ix++){
+    LiP     = Li;
+    for (k = 0; k < *K; k++){  
+      *w_detsP = -(*p) * M_LN_SQRT_2PI;
+      for (j = *p; j > 0; j--){
+        *w_detsP += AK_Basic::log_AK(*LiP);
+        LiP += j;
+      }
+      *w_detsP = AK_Basic::exp_AK(*w_detsP);
+      *w_detsP *= *wP; 
 
-    wP++;
-    w_detsP++;
+      wP++;
+      w_detsP++;
+    }
   }
 
   return;
@@ -242,86 +246,56 @@ Moments(double* Mean,
         const int*    K,  
         const double* shift,  
         const double* scale,  
-        const int* p)
+        const int* p,
+        const int* nxw)
 {
   const char *fname = "NMix::Moments";
 
-  static int i1, i2, j;
+  static int ix, i1, i2, j;
   static double factor;
   static double *MeanP, *MeanDataP, *VarP, *VarDataP, *CorrP, *CorrDataP;
   static const double *wP, *muP, *SigmaP, *dfP, *muP1, *MeanP1, *MeanP2, *sd1P, *sd2P;
   static const double *shiftP, *scaleP1, *scaleP2;
 
-  /*** Mean ***/
-  wP  = w;
-  muP = mu;
+  static int LTp;
+  LTp = (*p * (*p + 1))/2;
 
-  MeanP     = Mean;
-  for (i1 = 0; i1 < *p; i1++){
-    *MeanP = *wP * *muP;
-    muP++;
-    MeanP++;
-  }
-  wP++;
-  for (j = 1; j < *K; j++){
-    MeanP = Mean;
+  for (ix = 0; ix < *nxw; ix++){
+
+    /*** Mean ***/
+    wP    = w + ix * *K;
+    MeanP = Mean + ix * *p;
+
+    muP = mu;
     for (i1 = 0; i1 < *p; i1++){
-      *MeanP += *wP * *muP;
+      *MeanP = *wP * *muP;
       muP++;
       MeanP++;
     }
     wP++;
-  }
-
-  /*** Var       ***/
-  /*** MeanData  ***/
-  wP     = w;
-  muP    = mu;
-  SigmaP = Sigma;
-  dfP    = df;
-
-  MeanDataP = MeanData;
-  shiftP    = shift;
-  scaleP1   = scale;
-  
-    /*** j = 0 (the first mixture component) ***/
-  switch (*distribution){
-  case NMix::NORMAL:    
-    factor = 1.0;
-    break;
-  case NMix::MVT:
-    factor = *dfP > 2.0 ? *dfP / (*dfP - 2) : 2.001 / 0.001;
-    dfP++;
-    break;
-  default:
-    error("%s: Unimplemented mixture distribution specified.\n", fname);    
-  }
-
-  VarP   = Var;
-  MeanP2 = Mean;
-  for (i2 = 0; i2 < *p; i2++){
-    MeanP1 = MeanP2;
-    muP1   = muP;
-    for (i1 = i2; i1 < *p; i1++){
-      *VarP = *wP * (factor * *SigmaP + (*muP1 - *MeanP1)*(*muP - *MeanP2));
-      VarP++;
-      SigmaP++;
-      MeanP1++;
-      muP1++;
+    for (j = 1; j < *K; j++){
+      MeanP = Mean + ix * *p;
+      for (i1 = 0; i1 < *p; i1++){
+        *MeanP += *wP * *muP;
+        muP++;
+        MeanP++;
+      }
+      wP++;
     }
 
-    *MeanDataP = *shiftP + *scaleP1 * *MeanP2;
-    MeanDataP++;
-    shiftP++;
-    scaleP1++;
 
-    MeanP2++;
-    muP++;    
-  }
-  wP++;
+    /*** Var       ***/
+    /*** MeanData  ***/
+    wP     = w + ix * *K;
+    muP    = mu;
+    SigmaP = Sigma;
+    dfP    = df;
 
-    /*** j = 0 remaining mixture components ***/  
-  for (j = 1; j < *K; j++){
+    MeanDataP = MeanData + ix * *p;
+    shiftP    = shift;
+    scaleP1   = scale;
+  
+      /*** j = 0 (the first mixture component) ***/
     switch (*distribution){
     case NMix::NORMAL:    
       factor = 1.0;
@@ -334,80 +308,119 @@ Moments(double* Mean,
       error("%s: Unimplemented mixture distribution specified.\n", fname);    
     }
 
-    VarP   = Var;
-    MeanP2 = Mean;
+    VarP   = Var + ix * LTp;
+    MeanP2 = Mean + ix * *p;
     for (i2 = 0; i2 < *p; i2++){
       MeanP1 = MeanP2;
       muP1   = muP;
       for (i1 = i2; i1 < *p; i1++){
-        *VarP += *wP * (factor * *SigmaP + (*muP1 - *MeanP1)*(*muP - *MeanP2));
+        *VarP = *wP * (factor * *SigmaP + (*muP1 - *MeanP1)*(*muP - *MeanP2));
         VarP++;
         SigmaP++;
         MeanP1++;
         muP1++;
       }
+
+      *MeanDataP = *shiftP + *scaleP1 * *MeanP2;
+      MeanDataP++;
+      shiftP++;
+      scaleP1++;
+
       MeanP2++;
       muP++;    
     }
     wP++;
-  }  
 
-  /*** VarData                        ***/
-  /*** Corr:      standard deviations ***/
-  /*** CorrData:  standard deviations ***/
-  CorrP     = Corr;
-  CorrDataP = CorrData;
+      /*** j = 0 remaining mixture components ***/  
+    for (j = 1; j < *K; j++){
+      switch (*distribution){
+      case NMix::NORMAL:    
+        factor = 1.0;
+        break;
+      case NMix::MVT:
+        factor = *dfP > 2.0 ? *dfP / (*dfP - 2) : 2.001 / 0.001;
+        dfP++;
+        break;
+      default:
+        error("%s: Unimplemented mixture distribution specified.\n", fname);    
+      }
 
-  VarP  = Var;
-  VarDataP = VarData;
-  scaleP2  = scale;
+      VarP   = Var + ix * LTp;
+      MeanP2 = Mean + ix * *p;
+      for (i2 = 0; i2 < *p; i2++){
+        MeanP1 = MeanP2;
+        muP1   = muP;
+        for (i1 = i2; i1 < *p; i1++){
+          *VarP += *wP * (factor * *SigmaP + (*muP1 - *MeanP1)*(*muP - *MeanP2));
+          VarP++;
+          SigmaP++;
+          MeanP1++;
+          muP1++;
+        }
+        MeanP2++;
+        muP++;    
+      }
+      wP++;
+    }  
+
+
+    /*** VarData                        ***/
+    /*** Corr:      standard deviations ***/
+    /*** CorrData:  standard deviations ***/
+    CorrP     = Corr + ix * LTp;
+    CorrDataP = CorrData + ix * LTp;
+
+    VarP  = Var + ix * LTp;
+    VarDataP = VarData + ix * LTp;
+    scaleP2  = scale;
   
-  for (i2 = 0; i2 < *p; i2++){
+    for (i2 = 0; i2 < *p; i2++){
 
-    scaleP1 = scaleP2;
+      scaleP1 = scaleP2;
 
-    /** diagonal **/
-    *VarDataP = *scaleP1 * *scaleP2 * *VarP;
-    *CorrP     = sqrt(*VarP);
-    *CorrDataP = sqrt(*VarDataP);
-
-    VarP++;
-    VarDataP++;
-    scaleP1++;
-
-    CorrP     += *p - i2;
-    CorrDataP += *p - i2;
-
-    /** off-diagonal **/
-    for (i1 = i2 + 1; i1 < *p; i1++){
+      /** diagonal **/
       *VarDataP = *scaleP1 * *scaleP2 * *VarP;
+      *CorrP     = sqrt(*VarP);
+      *CorrDataP = sqrt(*VarDataP);
+
       VarP++;
       VarDataP++;
       scaleP1++;
+
+      CorrP     += *p - i2;
+      CorrDataP += *p - i2;
+
+      /** off-diagonal **/
+      for (i1 = i2 + 1; i1 < *p; i1++){
+        *VarDataP = *scaleP1 * *scaleP2 * *VarP;
+        VarP++;
+        VarDataP++;
+        scaleP1++;
+      }
+
+      scaleP2++;
     }
 
-    scaleP2++;
-  }
-
-  /*** Corr:      correlations ***/
-  /*** CorrData:  correlations ***/
-  CorrP     = Corr;
-  CorrDataP = CorrData;
-  VarP  = Var;
-  for (i2 = 0; i2 < *p - 1; i2++){
-    sd2P = CorrP;
-    sd1P = sd2P + (*p - i2);
-    CorrP++;
-    CorrDataP++;
-    VarP++;
-    for (i1 = i2 + 1; i1 < *p; i1++){
-      *CorrP = *VarP/(*sd1P * *sd2P);
-      *CorrDataP = *CorrP;
+    /*** Corr:      correlations ***/
+    /*** CorrData:  correlations ***/
+    CorrP     = Corr + ix * LTp;
+    CorrDataP = CorrData + ix * LTp;
+    VarP      = Var + ix * LTp;
+    for (i2 = 0; i2 < *p - 1; i2++){
+      sd2P = CorrP;
+      sd1P = sd2P + (*p - i2);
       CorrP++;
       CorrDataP++;
       VarP++;
-      sd1P += *p - i1;
-    }    
+      for (i1 = i2 + 1; i1 < *p; i1++){
+        *CorrP = *VarP/(*sd1P * *sd2P);
+        *CorrDataP = *CorrP;
+        CorrP++;
+        CorrDataP++;
+        VarP++;
+        sd1P += *p - i1;
+      }    
+    }
   }
 
   return;
@@ -709,7 +722,8 @@ prior_derived(const int* p,
 /***** NMix::init_derived                                                                        *****/
 /***** ***************************************************************************************** *****/
 void
-init_derived(const int* p,         
+init_derived(const int* p,  
+	     const int* nxw,       
              const int* Kmax,      
              const int* K,  
              const int* distribution,
@@ -778,8 +792,8 @@ init_derived(const int* p,
 
 
   /***** logw:  Log-weights                                                                     *****/
-  NMix::w2logw(logw, w, K);
-  AK_Basic::fillArray(logw + *K, 0.0, *Kmax - *K);
+  NMix::w2logw(logw, w, K, nxw);
+  AK_Basic::fillArray(logw + *K * *nxw, 0.0, (*Kmax - *K) * *nxw);
 
 
   /***** Q:   Mixture inverse variances - compute them from Li                                  *****/
@@ -795,7 +809,7 @@ init_derived(const int* p,
   /***** Mean, MeanData:  Mixture overall means                                                 *****/
   /***** Var, VarData:    Mixture overall variance                                              *****/
   /***** Corr, CorrData:  Mixture overall std. deviations and correlations                      *****/
-  NMix::Moments(Mean, Var, Corr, MeanData, VarData, CorrData, distribution, w, mu, Sigma, df, K, shift, scale, p);
+  NMix::Moments(Mean, Var, Corr, MeanData, VarData, CorrData, distribution, w, mu, Sigma, df, K, shift, scale, p, nxw);
 
 
   /***** XiInv:              Diagonal matrix with gamma^{-1}'s on a diagonal                    *****/

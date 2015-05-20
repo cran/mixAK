@@ -6,6 +6,8 @@
 //
 //  LOG:      20071126  created
 //            20120126  stuff needed for MVT mixture added
+//            20150327  modifications to allow for situation 
+//                      when a factor covariate influences the mixture weights
 //
 //  FUNCTIONS:  
 //     * w2logw                       26/11/2007:  
@@ -58,7 +60,7 @@ namespace NMix{
 /***** NMix::w2logw                                                                              *****/
 /***** ***************************************************************************************** *****/
 void
-w2logw(double* logw,  const double* w,  const int* K);
+w2logw(double* logw,  const double* w,  const int* K,  const int* nxw);
 
 
 /***** ***************************************************************************************** *****/
@@ -85,10 +87,10 @@ Li2log_dets(double* log_dets,  const double* Li,  const int* K,  const int* p);
 /***** NMix::wLi2w_dets                                                                     *****/
 /***** ************************************************************************************ *****/
 //
-// w_dets[K]   INPUT:  whatsever
-//             OUTPUT: w_dets[k] = (2*pi)^(-p/2) * |Li[k]| * w[k]
+// w_dets[nxw * K]   INPUT:  whatsever
+//                  OUTPUT: w_dets[i, k] = (2*pi)^(-p/2) * |Li[k]| * w[i, k]
 //
-// w[K]        mixture weights
+// w[nxw * K]        mixture weights
 //
 // Li[K*LT(p)] Cholesky decompositions of mixture precision matrices
 //
@@ -96,8 +98,10 @@ Li2log_dets(double* log_dets,  const double* Li,  const int* K,  const int* p);
 //
 // p[1]        dimension
 //
+// nxw[1]      number of factor covariates on weights
+//
 void
-wLi2w_dets(double* w_dets,  const double* w,  const double* Li,  const int* K,  const int* p);
+wLi2w_dets(double* w_dets,  const double* w,  const double* Li,  const int* K,  const int* p, const int* nxw);
 
 
 /***** ***************************************************************************************** *****/
@@ -177,21 +181,21 @@ muLi2beta_sigmaR2(double* beta,  double* sigmaR2,   double* work,
 //
 //          Hence for MVT, use calculated results with care!
 //
-// Mean[p]
+// Mean[p, nxw]
 //
-// Var[LT(p)]
+// Var[LT(p), nxw]
 //
-// Corr[LT(p)]    Diagonal:      standard deviations = sqrt(Var[i,i])
-//                Off-diagonal:  correlations = Var[i,l]/sqrt(Var[i,i]*Var[l,l])
+// Corr[LT(p), nxw]    Diagonal:      standard deviations = sqrt(Var[i,i])
+//                  Off-diagonal:  correlations = Var[i,l]/sqrt(Var[i,i]*Var[l,l])
 //
-// MeanData[p]        MeanData = shift + scale*Mean
+// MeanData[p, nxw]        MeanData = shift + scale*Mean
 //
-// VarData[LT(p)]     VarData = diag(scale) %*% Var %*% diag(scale)
+// VarData[LT(p), nxw]     VarData = diag(scale) %*% Var %*% diag(scale)
 //
-// CorrData[LT(p)]    Diagonal:      standard deviations = sqrt(VarData[i,i])
-//                    Off-diagonal:  correlations = VarData[i,l]/sqrt(VarData[i,i]*VarData[l,l]) = Var[i,l]/sqrt(Var[i,i]*Var[l,l])
+// CorrData[LT(p), nxw]    Diagonal:      standard deviations = sqrt(VarData[i,i])
+//                      Off-diagonal:  correlations = VarData[i,l]/sqrt(VarData[i,i]*VarData[l,l]) = Var[i,l]/sqrt(Var[i,i]*Var[l,l])
 //
-// w[K]
+// w[K, nxw]
 //
 // mu[p, K]
 //
@@ -204,6 +208,8 @@ muLi2beta_sigmaR2(double* beta,  double* sigmaR2,   double* work,
 // scale[p]
 //
 // p[1]
+//
+// nxw[1]
 //
 void
 Moments(double* Mean,         
@@ -220,7 +226,8 @@ Moments(double* Mean,
         const int*    K,  
         const double* shift,  
         const double* scale,  
-        const int* p);
+        const int* p,
+	const int* nxw);
 
 
 /***** ***************************************************************************************** *****/
@@ -356,10 +363,11 @@ prior_derived(const int* p,
 //
 //
 // p[1]
+// nxw[1]
 // Kmax[1]
 // K[1]
 // distribution[1]     assumed mixture distribution (NORMAL or MVT)
-// w[K]
+// w[K, nxw]
 // mu[p*K]
 // Li[LT(p)*K]
 // df[K]               initial degrees of freedom for each mixture component (not used when distribution == NMix::NORMAL)
@@ -368,21 +376,22 @@ prior_derived(const int* p,
 // gammaInv[p]
 //
 // log_dets[Kmax]
-// logw[Kmax]
+// logw[Kmax, nxw]
 // Q[LT(p)*Kmax]
 // Sigma[LT(p)*Kmax]
-// Mean[p]
-// Var[LT(p)]
-// Corr[LT(p)]
-// MeanData[p]
-// VarData[LT(p)]
-// CorrData[LT(p)]
+// Mean[p, nxw]
+// Var[LT(p), nxw]
+// Corr[LT(p), nxw]
+// MeanData[p, nxw]
+// VarData[LT(p), nxw]
+// CorrData[LT(p), nxw]
 // XiInv[LT(p)]
 // log_sqrt_detXiInv[1]
 // err[1]
 //
 void
-init_derived(const int* p,         
+init_derived(const int* p,    
+	     const int* nxw,     
              const int* Kmax,      
              const int* K,  
              const int* distribution,

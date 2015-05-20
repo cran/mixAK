@@ -79,6 +79,12 @@ GLMM_NMixRelabel(const int*    type,
   /***** Declarations of variables used below *****/
   int s, j, i;
 
+  /***** NOT REALLY USED VARIABLES RELATED TO A FACTOR COVARIATE ON MIXTURE WEIGHTS *****/
+  /***** (not implemented (yet) in GLMM_MCMC)                                       *****/
+  const int nxw_ONE = 1;
+  int *xw = Calloc(*I, int);
+  for (i = 0; i < *I; i++) xw[i] = 0;
+
   /***** Dimensionality parameters *****/
   const int *R_c = R_cd;
   const int *R_d = R_c + 1;
@@ -218,8 +224,8 @@ GLMM_NMixRelabel(const int*    type,
   double **eta_fixedrespP  = Calloc(R, double*);
   double **eta_randomresp  = Calloc(R, double*);
   double **eta_randomrespP = Calloc(R, double*);
-  double **eta_zsresp      = Calloc(R, double*);
-  double **eta_zsrespP     = Calloc(R, double*);
+  //double **eta_zsresp      = Calloc(R, double*);
+  //double **eta_zsrespP     = Calloc(R, double*);
   double **etaresp         = Calloc(R, double*);
   double **etarespP        = Calloc(R, double*);
   double **meanYresp       = Calloc(R, double*);
@@ -232,7 +238,7 @@ GLMM_NMixRelabel(const int*    type,
   int **nrespP             = Calloc(R, int*);
   *eta_fixedresp  = eta_fixed;
   *eta_randomresp = eta_random;
-  *eta_zsresp     = eta_zs;
+  //*eta_zsresp     = eta_zs;
   *etaresp        = eta;
   *meanYresp      = meanY;
   *dYresp         = dY;
@@ -241,7 +247,7 @@ GLMM_NMixRelabel(const int*    type,
   for (s = 1; s < R; s++){ 
     eta_fixedresp[s]  = eta_fixedresp[s-1]  + N_s[s-1]; 
     eta_randomresp[s] = eta_randomresp[s-1] + N_s[s-1]; 
-    eta_zsresp[s]     = eta_zsresp[s-1]     + N_s[s-1]; 
+    //eta_zsresp[s]     = eta_zsresp[s-1]     + N_s[s-1]; 
     etaresp[s]        = etaresp[s-1]        + N_s[s-1]; 
     meanYresp[s]      = meanYresp[s-1]      + N_s[s-1]; 
     dYresp[s]         = dYresp[s-1]         + N_s[s-1]; 
@@ -286,7 +292,7 @@ GLMM_NMixRelabel(const int*    type,
   
   /***** logw_b:  Space to store log-weights                                 *****/
   double *logw_b = Calloc(*K_b, double);
-  NMix::w2logw(logw_b, chw_b, K_b);  
+  NMix::w2logw(logw_b, chw_b, K_b, &nxw_ONE);  
 
   /***** log_dets_b:  Space to calculate log_dets for MVN functions         *****/
   double *log_dets_b = Calloc(2 * *K_b, double);  
@@ -306,7 +312,7 @@ GLMM_NMixRelabel(const int*    type,
   /***** Reset sum_Ir_b, hatPr_b_b, hatPr_obs, declare some additional needed quantities          *****/  
   double *cum_Pr_b_b = Calloc(*K_b * *I, double);
 
-  NMix::Pr_y_and_cum_Pr_y(Pr_b_b, cum_Pr_b_b, dwork_MVN, bscaled, &dim_b, I, logw_b, chmu_b, chLi_b, log_dets_b, K_b);
+  NMix::Pr_y_and_cum_Pr_y(Pr_b_b, cum_Pr_b_b, dwork_MVN, bscaled, &dim_b, I, logw_b, chmu_b, chLi_b, log_dets_b, K_b, xw, &nxw_ONE);
         /** Even for *type == NMix::STEPHENS, Pr_b_b is initialized only at first K_b * I places **/
         /** using the values from the first iteration.                                         **/
   AK_Basic::fillArray(sum_Ir_b,  0,   *I * *K_b);
@@ -318,14 +324,15 @@ GLMM_NMixRelabel(const int*    type,
 
   /***** Initial component allocations and related quantities *****/
   int *mixN_b    = Calloc(*K_b, int);
+  int *mixNxw_b  = Calloc(*K_b * nxw_ONE, int);
   int **rInv_b   = Calloc(*K_b, int*);
   int **rInv_bPP = rInv_b;
   for (j = 0; j < *K_b; j++){
     *rInv_bPP = Calloc(*I, int);
     rInv_bPP++;
   }
-  NMix::updateAlloc(r_b, mixN_b, rInv_b, cum_Pr_b_b, dwork_MVN,
-                    bscaled, &dim_b, I, logw_b, chmu_b, chLi_b, log_dets_b, K_b, cum_Pr_done_b);  
+  NMix::updateAlloc(r_b, mixN_b, mixNxw_b, rInv_b, cum_Pr_b_b, dwork_MVN,
+                    bscaled, &dim_b, I, logw_b, chmu_b, chLi_b, log_dets_b, K_b, cum_Pr_done_b, xw, &nxw_ONE);  
 
   /***** Working space for NMix::orderComp *****/
   double *dwork_orderComp = Calloc(*K_b, double);
@@ -334,7 +341,7 @@ GLMM_NMixRelabel(const int*    type,
 
 /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/
 /***** Preparation to be able to calculate observed deviance based quantities (random effects integrated out)      *****/
-/***** * quantities needed by GLMM_Deviance function and not yet i
+/***** * quantities needed by GLMM_Deviance function
 /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/ 
   double marg_ll[1] = {0.0};
   double *marg_ll_i = Calloc(*I, double);
@@ -486,7 +493,7 @@ GLMM_NMixRelabel(const int*    type,
     }
 
     /***** Calculate parameter values derived from mixture parameters *****/
-    NMix::w2logw(logw_b, chw_bP, K_b);  
+    NMix::w2logw(logw_b, chw_bP, K_b, &nxw_ONE);  
     NMix::Li2log_dets(log_dets_b, chLi_bP, K_b, &dim_b);
 
     /***** Calculate values of linear predictors *****/
@@ -508,11 +515,11 @@ GLMM_NMixRelabel(const int*    type,
     //  	        chsigma_epsP, K_b, chmu_bP, chQ_bP, chLi_bP, log_dets_b, r_b, sqrt_tune_scale_b, log_sqrt_tune_scale_b);
 
     /***** Compute new Pr_b_b and cum_Pr_b_b             *****/
-    NMix::Pr_y_and_cum_Pr_y(Pr_b_bP, cum_Pr_b_b, dwork_MVN, bscaled, &dim_b, I, logw_b, chmu_bP, chLi_bP, log_dets_b, K_b);
+    NMix::Pr_y_and_cum_Pr_y(Pr_b_bP, cum_Pr_b_b, dwork_MVN, bscaled, &dim_b, I, logw_b, chmu_bP, chLi_bP, log_dets_b, K_b, xw, &nxw_ONE);
 
     /***** Sample new component allocations *****/
-    NMix::updateAlloc(r_b, mixN_b, rInv_b, cum_Pr_b_b, dwork_MVN,
-                      bscaled, &dim_b, I, logw_b, chmu_bP, chLi_bP, log_dets_b, K_b, cum_Pr_done_b);
+    NMix::updateAlloc(r_b, mixN_b, mixNxw_b, rInv_b, cum_Pr_b_b, dwork_MVN,
+                      bscaled, &dim_b, I, logw_b, chmu_bP, chLi_bP, log_dets_b, K_b, cum_Pr_done_b, xw, &nxw_ONE);
 
     /*** GLMM log-likelihood, marginal and conditional --> will be used to calculate P(r[i]=k | theta, y) ***/
     GLMM::Deviance(marg_ll, marg_ll_i, Pr_obsP, cond_ll, cond_ll_i, stres, sqrt_w_phi, 
@@ -723,7 +730,7 @@ GLMM_NMixRelabel(const int*    type,
 
   /***** Calculate posterior means of model parameters (using re-labeled sample)                            *****/
   NMix::PosterMeanMixParam(pm_w_b, pm_mu_b, pm_Q_b, pm_Sigma_b, pm_Li_b, 
-                           K_b, chw_b, chmu_b, chQ_b, chSigma_b, chLi_b, chorder_b, &dim_b, keepMCMC);
+                           K_b, chw_b, chmu_b, chQ_b, chSigma_b, chLi_b, chorder_b, &dim_b, keepMCMC, &nxw_ONE);
 
 
 /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/
@@ -746,7 +753,9 @@ GLMM_NMixRelabel(const int*    type,
     rInv_bPP++;
   }
   Free(rInv_b);
-  Free(mixN_b);  
+  Free(mixN_b);
+  Free(mixNxw_b);
+  Free(xw);  
   Free(cum_Pr_b_b);
   Free(dwork_MVN);
   Free(log_dets_b);
@@ -771,8 +780,8 @@ GLMM_NMixRelabel(const int*    type,
   Free(eta_fixedresp);
   Free(eta_randomrespP);
   Free(eta_randomresp);
-  Free(eta_zsrespP);
-  Free(eta_zsresp);
+  //Free(eta_zsrespP);
+  //Free(eta_zsresp);
   if (*R_d){
     Free(Y_drespP);
     Free(Y_dresp);

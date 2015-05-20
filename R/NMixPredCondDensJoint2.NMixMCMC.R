@@ -18,6 +18,8 @@ NMixPredCondDensJoint2.NMixMCMC <- function(x, icond, grid, lgrid=50, scaled=FAL
 {
   if (missing(icond)) stop("icond must be given")
   if (x$dim <= 2) stop("not applicable for uni- or bivariate mixtures")  
+
+  if (x$nx_w > 1) stop("This function has not (yet) been implemented if a factor covariate on mixture weights is present.")
   
   if (missing(grid)){
     grid <- list()

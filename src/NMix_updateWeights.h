@@ -6,10 +6,11 @@
 //  AUTHOR:    Arnost Komarek (LaTeX: Arno\v{s}t Kom\'arek)
 //             arnost.komarek[AT]mff.cuni.cz
 //
-//  CREATED:   07/11/2007
+//  CREATED:   07/11/2007             
 //
 //  FUNCTIONS:  
 //     * updateWeights  07/11/2007:  Update of the weights
+//                      30/03/2015:  Factor covariate on mixture weight allowed
 //
 // ======================================================================
 //
@@ -31,11 +32,11 @@ namespace NMix{
 // Prior:             w       ~ Dirichlet(delta, ..., delta)
 // Full conditional:  w | ... ~ Dirichlet(delta+mixN[0], ..., delta+mixN[K-1])
 //
-// w[K]            INPUT:   whatsever
-//                 OUTPUT:  updated weights
+// w[K, nxw]            INPUT:   whatsever
+//                     OUTPUT:  updated weights
 //
-// logw[K]         INPUT:   whatsever
-//                 OUTPUT:  updated log-weights
+// logw[K, nxw]         INPUT:   whatsever
+//                     OUTPUT:  updated log-weights
 //
 // dwork[K]        working array
 //
@@ -46,10 +47,18 @@ namespace NMix{
 //
 // delta[1]        prior hyperparameter
 //
+// mixNxw[K, nxw]  numbers of observations belonging into each component
+//                 if there is a factor covariate on mixture weights
+//                 - added on 20150330
+// 
+// nxw[1]          number of levels of a factor covariate on mixture weights
+//                 - added on 20150330
+//
 void
 updateWeights(double* w,           double* logw,  double* dwork,
               const int* mixN,     const int* K,  
-              const double* delta);
+              const double* delta,
+              const int* mixNxw,   const int* nxw);
 
 }   /** end of namespace NMix **/
 

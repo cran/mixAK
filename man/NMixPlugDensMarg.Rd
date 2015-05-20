@@ -18,9 +18,9 @@ NMixPlugDensMarg(x, \dots)
 
 \method{NMixPlugDensMarg}{default}(x, scale, w, mu, Sigma, \dots)
 
-\method{NMixPlugDensMarg}{NMixMCMC}(x, grid, lgrid=50, scaled=FALSE, \dots)
+\method{NMixPlugDensMarg}{NMixMCMC}(x, grid, lgrid=500, scaled=FALSE, \dots)
 
-\method{NMixPlugDensMarg}{GLMM_MCMC}(x, grid, lgrid=50, scaled=FALSE, \dots)
+\method{NMixPlugDensMarg}{GLMM_MCMC}(x, grid, lgrid=500, scaled=FALSE, \dots)
 }
 \arguments{
   \item{x}{a list with the grid values (see below) for

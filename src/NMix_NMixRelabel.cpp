@@ -23,6 +23,7 @@ NMix_NMixRelabel(const int*    type,
                  const double* y0,
                  const double* y1,
                  const int*    censor,
+                 const int*    nxw_xw,
                  const int*    dimy,
                  const int*    keepMCMC,
                  const int*    info,
@@ -67,6 +68,10 @@ NMix_NMixRelabel(const int*    type,
   const int ly = *p * *n;
   const int LTp = (*p * (*p + 1))/2;
 
+  /***** Covariates on mixture weights *****/
+  const int *nxw = nxw_xw;
+  const int *xw  = nxw_xw + 1;
+
   /***** Some input checks *****/
   switch (*type){
   case NMix::MEAN:
@@ -77,12 +82,20 @@ NMix_NMixRelabel(const int*    type,
     break;
 
   case NMix::WEIGHT:
+    if (*nxw > 1){
+      *err = 1;
+      error("%s:  Re-labeling based on mixture weights not possible if covariates on weights are present.\n", fname);
+    }
     break;
 
   case NMix::STEPHENS:
     if (iparam[0] != NMix::IDENTITY && iparam[0] != NMix::MEAN && iparam[0] != NMix::WEIGHT){
       *err = 1;
       error("%s:  Unknown initial re-labeling algorithm (%d) supplied.\n", fname, iparam[0]);
+    }
+    if (*nxw > 1 && iparam[0] == NMix::WEIGHT){
+      *err = 1;
+      error("%s:  Initial re-labeling may not be based on mixture weights if covariates on weights present.\n", fname);
     }
     if (iparam[1] < 0 || iparam[1] >= *p){
       *err = 1;
@@ -125,8 +138,8 @@ NMix_NMixRelabel(const int*    type,
   }
 
   /***** logw:  Space to store log-weights                                 *****/
-  double *logw = Calloc(*K, double);
-  NMix::w2logw(logw, chw, K);  
+  double *logw = Calloc(*K * *nxw, double);
+  NMix::w2logw(logw, chw, K, nxw);  
 
   /***** log_dets:  Space to calculate log_dets for MVN functions         *****/
   double *log_dets = Calloc(2 * *K, double);  
@@ -145,7 +158,7 @@ NMix_NMixRelabel(const int*    type,
   /***** Reset sum_Ir, hatPr_y, declare some additional needed quantities                     *****/  
   double *cum_Pr_y = Calloc(*K * *n, double);
 
-  NMix::Pr_y_and_cum_Pr_y(Pr_y, cum_Pr_y, dwork_MVN, y, p, n, logw, chmu, chLi, log_dets, K);
+  NMix::Pr_y_and_cum_Pr_y(Pr_y, cum_Pr_y, dwork_MVN, y, p, n, logw, chmu, chLi, log_dets, K, xw, nxw);
         /** Even for *type == NMix::STEPHENS, Pr_y is initialized only at first K * n places **/
         /** using the values from the first iteration.                                       **/
   AK_Basic::fillArray(sum_Ir,  0,   *n * *K);
@@ -158,13 +171,14 @@ NMix_NMixRelabel(const int*    type,
   int *mixN    = Calloc(*K, int);
   int **rInv   = Calloc(*K, int*);
   int **rInvPP = rInv;
+  int *mixNxw  = Calloc(*K * *nxw, int);
   for (j = 0; j < *K; j++){
     *rInvPP = Calloc(*n, int);
     rInvPP++;
   }
-  NMix::updateAlloc(r, mixN, rInv, cum_Pr_y, dwork_MVN,
-                    y, p, n, logw, chmu, chLi, log_dets, K, cum_Pr_done);  
-   
+  NMix::updateAlloc(r, mixN, mixNxw, rInv, cum_Pr_y, dwork_MVN,
+                    y, p, n, logw, chmu, chLi, log_dets, K, cum_Pr_done, xw, nxw);  
+
   /***** beta, sigmaR2:   Space for NMix::updateCensObs to store regression coefficients and residual variances  *****/
   /*****                  * initialized by zeros                                                                 *****/
   double *beta    = Calloc(*p * *p * *K, double);
@@ -294,7 +308,7 @@ NMix_NMixRelabel(const int*    type,
     }
 
     /***** Calculate parameter values derived from mixture parameters *****/
-    NMix::w2logw(logw, chwP, K);  
+    NMix::w2logw(logw, chwP, K, nxw);  
     NMix::Li2log_dets(log_dets, chLiP, K, p);
 
     /***** Sample new y (if there are censored observations) *****/
@@ -304,11 +318,11 @@ NMix_NMixRelabel(const int*    type,
     }
 
     /***** Compute new Pr_y and cum_Pr_y             *****/
-    NMix::Pr_y_and_cum_Pr_y(Pr_yP, cum_Pr_y, dwork_MVN, y, p, n, logw, chmuP, chLiP, log_dets, K);
+    NMix::Pr_y_and_cum_Pr_y(Pr_yP, cum_Pr_y, dwork_MVN, y, p, n, logw, chmuP, chLiP, log_dets, K, xw, nxw);
 
     /***** Sample new component allocations *****/
-    NMix::updateAlloc(r, mixN, rInv, cum_Pr_y, dwork_MVN,
-                      y, p, n, logw, chmuP, chLiP, log_dets, K, cum_Pr_done);
+    NMix::updateAlloc(r, mixN, mixNxw, rInv, cum_Pr_y, dwork_MVN,
+                      y, p, n, logw, chmuP, chLiP, log_dets, K, cum_Pr_done, xw, nxw);
 
     /***** Determine order and rank of components according to initial re-labeling algorithm *****/
     switch (simpleType){
@@ -327,7 +341,7 @@ NMix_NMixRelabel(const int*    type,
       chrankP  += *K; 
       break;
 
-    case NMix::WEIGHT:    
+    case NMix::WEIGHT:    /** This is never used if covariates on mixture weights. **/ 
       NMix::orderComp(chorderP, chrankP, dwork_orderComp, &margin4orderComp, K, chwP, &dim4orderComp);
       chorderP += *K;
       chrankP  += *K; 
@@ -338,7 +352,7 @@ NMix_NMixRelabel(const int*    type,
     AK_Basic::copyArray(rAllP, r, *n);
 
     /***** Shift pointers in chains (these not yet shifted) *****/
-    chwP     += *K;
+    chwP     += *K * *nxw;
     chmuP    += *p * *K;
     chLiP    += LTp * *K;
     chSigmaP += LTp * *K;
@@ -350,7 +364,6 @@ NMix_NMixRelabel(const int*    type,
   }
   Rprintf((char*)("\n"));
   PutRNGstate();
-
 
   /***** Stephens' Re-labeling (Algorithm 2, p. 802 of Stephens, 2000) *****/
   if (*type == NMix::STEPHENS){
@@ -480,7 +493,7 @@ NMix_NMixRelabel(const int*    type,
   Free(work_reorder);
 
   /***** Calculate posterior means of model parameters (using re-labeled sample)                            *****/
-  NMix::PosterMeanMixParam(pm_w, pm_mu, pm_Q, pm_Sigma, pm_Li, K, chw, chmu, chQ, chSigma, chLi, chorder, p, keepMCMC);
+  NMix::PosterMeanMixParam(pm_w, pm_mu, pm_Q, pm_Sigma, pm_Li, K, chw, chmu, chQ, chSigma, chLi, chorder, p, keepMCMC, nxw);
 
 
 /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/
@@ -498,6 +511,7 @@ NMix_NMixRelabel(const int*    type,
   }
   Free(rInv);
   Free(mixN);
+  Free(mixNxw);
   Free(cum_Pr_y);
   Free(dwork_MVN);
   Free(log_dets);

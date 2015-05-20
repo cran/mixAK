@@ -16,9 +16,9 @@ NMixPredDensMarg(x, \dots)
 
 \method{NMixPredDensMarg}{default}(x, scale, K, w, mu, Li, Krandom=TRUE, \dots)
 
-\method{NMixPredDensMarg}{NMixMCMC}(x, grid, lgrid=50, scaled=FALSE, \dots)
+\method{NMixPredDensMarg}{NMixMCMC}(x, grid, lgrid=500, scaled=FALSE, \dots)
 
-\method{NMixPredDensMarg}{GLMM_MCMC}(x, grid, lgrid=50, scaled=FALSE, \dots)
+\method{NMixPredDensMarg}{GLMM_MCMC}(x, grid, lgrid=500, scaled=FALSE, \dots)
 }
 \arguments{
   \item{x}{an object of class \code{NMixMCMC} for
