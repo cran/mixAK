@@ -27,7 +27,7 @@ GLMM_MCMC <- function(y, dist = "gaussian", id, x, z, random.intercept,
                       nMCMC = c(burn = 10, keep = 10, thin = 1, info = 10),
                       tuneMCMC = list(alpha = 1, b = 1),
                       store = c(b = FALSE), PED = TRUE, keep.chains = TRUE,
-                      dens.zero = 1e-300, parallel = FALSE, silent = FALSE)
+                      dens.zero = 1e-300, parallel = FALSE, cltype, silent = FALSE)
 {
   #require("lme4")
   thispackage <- "mixAK"
@@ -223,8 +223,8 @@ GLMM_MCMC <- function(y, dist = "gaussian", id, x, z, random.intercept,
     if (parallel){
       #require("parallel")
 
-      if (parallel::detectCores() < 2) warning("It does not seem that at least 2 CPU cores are available needed for efficient parallel generation of the two chains.")      
-      cl <- parallel::makeCluster(2)      
+      if (parallel::detectCores() < 2) warning("It does not seem that at least 2 CPU cores are available needed for efficient parallel generation of the two chains.")
+      if (missing(cltype)) cl <- parallel::makeCluster(2) else cl <- parallel::makeCluster(2, type = cltype)
       if (!silent) cat(paste("Parallel MCMC sampling of two chains started on ", date(), ".\n", sep=""))      
       RET <- parallel::parLapply(cl, 1:2, GLMM_MCMCwrapper,
                                  data = dd,

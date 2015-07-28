@@ -27,7 +27,7 @@
 NMixMCMC <- function(y0, y1, censor, x_w, scale, prior,
                      init, init2, RJMCMC,
                      nMCMC = c(burn = 10, keep = 10, thin = 1, info = 10),
-                     PED, keep.chains = TRUE, onlyInit = FALSE, dens.zero = 1e-300, parallel = FALSE)
+                     PED, keep.chains = TRUE, onlyInit = FALSE, dens.zero = 1e-300, parallel = FALSE, cltype)
 {
   thispackage <- "mixAK"
 
@@ -954,8 +954,8 @@ NMixMCMC <- function(y0, y1, censor, x_w, scale, prior,
     if (parallel){
       #require("parallel")
 
-      if (parallel::detectCores() < 2) warning("It does not seem that at least 2 CPU cores are available needed for efficient parallel generation of the two chains.")      
-      cl <- parallel::makeCluster(2)      
+      if (parallel::detectCores() < 2) warning("It does not seem that at least 2 CPU cores are available needed for efficient parallel generation of the two chains.")
+      if (missing(cltype)) cl <- parallel::makeCluster(2) else cl <- parallel::makeCluster(2, type = cltype)
       cat(paste("Parallel MCMC sampling of two chains started on ", date(), ".\n", sep=""))      
       RET <- parallel::parLapply(cl, 1:2, NMixMCMCwrapper,
                                  scale = scale, prior = prior, inits = list(init, init2), Cpar = Cpar, RJMCMC = RJMCMC, CRJMCMC = CRJMCMC,

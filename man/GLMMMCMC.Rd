@@ -22,7 +22,7 @@ GLMM_MCMC(y, dist = "gaussian", id, x, z, random.intercept,
      nMCMC = c(burn = 10, keep = 10, thin = 1, info = 10),
      tuneMCMC = list(alpha = 1, b = 1),
      store = c(b = FALSE), PED = TRUE, keep.chains = TRUE,
-     dens.zero = 1e-300, parallel = FALSE, silent = FALSE)
+     dens.zero = 1e-300, parallel = FALSE, cltype, silent = FALSE)
 
 \method{print}{GLMM_MCMC}(x, \dots)
 
@@ -239,7 +239,11 @@ GLMM_MCMC(y, dist = "gaussian", id, x, z, random.intercept,
   }  
   \item{parallel}{a logical value which indicates whether parallel
     computation (based on a package \code{parallel})
-    should be used when running two chains for the purpose of \code{PED} calculation.}
+    should be used when running two chains for the purpose of \code{PED}
+    calculation.}
+  \item{cltype}{optional argument applicable if \code{parallel} is
+    \code{TRUE}. If \code{cltype} is given, it is passed as the
+    \code{type} argument into the call to \code{\link[parallel]{makeCluster}}.}
   \item{silent}{a logical value indicating whether the information on
     the MCMC progress is to be supressed.}
   \item{\dots}{additional arguments passed to the default \code{print} method.}  

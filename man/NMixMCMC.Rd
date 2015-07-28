@@ -61,7 +61,7 @@ NMixMCMC(y0, y1, censor, x_w, scale, prior,
          init, init2, RJMCMC,
          nMCMC = c(burn = 10, keep = 10, thin = 1, info = 10),
          PED, keep.chains = TRUE, onlyInit = FALSE, dens.zero = 1e-300,
-         parallel = FALSE)
+         parallel = FALSE, cltype)
 
 \method{print}{NMixMCMC}(x, dic, \dots)
 
@@ -452,7 +452,10 @@ NMixMCMC(y0, y1, censor, x_w, scale, prior,
   }
   \item{parallel}{a logical value which indicates whether parallel
     computation (based on a package \code{parallel}) should be used when
-    running two chains for the purpose of \code{PED} calculation}  
+    running two chains for the purpose of \code{PED} calculation}
+  \item{cltype}{optional argument applicable if \code{parallel} is
+    \code{TRUE}. If \code{cltype} is given, it is passed as the
+    \code{type} argument into the call to \code{\link[parallel]{makeCluster}}.}  
   \item{\dots}{additional arguments passed to the default \code{print} method.}
 }
 \value{

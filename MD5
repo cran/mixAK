@@ -1,11 +1,11 @@
-e4c513c49c87b17238d4542470fc7734 *DESCRIPTION
-7f51ae7c7a8c015bfc81318dea3b75cb *NAMESPACE
-a829c785d77abbffb4d267469312b14f *NEWS
+b3890aac25b6a827cc5ed94e41179a92 *DESCRIPTION
+3bd119424b9cd6161de525aa5e8c31ff *NAMESPACE
+d46d2d77058d71f69f233c7e1e71f4c7 *NEWS
 f309a53c5817f6a900a68a6f040b8d8e *R/BLA.R
 1677ec1550e07ecc9f39e628a3061d36 *R/BsBasis.R
-769a4edcdd702797192d7ff7c43db66b *R/GLMM_MCMC.R
+9cd180d1967c9316115173a6eebc3af9 *R/GLMM_MCMC.R
 d85366b8bc60a26e3f32000964090683 *R/GLMM_MCMCdata.R
-01e8ec2bd29e1340f6ec20ea4eb8afd1 *R/GLMM_MCMCifit.R
+a1f604ddca594469c0bd82e62203e48d *R/GLMM_MCMCifit.R
 5ecd42436766c52ac0fb8a5b5404806f *R/GLMM_MCMCinit.alpha.R
 1355f8d8e3fed82046ab1a36cf0de1a4 *R/GLMM_MCMCinit.b.R
 8df1b33986a0c49716e73e33010a33f3 *R/GLMM_MCMCinit.eps.R
@@ -27,7 +27,7 @@ ac0e5b5f84d9bdf86069b3af90d6a1eb *R/NMixChainsDerived.R
 5e603eb199a48a989a58be7964b5f007 *R/NMixCluster.R
 f48cfcc4202cbaa2ca801732038f1e3a *R/NMixCluster.default.R
 474fa64a4503ddd28e691562cbbb3c1a *R/NMixEM.R
-81b13f3b8ad290c2efb660328dee6453 *R/NMixMCMC.R
+6d7ded4752438f61da3988bff8a05763 *R/NMixMCMC.R
 af3dbb158f1e6030891b1d798f7fd37b *R/NMixMCMCdata.R
 84c7ece33ced32b71b71a552d672fde6 *R/NMixMCMCinitr.R
 2e6ed36f176f9ab7eb126bdd7fa708bc *R/NMixMCMCinity.R
@@ -145,10 +145,10 @@ af08a7be3ebc1a5c3696c94b592c0bfd *R/tracePlots.GLMM_MCMC.R
 7e07a26ffb56d282d8d69a73fe301cb8 *R/tracePlots.R
 ea2e3ecbfd8a0e6b367681944df32b9e *R/tracePlots.default.R
 d74c8554ea3d60db02dc53e2bf2531fd *R/zzz.R
-771178ef4b6a8065ddc6fdcb0768a276 *data/Acidity.rda
-999fa7ad166ce91ade1452d00f383ab2 *data/Enzyme.rda
+adf8aee503c7818fc012c775862192bb *data/Acidity.rda
+04d25d971b6d2c636453d1d78e26807b *data/Enzyme.rda
 a033a5379d35fa4be267b86ac83e5e6f *data/Faithful.rda
-a75209c35b417cef43c39420c3efca5f *data/Galaxy.rda
+6fade5adbfab2be799d28782479a0733 *data/Galaxy.rda
 7d1d5e9dcd16a8c45a27dafb2cc46381 *data/PBC910.rda
 4e583978724d99e54438a4cb513eb466 *data/PBCseq.rda
 f69b67132ba4ea8a20c350b086ad9fb5 *data/SimData.rda
@@ -170,7 +170,7 @@ ae056db96b87c891ae890491d90679c3 *inst/doc/menuhover.jpg
 ac81e0dbc406caea5984afafaae79cbe *man/Dirichlet.Rd
 b5cf533ada0d928ba80024f864a1a7b3 *man/Enzyme.Rd
 a60b2dfd7c78e0b0b1d8dda07e70da7d *man/Faithful.Rd
-82abab93c33e26873dd51a1aa1f7cee7 *man/GLMMMCMC.Rd
+478821c33d2ec1161bbdc8906456382a *man/GLMMMCMC.Rd
 d533f215715ad8a7903f85a03f6beb67 *man/GLMMMCMCdata.Rd
 80077956c2541e7d1c60ff4260e35af1 *man/GLMMMCMCifit.Rd
 bd69c50dce097cd13cb194e639695e72 *man/GLMMMCMCinit.alpha.Rd
@@ -193,7 +193,7 @@ c77beca2dd0e0f222ac4f0da07321ecb *man/NMixChainComp.Rd
 96dc318be729eab538b0bfc3ecafb1fc *man/NMixChainsDerived.Rd
 af0c1fbd4a0666eef3702b24a7342a5f *man/NMixCluster.Rd
 7b5257c4af15326e219a9c71101a3fb5 *man/NMixEM.Rd
-2aa06a6d2dc6d736206f167d269e874a *man/NMixMCMC.Rd
+2a8f64c98985bdaa134ca2e184ee597c *man/NMixMCMC.Rd
 d274cb38a87ba078e8d3dbd734e9d3ee *man/NMixMCMCdata.Rd
 7cb6428f3488e5e7b44c3665cc06d426 *man/NMixMCMCinitr.Rd
 11b77f8d2f755768c738a17088902a8c *man/NMixMCMCinity.Rd
