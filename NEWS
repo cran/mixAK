@@ -16,8 +16,11 @@ TO DO LIST:
   --> more or less solved on 03/12/2010
 
 ======================================================================================================================
-29/06/2015 (version 4.1):
-Options to parallel computation added.
+01/08/2015 (version 4.2):
+Bug in getProfiles corrected that was incidentally created in version 4.1.
+
+28/07/2015 (version 4.1):
+Options to parallel computation added (on 29/06/2015).
 
 26/03 - 02/04/2015 (version 4.0):
 Possibility of having weights dependent on a categorical covariate 

@@ -25,7 +25,11 @@ getProfiles <- function(t, y, id, data)
                                     ## to overcome problems if id is a factor
                                     ## and data are not sorted in the same order
                                     ## as levels(id)
-
+             ## --> this, however, created another problem...
+             ## --> corrected on 20150801 (thanks to Dave Evenden)
+  unID <- unique(ID)                ## added on 20150801
+  ID <- factor(ID, levels = unID)   ## added on 20150801
+  
   tabID <- table(ID)
   nID <- length(tabID)
   cumID <- c(0, cumsum(tabID))
