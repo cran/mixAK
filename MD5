@@ -1,6 +1,6 @@
-4a6363aca1a0694a2500a0c9f55f8df6 *DESCRIPTION
+eef22ee1b289422312a46d81127613b4 *DESCRIPTION
 3bd119424b9cd6161de525aa5e8c31ff *NAMESPACE
-8ea7f0f0e1c8c6c53f94ae51f9ba6b2f *NEWS
+c24ffcfd73edfee77c3d3ccf5bf94812 *NEWS
 f309a53c5817f6a900a68a6f040b8d8e *R/BLA.R
 1677ec1550e07ecc9f39e628a3061d36 *R/BsBasis.R
 9cd180d1967c9316115173a6eebc3af9 *R/GLMM_MCMC.R
@@ -101,7 +101,7 @@ b41782f2aa355c234d5a394790a30e3b *R/Y2T.NMixPredDensJoint2.R
 0a862a9676e0aa481ce0587e6f8b96d2 *R/Y2T.NMixPredDensMarg.R
 cd7c22c8f8bab52cc79225eb187e995a *R/Y2T.R
 81df058d68c18453068ab9e6f9a746cb *R/autolayout.R
-97d6f3e027360c35336f2df673b63e8b *R/cbplot.R
+5b31b4e55e3df191422f7de0bb651b47 *R/cbplot.R
 d85489693ea029ad5d4024e7a06996e5 *R/dMVN.R
 00c4d849cd32ccb59cb6b872ea7df9b4 *R/dMVNmixture.R
 2a9da02dff07d2117b8d1390b5ae2d44 *R/dMVNmixture2.R
@@ -145,10 +145,10 @@ af08a7be3ebc1a5c3696c94b592c0bfd *R/tracePlots.GLMM_MCMC.R
 7e07a26ffb56d282d8d69a73fe301cb8 *R/tracePlots.R
 ea2e3ecbfd8a0e6b367681944df32b9e *R/tracePlots.default.R
 d74c8554ea3d60db02dc53e2bf2531fd *R/zzz.R
-adf8aee503c7818fc012c775862192bb *data/Acidity.rda
-04d25d971b6d2c636453d1d78e26807b *data/Enzyme.rda
+4e33e5cda2fa8b08a50bceb3e33d2c62 *data/Acidity.rda
+cbb01b4a42ad48ed97de7efd005076bc *data/Enzyme.rda
 a033a5379d35fa4be267b86ac83e5e6f *data/Faithful.rda
-6fade5adbfab2be799d28782479a0733 *data/Galaxy.rda
+99884ceeee4ea3c46a561797f165004e *data/Galaxy.rda
 7d1d5e9dcd16a8c45a27dafb2cc46381 *data/PBC910.rda
 4e583978724d99e54438a4cb513eb466 *data/PBCseq.rda
 f69b67132ba4ea8a20c350b086ad9fb5 *data/SimData.rda
@@ -225,7 +225,7 @@ d3e24dee901881cddf6f8459a0d55ca4 *man/TandmobEmer.Rd
 51435f029f5b9816b2f56652d15433f1 *man/Wishart.Rd
 7e2496406fdb4dc0bd45f9cd6120b018 *man/Y2T.Rd
 3bc3402165bbc413f5c5ce95d3f59834 *man/autolayout.Rd
-80e454eab11628bbd20bbb834dd25334 *man/cbplot.Rd
+0286b6656c9cfa38ccf172bd18434d58 *man/cbplot.Rd
 d8d521829e95eb533235d60aff7eb494 *man/fitted.GLMMMCMC.Rd
 40bfa6e2bbf66c21ebe953cb2f10a67b *man/generatePermutations.Rd
 7d850dceb7035374c8c5ef4c69f66627 *man/getProfiles.Rd
@@ -251,7 +251,7 @@ ae6e883717232c1d1cd4a082d1408f7b *src/AK_BSTAT.h
 64563f0844229765bc34494f82142c06 *src/AK_Basic.h
 1ba5060ef5bd07eb461dd0176aaf0686 *src/AK_Complex.h
 35a7e9eb93a995b90f31fa66a33b46f9 *src/AK_LAPACK.cpp
-0d391fc2de8af3a4292860d3f6fb13c0 *src/AK_LAPACK.h
+5dfdf6bdc3068a4f7a5b3a58ed12960e *src/AK_LAPACK.h
 bd810ff5b257daeb63163f917682882a *src/AK_Utils.cpp
 bf5d72f9760d3b4c1a7f010c95625f71 *src/AK_Utils.h
 bd8e711a9a1205416bad31ddfe3f55ab *src/Dist_Dirichlet.cpp
@@ -260,7 +260,7 @@ bd8e711a9a1205416bad31ddfe3f55ab *src/Dist_Dirichlet.cpp
 1c6814c257065ae9980e6f46561f6090 *src/Dist_Discrete.h
 8baee94c8db382b5dd256713f7681de1 *src/Dist_MVN.cpp
 7497460c57eb347a0785f99eb0d6ae34 *src/Dist_MVN.h
-680a73286c1ac28451978a591d1e0777 *src/Dist_MVT.cpp
+847c0e05a3afa734d3e22741ae727759 *src/Dist_MVT.cpp
 151b76c0e4b4bc0bcaf44c9e6958e923 *src/Dist_MVT.h
 0bcf4bd1020a8ef71301616f7bfe4cc1 *src/Dist_TMVN.cpp
 5fbe719643d738f0f6d8ee65574f5a87 *src/Dist_TMVN.h
@@ -402,7 +402,7 @@ be466b917c6bfbab7ffcab9fbf6d2e0b *src/NMix_Stephens_step2_search.cpp
 994337a0e28eb0396c596903ea321658 *src/NMix_Stephens_step2_search.h
 95999c354a26f3aa0579aa74ee067bab *src/NMix_Stephens_step2_transport.cpp
 f4b778e3b17db66db7faf179363126d6 *src/NMix_Stephens_step2_transport.h
-bc68ee1f22819457d48d9d04d146c8b4 *src/NMix_Utils.cpp
+4df1fd13f6f0bf001236aac376485aa6 *src/NMix_Utils.cpp
 bfb0f6b1abea75b2ff8438f2aa70119b *src/NMix_Utils.h
 437ac9c11bbdb02351f8c0aa4a860408 *src/NMix_fullCondMean_WeightsMeansVars.cpp
 98f628cd381f7508ef1366e0b3429860 *src/NMix_fullCondMean_WeightsMeansVars.h

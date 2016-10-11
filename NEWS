@@ -16,6 +16,12 @@ TO DO LIST:
   --> more or less solved on 03/12/2010
 
 ======================================================================================================================
+11/10/2016 (version 4.4):
+Formal correction of some header files (e-mail B. Ripley from 18/09/2016).
+
+02/06/2016 (version 4.3):
+Argument type added to cbplot function.
+
 01/08/2015 (version 4.2):
 Bug in getProfiles corrected that was incidentally created in version 4.1.
 

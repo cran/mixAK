@@ -6,6 +6,7 @@
 //             arnost.komarek[AT]mff.cuni.cz
 //
 //  LOG:       20111208  created
+//             20161011  lgamma -> lgammafn
 //
 // ======================================================================
 //
@@ -236,7 +237,7 @@ rMVT1_R(double* x,
 
   /*** log_dets[1] ***/
   dP1++;
-  *dP1 = lgamma((*nu + *nx)/2) - lgamma(*nu / 2) - (*nx) * (0.5 * log(*nu) + M_LN_SQRT_PI);
+  *dP1 = lgammafn((*nu + *nx)/2) - lgammafn(*nu / 2) - (*nx) * (0.5 * log(*nu) + M_LN_SQRT_PI);
 
   /*** Generate random numbers and evaluate the log-density ***/
   GetRNGstate(); 
@@ -288,7 +289,7 @@ dMVT1_R(double*       log_dens,
 
   /*** log_dets[1] ***/
   dP++;
-  *dP = lgamma((*nu + *nx)/2) - lgamma(*nu / 2) - (*nx) * (0.5 * log(*nu) + M_LN_SQRT_PI);
+  *dP = lgammafn((*nu + *nx)/2) - lgammafn(*nu / 2) - (*nx) * (0.5 * log(*nu) + M_LN_SQRT_PI);
 
   /*** Evaluate density ***/
   dP = log_dens;

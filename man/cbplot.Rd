@@ -9,11 +9,11 @@
   additional lines or by a shaded region or by both.
 }
 \usage{
-cbplot(x, y, low, upp, band.type=c("ls", "s", "l"), add=FALSE,
+cbplot(x, y, low, upp, type=c("l", "s"), band.type=c("ls", "s", "l"), add=FALSE,
        col="darkblue", lty=1, lwd=2,
        cbcol=col, cblty=4, cblwd=lwd,
        scol=rainbow_hcl(1, start=180, end=180), slwd=5,
-       xlim, ylim, xlab, ylab, main="", sub="", \dots)
+       xlim, ylim, xlab, ylab, main="", sub="", cex.lab=1, cex.axis=1, \dots)
 }
 \arguments{
   \item{x}{a numeric vector with \code{x} coordinates corresponding to
@@ -27,7 +27,9 @@ cbplot(x, y, low, upp, band.type=c("ls", "s", "l"), add=FALSE,
   }
   \item{upp}{a numeric vector with \code{y} coordinates of the upper
     limit of the credible band.
-  }  
+  }
+  \item{type}{argument with the same meaning as \code{type} in \code{\link[graphics]{plot.default}}.
+  }
   \item{band.type}{a character which specifies the graphical way to show
     the credible band, \dQuote{ls} stands for line and shaded region,
     \dQuote{s} stands for shaded region only and \dQuote{l} stands for
@@ -44,7 +46,7 @@ cbplot(x, y, low, upp, band.type=c("ls", "s", "l"), add=FALSE,
   \item{scol, slwd}{graphical parameters for the shaded region between
     the credible/confidence bounds.
   }
-  \item{xlim, ylim, xlab, ylab, main, sub}{other graphical parameters.
+  \item{xlim, ylim, xlab, ylab, main, sub, cex.lab, cex.axis}{other graphical parameters.
   }
   \item{\dots}{additional arguments passed to the \code{plot} function.
   }  

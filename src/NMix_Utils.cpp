@@ -5,6 +5,7 @@
 //             arnost.komarek[AT]mff.cuni.cz
 //
 //  CREATED:   26/11/2007
+//             11/10/2016 lgamma -> lgammafn
 //
 // ======================================================================
 //
@@ -772,7 +773,7 @@ init_derived(const int* p,
       *log_detsP = -(*p) * M_LN_SQRT_2PI;                 /*** log_dets[1, j] = -p * log(sqrt(2*pi)) ***/
       break;
     case NMix::MVT:
-      *log_detsP = lgamma((*dfP + *p)/2) - lgamma(*dfP / 2) - (*p) * (0.5 * log(*dfP) + M_LN_SQRT_PI);
+      *log_detsP = lgammafn((*dfP + *p)/2) - lgammafn(*dfP / 2) - (*p) * (0.5 * log(*dfP) + M_LN_SQRT_PI);
       dfP++;
       break;
     default:

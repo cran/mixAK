@@ -72,6 +72,7 @@
 #define _AK_LAPACK_H_
 
 #include <R.h>
+#include <Rmath.h>                             // added on 11/10/2016 to get M_SQRT2 also on Solaris compilers
 #include <R_ext/Lapack.h>
 
 #include "AK_BLAS.h"
