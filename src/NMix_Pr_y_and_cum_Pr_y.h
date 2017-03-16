@@ -26,9 +26,9 @@
 
 namespace NMix{
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+//#ifdef __cplusplus
+//extern "C" {
+//#endif
 
 /***** ***************************************************************************************** *****/
 /***** NMix::Pr_y_and_cum_Pr_y                                                                   *****/
@@ -81,9 +81,9 @@ Pr_y_and_cum_Pr_y(double* Pr_y,
                   const int*    nxw);
 
 
-#ifdef __cplusplus
-}
-#endif
+//#ifdef __cplusplus
+//}
+//#endif
 
 }  // end of namespace NMix
 

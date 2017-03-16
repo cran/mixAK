@@ -2,6 +2,8 @@
 \alias{Wishart}
 \alias{dWISHART}
 \alias{rWISHART}
+\alias{C_rWishart_R}
+\alias{C_ldWishart_R}
 \title{
  Wishart distribution
 }

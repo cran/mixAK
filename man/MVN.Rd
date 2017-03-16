@@ -3,6 +3,9 @@
 \alias{dMVN}
 \alias{rMVN}
 \alias{rcMVN}
+\alias{C_dMVN1_R}
+\alias{C_rMVN1_R}
+\alias{C_rMVN2_R}
 \title{
   Multivariate normal distribution
 }

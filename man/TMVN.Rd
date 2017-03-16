@@ -1,6 +1,7 @@
 \name{TMVN}
 \alias{TMVN}
 \alias{rTMVN}
+\alias{C_rTMVN1_R}
 \title{
   Truncated multivariate normal distribution
 }

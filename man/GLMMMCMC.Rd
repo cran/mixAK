@@ -2,6 +2,8 @@
 \alias{GLMM_MCMC}
 \alias{print.GLMM_MCMC}
 \alias{print.GLMM_MCMClist}
+\alias{C_GLMM_MCMC}
+\alias{C_GLMM_PED}
 \title{
   MCMC estimation of a (multivariate) generalized linear mixed model
   with a normal mixture in the distribution of random effects

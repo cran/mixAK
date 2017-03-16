@@ -5,6 +5,7 @@
 ##             arnost.komarek[AT]mff.cuni.cz
 ##
 ##  CREATED:   09/01/2008
+##             15/03/2017  .C call uses registered routines
 ##
 ##  FUNCTIONS:  rRotationMatrix
 ##
@@ -23,7 +24,7 @@ rRotationMatrix <- function(n, dim)
   
   ldwork <- dim2 + dim + 2*dim + dim2
 
-  PC <- .C("RotationMatrix_R",
+  PC <- .C(C_RotationMatrix_R,
            P=double(n*dim2), dwork=double(ldwork), pivot=integer(dim), err=as.integer(0), dim=as.integer(dim), n=as.integer(n),
            PACKAGE=thispackage)
   if (PC$err) warning("There might be problems")

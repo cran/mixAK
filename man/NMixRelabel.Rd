@@ -5,6 +5,8 @@
 \alias{NMixRelabel.NMixMCMClist}
 \alias{NMixRelabel.GLMM_MCMC}
 \alias{NMixRelabel.GLMM_MCMClist}
+\alias{C_NMix_NMixRelabel}
+\alias{C_GLMM_NMixRelabel}
 \title{
   Re-labeling the MCMC output of the mixture model
 }

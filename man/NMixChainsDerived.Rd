@@ -1,5 +1,6 @@
 \name{NMixChainsDerived}
 \alias{NMixChainsDerived}
+\alias{C_NMix_ChainsDerived}
 \title{
   Create MCMC chains derived from previously sampled values
 }

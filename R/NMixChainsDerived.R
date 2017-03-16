@@ -6,6 +6,7 @@
 ##             arnost.komarek[AT]mff.cuni.cz
 ##
 ##  CREATED:   09/06/2009
+##             15/03/2017  .C call uses registered routines
 ##
 ##  FUNCTIONS:  NMixChainsDerived
 ##
@@ -33,7 +34,7 @@ NMixChainsDerived <- function(object)
     if (Krandom){
       M <- length(obj1$K)
       RES <- matrix(
-               .C("NMix_ChainsDerived",
+               .C(C_NMix_ChainsDerived,
                        chEexpY    = double(M * obj1$dim),
                        dwork      = double(LTp),
                        err        = integer(1),
@@ -51,7 +52,7 @@ NMixChainsDerived <- function(object)
       M <- length(obj1$w) / obj1$K[1]
       
       RES <- matrix(
-               .C("NMix_ChainsDerived",
+               .C(C_NMix_ChainsDerived,
                       chEexpY    = double(M * obj1$dim),
                       dwork      = double(LTp),
                       err        = integer(1),

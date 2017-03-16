@@ -3,6 +3,7 @@
 \alias{NMixPredCondDensMarg.default}
 \alias{NMixPredCondDensMarg.NMixMCMC}
 \alias{NMixPredCondDensMarg.GLMM_MCMC}
+\alias{C_NMix_PredCondDensCDFMarg}
 \title{
   Univariate conditional predictive density
 }

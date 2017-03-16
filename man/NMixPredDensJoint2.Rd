@@ -3,6 +3,7 @@
 \alias{NMixPredDensJoint2.default}
 \alias{NMixPredDensJoint2.NMixMCMC}
 \alias{NMixPredDensJoint2.GLMM_MCMC}
+\alias{C_NMix_PredDensJoint2}
 \title{
   Pairwise bivariate predictive density
 }

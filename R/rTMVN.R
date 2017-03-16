@@ -6,6 +6,7 @@
 ##             arnost.komarek[AT]mff.cuni.cz
 ##
 ##  CREATED:   20/11/2007
+##             15/03/2017  .C call uses registered routines
 ##
 ##  FUNCTION:  rTMVN
 ##
@@ -77,7 +78,7 @@ rTMVN <- function(n, mean=c(0, 0), Sigma=diag(2), a, b, trunc, xinit)
 
   Sigma <- Sigma[lower.tri(Sigma, diag=TRUE)]
 
-  SAMPLE <- .C("rTMVN1_R", x      =double(nx*n),
+  SAMPLE <- .C(C_rTMVN1_R, x      =double(nx*n),
                            beta   =double(nx),
                            sigmaR2=double(nx),
                            L      =double((nx-1)*nx/2),

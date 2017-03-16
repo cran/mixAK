@@ -226,7 +226,7 @@ par(mfrow=c(2, 1), bty="n")
 for (CH in 1:2){
   plot(Faithful, col="red", xlab="Eruptions (min)", ylab="Waiting (min)", 
        main=paste("Chain", CH))
-  contour(JPDensModel0[[CH]]$x$x1, JPDensModel0[[CH]]$x$x2, 
+  contour(JPDensModel0[[CH]]$x$eruptions, JPDensModel0[[CH]]$x$waiting, 
           JPDensModel0[[CH]]$dens[["1-2"]], 
           col="darkblue", add=TRUE)
 }  
@@ -242,7 +242,7 @@ par(mfrow=c(2, 1), bty="n")
 for (CH in 1:2){
   plot(Faithful, col="darkblue", xlab="Eruptions (min)", ylab="Waiting (min)", 
        main=paste("Chain", CH))
-  image(JPDensModel0[[CH]]$x$x1, JPDensModel0[[CH]]$x$x2, 
+  image(JPDensModel0[[CH]]$x$eruptions, JPDensModel0[[CH]]$x$waiting, 
         JPDensModel0[[CH]]$dens[["1-2"]], add=TRUE, 
         col=rev(heat_hcl(33, c=c(80, 30), l=c(30, 90), power=c(1/5, 1.3))))  
   points(Faithful, col="darkblue")

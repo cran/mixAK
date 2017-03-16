@@ -3,6 +3,7 @@
 \alias{NMixPredCDFMarg.default}
 \alias{NMixPredCDFMarg.NMixMCMC}
 \alias{NMixPredCDFMarg.GLMM_MCMC}
+\alias{C_NMix_PredCDFMarg}
 \title{
   Marginal (univariate) predictive cumulative distribution function
 }

@@ -8,6 +8,7 @@
 ##  LOG:       05/08/2009: created as GLMM_longitClust, only allows for continuous responses
 ##             28/10/2009: renamed to GLMM_longitDA, still allows for continuous responses only
 ##             16/04/2015: minor revision (stop added when some response variable is not continuous)
+##             15/03/2017  .C call uses registered routines
 ##
 ##  FUNCTIONS:  GLMM_longitDA
 ##
@@ -248,7 +249,7 @@ GLMM_longitDA <- function(mod, w.prior, y, id, time, x, z, xz.common = TRUE, inf
     
   }else{
       
-    fit <- .C("GLMM_longitDA",
+    fit <- .C(C_GLMM_longitDA,
               Y_c          = as.double(Cy_c),
               R_c          = as.integer(Rc),
               Y_d          = as.integer(Cy_d),

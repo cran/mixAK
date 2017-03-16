@@ -121,9 +121,6 @@ ldMVT1(double*       log_dens,
   return;
 }
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /***** ***************************************************************************************** *****/
 /***** Dist::deriv_ldMVT_x                                                                       *****/
@@ -203,6 +200,10 @@ deriv_ldMVT_x(double*       gradient,
   return;
 }
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif  
 
 /***** ***************************************************************************************** *****/
 /***** Dist::rMVT1_R                                                                           *****/

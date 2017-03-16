@@ -7,6 +7,7 @@
 ##             arnost.komarek[AT]mff.cuni.cz
 ##
 ##  LOG:        20111102 created
+##              20170315 .C call uses registered routines
 ##
 ##  FUNCTIONS:  GLMM_MCMCwrapper
 ##
@@ -71,7 +72,7 @@ GLMM_MCMCwrapper <- function(chain=1, data,
     cat(paste("MCMC sampling started on ", date(), ".\n", sep=""))
   }
 
-  MCMC <- .C("GLMM_MCMC",
+  MCMC <- .C(C_GLMM_MCMC,
              Y_c                       = as.double(Cpar$Y_c),
              Y_d                       = as.integer(Cpar$Y_d),
              nonSilent_keepChain_nMCMC_R_cd_dist = as.integer(c(as.integer(!silent), store, nMCMC, Cpar$R_cd, Cpar$dist)),

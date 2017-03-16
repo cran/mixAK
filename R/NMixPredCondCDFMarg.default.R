@@ -6,6 +6,7 @@
 ##             arnost.komarek[AT]mff.cuni.cz
 ##
 ##  CREATED:   06/05/2010
+##             15/03/2017  .C call uses registered routines
 ##
 ##  FUNCTION:  NMixPredCondCDFMarg.default (06/05/2010) 
 ##
@@ -89,7 +90,7 @@ NMixPredCondCDFMarg.default <- function(x, icond, prob, scale, K, w, mu, Li, Kra
   if (Krandom) stop("not (yet) implemented for random K")
 
   ## Compute predictive densities
-  RES <- .C("NMix_PredCondDensCDFMarg",
+  RES <- .C(C_NMix_PredCondDensCDFMarg,
             dens      = double(ldens),
             qdens     = double(ifelse(nquant, ldens * nquant, 1)),
             err       = integer(1),

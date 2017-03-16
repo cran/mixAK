@@ -6,6 +6,7 @@
 ##             arnost.komarek[AT]mff.cuni.cz
 ##
 ##  CREATED:   17/12/2007
+##             15/03/2017  .C call uses registered routines
 ##
 ##  FUNCTION:  rMVNmixture
 ##
@@ -103,10 +104,9 @@ rMVNmixture <- function(n, weight, mean, Q, Sigma)
       Nj <- sum(r == j)
       if (Nj > 0){
         x[r==j,] <- matrix(
-                       .C("rMVN1_R", x=double(p*Nj),
+                       .C(C_rMVN1_R, x=double(p*Nj),
                                      log.dens=double(Nj),
                                      Q=as.double(QLT[[j]]),
-                                     work=double(p),
                                      err=integer(1),
                                      mu=as.double(mean[j,]),
                                      nx=as.integer(p),

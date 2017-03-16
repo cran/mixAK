@@ -5,6 +5,7 @@
 ##             arnost.komarek[AT]mff.cuni.cz
 ##
 ##  LOG:       20120124 created
+##             20170315  .C call uses registered routines
 ##
 ##  FUNCTION:  dMVT
 ##
@@ -49,7 +50,7 @@ dMVT <- function(x, df, mu=0, Q=1, Sigma, log=FALSE)
     npoints <- nrow(x)
   }  
 
-  DENSITY <- .C("dMVT1_R", value=double(npoints),
+  DENSITY <- .C(C_dMVT1_R, value=double(npoints),
                            Q=as.double(Q),
                            work=double(nx),
                            err=integer(1),

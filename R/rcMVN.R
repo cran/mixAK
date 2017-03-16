@@ -6,6 +6,7 @@
 ##             arnost.komarek[AT]mff.cuni.cz
 ##
 ##  CREATED:   05/11/2007
+##             15/03/2017  .C call uses registered routines
 ##
 ##  FUNCTION:  rcMVN
 ##
@@ -35,7 +36,7 @@ rcMVN <- function(n, b=0, Q=1, Sigma)
     Q <- Q[lower.tri(Q, diag=TRUE)]
   }  
   
-  SAMPLE <- .C("rMVN2_R", x=double(nx*n),
+  SAMPLE <- .C(C_rMVN2_R, x=double(nx*n),
                           mu=as.double(b),
                           log.dens=double(n),
                           Q=as.double(Q),

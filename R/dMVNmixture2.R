@@ -6,6 +6,7 @@
 ##             arnost.komarek[AT]mff.cuni.cz
 ##
 ##  CREATED:   07/11/2008
+##             15/03/2017  .C call uses registered routines
 ##
 ##  FUNCTION:  dMVNmixture2
 ##
@@ -105,7 +106,7 @@ dMVNmixture2 <- function(x, weight, mean, Q, Sigma, log=FALSE)
 
   ## evaluate the density
   if (p == 1){
-    DENSITY <- .C("dmixNorm_R", value=double(npoints),
+    DENSITY <- .C(C_dmixNorm_R, value=double(npoints),
                                 x    =as.double(x),
                                 K    =as.integer(K),
                                 w    =as.double(weight),
@@ -114,7 +115,7 @@ dMVNmixture2 <- function(x, weight, mean, Q, Sigma, log=FALSE)
                                 npoints=as.integer(npoints),
                   PACKAGE=thispackage)$value
   }else{  
-    DENSITY <- .C("dmixMVN_R",  value =double(npoints),
+    DENSITY <- .C(C_dmixMVN_R,  value =double(npoints),
                                 w.dets=as.double(weight),
                                 Li    =as.double(QLT),
                                 work  =double(p),

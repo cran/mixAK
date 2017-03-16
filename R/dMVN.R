@@ -5,6 +5,7 @@
 ##             arnost.komarek[AT]mff.cuni.cz
 ##
 ##  CREATED:   05/11/2007
+##             15/03/2017  .C call uses registered routines
 ##
 ##  FUNCTION:  dMVN
 ##
@@ -49,7 +50,7 @@ dMVN <- function(x, mean=0, Q=1, Sigma, log=FALSE)
     npoints <- nrow(x)
   }  
 
-  DENSITY <- .C("dMVN1_R", value=double(npoints),
+  DENSITY <- .C(C_dMVN1_R, value=double(npoints),
                            Q=as.double(Q),
                            work=double(nx),
                            err=integer(1),

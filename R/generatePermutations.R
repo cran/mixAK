@@ -5,6 +5,7 @@
 ##             arnost.komarek[AT]mff.cuni.cz
 ##
 ##  CREATED:   11/02/2010
+##             15/03/2017  .C call uses registered routines
 ##
 ##  FUNCTIONS:  generatePermutations
 ##
@@ -21,7 +22,7 @@ generatePermutations <- function(K)
   K <- as.integer(K)
   Kfact <- gamma(K + 1)
 
-  RES <- .C("generatePermutations", n_perm    = integer(1),
+  RES <- .C(C_generatePermutations, n_perm    = integer(1),
                                     order     = integer(Kfact * K),
                                     tmp_order = integer(Kfact * K),
                                     rank      = integer(Kfact * K),

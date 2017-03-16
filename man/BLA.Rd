@@ -1,5 +1,6 @@
 \name{BLA}
 \alias{BLA}
+\alias{C_BLA}
 \title{
   Best linear approximation with respect to the mean square error
   (theoretical linear regression).

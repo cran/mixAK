@@ -6,6 +6,7 @@
 ##             arnost.komarek[AT]mff.cuni.cz
 ##
 ##  CREATED:   12/11/2007
+##             15/03/2017  .C call uses registered routines
 ##
 ##  FUNCTIONS:  dWishart (16/01/2008)
 ##              -> renamed to dWISHART on 06/08/2013 (version 3.4-1)
@@ -49,7 +50,7 @@ dWISHART <- function(W, df, S, log=FALSE)
   }  
 
   ## Compute log-density
-  lDens <- .C("ldWishart_R", ldens            = double(n),
+  lDens <- .C(C_ldWishart_R, ldens            = double(n),
                              W.L              = double(n*lW),
                              log.sqrt.detW    = double(n), 
                              log.const        = double(1),

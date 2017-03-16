@@ -12,6 +12,7 @@
 ##                            08/02/2013  snow/snowfall support for parallel computation replaced by parallel package
 ##                            26/03/2015  dependence of weights on a categorical covariate started
 ##                                        to be implemented
+##                            15/03/2017  .C call uses registered routines
 ##
 ##  MINOR MODIFICATION:       26/04/2009  computation of initial values of censored observations
 ##                                        and init2$mu changed (variable tmpsd computed in other way
@@ -973,7 +974,7 @@ NMixMCMC <- function(y0, y1, censor, x_w, scale, prior,
     cat(paste("\nComputation of penalized expected deviance started on ", date(), ".\n", sep=""))
     
     if (prior$priorK == "fixed"){
-      resPED <- .C("NMix_PED", PED               = double(5),
+      resPED <- .C(C_NMix_PED, PED               = double(5),
                                pm.indDevObs      = double(dd$n),
                                pm.indpopt        = double(dd$n),
                                pm.windpopt       = double(dd$n),
@@ -1003,7 +1004,7 @@ NMixMCMC <- function(y0, y1, censor, x_w, scale, prior,
                                EMin              = as.double(EMin),
                    PACKAGE = thispackage)
     }else{
-      resPED <- .C("NMix_PED", PED               = double(5),
+      resPED <- .C(C_NMix_PED, PED               = double(5),
                                pm.indDevObs      = double(dd$n),
                                pm.indpopt        = double(dd$n),
                                pm.windpopt       = double(dd$n),

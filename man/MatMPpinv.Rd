@@ -1,5 +1,6 @@
 \name{MatMPpinv}
 \alias{MatMPpinv}
+\alias{C_MPpinvSP}
 \title{
   Moore-Penrose pseudoinverse of a squared matrix
 }

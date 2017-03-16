@@ -27,9 +27,9 @@
 
 namespace NMix{
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+//#ifdef __cplusplus
+//extern "C" {
+//#endif
 
 /***** ***************************************************************************************** *****/
 /***** NMix::Stephens_costMatrix                                                                 *****/
@@ -58,9 +58,9 @@ Stephens_costMatrix(double* cost,
                     const int*    n,
                     const int*    K);
 
-#ifdef __cplusplus
-}
-#endif
+//#ifdef __cplusplus
+//}
+//#endif
 
 }    // end of namespace NMix
 

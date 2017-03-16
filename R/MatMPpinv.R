@@ -5,6 +5,7 @@
 ##             arnost.komarek[AT]mff.cuni.cz
 ##
 ##  CREATED:   24/01/2008
+##             15/03/2017  .C call uses registered routines
 ##
 ##  FUNCTIONS:  MatMPpinv
 ##
@@ -26,7 +27,7 @@ MatMPpinv <- function(A)
   UTA <- t(A)[lower.tri(A, diag=TRUE)]
   if (any(LTA != UTA)) stop("At this moment, only implemented for symmetric matrices.")
 
-  RES <- .C("MPpinvSP", MPA=as.double(LTA), work=double(p + p*p + 3*p), err=as.integer(0), p=as.integer(p),
+  RES <- .C(C_MPpinvSP, MPA=as.double(LTA), work=double(p + p*p + 3*p), err=as.integer(0), p=as.integer(p),
             PACKAGE=thispackage)
 
   MPA <- diag(p)

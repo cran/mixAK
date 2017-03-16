@@ -1,5 +1,6 @@
 \name{generatePermutations}
 \alias{generatePermutations}
+\alias{C_generatePermutations}
 \title{
   Generate all permutations of (1, ..., K) 
 }

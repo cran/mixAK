@@ -6,6 +6,7 @@
 ##             arnost.komarek[AT]mff.cuni.cz
 ##
 ##  CREATED:   26/02/2010
+##             15/03/2017  .C call uses registered routines
 ##
 ##  FUNCTION:  NMixRelabel.GLMM_MCMC (26/02/2010) 
 ##
@@ -64,7 +65,7 @@ NMixRelabel.GLMM_MCMC <- function(object, type = c("mean", "weight", "stephens")
   ##### ++++++++++++++++++++++++++++++++++++++++++++++
   l_nchange <- ifelse(RAlg$Ctype <= 2, 1, RAlg$relabel$par$maxiter)
   
-  MCMC <- .C("GLMM_NMixRelabel",
+  MCMC <- .C(C_GLMM_NMixRelabel,
              type           = as.integer(RAlg$Ctype),
              iparam         = as.integer(RAlg$iparam),
              nonSilent      = as.integer(!silent),

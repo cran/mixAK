@@ -1,5 +1,6 @@
 \name{rRotationMatrix}
 \alias{rRotationMatrix}
+\alias{C_RotationMatrix_R}
 \title{
   Random rotation matrix
 }

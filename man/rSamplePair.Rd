@@ -1,5 +1,6 @@
 \name{rSamplePair}
 \alias{rSamplePair}
+\alias{C_SamplePair_R}
 \title{
   Sample a pair (with replacement)
 }

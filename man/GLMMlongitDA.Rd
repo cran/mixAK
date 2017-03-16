@@ -1,5 +1,6 @@
 \name{GLMM_longitDA}
 \alias{GLMM_longitDA}
+\alias{C_GLMM_longitDA}
 \title{
   Discriminant analysis for longitudinal profiles based on fitted GLMM's
 }  

@@ -11,6 +11,7 @@
 ##              20/01/2011:  beta variables have been re-named to alpha variables
 ##              08/02/2013:  snow/snowfall support for parallel computation replaced by parallel package
 ##              01/06/2013:  minor changes following the review in JSS
+##              15/03/2017  .C call uses registered routines
 ##
 ##  FUNCTIONS:  GLMM_MCMC
 ##
@@ -244,7 +245,7 @@ GLMM_MCMC <- function(y, dist = "gaussian", id, x, z, random.intercept,
     }
     
     if (!silent) cat(paste("\nComputation of penalized expected deviance started on ", date(), ".\n", sep=""))
-    resPED <- .C("GLMM_PED", PED                  = double(5),
+    resPED <- .C(C_GLMM_PED, PED                  = double(5),
                              pm.indDevObs         = double(Cpar$I),
                              pm.indpopt           = double(Cpar$I),
                              pm.windpopt          = double(Cpar$I),

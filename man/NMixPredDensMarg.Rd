@@ -3,6 +3,7 @@
 \alias{NMixPredDensMarg.default}
 \alias{NMixPredDensMarg.NMixMCMC}
 \alias{NMixPredDensMarg.GLMM_MCMC}
+\alias{C_NMix_PredDensMarg}
 \title{
   Marginal (univariate) predictive density
 }

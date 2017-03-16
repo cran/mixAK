@@ -6,6 +6,7 @@
 ##             arnost.komarek[AT]mff.cuni.cz
 ##
 ##  CREATED:   07/11/2008
+##             15/03/2017  .C call uses registered routines
 ##
 ##  FUNCTION:  rMVNmixture2
 ##
@@ -94,7 +95,7 @@ rMVNmixture2 <- function(n, weight, mean, Q, Sigma)
 
   ## sample
   if (p == 1){
-    SAMPLE <- .C("rmixNorm_R", x      = double(n),
+    SAMPLE <- .C(C_rmixNorm_R, x      = double(n),
                                dens   = double(n),
                                cumw   = double(K),
                                K      = as.integer(K),
@@ -105,7 +106,7 @@ rMVNmixture2 <- function(n, weight, mean, Q, Sigma)
                   PACKAGE=thispackage)
     x <- SAMPLE$x    
   }else{
-    SAMPLE <- .C("rmixMVN_R", x      = double(p*n),
+    SAMPLE <- .C(C_rmixMVN_R, x      = double(p*n),
                               dens   = double(n),
                               w.dets = as.double(weight),
                               cumw   = double(K),

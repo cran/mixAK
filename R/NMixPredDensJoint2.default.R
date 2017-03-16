@@ -6,6 +6,7 @@
 ##             arnost.komarek[AT]mff.cuni.cz
 ##
 ##  CREATED:   03/12/2007
+##             15/03/2017  .C call uses registered routines
 ##
 ##  FUNCTION:  NMixPredDensJoint2.default (03/12/2007) 
 ##
@@ -83,7 +84,7 @@ NMixPredDensJoint2.default <- function(x, scale, K, w, mu, Li, Krandom=TRUE, ...
   for (d in 1:p) grid[[d]] <- (x[[d]] - scale$shift[d])/scale$scale[d]
   #detS <- prod(scale$scale)
   
-  RES <- .C("NMix_PredDensJoint2",
+  RES <- .C(C_NMix_PredDensJoint2,
                 dens=double(lgrid),
                 densK=double(lgrid*Kmax),
                 freqK=integer(Kmax),

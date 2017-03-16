@@ -4,6 +4,10 @@
 \alias{dMVNmixture2}
 \alias{rMVNmixture}
 \alias{rMVNmixture2}
+\alias{C_dmixMVN_R}
+\alias{C_dmixNorm_R}
+\alias{C_rmixMVN_R}
+\alias{C_rmixNorm_R}
 \title{
   Mixture of (multivariate) normal distributions
 }

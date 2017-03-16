@@ -6,6 +6,7 @@
 ##             arnost.komarek[AT]mff.cuni.cz
 ##
 ##  CREATED:   13/11/2007
+##             15/03/2017  .C call uses registered routines
 ##
 ##  FUNCTION:  rTNorm
 ##
@@ -50,7 +51,7 @@ rTNorm <- function(n, mean=0, sd=1, a, b, trunc)
     if (any(a[trunc==3] >= b[trunc==3])) stop("a must be lower than b when trunc = 3") 
   }  
 
-  SAMPLE <- .C("rTNorm1_R", x               =double(n),
+  SAMPLE <- .C(C_rTNorm1_R, x               =double(n),
                             mu              =as.double(mean),
                             sigma           =as.double(sd),
                             a               =as.double(a),

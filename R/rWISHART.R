@@ -6,6 +6,7 @@
 ##             arnost.komarek[AT]mff.cuni.cz
 ##
 ##  CREATED:   12/11/2007
+##             15/03/2017  .C call uses registered routines
 ##
 ##  FUNCTION:  rWishart (12/11/2007)
 ##              -> renamed to rWISHART on 06/08/2013 (version 3.4-1)
@@ -34,7 +35,7 @@ rWISHART <- function(n, df, S)
   Sitri <- Si[lower.tri(Si, diag=TRUE)]
 
   ## Sample
-  SAMPLE <- .C("rWishart_R", W       = double(n*lW),
+  SAMPLE <- .C(C_rWishart_R, W       = double(n*lW),
                              dwork   = double(2*wdim*wdim),
                              int     = integer(1),
                              nu      = as.double(df),

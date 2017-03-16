@@ -1,5 +1,6 @@
 \name{NMixPredDA}
 \alias{NMixPredDA}
+\alias{C_NMix_PredDA}
 \title{
   Discriminant analysis based on MCMC output from the mixture model
 }

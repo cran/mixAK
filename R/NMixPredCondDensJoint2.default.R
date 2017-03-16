@@ -6,6 +6,7 @@
 ##             arnost.komarek[AT]mff.cuni.cz
 ##
 ##  CREATED:   01/06/2009
+##             15/03/2017  .C call uses registered routines
 ##
 ##  FUNCTION:  NMixPredCondDensJoint2.default (01/06/2009) 
 ##
@@ -90,7 +91,7 @@ NMixPredCondDensJoint2.default <- function(x, icond, scale, K, w, mu, Li, Krando
   if (Krandom) stop("not (yet) implemented for random K")
   
   ## Compute predictive densities
-  RES <- .C("NMix_PredCondDensJoint2",
+  RES <- .C(C_NMix_PredCondDensJoint2,
                 dens=double(ldens),
                 dwork=double(lwork),
                 err=integer(1),

@@ -49,19 +49,9 @@
 
 namespace GLMM{
 
-const int use_Hessian_in_bhat = 1;     // 0 --> in the Laplacian approximation, we use Hessian calculated
-                                       //       in current value of b and not in the located mode bhat
-                                       //       -> it is faster (Hessian is calculated only once, to locate bhat)
-                                       // 1 --> in the Laplacian approximation, we use Hessian calculated
-                                       //       in the located mode bhat
-                                       //       -> Hessian must be calculated twice (once to locate bhat
-                                       //          and once to calculate it in bhat)
-// IMPORTANT NOTE:  When 'iterate_to_mode' is 1, value of use_Hessian_in_bhat does not have any effect
-//                  and calculation proceeds as if use_Hessian_in_bhat = 1.
-
-const int max_NRstep_Deviance = 10;            // see explanation of iterate_to_mode argument below
-const double toler_NRstep_Deviance = 1e-5;     // see explanation of iterate_to_mode argument below
-const int max_stephalf_Deviance = 10;         
+const int max_NRstep_Deviance2 = 10;            // see explanation of iterate_to_mode argument below
+const double toler_NRstep_Deviance2 = 1e-5;     // see explanation of iterate_to_mode argument below
+const int max_stephalf_Deviance2 = 10;         
 
 
 /***** ********************************************************************** *****/

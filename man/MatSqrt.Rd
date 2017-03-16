@@ -1,5 +1,6 @@
 \name{MatSqrt}
 \alias{MatSqrt}
+\alias{C_sqrtGE}
 \title{
   Square root of a matrix
 }

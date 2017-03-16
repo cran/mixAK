@@ -6,6 +6,7 @@
 ##             arnost.komarek[AT]mff.cuni.cz
 ##
 ##  CREATED:   03/12/2007
+##             15/03/2017  .C call uses registered routines
 ##
 ##  FUNCTIONS: NMixPredDensMarg.default (03/12/2007)
 ##             
@@ -73,7 +74,7 @@ NMixPredDensMarg.default <- function(x, scale, K, w, mu, Li, Krandom=TRUE, ...)
   grid <- list()
   for (d in 1:p) grid[[d]] <- (x[[d]] - scale$shift[d])/scale$scale[d]
   
-  RES <- .C("NMix_PredDensMarg",
+  RES <- .C(C_NMix_PredDensMarg,
                 dens=double(lgrid),
                 densK=double(lgrid*Kmax),
                 freqK=integer(Kmax),

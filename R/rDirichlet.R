@@ -6,6 +6,7 @@
 ##             arnost.komarek[AT]mff.cuni.cz
 ##
 ##  CREATED:   07/11/2007
+##             15/03/2017  .C call uses registered routines
 ##
 ##  FUNCTIONS:  rDirichlet
 ##
@@ -21,7 +22,7 @@ rDirichlet <- function(n, alpha=c(1, 1))
   if (any(alpha <= 0)) stop("All alpha's must be positive.")
   K <- length(alpha)
 
-  SAMPLE <- .C("rDirichlet_R", x=double(K*n),
+  SAMPLE <- .C(C_rDirichlet_R, x=double(K*n),
                                alpha=as.double(alpha),
                                K=as.integer(K),
                                npoints=as.integer(n),

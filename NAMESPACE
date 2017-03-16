@@ -1,5 +1,5 @@
 # Load dynamic library
-useDynLib(mixAK)
+useDynLib(mixAK, .registration = TRUE)
 
 # Export all names
 exportPattern("GLMM_MCMC*")

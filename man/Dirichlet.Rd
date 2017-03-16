@@ -1,6 +1,7 @@
 \name{Dirichlet}
 \alias{Dirichlet}
 \alias{rDirichlet}
+\alias{C_rDirichlet_R}
 \title{
   Dirichlet distribution
 }  

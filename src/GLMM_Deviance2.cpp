@@ -333,7 +333,7 @@ Deviance2(double* marg_ll,
 
         /*** Newton-Raphson iterations ***/
         /*** +++++++++++++++++++++++++ ***/
-        for (iter = 0; iter < GLMM::max_NRstep_Deviance; iter++){    /*** for (iter) ***/
+        for (iter = 0; iter < GLMM::max_NRstep_Deviance2; iter++){    /*** for (iter) ***/
 
           /*** Calculate new value of bscaled_hat after one NR step ***/
           switch (*distribution_b){
@@ -428,12 +428,12 @@ Deviance2(double* marg_ll,
           /*** ++++++++++++++++++++++++++++++++++++++++++++++++++ ***/
           criter = fabs((double)((g_k1 - g_k0) / g_k0));
 
-          if (g_k1 < g_k0 && criter >= GLMM::toler_NRstep_Deviance){           /** decrease in the objective function --> try step-halving **/
+          if (g_k1 < g_k0 && criter >= GLMM::toler_NRstep_Deviance2){           /** decrease in the objective function --> try step-halving **/
 
             /*** Step-halving ***/
             /*** ++++++++++++ ***/
             half_factor = 0.5;
-            for (stephalf = 0; stephalf < GLMM::max_stephalf_Deviance; stephalf++){
+            for (stephalf = 0; stephalf < GLMM::max_stephalf_Deviance2; stephalf++){
               //if (i == clus_show && *iterNum == iter_show) Rprintf("\n   stephalf no. %d, g_k1 = %g, criter = %g", stephalf, g_k1, criter);
 
               switch (*distribution_b){
@@ -479,9 +479,9 @@ Deviance2(double* marg_ll,
   
               criter = fabs((double)((g_k1 - g_k0) / g_k0));
 
-              if (g_k1 < g_k0 && criter >= GLMM::toler_NRstep_Deviance){
+              if (g_k1 < g_k0 && criter >= GLMM::toler_NRstep_Deviance2){
                 half_factor *= 0.5;
-                if (stephalf == GLMM::max_stephalf_Deviance - 1){
+                if (stephalf == GLMM::max_stephalf_Deviance2 - 1){
                   //if (i == clus_show && *iterNum == iter_show) Rprintf(", (%d stephalf steps), obj_fun_decrease", stephalf + 1);
                   obj_fun_decrease = true;
                 }            
@@ -506,7 +506,7 @@ Deviance2(double* marg_ll,
             criter = 0.0;       // to break iterations
           }
 
-          if (criter < GLMM::toler_NRstep_Deviance || iter == GLMM::max_NRstep_Deviance - 1){
+          if (criter < GLMM::toler_NRstep_Deviance2 || iter == GLMM::max_NRstep_Deviance2 - 1){
             
             /*** Final value of the objective function (first part of the approximate marginal log-likelihood) ***/
             loglik_ik = g_k1;

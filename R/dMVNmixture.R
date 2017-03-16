@@ -6,6 +6,7 @@
 ##             arnost.komarek[AT]mff.cuni.cz
 ##
 ##  CREATED:   17/12/2007
+##             15/03/2017  .C call uses registered routines
 ##
 ##  FUNCTION:  dMVNmixture
 ##
@@ -110,7 +111,7 @@ dMVNmixture <- function(x, weight, mean, Q, Sigma, log=FALSE)
     }
   }else{    
     for (j in 1:K){      
-      DENSITY[,j] <- weight[j]*.C("dMVN1_R", value=double(npoints),
+      DENSITY[,j] <- weight[j]*.C(C_dMVN1_R, value=double(npoints),
                                              Q=as.double(QLT[[j]]),
                                              work=double(p),
                                              err=integer(1),

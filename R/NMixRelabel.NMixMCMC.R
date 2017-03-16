@@ -6,6 +6,7 @@
 ##             arnost.komarek[AT]mff.cuni.cz
 ##
 ##  CREATED:   08/02/2010
+##             15/03/2017  .C call uses registered routines
 ##
 ##  FUNCTION:  NMixRelabel.NMixMCMC (08/02/2010) 
 ##
@@ -56,7 +57,7 @@ NMixRelabel.NMixMCMC <- function(object, type = c("mean", "weight", "stephens"),
   ##### ++++++++++++++++++++++++++++++++++++++++++++++
   l_nchange <- ifelse(RAlg$Ctype <= 2, 1, RAlg$relabel$par$maxiter)
   
-  MCMC <- .C("NMix_NMixRelabel",
+  MCMC <- .C(C_NMix_NMixRelabel,
              type         = as.integer(RAlg$Ctype),
              iparam       = as.integer(RAlg$iparam),
              y0           = as.double(t(object$Cpar$z0)),

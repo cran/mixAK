@@ -1,6 +1,7 @@
 \name{TNorm}
 \alias{TNorm}
 \alias{rTNorm}
+\alias{C_rTNorm1_R}
 \title{
   Truncated normal distribution
 }

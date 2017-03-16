@@ -15,6 +15,7 @@
 #define _NMIX_RJMCMC_LOG_JAC_PART_THREE_H_
 
 #include <R.h>
+#include <Rmath.h>        // added on 15/03/2017
 
 #include "AK_Basic.h"
 

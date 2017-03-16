@@ -5,6 +5,7 @@
 ##             arnost.komarek[AT]mff.cuni.cz
 ##
 ##  LOG:       20111208  created
+##             20170315  .C call uses registered routines
 ##
 ##  FUNCTION:  rMVT
 ##
@@ -35,7 +36,7 @@ rMVT <- function(n, df, mu=0, Q=1, Sigma)
     Q <- Q[lower.tri(Q, diag=TRUE)]
   }  
   
-  SAMPLE <- .C("rMVT1_R", x=double(nx*n),
+  SAMPLE <- .C(C_rMVT1_R, x=double(nx*n),
                           log.dens=double(n),
                           Q=as.double(Q),
                           err=integer(1),

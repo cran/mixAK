@@ -136,10 +136,6 @@ ldMVT1(double*       log_dens,
 //
 //  nx[1]        dimension
 //
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 void
 deriv_ldMVT_x(double*       gradient,
               double*       Hessian,
@@ -174,6 +170,10 @@ deriv_ldMVT_x(double*       gradient,
 //  nx[1]        dimension of the MVT distribution 
 //
 //  npoints[1]   number of points to sample from MVT
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void
 rMVT1_R(double* x,         
         double* log_dens,  

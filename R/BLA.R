@@ -6,6 +6,7 @@
 ##             arnost.komarek[AT]mff.cuni.cz
 ##
 ##  CREATED:   19/11/2007
+##             15/03/2017  .C call uses registered routines
 ##
 ##  FUNCTIONS:  BLA
 ##
@@ -26,7 +27,7 @@ BLA <- function(mean=c(0, 0),  Sigma=diag(2))
   if (p != nrow(Sigma) | p != ncol(Sigma)) stop("mean and Sigma are not consistent")
   Sigma <- Sigma[lower.tri(Sigma, diag=TRUE)]
   
-  RES <- .C("BLA", beta   =double(p*p),
+  RES <- .C(C_BLA, beta   =double(p*p),
                    sigmaR2=double(p),
                    L      =double(LTp.1),            
                    err    =integer(1),

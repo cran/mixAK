@@ -13,6 +13,7 @@
 ##             arnost.komarek[AT]mff.cuni.cz
 ##
 ##  LOG:       10/04/2015: start implementation allowing for discrete responses as well
+##             15/03/2017  .C call uses registered routines
 ##             
 ##  FUNCTIONS:  GLMM_longitDA2
 ##
@@ -289,7 +290,7 @@ GLMM_longitDA2 <- function(mod, w.prior, y, id, x, z, xz.common = TRUE, keep.com
   
     ##### Main calculation
     ##### ---------------------------------
-  fit <- .C("GLMM_longitDA2",
+  fit <- .C(C_GLMM_longitDA2,
             nonSilent      = as.integer(!silent),
             Y_c            = as.double(Cy_c),
             R_c            = as.integer(Rc),

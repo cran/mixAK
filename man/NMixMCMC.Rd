@@ -2,6 +2,8 @@
 \alias{NMixMCMC}
 \alias{print.NMixMCMC}
 \alias{print.NMixMCMClist}
+\alias{C_NMix_MCMC}
+\alias{C_NMix_PED}
 \title{
   MCMC estimation of (multivariate) normal mixtures with possibly
   censored data.

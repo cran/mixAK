@@ -2,6 +2,9 @@
 \alias{MVT}
 \alias{dMVT}
 \alias{rMVT}
+\alias{C_rMVT1_R}
+\alias{C_dMVT1_R}
+\alias{C_deriv_ldMVT_x}
 \title{
   Multivariate Student t distribution
 }

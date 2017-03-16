@@ -10,6 +10,7 @@
 ##             arnost.komarek[AT]mff.cuni.cz
 ##
 ##  CREATED:   13/02/2010 
+##             15/03/2017  .C call uses registered routines
 ##
 ##  FUNCTION:  NMixPredDA
 ##             
@@ -88,7 +89,7 @@ NMixPredDA <- function(object, y0, y1, censor, inity, info)
 
   ########## Main computation
   ########## ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  MCMC <- .C("NMix_PredDA",
+  MCMC <- .C(C_NMix_PredDA,
              y0           = as.double(t(z0)),
              y1           = as.double(t(z1)),
              censor       = as.integer(t(dd$censor)),

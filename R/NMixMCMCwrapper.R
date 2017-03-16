@@ -8,6 +8,7 @@
 ##  CREATED:    06/11/2008
 ##              03/11/2011  parameter Cpar added to replace original z0, z1, censor, p, n, Cinteger, Cdouble
 ##              27/03/2015  mild revision to allow for factor covariates on mixture weights
+##              15/03/2017  .C call uses registered routines
 ##
 ##  FUNCTIONS:  NMixMCMCwrapper
 ##
@@ -80,7 +81,7 @@ NMixMCMCwrapper <- function(chain = 1,
   ########## =================================== ##########
   cat(paste("\nChain number ", chain, "\n==============\n", sep=""))
   cat(paste("MCMC sampling started on ", date(), ".\n", sep=""))
-  MCMC <- .C("NMix_MCMC",
+  MCMC <- .C(C_NMix_MCMC,  
              z0                   = as.double(t(Cpar$z0)),
              z1                   = as.double(t(Cpar$z1)),
              censor               = as.integer(t(Cpar$censor)),

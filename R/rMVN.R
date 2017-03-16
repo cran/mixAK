@@ -5,6 +5,7 @@
 ##             arnost.komarek[AT]mff.cuni.cz
 ##
 ##  CREATED:   05/11/2007
+##             15/03/2017  .C call uses registered routines
 ##
 ##  FUNCTION:  rMVN
 ##
@@ -36,7 +37,7 @@ rMVN <- function(n, mean=0, Q=1, Sigma)
 
   if (any(mean != 0)) mu.nonZERO <- 1 else mu.nonZERO <- 0
   
-  SAMPLE <- .C("rMVN1_R", x=double(nx*n),
+  SAMPLE <- .C(C_rMVN1_R, x=double(nx*n),
                           log.dens=double(n),
                           Q=as.double(Q),
                           err=integer(1),
