@@ -7,6 +7,7 @@
 ##  CREATED:   23/03/2010 (as a stand alone function)
 ##             26/11/2010:  added to the mixAK package
 ##             21/06/2013:  highlighting of selected profiles implemented
+##             17/05/2018:  plot() replaced by plot.default() to ensure that ylab appears on the plot
 ##
 ##  FUNCTIONS: plotProfiles
 ##
@@ -25,7 +26,7 @@ plotProfiles <- function(ip, data, var, trans, tvar, gvar,
                          lcol.highlight="red3", col.highlight="red3", bg.highlight="orange",
                          lty.highlight=1, lwd.highlight=2, pch.highlight=23,
                          cex.highlight=1)
-{   
+{    
   if (lines){
     if (missing(col)) col <- rainbow_hcl(1, start = 230, c = 40)
   }
@@ -75,7 +76,7 @@ plotProfiles <- function(ip, data, var, trans, tvar, gvar,
     on.exit(oldPar)
   }
 
-  if (!add) plot(xlim, ylim, type="n", xaxt=xaxt, yaxt=yaxt, xlab=xlab, ylab=ylab)
+  if (!add) plot.default(xlim, ylim, type="n", xaxt=xaxt, yaxt=yaxt, xlab=xlab, ylab=ylab)
   for (i in 1:length(ip)){
     if (!missing(gvar)){
       COL <- col[ip[[i]][1, gvar]]

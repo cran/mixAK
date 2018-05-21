@@ -161,5 +161,5 @@ import(lme4)
 
 # Selective import from standard packages
 # (to make CRAN check happy)
-importFrom(graphics, "axis", "image", "layout", "legend", "lines", "matplot", "par", "points", "segments", "title")
+importFrom(graphics, "axis", "image", "layout", "legend", "lines", "matplot", "par", "points", "segments", "title", "plot.default")
 importFrom(stats, "binomial", "coef", "dnorm", "formula", "glm", "lm", "median", "optim", "pnorm", "poisson", "quantile", "rgamma", "rnorm", "runif", "sd", "var", "vcov")

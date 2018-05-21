@@ -5,6 +5,7 @@
 //             arnost.komarek[AT]mff.cuni.cz
 //
 //  CREATED:   02/01/2008
+//             21/05/2018: & in "if (i1 == *p - 1 & *u2P <= 0)" around line 423 changed to &&
 //
 // ======================================================================
 //
@@ -419,7 +420,7 @@ RJMCMCcombine(int* accept,           double* log_AR,
       }
 
       *u2P = ((mustar_vstar - mu1_vstar) / sqrt(*LambdastarP)) * sqrt_u1_ratio;
-      if (i1 == *p - 1 & *u2P <= 0) *u2P *= (-1);
+      if (i1 == *p - 1 && *u2P <= 0) *u2P *= (-1);
       one_minus_u2sq = 1 - *u2P * *u2P;
       *u3P = (*u1 * *Lambda1P) / (one_minus_u2sq * *LambdastarP);
       log_Jacob += 1.5 * AK_Basic::log_AK(*LambdastarP) + AK_Basic::log_AK(one_minus_u2sq);

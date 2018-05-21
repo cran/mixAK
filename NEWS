@@ -16,6 +16,9 @@ TO DO LIST:
   --> more or less solved on 03/12/2010
 
 ======================================================================================================================
+17/05/2018 (version 5.1):
+Minor changes in plotProfiles.R and in NMix_RJMCMCcombine.cpp
+
 15/03/2017 (version 5.0):
 Registration of C routines used.
 

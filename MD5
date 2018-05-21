@@ -1,6 +1,6 @@
-36034b12a8f24105f07cd5d4266287a3 *DESCRIPTION
-e434c6ddded239c79941d663cdaaf7ea *NAMESPACE
-58d334616384aa27819a2d5c16a121ec *NEWS
+776d930deb4041511b94d8903abaa949 *DESCRIPTION
+223154beb7054797903cc57729831897 *NAMESPACE
+d0816df542b12db7a3d7f207d42642ed *NEWS
 7938ac5b16fbe0c08f3bbba9b8582a53 *R/BLA.R
 1677ec1550e07ecc9f39e628a3061d36 *R/BsBasis.R
 bbd357410edd58553728be3c3d124d9c *R/GLMM_MCMC.R
@@ -120,7 +120,7 @@ f274f0fc437d8e399baf86ba789a3243 *R/plot.NMixPlugDensMarg.R
 f33b07bfe543f4baf72a06dfc303043d *R/plot.NMixPredCondDensMarg.R
 6ac56dc9d9fe839a970e674f58efd452 *R/plot.NMixPredDensJoint2.R
 fb7f17e58ca2ed6f159f5ef16b560805 *R/plot.NMixPredDensMarg.R
-cf7819c1457cccf7a62c7c1ae16027d3 *R/plotProfiles.R
+5f6bc700a5705c05aa1d237dd34430c5 *R/plotProfiles.R
 3e129ca363f484934838f0d9f1ffa55e *R/print.GLMM_MCMC.R
 c1a1b3052cd4d8d2c25e41486aeff7b1 *R/print.GLMM_MCMClist.R
 8ee79ad854f3bd89905146520d62fef7 *R/print.NMixEM.R
@@ -145,10 +145,10 @@ af08a7be3ebc1a5c3696c94b592c0bfd *R/tracePlots.GLMM_MCMC.R
 7e07a26ffb56d282d8d69a73fe301cb8 *R/tracePlots.R
 ea2e3ecbfd8a0e6b367681944df32b9e *R/tracePlots.default.R
 d74c8554ea3d60db02dc53e2bf2531fd *R/zzz.R
-f1072ce590677842d239ccf9be3af2f2 *data/Acidity.rda
-5de9a7288451eb7bb43882b10dff7243 *data/Enzyme.rda
+0487a01dc8bc77170184c92141e459e2 *data/Acidity.rda
+53f6ae8c5670943b1952117eda48dff7 *data/Enzyme.rda
 a033a5379d35fa4be267b86ac83e5e6f *data/Faithful.rda
-c5976a42aa86296e16e160881c7e47b6 *data/Galaxy.rda
+fef1209165e120336b367c2609056882 *data/Galaxy.rda
 7d1d5e9dcd16a8c45a27dafb2cc46381 *data/PBC910.rda
 4e583978724d99e54438a4cb513eb466 *data/PBCseq.rda
 f69b67132ba4ea8a20c350b086ad9fb5 *data/SimData.rda
@@ -389,7 +389,7 @@ d7ed11173a6162916c525272d4f027b5 *src/NMix_RJMCMC_logJac_part3.cpp
 734eb99f09c828a94fb58d9078cf581e *src/NMix_RJMCMC_logJac_part3.h
 561f780cf2a573f7f5c199c1e7189a1a *src/NMix_RJMCMCbirth.cpp
 c64883fa7e50b7b7fa37d861438a9ec5 *src/NMix_RJMCMCbirth.h
-41976a192ac084d240e7418d27a77b35 *src/NMix_RJMCMCcombine.cpp
+b31edd6566fb74b0f6f9ed45d4480bdc *src/NMix_RJMCMCcombine.cpp
 1084e056e8ea56f5a537d516f10f6990 *src/NMix_RJMCMCcombine.h
 4c104217d94875d6e963d6cd7f008b34 *src/NMix_RJMCMCdeath.cpp
 cee0f4d59bbd4c4c8e5eac2d31de6a36 *src/NMix_RJMCMCdeath.h
