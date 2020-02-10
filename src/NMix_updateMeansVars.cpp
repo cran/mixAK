@@ -513,7 +513,7 @@ updateMeansVars_IC_homoscedastic(double* mu,
       for (l = 0; l < LTp; l++){            
         *dP += *mixSSmP;
         dP++;
-        mixSSmP;
+        mixSSmP++;
       }
     }
     else{

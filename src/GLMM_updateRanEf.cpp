@@ -158,7 +158,7 @@ updateRanEf(double*  b,
 
     Y_crespP[s]        = Y_cresp[s];
   }
-  for (s; s < *R_c + *R_d; s++){
+  for (; s < *R_c + *R_d; s++){
     eta_fixedrespP[s]  = eta_fixedresp[s];
     eta_randomrespP[s] = eta_randomresp[s];
     // do not set eta_zsresp[s] for discrete responses (they are not needed)
@@ -623,7 +623,7 @@ updateRanEf(double*  b,
           s++;
           while (s < *R_c + *R_d){
             SZitZiS_resp += ((*q_riP * (1 + *q_riP)) / 2) * (*(nrespP[s]));
-	    q_riP;
+	    q_riP++;
             s++;
           }
           break;

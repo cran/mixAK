@@ -150,7 +150,7 @@ Deviance(double* marg_ll,
 
     Y_crespP[s]        = Y_cresp[s];
   }
-  for (s; s < *R_c + *R_d; s++){
+  for (; s < *R_c + *R_d; s++){
     eta_fixedrespP[s]  = eta_fixedresp[s];
     eta_randomrespP[s] = eta_randomresp[s];
     meanYrespP[s]      = meanYresp[s];
@@ -705,7 +705,7 @@ Deviance(double* marg_ll,
 
       q_s++;
     }
-    for (s; s < *R_c + *R_d; s++){
+    for (; s < *R_c + *R_d; s++){
       eta_fixedrespP[s]  += *nrespP[s];
       eta_randomrespP[s] += *nrespP[s];
       meanYrespP[s]      += *nrespP[s];

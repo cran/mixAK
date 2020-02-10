@@ -101,7 +101,7 @@ Moments_NormalApprox_QR(double* mean,
       Li_priorP += (*dim - i - 1);
       QRP++;  
     }
-    for (i; i < *dim; i++){
+    for (; i < *dim; i++){
       *QRP = 0.0;
       QRP++;
     }
@@ -206,7 +206,7 @@ Moments_NormalApprox_QR(double* log_det_R,
       Li_priorP += (*dim - i - 1);
       QRP++;  
     }
-    for (i; i < *dim; i++){
+    for (; i < *dim; i++){
       *QRP = 0.0;
       QRP++;
     }

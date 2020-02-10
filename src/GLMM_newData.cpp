@@ -180,7 +180,7 @@ newData(double* Y_c,
 
     /***** Discrete response types *****/  
   Y_dP = Y_d;
-  for (s; s < R; s++){
+  for (; s < R; s++){
 
     switch (*dist_s){
       case GLMM::BERNOULLI_LOGIT:

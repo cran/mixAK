@@ -121,7 +121,7 @@ updateRanEf_QR(double* b,
 
     Y_crespP[s]        = Y_cresp[s];
   }
-  for (s; s < *R_c + *R_d; s++){
+  for (; s < *R_c + *R_d; s++){
     eta_fixedrespP[s]  = eta_fixedresp[s];
     eta_randomrespP[s] = eta_randomresp[s];
     etarespP[s]        = etaresp[s];
@@ -325,7 +325,7 @@ updateRanEf_QR(double* b,
       Y_crespP[s]        += *nrespP[s];
       nrespP[s]++;
     }
-    for (s; s < *R_c + *R_d; s++){
+    for (; s < *R_c + *R_d; s++){
       dYrespP[s]         += *nrespP[s];
       Y_drespP[s - *R_c] += *nrespP[s];
       nrespP[s]++;

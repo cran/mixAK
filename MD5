@@ -1,6 +1,6 @@
-776d930deb4041511b94d8903abaa949 *DESCRIPTION
+aae8feadd5a0c0cddedb67ddad28eb32 *DESCRIPTION
 223154beb7054797903cc57729831897 *NAMESPACE
-d0816df542b12db7a3d7f207d42642ed *NEWS
+7f62b983aca8ebea167898cb81c92013 *NEWS
 7938ac5b16fbe0c08f3bbba9b8582a53 *R/BLA.R
 1677ec1550e07ecc9f39e628a3061d36 *R/BsBasis.R
 bbd357410edd58553728be3c3d124d9c *R/GLMM_MCMC.R
@@ -145,10 +145,10 @@ af08a7be3ebc1a5c3696c94b592c0bfd *R/tracePlots.GLMM_MCMC.R
 7e07a26ffb56d282d8d69a73fe301cb8 *R/tracePlots.R
 ea2e3ecbfd8a0e6b367681944df32b9e *R/tracePlots.default.R
 d74c8554ea3d60db02dc53e2bf2531fd *R/zzz.R
-0487a01dc8bc77170184c92141e459e2 *data/Acidity.rda
-53f6ae8c5670943b1952117eda48dff7 *data/Enzyme.rda
+acc1ec061fd99bedca6f7bde0ced8fe9 *data/Acidity.rda
+d580220d8d7acb1d8db961916d925844 *data/Enzyme.rda
 a033a5379d35fa4be267b86ac83e5e6f *data/Faithful.rda
-fef1209165e120336b367c2609056882 *data/Galaxy.rda
+cb5c1e3a1e51c09208d9ff523d17cf17 *data/Galaxy.rda
 7d1d5e9dcd16a8c45a27dafb2cc46381 *data/PBC910.rda
 4e583978724d99e54438a4cb513eb466 *data/PBCseq.rda
 f69b67132ba4ea8a20c350b086ad9fb5 *data/SimData.rda
@@ -220,7 +220,7 @@ ce47c4e21b295e650b583fd2af641015 *man/SP2Rect.Rd
 2a39a9671b1c0925c1786a46d536d6a9 *man/SimData.Rd
 e3329923ee4d49c29c0a1a032040a86a *man/TMVN.Rd
 7117e2f396b35dd971af5d4b0710e2d1 *man/TNorm.Rd
-830194bd2f74a961aefe95ebbc75df63 *man/Tandmob.Rd
+a408d64c8830aa48cc0ee7e4dba586fc *man/Tandmob.Rd
 d3e24dee901881cddf6f8459a0d55ca4 *man/TandmobEmer.Rd
 f0a2b634f5ffb46c1067bffe76f3237b *man/Wishart.Rd
 7e2496406fdb4dc0bd45f9cd6120b018 *man/Y2T.Rd
@@ -278,9 +278,9 @@ defd5632b09a5d2989e87d8f03e33b4c *src/Dist_mixMVN.h
 0e952bf2a36b4bb28f5c8e515577170d *src/Dist_mixNorm.cpp
 6e507d6598c9fcd179074b4a34ed7b30 *src/Dist_mixNorm.h
 401e1da1bd6638131be17664f9f0e23b *src/GLMM.h
-bbaf61b94060c1ff30a0ee5ca2101fa2 *src/GLMM_Deviance.cpp
+d9cde6c7331c430f4677a793850562d9 *src/GLMM_Deviance.cpp
 70c2867f230d1eb704ea31f9b17ffe0b *src/GLMM_Deviance.h
-a4a8d1666377ee1453b347d0dfa60b9d *src/GLMM_Deviance2.cpp
+e619cc83d3d90a1d782bd11ad3768adf *src/GLMM_Deviance2.cpp
 fafde154a3306503aa402dc9c6012b6c *src/GLMM_Deviance2.h
 7e9a2c9afebc53d73f6684278b897dc4 *src/GLMM_Deviance2Pr_obs.cpp
 868cac3ad21a9e005476d8cc3d925b5e *src/GLMM_Deviance2Pr_obs.h
@@ -318,7 +318,7 @@ e6e0e387446f09754d4f42e3e342bdd6 *src/GLMM_longitDA.h
 316e6ea578e3d2c0051b599e00e126a8 *src/GLMM_longitDA2.h
 04b0b290177367a4e43521608603a78e *src/GLMM_longitPred_nmix_gauss.cpp
 1b211c09cf2e2a5e96fc836257381fe8 *src/GLMM_longitPred_nmix_gauss.h
-14a56d6e16bdf67736c8b73d9dbd7686 *src/GLMM_newData.cpp
+9255a55c4fa10519e945b20e5fa0f960 *src/GLMM_newData.cpp
 6816bc02fec65a082fb1c5edc6a871c5 *src/GLMM_newData.h
 dbcd07a29650ccdf3667cbec8c021a64 *src/GLMM_scale_ZitZi.cpp
 f5527f9816022707efe191d9465d7b4d *src/GLMM_scale_ZitZi.h
@@ -326,9 +326,9 @@ f5527f9816022707efe191d9465d7b4d *src/GLMM_scale_ZitZi.h
 68e775e4268aa4f536b843d8cd51879d *src/GLMM_updateFixEf.h
 29965486eb6dfb5dd28002650934b262 *src/GLMM_updateHyperVars_eps.cpp
 0135e39a94750c943294141847676fe7 *src/GLMM_updateHyperVars_eps.h
-12054d856e6302aeb8c98451eb2d17fc *src/GLMM_updateRanEf.cpp
+51a322aef929a77ea15a31bd7124fb77 *src/GLMM_updateRanEf.cpp
 ae51e1886494e63e45f353f2f222346b *src/GLMM_updateRanEf.h
-3025d8e9f8bcb9b684e195a01af71ddc *src/GLMM_updateRanEf_QR.cpp
+9da7b0c4d9bc7ad046ff7ffd415c8a60 *src/GLMM_updateRanEf_QR.cpp
 80fbf9e59d4d59e74500919bddbd009d *src/GLMM_updateRanEf_QR.h
 9f682ab91000b014fdc6c4768a8364a8 *src/GLMM_updateVars_eps.cpp
 8787c15dcbe2e6224225b85d11ccd0f4 *src/GLMM_updateVars_eps.h
@@ -341,7 +341,7 @@ cb2923b4b55729e34bed25921fdfb1bc *src/LogLik_Poisson_Log.h
 6084bf75dd09ce452f43bd26f66d6da9 *src/MCMC.h
 30bf97dee46bfdac0a9adc1d874d932c *src/MCMC_Moments_NormalApprox.cpp
 9349bec4f342cfa51276be633d2f9bb7 *src/MCMC_Moments_NormalApprox.h
-f99d67e050fe1917898e1a4c591c6bda *src/MCMC_Moments_NormalApprox_QR.cpp
+1050f5120659fa5cd79d7a2f53f1442e *src/MCMC_Moments_NormalApprox_QR.cpp
 3ab9a57510451c2c53b1650b164d3c8f *src/MCMC_Moments_NormalApprox_QR.h
 c8b9bb5deb083967726070ca88de927d *src/MCMC_loglik_Zwork1_stres.cpp
 7fd521f04c4770e3ba75815943515e2e *src/MCMC_loglik_Zwork1_stres.h
@@ -419,7 +419,7 @@ adc06b68af41c07044203945b5d58110 *src/NMix_updateCensObs.cpp
 ace91f887ca0221d57a501a6b7021874 *src/NMix_updateCensObs.h
 9b9cb80fa85192d366a09241c245825d *src/NMix_updateHyperVars.cpp
 60b3558ed7d471376a6fb8bc295149c8 *src/NMix_updateHyperVars.h
-356aad264d6d19e9f4cd299d8f190697 *src/NMix_updateMeansVars.cpp
+03f4754a55ee28dc977f9424ce77a1d7 *src/NMix_updateMeansVars.cpp
 fd73b1f941bddcbdb81f13fb06e6f506 *src/NMix_updateMeansVars.h
 9023398c7be8d23662336f9f31ec23c7 *src/NMix_updateWeights.cpp
 8ab88d05e24a1e5b5a75b3d51d062a2c *src/NMix_updateWeights.h

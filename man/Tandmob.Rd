@@ -13,8 +13,9 @@
   The dataset presented here contains mainly the
   information on the emergence and caries times summarized in the
   interval-censored observations. Some baseline covariates are also
-  included here. This is a copy of \code{\link[bayesSurv]{tandmob2}}
-  data in the package \code{bayesSurv}.  
+  included here.
+  This is a copy of \code{tandmob2} data in the package \code{bayesSurv}.  
+  %\code{\link[bayesSurv]{tandmob2}} data in the package \code{bayesSurv}.  
 
   For more detail on the design of the study see Vanobbergen et
   al. (2000).
@@ -165,7 +166,7 @@ The Signal-Tandmobiel project -- a longitudinal intervention health promotion
 study in Flanders (Belgium): baseline and first year results.
 \emph{European Journal of Paediatric Dentistry}, \bold{2}, 87--96.
 }
-\seealso{\code{\link[bayesSurv]{tandmob2}}}
+%\seealso{\code{\link[bayesSurv]{tandmob2}}}
 \examples{
 data(Tandmob)
 summary(Tandmob)
