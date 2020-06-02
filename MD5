@@ -1,6 +1,6 @@
-aae8feadd5a0c0cddedb67ddad28eb32 *DESCRIPTION
-223154beb7054797903cc57729831897 *NAMESPACE
-7f62b983aca8ebea167898cb81c92013 *NEWS
+dff4466416540ed4f7957f024ea39a5b *DESCRIPTION
+4d4d5128c80789c7074b72f63cbbeea2 *NAMESPACE
+8483a7f4938c7092b2a8e16aa6a9b00f *NEWS
 7938ac5b16fbe0c08f3bbba9b8582a53 *R/BLA.R
 1677ec1550e07ecc9f39e628a3061d36 *R/BsBasis.R
 bbd357410edd58553728be3c3d124d9c *R/GLMM_MCMC.R
@@ -145,10 +145,10 @@ af08a7be3ebc1a5c3696c94b592c0bfd *R/tracePlots.GLMM_MCMC.R
 7e07a26ffb56d282d8d69a73fe301cb8 *R/tracePlots.R
 ea2e3ecbfd8a0e6b367681944df32b9e *R/tracePlots.default.R
 d74c8554ea3d60db02dc53e2bf2531fd *R/zzz.R
-acc1ec061fd99bedca6f7bde0ced8fe9 *data/Acidity.rda
-d580220d8d7acb1d8db961916d925844 *data/Enzyme.rda
+58fe4f5bdce7d495c3d6677be5a3f213 *data/Acidity.rda
+f164c8df936c5870f18cc833dc02ec09 *data/Enzyme.rda
 a033a5379d35fa4be267b86ac83e5e6f *data/Faithful.rda
-cb5c1e3a1e51c09208d9ff523d17cf17 *data/Galaxy.rda
+895f4e52a5b0272dd868b5456117a5a0 *data/Galaxy.rda
 7d1d5e9dcd16a8c45a27dafb2cc46381 *data/PBC910.rda
 4e583978724d99e54438a4cb513eb466 *data/PBCseq.rda
 f69b67132ba4ea8a20c350b086ad9fb5 *data/SimData.rda

@@ -1,9 +1,13 @@
+## 02/06/2020:
+##   all exportClasses() commented as they would export everything as S4 classes,
+##   whereas everything is defined as just S3 classes in the code
+
 # Load dynamic library
 useDynLib(mixAK, .registration = TRUE)
 
 # Export all names
 exportPattern("GLMM_MCMC*")
-exportClasses("GLMM_MCMC", "GLMM_MCMClist")
+#exportClasses("GLMM_MCMC", "GLMM_MCMClist")
 S3method(fitted, "GLMM_MCMC")
 S3method(print, "GLMM_MCMC")
 S3method(print, "GLMM_MCMClist")
@@ -12,7 +16,7 @@ export("GLMM_longitDA")
 export("GLMM_longitDA2")
 
 exportPattern("NMix*")
-exportClasses("NMixEM", "NMixMCMC", "NMixMCMClist")
+#exportClasses("NMixEM", "NMixMCMC", "NMixMCMClist")
 S3method(print, "NMixEM")
 S3method(print, "NMixMCMC")
 S3method(print, "NMixMCMClist")
@@ -100,7 +104,7 @@ S3method(NMixPredDensMarg, "default")
 S3method(NMixPredDensMarg, "NMixMCMC")
 S3method(NMixPredDensMarg, "GLMM_MCMC")
 
-exportClasses("NMixPlugCondDensJoint2", "NMixPlugCondDensMarg", "NMixPlugDensJoint2", "NMixPlugDensMarg", "NMixPredCDFMarg", "NMixPredCondCDFMarg", "NMixPredCondDensJoint2", "NMixPredCondDensMarg", "NMixPredDensJoint2", "NMixPredDensMarg")
+#exportClasses("NMixPlugCondDensJoint2", "NMixPlugCondDensMarg", "NMixPlugDensJoint2", "NMixPlugDensMarg", "NMixPredCDFMarg", "NMixPredCondCDFMarg", "NMixPredCondDensJoint2", "NMixPredCondDensMarg", "NMixPredDensJoint2", "NMixPredDensMarg")
 S3method(plot, "NMixPlugCondDensJoint2")
 S3method(plot, "NMixPlugCondDensMarg")
 S3method(plot, "NMixPlugDensJoint2")

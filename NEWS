@@ -16,6 +16,9 @@ TO DO LIST:
   --> more or less solved on 03/12/2010
 
 ======================================================================================================================
+02/06/2020 (version 5.3):
+Changes in NAMESPACE file to make the CRAN check happy.
+
 31/01/2020 (version 5.2):
 Minor changes to make the -Wunused-value option of the CRAN check happy,
 mainly for(s; STATEMENT1; STATEMENT2) changed to for(; STATEMENT1; STATEMENT2), two real bugs
