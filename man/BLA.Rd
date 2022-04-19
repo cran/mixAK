@@ -33,7 +33,7 @@ BLA(mean=c(0, 0),  Sigma=diag(2))
 %\seealso{
 %}
 \author{
-  Arnošt Komárek \email{arnost.komarek[AT]mff.cuni.cz}
+  Arnošt Komárek \email{arnost.komarek@mff.cuni.cz}
 }  
 \examples{
 ##### X = (U(1), U(2), U(3))'

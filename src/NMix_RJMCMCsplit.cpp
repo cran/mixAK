@@ -5,6 +5,7 @@
 //             arnost.komarek[AT]mff.cuni.cz
 //
 //  CREATED:   03/01/2008
+//             19/04/2022 FCONE added where needed
 //
 // ======================================================================
 //
@@ -259,7 +260,7 @@ RJMCMCsplit(int* accept,           double* log_AR,
 
     /***** Spectral decomposition of Sigmastar *****/
     AK_Basic::copyArray(SigmastarTemp, Sigmastar, LTp);
-    F77_CALL(dspev)("V", "L", p, SigmastarTemp, Lambda_dspev, V_dspev, p, dwork_misc, err);    /** eigen values in ascending order  **/
+    F77_CALL(dspev)("V", "L", p, SigmastarTemp, Lambda_dspev, V_dspev, p, dwork_misc, err FCONE FCONE);    /** eigen values in ascending order  **/
     if (*err){
       warning("%s: Spectral decomposition of Sigma[%d] failed.\n", fname, jstar);    
       return;
@@ -340,8 +341,8 @@ RJMCMCsplit(int* accept,           double* log_AR,
     R_rsort(Lambda2, *p);     
 
     /***** Proposed eigenvectors (rotation) *****/
-    F77_CALL(dgemm)("N", "N", p, p, p, &AK_Basic::_ONE_DOUBLE, P, p, Vstar, p, &AK_Basic::_ZERO_DOUBLE, V1, p);       /*** V1 = P %*% Vstar    ***/
-    F77_CALL(dgemm)("T", "N", p, p, p, &AK_Basic::_ONE_DOUBLE, P, p, Vstar, p, &AK_Basic::_ZERO_DOUBLE, V2, p);       /*** V2 = t(P) %*% Vstar ***/
+    F77_CALL(dgemm)("N", "N", p, p, p, &AK_Basic::_ONE_DOUBLE, P, p, Vstar, p, &AK_Basic::_ZERO_DOUBLE, V1, p FCONE FCONE);       /*** V1 = P %*% Vstar    ***/
+    F77_CALL(dgemm)("T", "N", p, p, p, &AK_Basic::_ONE_DOUBLE, P, p, Vstar, p, &AK_Basic::_ZERO_DOUBLE, V2, p FCONE FCONE);       /*** V2 = t(P) %*% Vstar ***/
 
     /***** Proposed covariance matrices *****/
     AK_LAPACK::spevSY2SP(Sigma1, Lambda1, V1, p);                  /*** Sigma1 = V1 %*% Lambda1 %*% t(V1) ***/
@@ -349,13 +350,13 @@ RJMCMCsplit(int* accept,           double* log_AR,
 
     /***** Cholesky decomposition of the proposed covariance matrices *****/
     AK_Basic::copyArray(L1, Sigma1, LTp);
-    F77_CALL(dpptrf)("L", p, L1, err);
+    F77_CALL(dpptrf)("L", p, L1, err FCONE);
     if (*err){ 
       warning("%s: Cholesky decomposition of proposed Sigma1 failed.\n", fname);    
       return;
     }
     AK_Basic::copyArray(L2, Sigma2, LTp);
-    F77_CALL(dpptrf)("L", p, L2, err);
+    F77_CALL(dpptrf)("L", p, L2, err FCONE);
     if (*err){
       warning("%s: Cholesky decomposition of proposed Sigma2 failed.\n", fname);    
       return;
@@ -363,13 +364,13 @@ RJMCMCsplit(int* accept,           double* log_AR,
 
     /***** Inverted proposed covariance matrices *****/
     AK_Basic::copyArray(Q1, L1, LTp);
-    F77_CALL(dpptri)("L", p, Q1, err);
+    F77_CALL(dpptri)("L", p, Q1, err FCONE);
     if (*err){
       warning("%s: Inversion of proposed Sigma1 failed.\n", fname);    
       return;
     }
     AK_Basic::copyArray(Q2, L2, LTp);
-    F77_CALL(dpptri)("L", p, Q2, err);
+    F77_CALL(dpptri)("L", p, Q2, err FCONE);
     if (*err){
       warning("%s: Inversion of proposed Sigma2 failed.\n", fname);    
       return;
@@ -643,7 +644,7 @@ RJMCMCsplit(int* accept,           double* log_AR,
       }
     }
 
-    F77_CALL(dpptrf)("L", p, Listar, err);
+    F77_CALL(dpptrf)("L", p, Listar, err FCONE);
     if (*err){ 
       error("%s: Cholesky decomposition of proposed Q1 failed.\n", fname);     // this should never happen
     }
@@ -677,7 +678,7 @@ RJMCMCsplit(int* accept,           double* log_AR,
       }
     }
 
-    F77_CALL(dpptrf)("L", p, Listar, err);
+    F77_CALL(dpptrf)("L", p, Listar, err FCONE);
     if (*err){ 
       error("%s: Cholesky decomposition of proposed Q1 failed.\n", fname);     // this should never happen
     }

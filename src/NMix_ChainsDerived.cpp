@@ -5,6 +5,7 @@
 //             arnost.komarek[AT]mff.cuni.cz
 //
 //  CREATED:   09/06/2009
+//             19/04/2022 FCONE added where needed
 //
 // ====================================================================================================
 //
@@ -102,7 +103,7 @@ NMix_ChainsDerived(double* chEexpY,
           SigmaP++;
           Li++;
         }
-        F77_CALL(dpptri)("L", p, Sigma, err);
+        F77_CALL(dpptri)("L", p, Sigma, err FCONE);
         if (*err) error("%s: Computation of Sigma failed.\n", fname);        
 
         /*** Loop over margins ***/

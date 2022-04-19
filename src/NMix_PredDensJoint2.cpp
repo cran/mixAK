@@ -5,6 +5,7 @@
 //             arnost.komarek[AT]mff.cuni.cz
 //
 //  CREATED:   28/11/2007
+//             19/04/2022 FCONE added where needed
 //
 // ====================================================================================================
 //
@@ -162,7 +163,7 @@ NMix_PredDensJoint2(double* dens,     double* densK,     int* freqK,     double*
           dP++;
           Li++;
         }
-        F77_CALL(dpptri)("L", p, Sigma, err);
+        F77_CALL(dpptri)("L", p, Sigma, err FCONE);
         if (*err) error("%s: Computation of Sigma failed.\n", fname);        
 
         y0         = y;                   /** start of the grid for margin 0 in the first pair                      **/
@@ -193,7 +194,7 @@ NMix_PredDensJoint2(double* dens,     double* densK,     int* freqK,     double*
             L_mm[2] = *Sigma_m1m1;            
 
             /** Decompose the covariance matrix in margin (m0, m1), invert the decomposition and compute log_dets[0] **/
-            F77_CALL(dpptrf)("L", &TWO, L_mm, err);
+            F77_CALL(dpptrf)("L", &TWO, L_mm, err FCONE);
 	    if (*err) error("%s: Decomposition of Sigma[j=%d](%d, %d)^(t=%d) failed.\n", fname, j, m0, m1, t);
             log_dets[0] = -AK_Basic::log_AK(L_mm[0]) - AK_Basic::log_AK(L_mm[2]);              /** log(|Sigma(m0, m1)_j|^{-1/2}) **/
 

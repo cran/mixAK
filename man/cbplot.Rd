@@ -55,7 +55,7 @@ cbplot(x, y, low, upp, type=c("l", "s"), band.type=c("ls", "s", "l"), add=FALSE,
   \code{invisible(x)}
 }
 \author{
-  Arnošt Komárek \email{arnost.komarek[AT]mff.cuni.cz}
+  Arnošt Komárek \email{arnost.komarek@mff.cuni.cz}
 }  
 \examples{
 ### Artificial credible bands around the CDF's of N(100, 15*15)

@@ -26,6 +26,6 @@ GLMM_MCMCinit.eps(init.eps, prior.eps, Rc, isigma, number="")
   \code{\link{GLMM_MCMC}}.
 }
 \author{
-  Arnošt Komárek \email{arnost.komarek[AT]mff.cuni.cz}
+  Arnošt Komárek \email{arnost.komarek@mff.cuni.cz}
 }  
 \keyword{internal}

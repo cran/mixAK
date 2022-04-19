@@ -70,7 +70,7 @@ GLMM_longitDA2(mod, w.prior, y, id, x, z, xz.common = TRUE,
   \code{\link{GLMM_MCMC}}, \code{\link{GLMM_longitDA}}.
 }
 \author{
-  Arnošt Komárek \email{arnost.komarek[AT]mff.cuni.cz}
+  Arnošt Komárek \email{arnost.komarek@mff.cuni.cz}
 }  
 \examples{
 ### WILL BE ADDED.

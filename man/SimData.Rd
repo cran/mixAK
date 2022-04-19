@@ -3,7 +3,7 @@
 \title{Simulated dataset}
 \description{
   A simulated dataset used as an example dataset in Komárek and
-  Komárková (2013+).
+  Komárková (2014).
 }
 \usage{data(SimData)}
 \format{a data frame with 1 157 rows
@@ -30,10 +30,10 @@
   }  %% end of describe
 }  %% end of format
 \references{
-  Komárek, A. and Komárková, L. (2013+).
-  Capabilities of R package mixAK for clustering based on multivariate
-  continuous and discrete longitudinal data.
-  \emph{Submitted}.
+  Komárek, A. and Komárková, L. (2014).
+  Capabilities of R package mixAK for clustering based on multivariate continuous and discrete longitudinal data.
+  \emph{Journal of Statistical Software}, \bold{59}(12), 1--38.
+  \doi{10.18637/jss.v059.i12}.  
 }
 \examples{
 data(SimData)

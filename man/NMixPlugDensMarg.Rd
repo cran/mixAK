@@ -79,7 +79,7 @@ NMixPlugDensMarg(x, \dots)
   \code{\link{GLMM_MCMC}}, \code{\link{NMixPredDensMarg}}.
 }
 \author{
-  Arnošt Komárek \email{arnost.komarek[AT]mff.cuni.cz}
+  Arnošt Komárek \email{arnost.komarek@mff.cuni.cz}
 }  
 \keyword{multivariate}
 \keyword{dplot}

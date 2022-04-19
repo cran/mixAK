@@ -42,6 +42,6 @@ GLMM_MCMCwrapper(chain = 1, data,
   \code{\link{GLMM_MCMC}}.
 }
 \author{
-  Arnošt Komárek \email{arnost.komarek[AT]mff.cuni.cz}
+  Arnošt Komárek \email{arnost.komarek@mff.cuni.cz}
 }  
 \keyword{internal}

@@ -40,7 +40,7 @@ summaryDiff(x, y, prob=c(0.025, 0.5, 0.975), cut=c(-2*log(9), 0), na.rm=TRUE)
   \emph{Annals of Applied Statistics}, \bold{3}, 199-221.
 }
 \author{
-  Arnošt Komárek \email{arnost.komarek[AT]mff.cuni.cz}
+  Arnošt Komárek \email{arnost.komarek@mff.cuni.cz}
 }
 \examples{
 set.seed(16336886)

@@ -1,6 +1,6 @@
 \name{PBCseq}
 \alias{PBCseq}
-\title{Mayo Clinic Primary Biliary Cirrhosis, sequential data}
+\title{Mayo Clinic Primary Biliary Cholangitis (Cirrhosis), sequential data}
 \description{
 This data is a continuation of the PBC data set (\code{\link[survival]{pbc}}),
 and contains the follow-up laboratory data for each study patient.

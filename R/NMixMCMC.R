@@ -272,7 +272,7 @@ NMixMCMC <- function(y0, y1, censor, x_w, scale, prior,
       if (nrow(prior$D) == dd$p){
         if (any(prior$D[lower.tri(prior$D)] != t(prior$D)[lower.tri(prior$D)])) stop("prior$D must be a symmetric matrix")
         err <- try(Dinv <- chol(prior$D), silent=TRUE)
-        if (class(err) == "try-error") stop("Cholesky decomposition of prior$D failed")
+        if (inherits(err, what = "try-error")) stop("Cholesky decomposition of prior$D failed")
         Dinv <- chol2inv(Dinv)
         CDinv <- rep(Dinv[lower.tri(Dinv, diag=TRUE)], CKmax)        
         prior$D <- matrix(rep(as.numeric(t(prior$D)), CKmax), nrow=dd$p*CKmax, ncol=dd$p, byrow=TRUE)
@@ -283,7 +283,7 @@ NMixMCMC <- function(y0, y1, censor, x_w, scale, prior,
           Dinv <- prior$D[((j-1)*dd$p+1):(j*dd$p),]
           if (any(Dinv[lower.tri(Dinv)] != t(Dinv)[lower.tri(Dinv)])) stop(paste(j, "-th block of prior$D is not symmetric", sep=""))
           err <- try(Dinv <- chol(Dinv), silent=TRUE)
-          if (class(err) == "try-error") stop(paste("Cholesky decomposition of the ", j, "-th block of prior$D failed", sep=""))
+          if (inherits(err, what = "try-error")) stop(paste("Cholesky decomposition of the ", j, "-th block of prior$D failed", sep=""))
           Dinv <- chol2inv(Dinv)
           CDinv <- c(CDinv, Dinv[lower.tri(Dinv, diag=TRUE)])
         }  
@@ -434,7 +434,7 @@ NMixMCMC <- function(y0, y1, censor, x_w, scale, prior,
           tmpSigma[lower.tri(tmpSigma, diag=TRUE)] <- init$Li
           tmpSigma <- tmpSigma %*% t(tmpSigma)
           err <- try(tmpSigma <- chol(tmpSigma), silent=TRUE)
-          if (class(err) == "try-error") stop("init$Li does not lead to a positive definite matrix")
+          if (inherits(err, what = "try-error")) stop("init$Li does not lead to a positive definite matrix")
           tmpSigma <- chol2inv(tmpSigma)
           init$Sigma <- matrix(rep(t(tmpSigma), init$K), ncol=dd$p, byrow=TRUE)
           init$Li <- rep(init$Li, init$K)
@@ -447,7 +447,7 @@ NMixMCMC <- function(y0, y1, censor, x_w, scale, prior,
             tmpSigma[lower.tri(tmpSigma, diag=TRUE)] <- init$Li[((j-1)*dd$LTp+1):(j*dd$LTp)]
             tmpSigma <- tmpSigma %*% t(tmpSigma)
             err <- try(tmpSigma <- chol(tmpSigma), silent=TRUE)
-            if (class(err) == "try-error") stop(paste("the ", j,"-th block of init$Li does not lead to a positive definite matrix", sep=""))
+            if (inherits(err, what = "try-error")) stop(paste("the ", j,"-th block of init$Li does not lead to a positive definite matrix", sep=""))
             tmpSigma <- chol2inv(tmpSigma)
             init$Sigma[((j-1)*dd$p):(j*dd$p),] <- tmpSigma
           }  
@@ -474,7 +474,7 @@ NMixMCMC <- function(y0, y1, censor, x_w, scale, prior,
       if (nrow(init$Sigma) == dd$p){
         if (any(init$Sigma[lower.tri(init$Sigma)] != t(init$Sigma)[lower.tri(init$Sigma)])) stop("init$Sigma must be a symmetric matrix")
         err <- try(Sigmainv <- chol(init$Sigma), silent=TRUE)
-        if (class(err) == "try-error") stop("Cholesky decomposition of init$Sigma failed")
+        if (inherits(err, what = "try-error")) stop("Cholesky decomposition of init$Sigma failed")
         Sigmainv <- chol2inv(Sigmainv)
         Litmp <- t(chol(Sigmainv))
         init$Li <- rep(Litmp[lower.tri(Litmp, diag=TRUE)], init$K)
@@ -486,7 +486,7 @@ NMixMCMC <- function(y0, y1, censor, x_w, scale, prior,
           Sigmainv <- init$Sigma[((j-1)*dd$p+1):(j*dd$p),]
           if (any(Sigmainv[lower.tri(Sigmainv)] != t(Sigmainv)[lower.tri(Sigmainv)])) stop(paste(j, "-th block of init$Sigma is not symmetric", sep=""))
           err <- try(Sigmainv <- chol(Sigmainv), silent=TRUE)
-          if (class(err) == "try-error") stop(paste("Cholesky decomposition of the ", j, "-th block of init$Sigma failed", sep=""))
+          if (inherits(err, what = "try-error")) stop(paste("Cholesky decomposition of the ", j, "-th block of init$Sigma failed", sep=""))
           Sigmainv <- chol2inv(Sigmainv)
           Litmp <- t(chol(Sigmainv))
           init$Li <- c(init$Li, Litmp[lower.tri(Litmp, diag=TRUE)])
@@ -693,7 +693,7 @@ NMixMCMC <- function(y0, y1, censor, x_w, scale, prior,
             tmpSigma[lower.tri(tmpSigma, diag=TRUE)] <- init2$Li
             tmpSigma <- tmpSigma %*% t(tmpSigma)
             err <- try(tmpSigma <- chol(tmpSigma), silent=TRUE)
-            if (class(err) == "try-error") stop("init2$Li does not lead to a positive definite matrix")
+            if (inherits(err, what = "try-error")) stop("init2$Li does not lead to a positive definite matrix")
             tmpSigma <- chol2inv(tmpSigma)
             init2$Sigma <- matrix(rep(t(tmpSigma), init2$K), ncol=dd$p, byrow=TRUE)
             init2$Li <- rep(init2$Li, init2$K)
@@ -706,7 +706,7 @@ NMixMCMC <- function(y0, y1, censor, x_w, scale, prior,
               tmpSigma[lower.tri(tmpSigma, diag=TRUE)] <- init2$Li[((j-1)*dd$LTp+1):(j*dd$LTp)]
               tmpSigma <- tmpSigma %*% t(tmpSigma)
               err <- try(tmpSigma <- chol(tmpSigma), silent=TRUE)
-              if (class(err) == "try-error") stop(paste("the ", j,"-th block of init2$Li does not lead to a positive definite matrix", sep=""))
+              if (inherits(err, what = "try-error")) stop(paste("the ", j,"-th block of init2$Li does not lead to a positive definite matrix", sep=""))
               tmpSigma <- chol2inv(tmpSigma)
               init2$Sigma[((j-1)*dd$p):(j*dd$p),] <- tmpSigma
             }  
@@ -733,7 +733,7 @@ NMixMCMC <- function(y0, y1, censor, x_w, scale, prior,
         if (nrow(init2$Sigma) == dd$p){
           if (any(init2$Sigma[lower.tri(init2$Sigma)] != t(init2$Sigma)[lower.tri(init2$Sigma)])) stop("init2$Sigma must be a symmetric matrix")
           err <- try(Sigmainv <- chol(init2$Sigma), silent=TRUE)
-          if (class(err) == "try-error") stop("Cholesky decomposition of init2$Sigma failed")
+          if (inherits(err, what = "try-error")) stop("Cholesky decomposition of init2$Sigma failed")
           Sigmainv <- chol2inv(Sigmainv)
           Litmp <- t(chol(Sigmainv))
           init2$Li <- rep(Litmp[lower.tri(Litmp, diag=TRUE)], init2$K)
@@ -745,7 +745,7 @@ NMixMCMC <- function(y0, y1, censor, x_w, scale, prior,
             Sigmainv <- init2$Sigma[((j-1)*dd$p+1):(j*dd$p),]
             if (any(Sigmainv[lower.tri(Sigmainv)] != t(Sigmainv)[lower.tri(Sigmainv)])) stop(paste(j, "-th block of init2$Sigma is not symmetric", sep=""))
             err <- try(Sigmainv <- chol(Sigmainv), silent=TRUE)
-            if (class(err) == "try-error") stop(paste("Cholesky decomposition of the ", j, "-th block of init2$Sigma failed", sep=""))
+            if (inherits(err, what = "try-error")) stop(paste("Cholesky decomposition of the ", j, "-th block of init2$Sigma failed", sep=""))
             Sigmainv <- chol2inv(Sigmainv)
             Litmp <- t(chol(Sigmainv))
             init2$Li <- c(init2$Li, Litmp[lower.tri(Litmp, diag=TRUE)])

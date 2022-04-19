@@ -7,6 +7,7 @@
 //
 //  CREATED:   05/11/2007 as AK_Utils.cpp
 //             14/11/2007
+//             19/04/2022 FCONE added where needed
 //
 // ======================================================================
 //
@@ -213,7 +214,7 @@ spevGE(double* A,  int* complexEV,  double* lambda_re,  double* lambda_im,  doub
 
   /*** Ask for optimal size of work array ***/
   *lwork = -1;
-  F77_CALL(dgeev)("N", "V", p, A, p, lambda_re, lambda_im, VL_re, p, V_re, p, dtemp, lwork, err);
+  F77_CALL(dgeev)("N", "V", p, A, p, lambda_re, lambda_im, VL_re, p, V_re, p, dtemp, lwork, err FCONE FCONE);      // FCONE added on 19/04/2022
   if (*err){
     warning("AK_LAPACK::spevGE: LAPACK dgeev failed.\n");    
     return;
@@ -224,7 +225,7 @@ spevGE(double* A,  int* complexEV,  double* lambda_re,  double* lambda_im,  doub
   dwork = Calloc(*lwork, double);
 
   /*** Spectral decomposition ***/
-  F77_CALL(dgeev)("N", "V", p, A, p, lambda_re, lambda_im, VL_re, p, V_re, p, dwork, lwork, err);
+  F77_CALL(dgeev)("N", "V", p, A, p, lambda_re, lambda_im, VL_re, p, V_re, p, dwork, lwork, err FCONE FCONE);      // FCONE added on 19/04/2022
   if (*err){
     warning("AK_LAPACK::spevGE: LAPACK dgeev failed.\n");    
     Free(dwork);
@@ -310,7 +311,7 @@ spevGE_RL(double* A,      int* complexEV,  double* lambda_re,  double* lambda_im
 
   /*** Ask for optimal size of work array ***/
   *lwork = -1;
-  F77_CALL(dgeev)("V", "V", p, A, p, lambda_re, lambda_im, VL_re, p, VR_re, p, dtemp, lwork, err);
+  F77_CALL(dgeev)("V", "V", p, A, p, lambda_re, lambda_im, VL_re, p, VR_re, p, dtemp, lwork, err FCONE FCONE);      // FCONE added on 19/04/2022
   if (*err){
     warning("AK_LAPACK::spevGE: LAPACK dgeev failed.\n");    
     return;
@@ -321,7 +322,7 @@ spevGE_RL(double* A,      int* complexEV,  double* lambda_re,  double* lambda_im
   dwork = Calloc(*lwork, double);
 
   /*** Spectral decomposition ***/
-  F77_CALL(dgeev)("V", "V", p, A, p, lambda_re, lambda_im, VL_re, p, VR_re, p, dwork, lwork, err);
+  F77_CALL(dgeev)("V", "V", p, A, p, lambda_re, lambda_im, VL_re, p, VR_re, p, dwork, lwork, err FCONE FCONE);      // FCONE added on 19/04/2022
   if (*err){
     warning("AK_LAPACK::spevGE: LAPACK dgeev failed.\n");    
     Free(dwork);
@@ -1016,7 +1017,7 @@ MPpinvSP(double* Ainv,  double* work,  int* err,  const int* p)
   // next    = work_dspev + 3 * *p; 
   
   /*** Spectral decomposition ***/
-  F77_CALL(dspev)("V", "L", p, Ainv, lambdaInv, V, p, work_dspev, err);
+  F77_CALL(dspev)("V", "L", p, Ainv, lambdaInv, V, p, work_dspev, err FCONE FCONE);      // FCONE added on 19/04/2022
   if (*err){
     warning("AK_LAPACK::MPpinvSP: Spectral decomposition failed.\n");    
     return;

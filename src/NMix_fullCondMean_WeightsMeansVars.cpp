@@ -5,6 +5,7 @@
 //             arnost.komarek[AT]mff.cuni.cz
 //
 //  CREATED:   07/02/2008
+//             19/04/2022 FCONE added where needed
 //
 // ======================================================================
 //
@@ -117,7 +118,7 @@ fullCondMean_WeightsMeansVars_NC(double* fcm_weight,     double* logfcm_weight, 
         ifcm_LP++;
         ifcm_QP++;
       }
-      F77_CALL(dpptrf)("L", p, ifcm_Lstart, err);                 /** this should never fail... **/
+      F77_CALL(dpptrf)("L", p, ifcm_Lstart, err FCONE);                 /** this should never fail... **/
       if (*err){ 
         warning("NMix::fullCondMean_MeansVars_NC:  Cholesky decomposition of (E[Q|...])^{-1} failed.\n");
         return;
@@ -214,7 +215,7 @@ fullCondMean_WeightsMeansVars_NC(double* fcm_weight,     double* logfcm_weight, 
         ifcm_LP++;
         ifcm_QP++;
       }
-      F77_CALL(dpptrf)("L", p, ifcm_Lstart, err);                 /** this should never fail... **/
+      F77_CALL(dpptrf)("L", p, ifcm_Lstart, err FCONE);                 /** this should never fail... **/
       if (*err){ 
         warning("NMix::fullCondMean_MeansVars_NC:  Cholesky decomposition of (E[Q|...])^{-1} failed.\n");
         return;

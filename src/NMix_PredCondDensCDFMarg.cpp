@@ -5,6 +5,7 @@
 //             arnost.komarek[AT]mff.cuni.cz
 //
 //  CREATED:   31/05/2009
+//             19/04/2022 FCONE added where needed
 //
 // ====================================================================================================
 //
@@ -158,7 +159,7 @@ NMix_PredCondDensCDFMarg(double* dens,
         dP++;
         Li++;
       }
-      F77_CALL(dpptri)("L", p, Sigma, err);
+      F77_CALL(dpptri)("L", p, Sigma, err FCONE);
       if (*err) error("%s: Computation of Sigma failed (iteration %d, component %d).\n", fname, t+1, j+1);        
 
       /*** Standard deviation of the margin by which we condition ***/
@@ -217,7 +218,7 @@ NMix_PredCondDensCDFMarg(double* dens,
           *Li2P = *cSigma;                                         /* variance of the margin by which we condition                        */
 
           /*** Cholesky decomposition of the 2x2 covariance matrix of (margin m0, margin icond) ***/       
-          F77_CALL(dpptrf)("L", &TWO, Li2, err);
+          F77_CALL(dpptrf)("L", &TWO, Li2, err FCONE);
           if (*err) error("%s: Cholesky decomposition of 2x2 covariance matrix failed.\n", fname);        
           log_dets[0] = -AK_Basic::log_AK(Li2[0]) - AK_Basic::log_AK(Li2[2]);                            /** log(|Sigma|^{-1/2}) **/             
 

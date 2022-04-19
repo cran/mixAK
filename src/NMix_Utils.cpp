@@ -6,6 +6,7 @@
 //
 //  CREATED:   26/11/2007
 //             11/10/2016 lgamma -> lgammafn
+//             19/04/2022 FCONE added where needed
 //
 // ======================================================================
 //
@@ -157,7 +158,7 @@ Li2Sigma(double* Sigma,  int* err,  const double* Li,  const int* K,  const int*
       LiP++;
     }
     
-    F77_CALL(dpptri)("L", p, SigmaP, err);
+    F77_CALL(dpptri)("L", p, SigmaP, err FCONE);
     if (*err) error("NMix::Li2Sigma: Computation of Sigma failed.\n");
     SigmaP += LTp;
   }
@@ -216,7 +217,7 @@ muLi2beta_sigmaR2(double* beta,  double* sigmaR2,   double* work,
       LiP++;
     }
     
-    F77_CALL(dpptri)("L", p, Sigma, &err);
+    F77_CALL(dpptri)("L", p, Sigma, &err FCONE);
     if (err) error("NMix::muLi2beta_sigmaR2: Computation of Sigma failed.\n");
 
     Stat::BLA(betaP, sigmaR2P, dwork, &err, muP, Sigma, p);
@@ -691,11 +692,11 @@ prior_derived(const int* p,
     for (j = 0; j < *Kmax; j++){
 
       /*** Dinv_xi = Dinv %*% xi ***/
-      F77_CALL(dspmv)("L", p, &AK_Basic::_ONE_DOUBLE, DinvP, xiP, &AK_Basic::_ONE_INT, &AK_Basic::_ZERO_DOUBLE, Dinv_xiP, &AK_Basic::_ONE_INT); 
+      F77_CALL(dspmv)("L", p, &AK_Basic::_ONE_DOUBLE, DinvP, xiP, &AK_Basic::_ONE_INT, &AK_Basic::_ZERO_DOUBLE, Dinv_xiP, &AK_Basic::_ONE_INT FCONE); 
 
       /*** D_Li = Cholesky decomposition of Dinv ***/
       AK_Basic::copyArray(D_LiP, DinvP, LTp);
-      F77_CALL(dpptrf)("L", p, D_LiP, err);      
+      F77_CALL(dpptrf)("L", p, D_LiP, err FCONE);      
       if (*err) error("%s:  Cholesky decomposition of Dinv[%d] failed.\n", fname, j);
 
       /*** log_dets based on D ***/

@@ -69,7 +69,7 @@ rTMVN(n, mean=c(0, 0), Sigma=diag(2), a, b, trunc, xinit)
   \code{\link{rTNorm}}.
 }
 \author{
-  Arnošt Komárek \email{arnost.komarek[AT]mff.cuni.cz}
+  Arnošt Komárek \email{arnost.komarek@mff.cuni.cz}
 }  
 \examples{
 \dontrun{

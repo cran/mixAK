@@ -1,6 +1,6 @@
 ###
 ###  Full pdf document describing the code included here is available at
-###  http://msekce.karlin.mff.cuni.cz/~komarek/software/mixAK/Galaxy.pdf
+###  https://www2.karlin.mff.cuni.cz/~komarek/software/mixAK/Galaxy.pdf
 ###
 ### ==============================================================================
 

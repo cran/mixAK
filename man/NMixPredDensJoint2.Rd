@@ -99,15 +99,15 @@ NMixPredDensJoint2(x, \dots)
   \code{\link{GLMM_MCMC}}, \code{\link{NMixPredDensMarg}}.
 }
 \author{
-  Arnošt Komárek \email{arnost.komarek[AT]mff.cuni.cz}
+  Arnošt Komárek \email{arnost.komarek@mff.cuni.cz}
 }  
 \examples{
 ## See additional material available in 
 ## YOUR_R_DIR/library/mixAK/doc/
 ## or YOUR_R_DIR/site-library/mixAK/doc/
-## http://www.karlin.mff.cuni.cz/~komarek/software/mixAK/Galaxy.pdf
-## http://www.karlin.mff.cuni.cz/~komarek/software/mixAK/Faithful.pdf
-## http://www.karlin.mff.cuni.cz/~komarek/software/mixAK/Tandmob.pdf
+## https://www2.karlin.mff.cuni.cz/~komarek/software/mixAK/Galaxy.pdf
+## https://www2.karlin.mff.cuni.cz/~komarek/software/mixAK/Faithful.pdf
+## https://www2.karlin.mff.cuni.cz/~komarek/software/mixAK/Tandmob.pdf
 ##
 }
 \keyword{multivariate}

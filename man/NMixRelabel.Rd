@@ -200,14 +200,14 @@ NMixRelabel(object, type=c("mean", "weight", "stephens"), par, \dots)
   \code{\link{NMixMCMC}}, \code{\link{GLMM_MCMC}}.
 }
 \author{
-  Arnošt Komárek \email{arnost.komarek[AT]mff.cuni.cz}
+  Arnošt Komárek \email{arnost.komarek@mff.cuni.cz}
 }  
 \examples{
 ## See also additional material available in 
 ## YOUR_R_DIR/library/mixAK/doc/
 ## or YOUR_R_DIR/site-library/mixAK/doc/
 ## - file PBCseq.R and
-##   http://www.karlin.mff.cuni.cz/~komarek/software/mixAK/PBCseq.pdf
+##   https://www2.karlin.mff.cuni.cz/~komarek/software/mixAK/PBCseq.pdf
 ##
 ## ==============================================
 }

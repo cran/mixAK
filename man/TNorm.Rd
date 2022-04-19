@@ -64,7 +64,7 @@ rTNorm(n, mean=0, sd=1, a, b, trunc)
   \code{\link{rnorm}}, \code{\link{rTMVN}}.
 }
 \author{
-  Arnošt Komárek \email{arnost.komarek[AT]mff.cuni.cz}
+  Arnošt Komárek \email{arnost.komarek@mff.cuni.cz}
 }  
 \examples{
 set.seed(1977)

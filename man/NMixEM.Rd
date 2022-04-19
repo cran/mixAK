@@ -67,7 +67,7 @@ NMixEM(y, K, weight, mean, Sigma, toler=1e-5, maxiter=500)
   \emph{Journal of the Royal Statistical Society, Series B}, \bold{39}, 1-38.
 }
 \author{
-  Arnošt Komárek \email{arnost.komarek[AT]mff.cuni.cz}
+  Arnošt Komárek \email{arnost.komarek@mff.cuni.cz}
 }  
 \examples{
 \dontrun{

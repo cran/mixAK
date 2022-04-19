@@ -21,7 +21,7 @@ A list of \code{data.frame}s, one for each subject identified by
   \code{\link{plotProfiles}}.
 }
 \author{
-  Arnošt Komárek \email{arnost.komarek[AT]mff.cuni.cz}
+  Arnošt Komárek \email{arnost.komarek@mff.cuni.cz}
 }
 \examples{
 data(PBCseq, package="mixAK")

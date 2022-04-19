@@ -6,6 +6,7 @@
 //             arnost.komarek[AT]mff.cuni.cz
 //
 //  CREATED:   06/11/2008
+//             19/04/2022 FCONE added where needed
 //
 // ======================================================================
 //
@@ -49,7 +50,7 @@ dmixMVN(double* dens,      double* work,
     }
 
     /*** work = t(Li) %*% (x - mu) ***/
-    F77_CALL(dtpmv)("L", "T", "N", nx, LiP, work, &AK_Basic::_ONE_INT);          /* Lapack:  work = t(Li) %*% work */
+    F77_CALL(dtpmv)("L", "T", "N", nx, LiP, work, &AK_Basic::_ONE_INT FCONE FCONE FCONE);          /* Lapack:  work = t(Li) %*% work */
 
     /*** log_densk = -0.5 * t(x - mu) %*% Li %*% t(Li) %*% (x - mu) ***/
     AK_BLAS::ddot2(&log_densk, work, *nx);
@@ -138,7 +139,7 @@ rmixMVN(double* x,         double* dens,          double* work,
     }
 
     /*** work = t(Li) %*% (x - mu) ***/
-    F77_CALL(dtpmv)("L", "T", "N", nx, LiP, work, &AK_Basic::_ONE_INT);          /* Lapack:  work = t(Li) %*% work */
+    F77_CALL(dtpmv)("L", "T", "N", nx, LiP, work, &AK_Basic::_ONE_INT FCONE FCONE FCONE);          /* Lapack:  work = t(Li) %*% work */
 
     /*** log_densk = -0.5 * t(x - mu) %*% Li %*% t(Li) %*% (x - mu) ***/
     AK_BLAS::ddot2(&log_densk, work, *nx);
@@ -171,7 +172,7 @@ rmixMVN(double* x,         double* dens,          double* work,
     }
 
     /*** work = t(Li) %*% (x - mu) ***/
-    F77_CALL(dtpmv)("L", "T", "N", nx, LiP, work, &AK_Basic::_ONE_INT);          /* Lapack:  work = t(Li) %*% work */
+    F77_CALL(dtpmv)("L", "T", "N", nx, LiP, work, &AK_Basic::_ONE_INT FCONE FCONE FCONE);          /* Lapack:  work = t(Li) %*% work */
 
     /*** log_densk = -0.5 * t(x - mu) %*% Li %*% t(Li) %*% (x - mu) ***/
     AK_BLAS::ddot2(&log_densk, work, *nx);
@@ -215,7 +216,7 @@ dmixMVN_R(double* dens,      double* w_dets,   double* Li,
   w_detsP = w_dets;
   LiP = Li;
   for (k = 0; k < *K; k++){  
-    F77_CALL(dpptrf)("L", nx, LiP, err);
+    F77_CALL(dpptrf)("L", nx, LiP, err FCONE);
     if (*err) error("Dist::dmixMVN_R: Cholesky decomposition of one of the precision matrices failed.\n");
 
     wd_tmp = -(*nx) * M_LN_SQRT_2PI;
@@ -269,7 +270,7 @@ rmixMVN_R(double* x,         double* dens,     double* w_dets,   double* cumw,  
   cumwP   = cumw;
   LiP = Li;
   for (k = 0; k < *K; k++){  
-    F77_CALL(dpptrf)("L", nx, LiP, err);
+    F77_CALL(dpptrf)("L", nx, LiP, err FCONE);
     if (*err) error("Dist::dmixMVN_R: Cholesky decomposition of one of the precision matrices failed.\n");
 
     wd_tmp = -(*nx) * M_LN_SQRT_2PI;

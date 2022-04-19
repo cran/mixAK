@@ -17,7 +17,7 @@
   A numeric vector with observed values.
 }
 \source{
-  \url{http://www.stats.bris.ac.uk/~peter/mixdata}
+  Originally from http://www.stats.bris.ac.uk/~peter/mixdata/
 }
 \references{
 \eqn{\mbox{Bechtel, Y. C., Bona\"{\i}ti-Pelli\'e, C., Poisson, N., Magnette, J., and Bechtel, P. R.}}{%

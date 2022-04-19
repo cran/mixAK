@@ -18,7 +18,7 @@ generatePermutations(K)
   permutations in rows.
 }
 \author{
-  Arnošt Komárek \email{arnost.komarek[AT]mff.cuni.cz}
+  Arnošt Komárek \email{arnost.komarek@mff.cuni.cz}
 }  
 \examples{
 generatePermutations(1)

@@ -21,7 +21,7 @@
   A numeric vector with observed values.
 }
 \source{
-  \url{http://www.stats.bris.ac.uk/~peter/mixdata}
+  Originally from http://www.stats.bris.ac.uk/~peter/mixdata/
 }
 \references{
 Escobar, M. D. and West, M. (1995).

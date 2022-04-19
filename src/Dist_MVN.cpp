@@ -6,6 +6,7 @@
 //             arnost.komarek[AT]mff.cuni.cz
 //
 //  CREATED:   05/11/2007
+//             19/04/2022 FCONE added where needed
 //
 // ======================================================================
 //
@@ -42,7 +43,7 @@ dMVN1(double* log_dens,  double* work,
   }
 
   /*** work = t(Li) %*% (x - mu) ***/
-  F77_CALL(dtpmv)("L", "T", "N", nx, Li, work, &AK_Basic::_ONE_INT);          /* Lapack:  work = t(Li) %*% work */
+  F77_CALL(dtpmv)("L", "T", "N", nx, Li, work, &AK_Basic::_ONE_INT FCONE FCONE FCONE);          /* Lapack:  work = t(Li) %*% work */
 
   /*** log_dens = -0.5 * t(x - mu) %*% Li %*% t(Li) %*% (x - mu) ***/
   AK_BLAS::ddot2(log_dens, work, *nx);
@@ -297,7 +298,7 @@ ldMVN1(double* log_dens,        double* work,
   }
 
   /*** work = t(Li) %*% (x - mu) ***/
-  F77_CALL(dtpmv)("L", "T", "N", nx, Li, work, &AK_Basic::_ONE_INT);          /* Lapack:  work = t(Li) %*% work */
+  F77_CALL(dtpmv)("L", "T", "N", nx, Li, work, &AK_Basic::_ONE_INT FCONE FCONE FCONE);          /* Lapack:  work = t(Li) %*% work */
 
   /*** log_dens = -0.5 * t(x - mu) %*% Li %*% t(Li) %*% (x - mu) ***/
   AK_BLAS::ddot2(log_dens, work, *nx);
@@ -379,7 +380,7 @@ ldMVN3(double* log_dens,          double* work,
   }
 
   /*** work = t(Li) %*% (x - mu) ***/
-  F77_CALL(dtpmv)("L", "T", "N", nx, Li, work, &AK_Basic::_ONE_INT);          /* Lapack:  work = t(Li) %*% work */
+  F77_CALL(dtpmv)("L", "T", "N", nx, Li, work, &AK_Basic::_ONE_INT FCONE FCONE FCONE);          /* Lapack:  work = t(Li) %*% work */
 
   /*** log_dens = -0.5 * scale^{-1} * t(x - mu) %*% Li %*% t(Li) %*% (x - mu) ***/
   AK_BLAS::ddot2(log_dens, work, *nx);
@@ -410,7 +411,7 @@ dMVN1_R(double* log_dens,  double* Q,              double* work,       int* err,
         const int* nx,     const int* mu_nonZERO,  const int* npoints)
 {
   /*** Cholesky decomposition of Q, i.e., Q = Li %*% t(Li) ***/
-  F77_CALL(dpptrf)("L", nx, Q, err);
+  F77_CALL(dpptrf)("L", nx, Q, err FCONE);
   if (*err) error("Dist::dMVN1_R: Cholesky decomposition of the precision matrix failed.\n");
 
   int i;
@@ -452,7 +453,7 @@ rMVN1_R(double* x,         double* log_dens,  double* Q,              int* err,
         const double *mu,  const int* nx,     const int* mu_nonZERO,  const int* npoints)
 {
   /*** Cholesky decomposition of Q, i.e., Q = Li %*% t(Li) ***/
-  F77_CALL(dpptrf)("L", nx, Q, err);
+  F77_CALL(dpptrf)("L", nx, Q, err FCONE);
   if (*err) error("Dist::rMVN1_R: Cholesky decomposition of the precision matrix failed.\n");
 
   int i;
@@ -497,7 +498,7 @@ rMVN2_R(double* x,      double* mu,         double* log_dens,
         const int* nx,  const int* npoints)
 {
   /*** Cholesky decomposition of Q, i.e., Q = Li %*% t(Li) ***/
-  F77_CALL(dpptrf)("L", nx, Q, err);
+  F77_CALL(dpptrf)("L", nx, Q, err FCONE);
   if (*err) error("Dist::rMVN2_R: Cholesky decomposition of the precision matrix failed.\n");
 
   /*** Solve Li %*% w = b, then w = Li^{-1} %*% b  ***/

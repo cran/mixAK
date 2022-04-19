@@ -16,6 +16,20 @@ TO DO LIST:
   --> more or less solved on 03/12/2010
 
 ======================================================================================================================
+19/04/2022 (version 5.4):
+Correction of e-mail addresses in Rd files.
+DOI added to the primary reference in Journal of Statistical Software.
+FCONE added where needed in F77_CALL() instances
+  (files AK_BLAS.cpp, AK_LAPACK.cpp, Dist_MVN.cpp, Dist_MVT.cpp, Dist_Wishart.cpp, Dist_mixMVN.cpp,
+         GLMM_Deviance.cpp, GLMM_Deviance2.cpp, GLMM_longitPred_nmix_gauss.cpp, GLMM_updateFixEf.cpp,
+	 GLMM_updateRanEf.cpp, MCMC_Moments_NormalApprox.cpp, MCMC_Moments_NormalApprox_QR.cpp,
+	 NMix_ChainsDerived.cpp, NMix_PredCDFMarg.cpp, NMix_PredCondDensCDFMarg.cpp,
+	 NMix_PredDensJoint2.cpp, NMix_RJMCMCcombine.cpp, NMix_RJMCMCsplit.cpp,
+	 NMix_PredDensMarg.cpp, NMix_RJMCMCbirth.cpp, NMix_updateMeansVars.cpp,
+	 NMix_Utils.cpp, NMix_fullCondMean_WeightsMeansVars.cpp, NMix_PredCondDensJoint2.cpp,
+	 Stat_BLA.cpp)
+class(err) == "try-error" replaced by inherits(err, what = "try-error") in R files
+
 02/06/2020 (version 5.3):
 Changes in NAMESPACE file to make the CRAN check happy.
 

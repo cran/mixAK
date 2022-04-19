@@ -12,12 +12,11 @@ citEntry(entry   = "Article",
          volume  = "59",
          number  = "12",
          pages   = "1--38",
-         url     = "http://www.jstatsoft.org/v59/i12/",         
+         doi     = "10.18637/jss.v059.i12",         
          textVersion = paste(
                         "Arnošt Komárek, Lenka Komárková (2014).
                         Capabilities of R package mixAK for clustering based on multivariate continuous and discrete longitudinal data.
-                        Journal of Statistical Software, 59(12), 1--38.",
-                        "URL http://www.jstatsoft.org/v59/i12/.")
+                        Journal of Statistical Software, 59(12), 1--38. doi: 10.18637/jss.v059.i12.")
          )
 
 citEntry(entry   = "Article",

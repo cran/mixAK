@@ -128,6 +128,6 @@ GLMM_MCMCifit(do.init, na.complete,
   \code{\link{GLMM_MCMC}}.
 }
 \author{
-  Arnošt Komárek \email{arnost.komarek[AT]mff.cuni.cz}
+  Arnošt Komárek \email{arnost.komarek@mff.cuni.cz}
 }  
 \keyword{internal}

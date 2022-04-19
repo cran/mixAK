@@ -172,7 +172,7 @@ GLMM_MCMCprior.b <- function(prior.b, scale.b, dimb, iEranefVec, iSDranefVec)
         if (nrow(prior.b$D) == dimb){
           if (any(prior.b$D[lower.tri(prior.b$D)] != t(prior.b$D)[lower.tri(prior.b$D)])) stop("prior.b$D must be a symmetric matrix")
           err <- try(Dinv <- chol(prior.b$D), silent=TRUE)
-          if (class(err) == "try-error") stop("Cholesky decomposition of prior.b$D failed")
+          if (inherits(err, what = "try-error")) stop("Cholesky decomposition of prior.b$D failed")
           Dinv <- chol2inv(Dinv)
           CbDinv <- rep(Dinv[lower.tri(Dinv, diag=TRUE)], CbKmax)        
           prior.b$D <- matrix(rep(as.numeric(t(prior.b$D)), CbKmax), nrow=dimb*CbKmax, ncol=dimb, byrow=TRUE)
@@ -183,7 +183,7 @@ GLMM_MCMCprior.b <- function(prior.b, scale.b, dimb, iEranefVec, iSDranefVec)
             Dinv <- prior.b$D[((j-1)*dimb+1):(j*dimb),]
             if (any(Dinv[lower.tri(Dinv)] != t(Dinv)[lower.tri(Dinv)])) stop(paste(j, "-th block of prior.b$D is not symmetric", sep=""))
             err <- try(Dinv <- chol(Dinv), silent=TRUE)
-            if (class(err) == "try-error") stop(paste("Cholesky decomposition of the ", j, "-th block of prior.b$D failed", sep=""))
+            if (inherits(err, what = "try-error")) stop(paste("Cholesky decomposition of the ", j, "-th block of prior.b$D failed", sep=""))
             Dinv <- chol2inv(Dinv)
             CbDinv <- c(CbDinv, Dinv[lower.tri(Dinv, diag=TRUE)])
           }  

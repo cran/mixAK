@@ -49,7 +49,7 @@ BsBasis(degree, ninner, knotsBound, knots, intercept=FALSE,
   \code{\link[splines]{bs}}.
 }
 \author{
-  Arnošt Komárek \email{arnost.komarek[AT]mff.cuni.cz}
+  Arnošt Komárek \email{arnost.komarek@mff.cuni.cz}
 }
 \examples{
 set.seed(20101126)

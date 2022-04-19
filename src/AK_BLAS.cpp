@@ -7,6 +7,7 @@
 //
 //  CREATED:   05/11/2007 as AK_Utils.cpp
 //             14/11/2007 as AK_BLAS.cpp
+//             19/04/2022 FCONE added where needed
 //
 // ======================================================================
 //
@@ -1135,7 +1136,7 @@ ta_bxLTxtLTxa_b(double* RES, double* a_b, const double* a, const double* b, cons
     bP++;
     a_bP++;
   }
-  F77_CALL(dtpmv)("L", "T", "N", p, L, a_b, &AK_Basic::_ONE_INT);     // a_b = t(L) %*% a_b
+  F77_CALL(dtpmv)("L", "T", "N", p, L, a_b, &AK_Basic::_ONE_INT FCONE FCONE FCONE);     // a_b = t(L) %*% a_b       FCONE added on 19/04/2022
   AK_BLAS::ddot2(RES, a_b, *p);
 
   return;

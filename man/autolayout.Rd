@@ -20,7 +20,7 @@ autolayout(np)
   \code{\link{par}}.
 }
 \author{
-  Arnošt Komárek \email{arnost.komarek[AT]mff.cuni.cz}
+  Arnošt Komárek \email{arnost.komarek@mff.cuni.cz}
 }  
 \examples{
 autolayout(10)

@@ -6,6 +6,7 @@
 //
 //  CREATED:   11/07/2009 as GLMM_updateFixEf_gauss.h
 //             21/10/2009 changed to GLMM_updateFixEf.h
+//             19/04/2022  FCONE added where needed
 //
 // ======================================================================
 //
@@ -170,7 +171,7 @@ updateFixEf(double* beta,
       }
 
       /*** Cholesky decomposition of precision matrix Q_full of full conditional distribution of beta[s]   ***/
-      F77_CALL(dpptrf)("L", p_fiP, Li_full, err);                 /** this should never fail... **/
+      F77_CALL(dpptrf)("L", p_fiP, Li_full, err FCONE);                 /** this should never fail... **/
       if (*err) error("%s: Cholesky decomposition of the precision matrix of full conditional distribution failed.\n", fname);
 
       /*** Compute log(|Q_full[s]|^{1/2}) = sum(log(Li_full[s][j,j])) ***/

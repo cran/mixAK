@@ -15,7 +15,7 @@
   A numeric vector with observed values.
 }
 \source{
-  \url{http://www.stats.bris.ac.uk/~peter/mixdata}
+  Originally from http://www.stats.bris.ac.uk/~peter/mixdata/
 }
 \references{
 Crawford, S. L. (1994).

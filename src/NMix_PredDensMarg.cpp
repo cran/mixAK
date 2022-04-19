@@ -5,6 +5,7 @@
 //             arnost.komarek[AT]mff.cuni.cz
 //
 //  CREATED:   03/12/2007
+//             19/04/2022 FCONE added where needed
 //
 // ====================================================================================================
 //
@@ -132,7 +133,7 @@ NMix_PredDensMarg(double* dens,     double* densK,   int* freqK,   double* propK
           dP++;
           Li++;
         }
-        F77_CALL(dpptri)("L", p, Sigma, err);
+        F77_CALL(dpptri)("L", p, Sigma, err FCONE);
         if (*err) error("%s: Computation of Sigma failed.\n", fname);        
 
         y0P = y;                   /** start of the grid for the first margin                                **/

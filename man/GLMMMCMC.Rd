@@ -549,7 +549,7 @@ GLMM_MCMC(y, dist = "gaussian", id, x, z, random.intercept,
   Komárek, A. and Komárková, L. (2014).
   Capabilities of R package mixAK for clustering based on multivariate continuous and discrete longitudinal data.
   \emph{Journal of Statistical Software}, \bold{59}(12), 1--38.
-  \url{http://www.jstatsoft.org/v59/i12/}.
+  \doi{10.18637/jss.v059.i12}.
   
   Komárek, A., Hansen, B. E., Kuiper, E. M. M., van Buuren, H. R., and Lesaffre, E. (2010).
   Discriminant analysis using a multivariate linear mixed model with a normal mixture in the random effects distribution.
@@ -563,7 +563,7 @@ GLMM_MCMC(y, dist = "gaussian", id, x, z, random.intercept,
   \code{\link{NMixMCMC}}.
 }
 \author{
-  Arnošt Komárek \email{arnost.komarek[AT]mff.cuni.cz}
+  Arnošt Komárek \email{arnost.komarek@mff.cuni.cz}
 }  
 \examples{
 ## See also additional material available in 

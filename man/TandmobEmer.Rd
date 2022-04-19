@@ -14,11 +14,12 @@
   research work under the condition that each manuscript is first
   approved by \cr
   Prof. Emmanuel Lesaffre \cr
-  Biostatistical Centre Katholieke Universiteit Leuven \cr
+  Leuven Biostatistics and statistical Bioinformatics Centre (L-BioStat) \cr
+  Katholieke Universiteit Leuven \cr
   Kapucijnenvoer 35 \cr
   B-3000 Leuven \cr
   Belgium \cr
-  <\code{emmanuel.lesaffre@med.kuleuven.be}>  
+  <\code{emmanuel.lesaffre@kuleuven.be}>  
 }
 \usage{data(TandmobEmer)}
 \format{a data frame with 4 430 rows and the following
@@ -80,10 +81,10 @@
   }  
   }  %% end of describe
 }  %% end of format
-\source{Biostatistical Centre, Katholieke Universiteit Leuven,
+\source{Leuven Biostatistics and statistical Bioinformatics Centre (L-BioStat), Katholieke Universiteit Leuven,
   Kapucijnenvoer 35, 3000 Leuven, Belgium
 
-  \code{URL:} \code{http://med.kuleuven.be/biostat/}
+  \code{URL:} \code{https://gbiomed.kuleuven.be/english/research/50000687/50000696/}
 
   Data collection was supported by Unilever, Belgium.
   The Signal Tandmobiel project comprises the following partners:

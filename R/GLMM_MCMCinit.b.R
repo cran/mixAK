@@ -138,7 +138,7 @@ GLMM_MCMCinit.b <- function(init.b, prior.b, scale.b, id, dimb, LTb, naamLTb, I,
             tmpSigma[lower.tri(tmpSigma, diag=TRUE)] <- init.b$Li
             tmpSigma <- tmpSigma %*% t(tmpSigma)
             err <- try(tmpSigma <- chol(tmpSigma), silent=TRUE)
-            if (class(err) == "try-error") stop(paste("init", number, ".b$Li does not lead to a positive definite matrix", sep=""))
+            if (inherits(err, what = "try-error")) stop(paste("init", number, ".b$Li does not lead to a positive definite matrix", sep=""))
             tmpSigma <- chol2inv(tmpSigma)
             init.b$Sigma <- matrix(rep(t(tmpSigma), init.b$K), ncol=dimb, byrow=TRUE)
             init.b$Li <- rep(init.b$Li, init.b$K)
@@ -151,7 +151,7 @@ GLMM_MCMCinit.b <- function(init.b, prior.b, scale.b, id, dimb, LTb, naamLTb, I,
               tmpSigma[lower.tri(tmpSigma, diag=TRUE)] <- init.b$Li[((j-1)*LTb+1):(j*LTb)]
               tmpSigma <- tmpSigma %*% t(tmpSigma)
               err <- try(tmpSigma <- chol(tmpSigma), silent=TRUE)
-              if (class(err) == "try-error") stop(paste("the ", j,"-th block of init", number, ".b$Li does not lead to a positive definite matrix", sep=""))
+              if (inherits(err, what = "try-error")) stop(paste("the ", j,"-th block of init", number, ".b$Li does not lead to a positive definite matrix", sep=""))
               tmpSigma <- chol2inv(tmpSigma)
               init.b$Sigma[((j-1)*dimb):(j*dimb),] <- tmpSigma
             }  
@@ -178,7 +178,7 @@ GLMM_MCMCinit.b <- function(init.b, prior.b, scale.b, id, dimb, LTb, naamLTb, I,
         if (nrow(init.b$Sigma) == dimb){
           if (any(init.b$Sigma[lower.tri(init.b$Sigma)] != t(init.b$Sigma)[lower.tri(init.b$Sigma)])) stop(paste("init", number, ".b$Sigma must be a symmetric matrix", sep=""))
           err <- try(Sigmainv <- chol(init.b$Sigma), silent=TRUE)
-          if (class(err) == "try-error") stop(paste("Cholesky decomposition of init", number, ".b$Sigma failed", sep=""))
+          if (inherits(err, what = "try-error")) stop(paste("Cholesky decomposition of init", number, ".b$Sigma failed", sep=""))
           Sigmainv <- chol2inv(Sigmainv)
           Litmp <- t(chol(Sigmainv))
           init.b$Li <- rep(Litmp[lower.tri(Litmp, diag=TRUE)], init.b$K)
@@ -190,7 +190,7 @@ GLMM_MCMCinit.b <- function(init.b, prior.b, scale.b, id, dimb, LTb, naamLTb, I,
             Sigmainv <- init.b$Sigma[((j-1)*dimb+1):(j*dimb),]
             if (any(Sigmainv[lower.tri(Sigmainv)] != t(Sigmainv)[lower.tri(Sigmainv)])) stop(paste(j, "-th block of init", number, ".b$Sigma is not symmetric", sep=""))
             err <- try(Sigmainv <- chol(Sigmainv), silent=TRUE)
-            if (class(err) == "try-error") stop(paste("Cholesky decomposition of the ", j, "-th block of init", number, ".b$Sigma failed", sep=""))
+            if (inherits(err, what = "try-error")) stop(paste("Cholesky decomposition of the ", j, "-th block of init", number, ".b$Sigma failed", sep=""))
             Sigmainv <- chol2inv(Sigmainv)
             Litmp <- t(chol(Sigmainv))
             init.b$Li <- c(init.b$Li, Litmp[lower.tri(Litmp, diag=TRUE)])

@@ -5,6 +5,7 @@
 //             arnost.komarek[AT]mff.cuni.cz
 //
 //  CREATED:   11/07/2009
+//             19/04/2022  FCONE added where needed
 //
 // ======================================================================
 //
@@ -119,7 +120,7 @@ updateRanEf(double*  b,
   Q_i      = Q;
   mu_resp  = mu;
   for (k = 0; k < *K; k++){
-    F77_CALL(dspmv)("L", dim_b, &AK_Basic::_ONE_DOUBLE, Q_i, mu_resp, &AK_Basic::_ONE_INT, &AK_Basic::_ZERO_DOUBLE, Qmu_resp, &AK_Basic::_ONE_INT);
+    F77_CALL(dspmv)("L", dim_b, &AK_Basic::_ONE_DOUBLE, Q_i, mu_resp, &AK_Basic::_ONE_INT, &AK_Basic::_ZERO_DOUBLE, Qmu_resp, &AK_Basic::_ONE_INT FCONE);
     Qmu_resp += *dim_b;
     Q_i      += *LT_b;
     mu_resp  += *dim_b;
@@ -445,7 +446,7 @@ updateRanEf(double*  b,
 
     /*** Cholesky decomposition of precision matrix Q_full of full conditional/proposal distribution of bscaled[i]   ***/
     /*** +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ ***/
-    F77_CALL(dpptrf)("L", dim_b, Li_full, err);                 /** this should never fail... **/
+    F77_CALL(dpptrf)("L", dim_b, Li_full, err FCONE);                 /** this should never fail... **/
     if (*err){
      
       /*** Try dpotrf, it happens sometimes that dpptrf fails but dpotrf not ***/
@@ -683,7 +684,7 @@ updateRanEf(double*  b,
         /***** END DEBUG CODE *****/
 
         /*** Cholesky decomposition of precision matrix of the reversal proposal distribution of bscaled[i]   ***/
-        F77_CALL(dpptrf)("L", dim_b, Li_full2, err);                 /** this should never fail... **/
+        F77_CALL(dpptrf)("L", dim_b, Li_full2, err FCONE);                 /** this should never fail... **/
         if (*err){
           error("%s:  Cholesky decomposition of the precision matrix of the reversal proposal distribution failed (cluster %d).\n", fname, i + 1);
         }

@@ -727,7 +727,7 @@ NMixMCMC(y0, y1, censor, x_w, scale, prior,
   \code{\link{NMixPredDensMarg}}, \code{\link{NMixPredDensJoint2}}.
 }
 \author{
-  Arnošt Komárek \email{arnost.komarek[AT]mff.cuni.cz}
+  Arnošt Komárek \email{arnost.komarek@mff.cuni.cz}
 }  
 \examples{
 \dontrun{
@@ -735,9 +735,9 @@ NMixMCMC(y0, y1, censor, x_w, scale, prior,
 ## YOUR_R_DIR/library/mixAK/doc/
 ## or YOUR_R_DIR/site-library/mixAK/doc/
 ## - files Galaxy.R, Faithful.R, Tandmob.R and
-## http://www.karlin.mff.cuni.cz/~komarek/software/mixAK/Galaxy.pdf
-## http://www.karlin.mff.cuni.cz/~komarek/software/mixAK/Faithful.pdf
-## http://www.karlin.mff.cuni.cz/~komarek/software/mixAK/Tandmob.pdf
+## https://www2.karlin.mff.cuni.cz/~komarek/software/mixAK/Galaxy.pdf
+## https://www2.karlin.mff.cuni.cz/~komarek/software/mixAK/Faithful.pdf
+## https://www2.karlin.mff.cuni.cz/~komarek/software/mixAK/Tandmob.pdf
 ##
 
 ## ==============================================

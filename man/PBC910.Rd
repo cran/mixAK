@@ -1,6 +1,6 @@
 \name{PBC910}
 \alias{PBC910}
-\title{Subset of Mayo Clinic Primary Biliary Cirrhosis data}
+\title{Subset of Mayo Clinic Primary Biliary Cholangitis (Cirrhosis) data}
 \description{
 This is a subset of \code{\link{PBCseq}} data which contains only data from
 260 patients known to be alive and without liver transplantation at 910 days of follow-up. Furthermore,
@@ -37,7 +37,7 @@ papers Komárek and Komárková (2013, 2014).
   Komárek, A. and Komárková, L. (2014).
   Capabilities of R package mixAK for clustering based on multivariate continuous and discrete longitudinal data.
   \emph{Journal of Statistical Software}, \bold{59}(12), 1--38.
-  \url{http://www.jstatsoft.org/v59/i12/}.  
+  \doi{10.18637/jss.v059.i12}.  
 }
 \seealso{\code{\link{PBC910}}, \code{\link[survival]{pbc}}, \code{\link[survival]{pbcseq}}}
 \examples{

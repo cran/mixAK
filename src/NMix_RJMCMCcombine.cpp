@@ -6,6 +6,7 @@
 //
 //  CREATED:   02/01/2008
 //             21/05/2018: & in "if (i1 == *p - 1 & *u2P <= 0)" around line 423 changed to &&
+//             19/04/2022 FCONE added where needed
 //
 // ======================================================================
 //
@@ -318,7 +319,7 @@ RJMCMCcombine(int* accept,           double* log_AR,
 
     /***** Spectral decomposition of Sigma1 *****/
     AK_Basic::copyArray(SigmaTemp, Sigma1, LTp);
-    F77_CALL(dspev)("V", "L", p, SigmaTemp, Lambda_dspev, V_dspev, p, dwork_misc, err);    /** eigen values in ascending order  **/
+    F77_CALL(dspev)("V", "L", p, SigmaTemp, Lambda_dspev, V_dspev, p, dwork_misc, err FCONE FCONE);    /** eigen values in ascending order  **/
     if (*err){
       warning("%s: Spectral decomposition of Sigma[%d] failed.\n", fname, j1);    
       return;
@@ -333,7 +334,7 @@ RJMCMCcombine(int* accept,           double* log_AR,
 
     /***** Spectral decomposition of Sigma2 *****/
     AK_Basic::copyArray(SigmaTemp, Sigma2, LTp);
-    F77_CALL(dspev)("V", "L", p, SigmaTemp, Lambda_dspev, V_dspev, p, dwork_misc, err);    /** eigen values in ascending order  **/
+    F77_CALL(dspev)("V", "L", p, SigmaTemp, Lambda_dspev, V_dspev, p, dwork_misc, err FCONE FCONE);    /** eigen values in ascending order  **/
     if (*err){
       warning("%s: Spectral decomposition of Sigma[%d] failed.\n", fname, j2);    
       return;
@@ -347,7 +348,7 @@ RJMCMCcombine(int* accept,           double* log_AR,
     }
 
     /***** Rotation matrix which corresponds to the reversible split move, P = (V1 %*% t(V2))^{1/2} *****/
-    F77_CALL(dgemm)("N", "T", p, p, p, &AK_Basic::_ONE_DOUBLE, V1, p, V2, p, &AK_Basic::_ZERO_DOUBLE, P, p);       /*** P = V1 %*% t(V2) ***/
+    F77_CALL(dgemm)("N", "T", p, p, p, &AK_Basic::_ONE_DOUBLE, V1, p, V2, p, &AK_Basic::_ZERO_DOUBLE, P, p FCONE FCONE);       /*** P = V1 %*% t(V2) ***/
     AK_LAPACK::sqrtGE(P, P_im, VPinv_re, VPinv_im, complexP, sqrt_Plambda_re, sqrt_Plambda_im, VP_re, VP_im, dwork_misc, iwork_misc, err, p);
     if (*err){
       warning("%s: Computation of the square root of the rotation matrix failed.\n", fname);    
@@ -355,8 +356,8 @@ RJMCMCcombine(int* accept,           double* log_AR,
     }
 
     /***** Proposed eigenvectors:   Vstar = (1/2) * (t(P) %*% V1 + P %*% V2) *****/
-    F77_CALL(dgemm)("T", "N", p, p, p, &AK_Basic::_ONE_DOUBLE, P, p, V1, p, &AK_Basic::_ZERO_DOUBLE, VP_re, p);       /*** VP_re = t(P) %*% V1  ***/
-    F77_CALL(dgemm)("N", "N", p, p, p, &AK_Basic::_ONE_DOUBLE, P, p, V2, p, &AK_Basic::_ZERO_DOUBLE, Vstar, p);       /*** Vstar = P %*% V2     ***/
+    F77_CALL(dgemm)("T", "N", p, p, p, &AK_Basic::_ONE_DOUBLE, P, p, V1, p, &AK_Basic::_ZERO_DOUBLE, VP_re, p FCONE FCONE);       /*** VP_re = t(P) %*% V1  ***/
+    F77_CALL(dgemm)("N", "N", p, p, p, &AK_Basic::_ONE_DOUBLE, P, p, V2, p, &AK_Basic::_ZERO_DOUBLE, Vstar, p FCONE FCONE);       /*** Vstar = P %*% V2     ***/
 
     /***** Proposed mean:  mustar = u1*mu1 + (1 - u1)*mu2                                          *****/
     /***** Finalize computation of Vstar (sum t(P) %*% V1 and P %*% V2 and multiply it by 0.5)     *****/
@@ -438,7 +439,7 @@ RJMCMCcombine(int* accept,           double* log_AR,
 
     /***** Cholesky decomposition of the proposed variance *****/
     AK_Basic::copyArray(Lstar, Sigmastar, LTp);
-    F77_CALL(dpptrf)("L", p, Lstar, err);
+    F77_CALL(dpptrf)("L", p, Lstar, err FCONE);
     if (*err){ 
       warning("%s: Cholesky decomposition of proposed Sigmastar failed.\n", fname);    
       return;
@@ -446,7 +447,7 @@ RJMCMCcombine(int* accept,           double* log_AR,
 
     /***** Inverted proposed variance *****/
     AK_Basic::copyArray(Qstar, Lstar, LTp);
-    F77_CALL(dpptri)("L", p, Qstar, err);
+    F77_CALL(dpptri)("L", p, Qstar, err FCONE);
     if (*err){
       warning("%s: Inversion of proposed Sigmastar failed.\n", fname);    
       return;
@@ -685,7 +686,7 @@ RJMCMCcombine(int* accept,           double* log_AR,
       }
     }
 
-    F77_CALL(dpptrf)("L", p, Listar, err);
+    F77_CALL(dpptrf)("L", p, Listar, err FCONE);
     if (*err){ 
       error("%s: Cholesky decomposition of proposed Q(star) failed.\n", fname);     // this should never happen
     }

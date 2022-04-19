@@ -5,6 +5,7 @@
 //             arnost.komarek[AT]mff.cuni.cz
 //
 //  LOG:       20100414  created
+//             20220419  FCONE added where needed
 //
 // ======================================================================
 //
@@ -319,7 +320,7 @@ Deviance(double* marg_ll,
 
               /*** Newton-Raphson step (store it in U_g) to be subtracted from current value ***/
               /*** !!! dspsv destroys H_g !!!                                                ***/
-              F77_CALL(dspsv)("L", dim_b, &AK_Basic::_ONE_INT, H_g, iwork, U_g, dim_b, err);
+              F77_CALL(dspsv)("L", dim_b, &AK_Basic::_ONE_INT, H_g, iwork, U_g, dim_b, err FCONE);
               if (*err){
                 //error("%s: TRAP (MCMC iteration %d): Singular Hessian encountered.\n", fname, *iterNum);    
                 *err = 0;
@@ -492,7 +493,7 @@ Deviance(double* marg_ll,
                 //}
 
                 /*** Cholesky decomposition of the minus Hessian ***/
-                F77_CALL(dpptrf)("L", dim_b, I_glmm, err);   
+                F77_CALL(dpptrf)("L", dim_b, I_glmm, err FCONE);   
                 if (*err){
                   error("%s: TRAP (MCMC iteration %d), negative definite minus Hessian in the Laplace approximation (component %d) for cluster %d of grouped obs.\n", fname, *iterNum, i + 1, k + 1);
                 }
@@ -606,7 +607,7 @@ Deviance(double* marg_ll,
             bscaled_hatP++;
             mu_k++;
           }
-          F77_CALL(dtpmv)("L", "T", "N", dim_b, Li_k, bscaled_hat, &AK_Basic::_ONE_INT);  // bscaled_hat = t(Li_k) %*% bscaled_hat
+          F77_CALL(dtpmv)("L", "T", "N", dim_b, Li_k, bscaled_hat, &AK_Basic::_ONE_INT FCONE FCONE FCONE);  // bscaled_hat = t(Li_k) %*% bscaled_hat
           AK_BLAS::ddot2(&bDb, bscaled_hat, *dim_b);
           loglik_ik -= 0.5 * bDb;
         }                           /*** end of else (*iterate_to_mode) ***/

@@ -7,6 +7,7 @@
 //
 //  LOG:       20111208  created
 //             20161011  lgamma -> lgammafn
+//             20220419  FCONE added where needed
 //
 // ======================================================================
 //
@@ -102,7 +103,7 @@ ldMVT1(double*       log_dens,
   }
 
   /*** work = t(Li) %*% (x - mu) ***/
-  F77_CALL(dtpmv)("L", "T", "N", nx, Li, work, &AK_Basic::_ONE_INT);          /* Lapack:  work = t(Li) %*% work */
+  F77_CALL(dtpmv)("L", "T", "N", nx, Li, work, &AK_Basic::_ONE_INT FCONE FCONE FCONE);          /* Lapack:  work = t(Li) %*% work */
 
   /*** log_dens = 1 +  (t(x - mu) %*% Li %*% t(Li) %*% (x - mu)) / nu ***/
   AK_BLAS::ddot2(log_dens, work, *nx);
@@ -152,7 +153,7 @@ deriv_ldMVT_x(double*       gradient,
   }
 
   /*** gradient = t(Li) %*% (x - mu) ***/
-  F77_CALL(dtpmv)("L", "T", "N", nx, Li, gradient, &AK_Basic::_ONE_INT);          /* Lapack:  gradient = t(Li) %*% gradient */
+  F77_CALL(dtpmv)("L", "T", "N", nx, Li, gradient, &AK_Basic::_ONE_INT FCONE FCONE FCONE);          /* Lapack:  gradient = t(Li) %*% gradient */
 
   /*** one_SS = 1 + (t(x - mu) %*% Q %*% (x - mu)) / nu ***/
   AK_BLAS::ddot2(&one_SS, gradient, *nx);
@@ -160,7 +161,7 @@ deriv_ldMVT_x(double*       gradient,
   one_SS += 1.0;
 
   /*** gradient = Li %*% t(Li) %*% (x - mu) = Q %*% (x - mu) ***/
-  F77_CALL(dtpmv)("L", "N", "N", nx, Li, gradient, &AK_Basic::_ONE_INT);          /* Lapack:  gradient = Li %*% gradient */
+  F77_CALL(dtpmv)("L", "N", "N", nx, Li, gradient, &AK_Basic::_ONE_INT FCONE FCONE FCONE);          /* Lapack:  gradient = Li %*% gradient */
   
   /*** Hessian = (2 / (nu * one_SS^2)) * Q %*% (x - mu) %*% t(x - mu) %*% Q ***/
   mult_const1 = 2 / (*nu * one_SS * one_SS);
@@ -219,7 +220,7 @@ rMVT1_R(double* x,
         const int*    npoints)
 {
   /*** Cholesky decomposition of Q, i.e., Q = Li %*% t(Li) ***/
-  F77_CALL(dpptrf)("L", nx, Q, err);
+  F77_CALL(dpptrf)("L", nx, Q, err FCONE);
   if (*err) error("Dist::rMVT1_R: Cholesky decomposition of the precision matrix failed.\n");
 
   int i;
@@ -271,7 +272,7 @@ dMVT1_R(double*       log_dens,
         const int*    npoints)
 {
   /*** Cholesky decomposition of Q, i.e., Q = Li %*% t(Li) ***/
-  F77_CALL(dpptrf)("L", nx, Q, err);
+  F77_CALL(dpptrf)("L", nx, Q, err FCONE);
   if (*err) error("Dist::rMVT1_R: Cholesky decomposition of the precision matrix failed.\n");
 
   int i;

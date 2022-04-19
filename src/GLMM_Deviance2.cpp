@@ -5,6 +5,7 @@
 //             arnost.komarek[AT]mff.cuni.cz
 //
 //  LOG:       20150414  created
+//             20220419  FCONE added where needed
 //
 // ======================================================================
 //
@@ -372,7 +373,7 @@ Deviance2(double* marg_ll,
 
             /*** Newton-Raphson step (store it in U_g) to be subtracted from current value ***/
             /*** !!! dspsv destroys H_g !!!                                                ***/
-            F77_CALL(dspsv)("L", dim_b, &AK_Basic::_ONE_INT, H_g, iwork, U_g, dim_b, err);
+            F77_CALL(dspsv)("L", dim_b, &AK_Basic::_ONE_INT, H_g, iwork, U_g, dim_b, err FCONE);
             if (*err){
               //error("%s: TRAP (MCMC iteration %d): Singular Hessian encountered.\n", fname, *iterNum);    
               *err = 0;
@@ -545,7 +546,7 @@ Deviance2(double* marg_ll,
               //}
 
               /*** Cholesky decomposition of the minus Hessian ***/
-              F77_CALL(dpptrf)("L", dim_b, I_glmm, err);   
+              F77_CALL(dpptrf)("L", dim_b, I_glmm, err FCONE);   
               if (*err){
                 error("%s: TRAP (MCMC iteration %d), negative definite minus Hessian in the Laplace approximation (component %d) for cluster %d of grouped obs.\n", fname, *iterNum, i + 1, k + 1);
               }

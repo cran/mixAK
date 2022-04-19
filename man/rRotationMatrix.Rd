@@ -66,7 +66,7 @@ rRotationMatrix(n, dim)
 %\seealso{
 %}
 \author{
-  Arnošt Komárek \email{arnost.komarek[AT]mff.cuni.cz}
+  Arnošt Komárek \email{arnost.komarek@mff.cuni.cz}
 }  
 \examples{
 P <- rRotationMatrix(n=1, dim=5)

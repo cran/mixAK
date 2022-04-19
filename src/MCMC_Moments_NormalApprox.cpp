@@ -5,6 +5,7 @@
 //             arnost.komarek[AT]mff.cuni.cz
 //
 //  CREATED:   25/10/2009
+//             19/04/2022  FCONE added where needed
 //
 // ======================================================================
 //
@@ -35,7 +36,7 @@ Moments_NormalApprox(double* cmean,
   /*** ======================================================================= ***/
 
     /** Calculate I*theta and store it in dwork **/      
-  F77_CALL(dspmv)("L", dim, &AK_Basic::_ONE_DOUBLE, Q, theta, &AK_Basic::_ONE_INT, &AK_Basic::_ZERO_DOUBLE, dwork, &AK_Basic::_ONE_INT);
+  F77_CALL(dspmv)("L", dim, &AK_Basic::_ONE_DOUBLE, Q, theta, &AK_Basic::_ONE_INT, &AK_Basic::_ZERO_DOUBLE, dwork, &AK_Basic::_ONE_INT FCONE);
 
     /** Sum-up U, I*theta, P_Mprior **/
   cmeanP    = cmean;
@@ -62,7 +63,7 @@ Moments_NormalApprox(double* cmean,
 
   /*** Cholesky decomposition of precision matrix of proposal distribution for theta ***/
   /*** ============================================================================= ***/
-  F77_CALL(dpptrf)("L", dim, Q, err);                 /** this should never fail... **/
+  F77_CALL(dpptrf)("L", dim, Q, err FCONE);                 /** this should never fail... **/
   if (*err) error("%s: Cholesky decomposition of the precision matrix of the proposal distribution failed.\n", caller);
 
 
@@ -99,7 +100,7 @@ Moments_NormalApprox(double* cmean,
   /*** ======================================================================= ***/
 
     /** Calculate I*theta and store it in dwork **/      
-  F77_CALL(dspmv)("L", dim, &AK_Basic::_ONE_DOUBLE, Imat, theta, &AK_Basic::_ONE_INT, &AK_Basic::_ZERO_DOUBLE, dwork, &AK_Basic::_ONE_INT);
+  F77_CALL(dspmv)("L", dim, &AK_Basic::_ONE_DOUBLE, Imat, theta, &AK_Basic::_ONE_INT, &AK_Basic::_ZERO_DOUBLE, dwork, &AK_Basic::_ONE_INT FCONE);
 
     /** Sum-up U, I*theta, P_Mprior **/
   cmeanP    = cmean;

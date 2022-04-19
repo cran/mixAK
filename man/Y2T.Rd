@@ -66,6 +66,6 @@ Y2T(x, \dots)
   \code{\link{NMixPredCondDensJoint2}}, \code{\link{NMixPlugCondDensJoint2}}.
 }
 \author{
-  Arnošt Komárek \email{arnost.komarek[AT]mff.cuni.cz}
+  Arnošt Komárek \email{arnost.komarek@mff.cuni.cz}
 }  
 \keyword{smooth}

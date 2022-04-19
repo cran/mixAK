@@ -5,6 +5,7 @@
 //             arnost.komarek[AT]mff.cuni.cz
 //
 //  CREATED:   28/01/2008
+//             19/04/2022 FCONE added where needed
 //
 // ======================================================================
 //
@@ -101,7 +102,7 @@ RJMCMCbirth(int* accept,              double* log_AR,
   /***** Cholesky decomposition of Qstar *****/
   /***** =============================== *****/
   AK_Basic::copyArray(Listar, Qstar, LTp);
-  F77_CALL(dpptrf)("L", p, Listar, err);
+  F77_CALL(dpptrf)("L", p, Listar, err FCONE);
   if (*err){ 
     warning("%s: Cholesky decomposition of proposed Q failed.\n", fname);    
     *log_AR = R_NegInf;
@@ -188,7 +189,7 @@ RJMCMCbirth(int* accept,              double* log_AR,
 
     /***** Mixture variance *****/
     AK_Basic::copyArray(Sigmastar, Listar, LTp);
-    F77_CALL(dpptri)("L", p, Sigmastar, err);
+    F77_CALL(dpptri)("L", p, Sigmastar, err FCONE);
     if (*err){
       error("%s: Inversion of proposed Sigmastar failed.\n", fname);     // this should never happen
     }

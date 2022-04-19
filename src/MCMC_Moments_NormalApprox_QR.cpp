@@ -5,6 +5,7 @@
 //             arnost.komarek[AT]mff.cuni.cz
 //
 //  CREATED:   11/04/2010
+//             19/04/2022  FCONE added where needed
 //
 // ======================================================================
 //
@@ -75,7 +76,7 @@ Moments_NormalApprox_QR(double* mean,
 
   /*** Calculate t(Li_prior) %*% (mu_prior - mean0), keep it in uwork2 ***/
   /*** --------------------------------------------------------------- ***/
-  F77_CALL(dtpmv)("L", "T", "N", dim, Li_prior, uwork2, &AK_Basic::_ONE_INT);
+  F77_CALL(dtpmv)("L", "T", "N", dim, Li_prior, uwork2, &AK_Basic::_ONE_INT FCONE FCONE FCONE);
 
 
   /*** Copy Zwork1 to the upper part of QR        ***/
