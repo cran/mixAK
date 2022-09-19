@@ -1,6 +1,6 @@
-1d57b7f0eb56dc7b499acd078d207b0c *DESCRIPTION
-4d4d5128c80789c7074b72f63cbbeea2 *NAMESPACE
-dda1c4dd073121b6321d5ade208bc7bc *NEWS
+de1ec30b14b059e70c0de1b47ab80213 *DESCRIPTION
+ac700933b2f308e63c45344fcb24c231 *NAMESPACE
+b2fb28a71606cb90133dc69a4dd49508 *NEWS
 7938ac5b16fbe0c08f3bbba9b8582a53 *R/BLA.R
 1677ec1550e07ecc9f39e628a3061d36 *R/BsBasis.R
 bbd357410edd58553728be3c3d124d9c *R/GLMM_MCMC.R
@@ -40,7 +40,7 @@ af3dbb158f1e6030891b1d798f7fd37b *R/NMixMCMCdata.R
 87596ba4009f4b0050a5fe404693e270 *R/NMixPlugCondDensMarg.NMixMCMC.R
 49d1d0a1c954b84c0705567afe124d45 *R/NMixPlugCondDensMarg.R
 88e763a294e1b38372ab458f318fa45f *R/NMixPlugCondDensMarg.default.R
-c1ca57d3ed6d1b441d4da6f3485b0be1 *R/NMixPlugDA.R
+fbc41293bb4d7ab53f811c3a04735a1e *R/NMixPlugDA.R
 5cecb0c9ced1a7ec3e6b2fa2ed8499ea *R/NMixPlugDensJoint2.GLMM_MCMC.R
 d1ef6ceb1ef9dc73294f9917b262a01e *R/NMixPlugDensJoint2.NMixMCMC.R
 d41122ccad48d735f9d03e9720926e48 *R/NMixPlugDensJoint2.R
@@ -65,7 +65,7 @@ f8e370cbbafd4e993626de52bddc9ebb *R/NMixPredCondDensMarg.GLMM_MCMC.R
 3d19fa71f6b82594ffe6c0e7fa5e4b31 *R/NMixPredCondDensMarg.NMixMCMC.R
 1961a4de90c870b7f4bacf7f2f81436b *R/NMixPredCondDensMarg.R
 4e71b46f3c01cc0edc10c095e335cf96 *R/NMixPredCondDensMarg.default.R
-f92fe09ac5de29fac3ccdede18b50935 *R/NMixPredDA.R
+0b0ce3fb842185b3308d1b9ae731ab83 *R/NMixPredDA.R
 787d38f248e9a94f577106387c635e74 *R/NMixPredDensJoint2.GLMM_MCMC.R
 f5fe9ccdbb8afa00c02391bb6823cfa6 *R/NMixPredDensJoint2.NMixMCMC.R
 fc74da922fa4c1819f075c1fa8099d96 *R/NMixPredDensJoint2.R
@@ -145,11 +145,11 @@ af08a7be3ebc1a5c3696c94b592c0bfd *R/tracePlots.GLMM_MCMC.R
 7e07a26ffb56d282d8d69a73fe301cb8 *R/tracePlots.R
 ea2e3ecbfd8a0e6b367681944df32b9e *R/tracePlots.default.R
 d74c8554ea3d60db02dc53e2bf2531fd *R/zzz.R
-7effc817ce514534f7419345bfb6f2cf *build/partial.rdb
-1acfc80c9f1af0a48736d2d30d4092f1 *data/Acidity.rda
-ac2618965f1659243bffce1bbb6b70bf *data/Enzyme.rda
+0c6ad5b3446721162c89589e8077ab1c *build/partial.rdb
+626b98c0e81b36725658fdc8e55d2189 *data/Acidity.rda
+849fe398f31996538c3e1d9b6bfc21b1 *data/Enzyme.rda
 a033a5379d35fa4be267b86ac83e5e6f *data/Faithful.rda
-93cb7aa184c60e4a5c87a056f2748605 *data/Galaxy.rda
+d6a5c7f0b72aaed75c3f3e97fd4a95ee *data/Galaxy.rda
 7d1d5e9dcd16a8c45a27dafb2cc46381 *data/PBC910.rda
 4e583978724d99e54438a4cb513eb466 *data/PBCseq.rda
 f69b67132ba4ea8a20c350b086ad9fb5 *data/SimData.rda
@@ -194,7 +194,7 @@ df4ad07b5f9a4c11b19aabb5f826fc2f *man/NMixChainComp.Rd
 65ffd140a6aaa432b56fa10dd6f8ab21 *man/NMixChainsDerived.Rd
 72b98213e1488305fc334612fbf73bfa *man/NMixCluster.Rd
 63c0d1b74bfdfc95fb70972412c6c9f7 *man/NMixEM.Rd
-bed4f1e5642a695939f86a7169bd1ad6 *man/NMixMCMC.Rd
+3377fa5878a5292fd721ed7b4bd44b7a *man/NMixMCMC.Rd
 75b72e6018ed0f58f2d239bb78812504 *man/NMixMCMCdata.Rd
 a71b5ea5303f2d58f69d843536142b54 *man/NMixMCMCinitr.Rd
 438f0789859b4452636e5e6483e0e164 *man/NMixMCMCinity.Rd

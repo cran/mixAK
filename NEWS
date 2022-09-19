@@ -16,6 +16,9 @@ TO DO LIST:
   --> more or less solved on 03/12/2010
 
 ======================================================================================================================
+19/09/2022 (version 5.5):
+Minor changes in Rd files to make the CRAN check happy.
+
 19/04/2022 (version 5.4):
 Correction of e-mail addresses in Rd files.
 DOI added to the primary reference in Journal of Statistical Software.

@@ -1,17 +1,19 @@
 Package: mixAK
-Version: 5.4
-Date: 2022-04-19
+Version: 5.5
+Date: 2022-09-19
 Title: Multivariate Normal Mixture Models and Mixtures of Generalized
         Linear Mixed Models Including Model Based Clustering
 Author: Arnošt Komárek <arnost.komarek@mff.cuni.cz>
 Maintainer: Arnošt Komárek <arnost.komarek@mff.cuni.cz>
 Depends: R (>= 3.0.0), colorspace, lme4 (>= 1.0)
-Imports: graphics, stats, splines, fastGHQuad, mnormt, parallel, coda
+Imports: graphics, stats, methods, splines, fastGHQuad, mnormt,
+        parallel, coda
+Suggests: mvtnorm
 Description: Contains a mixture of statistical methods including the MCMC methods to analyze normal mixtures. Additionally, model based clustering methods are implemented to perform classification based on (multivariate) longitudinal (or otherwise correlated) data. The basis for such clustering is a mixture of multivariate generalized linear mixed models.
 Encoding: UTF-8
 License: GPL (>= 3)
 URL: https://www2.karlin.mff.cuni.cz/~komarek/
 NeedsCompilation: yes
-Packaged: 2022-04-19 19:22:51 UTC; komarek
+Packaged: 2022-09-19 13:52:01 UTC; komarek
 Repository: CRAN
-Date/Publication: 2022-04-19 23:52:29 UTC
+Date/Publication: 2022-09-19 14:46:13 UTC

@@ -26,7 +26,7 @@ NMixPredDA <- function(object, y0, y1, censor, inity, info)
   
   ########## Check MCMC object, parameters of MCMC
   ########## ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  if (class(object) != "NMixMCMC") stop("object must be of class NMixMCMC")
+  if (!is(object, "NMixMCMC")) stop("object must be of class NMixMCMC")
   if (object$prior$priorK != "fixed") stop("number of mixture components was not fixed")
 
   if (object$nx_w > 1) stop("This function has not (yet) been implemented if a factor covariate on mixture weights is present.")

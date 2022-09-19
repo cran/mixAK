@@ -130,17 +130,17 @@ NMixMCMC(y0, y1, censor, x_w, scale, prior,
 	prior for \eqn{K} (the number of mixture components). It should
 	have one of the following values:
 
-        \eqn{\mbox{\hspace{\textwidth}}}{\cr}
-	\dQuote{\code{fixed}}\eqn{\mbox{\hspace{\textwidth}}}{\cr}
+        \eqn{\mbox{\hspace{6in}}}{\cr}
+	\dQuote{\code{fixed}}\eqn{\mbox{\hspace{6in}}}{\cr}
 	Number of mixture components is assumed to be fixed to
 	\eqn{K_{max}}{K[max]}. This is a \bold{default} value.
 
-        \eqn{\mbox{\hspace{\textwidth}}}{\cr}
-	\dQuote{\code{uniform}}\eqn{\mbox{\hspace{\textwidth}}}{\cr}
+        \eqn{\mbox{\hspace{6in}}}{\cr}
+	\dQuote{\code{uniform}}\eqn{\mbox{\hspace{6in}}}{\cr}
         A priori \eqn{K \sim \mbox{Unif}\{1,\dots,K_{max}\}.}{K ~ Unif{1,\ldots,K[max]}.}
 		
-        \eqn{\mbox{\hspace{\textwidth}}}{\cr}
-	\dQuote{\code{tpoisson}}\eqn{\mbox{\hspace{\textwidth}}}{\cr}
+        \eqn{\mbox{\hspace{6in}}}{\cr}
+	\dQuote{\code{tpoisson}}\eqn{\mbox{\hspace{6in}}}{\cr}
 	A priori \eqn{K \sim
 	  \mbox{truncated-Poiss}(\lambda,\,K_{max}).}{K ~
 	  truncated-Poiss(lambda, K[max]).}
@@ -152,8 +152,8 @@ NMixMCMC(y0, y1, censor, x_w, scale, prior,
         Q[K[max]]} (inverted mixture covariance matrices). It should
         have one of the following values:
 
-        \eqn{\mbox{\hspace{\textwidth}}}{\cr}
-	\dQuote{\code{independentC}}\eqn{\mbox{\hspace{\textwidth}}}{\cr}
+        \eqn{\mbox{\hspace{6in}}}{\cr}
+	\dQuote{\code{independentC}}\eqn{\mbox{\hspace{6in}}}{\cr}
         \eqn{\equiv}{=} independent conjugate prior (this is a
 	\bold{default} value).
 	That is, a priori
@@ -174,8 +174,8 @@ NMixMCMC(y0, y1, censor, x_w, scale, prior,
 	further as \code{xi}, \code{D}, \code{zeta} components of the
 	list \code{prior}.
 	
-        \eqn{\mbox{\hspace{\textwidth}}}{\cr}
-	\dQuote{\code{naturalC}}\eqn{\mbox{\hspace{\textwidth}}}{\cr}
+        \eqn{\mbox{\hspace{6in}}}{\cr}
+	\dQuote{\code{naturalC}}\eqn{\mbox{\hspace{6in}}}{\cr}
         \eqn{\equiv}{=} natural conjugate prior. That is, a priori
 	\deqn{
           (\boldsymbol{\mu}_j,\, \boldsymbol{Q}_j) \sim
@@ -194,7 +194,7 @@ NMixMCMC(y0, y1, censor, x_w, scale, prior,
 	further as \code{xi}, \code{ce}, \code{zeta} components of the
 	list \code{prior}.
 
-        \eqn{\mbox{\hspace{\textwidth}}}{\cr}
+        \eqn{\mbox{\hspace{6in}}}{\cr}
         For both, independent conjugate and natural conjugate prior, the
 	Wishart scale matrix \eqn{\boldsymbol{\Xi}}{Xi} is assumed to be
 	diagonal with
@@ -221,22 +221,22 @@ NMixMCMC(y0, y1, censor, x_w, scale, prior,
 	  \eqn{K_{max}\times p}{K[max] x p} with midpoints of columns
 	  of \code{init$y} in rows which follows Richardson and Green (1997).
 
-          \eqn{\mbox{\hspace{\textwidth}}}{\cr}	  
+          \eqn{\mbox{\hspace{6in}}}{\cr}	  
           If \eqn{p=1} and \code{xi}\eqn{=\xi}{=xi} is a single value
 	  then \eqn{\xi_1=\cdots=\xi_{K_{max}} =
 	    \xi.}{xi[1]=\ldots=xi[K[max]] = xi.}
 	  
-          \eqn{\mbox{\hspace{\textwidth}}}{\cr}
+          \eqn{\mbox{\hspace{6in}}}{\cr}
 	  If \eqn{p=1} and \code{xi}\eqn{=\boldsymbol{\xi}} is a vector of length
 	  \eqn{K_{max}}{K[max]} then the \eqn{j}-th element of \code{xi}
 	  gives \eqn{\xi_j}{xi[j]} \eqn{(j=1,\dots,K_{max}).}{(j=1,\ldots,K[max]).}
 	  
-          \eqn{\mbox{\hspace{\textwidth}}}{\cr}	  
+          \eqn{\mbox{\hspace{6in}}}{\cr}	  
           If \eqn{p>1} and \code{xi}\eqn{=\boldsymbol{\xi}}{=xi} is a vector of length \eqn{p}
 	  then \eqn{\boldsymbol{\xi}_1=\cdots=\boldsymbol{\xi}_{K_{max}} =
 	    \boldsymbol{\xi}.}{xi[1]=\ldots=xi[K[max]] = xi.}
 
-          \eqn{\mbox{\hspace{\textwidth}}}{\cr}
+          \eqn{\mbox{\hspace{6in}}}{\cr}
 	  If \eqn{p>1} and \code{xi} is a \eqn{K_{max} \times p}{K[max]
 	    x p} matrix then the \eqn{j}-th row of \code{xi}
 	  gives \eqn{\boldsymbol{xi}_j}{xi[j]} \eqn{(j=1,\dots,K_{max}).}{(j=1,\ldots,K[max]).}	  
@@ -249,11 +249,11 @@ NMixMCMC(y0, y1, censor, x_w, scale, prior,
         Its \bold{default} value is a vector of ones which follows
 	Cappe, Robert and Ryden (2003).
  
-        \eqn{\mbox{\hspace{\textwidth}}}{\cr}
+        \eqn{\mbox{\hspace{6in}}}{\cr}
 	If \code{ce}\eqn{=c} is a single value then
 	\eqn{c_1=\cdots=c_{K_{max}}=c.}{c[1]=\ldots=c[K[max]]=c.}
 
-        \eqn{\mbox{\hspace{\textwidth}}}{\cr}
+        \eqn{\mbox{\hspace{6in}}}{\cr}
 	If \code{ce}\eqn{=\boldsymbol{c}}{c} is a vector of length
 	\eqn{K_{max}}{K[max]} then the \eqn{j}-th element of \code{ce}
 	gives \eqn{c_j}{c[j]} \eqn{(j=1,\dots,K_{max}).}{(j=1,\ldots,K[max]).}      
@@ -268,23 +268,23 @@ NMixMCMC(y0, y1, censor, x_w, scale, prior,
 	Its \bold{default} value is a diagonal matrix with squared ranges
 	of each column of \code{init$y} on a diagonal.
 
-        \eqn{\mbox{\hspace{\textwidth}}}{\cr}	  
+        \eqn{\mbox{\hspace{6in}}}{\cr}	  
         If \eqn{p=1} and \code{D}\eqn{=d} is a single value
         then \eqn{d_1=\cdots=d_{K_{max}} =
 	d.}{d[1]=\ldots=d[K[max]] = d.}
 	  
-        \eqn{\mbox{\hspace{\textwidth}}}{\cr}
+        \eqn{\mbox{\hspace{6in}}}{\cr}
 	If \eqn{p=1} and \code{D}\eqn{=\boldsymbol{d}}{=d} is a vector of length
 	\eqn{K_{max}}{K[max]} then the \eqn{j}-th element of \code{D}
 	gives \eqn{d_j}{d[j]} \eqn{(j=1,\dots,K_{max}).}{(j=1,\ldots,K[max]).}
 	  
-        \eqn{\mbox{\hspace{\textwidth}}}{\cr}	  
+        \eqn{\mbox{\hspace{6in}}}{\cr}	  
         If \eqn{p>1} and \code{D}\eqn{=\boldsymbol{D}}{=D} is a
 	\eqn{p\times p}{p x p} matrix
 	then \eqn{\boldsymbol{D}_1=\cdots=\boldsymbol{D}_{K_{max}} =
 	  \boldsymbol{D}.}{D[1]=\ldots=D[K[max]] = D.}
 
-        \eqn{\mbox{\hspace{\textwidth}}}{\cr}
+        \eqn{\mbox{\hspace{6in}}}{\cr}
 	If \eqn{p>1} and \code{D} is a \eqn{(K_{max}\cdot p) \times p}{(K[max]*p)
         x p} matrix then the the first \eqn{p} rows of \code{D}
         give \eqn{\boldsymbol{D}_1}{D[1]}, rows \eqn{p+1,\ldots,2p} of
