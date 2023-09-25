@@ -82,7 +82,7 @@ static const R_CMethodDef Centries[] = {
 
 extern "C" void R_init_mixAK(DllInfo *dll){
     R_registerRoutines(dll, Centries, NULL,  NULL,     NULL);
-    /*                      .C        .Call  .Fortran  .External             
+    /*                      .C        .Call  .Fortran  .External       */
     
     /* The following line makes only those routines defined above
        available to outside packages, i.e., internal C++ things

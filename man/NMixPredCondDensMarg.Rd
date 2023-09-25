@@ -86,8 +86,8 @@ NMixPredCondDensMarg(x, \dots)
   }
   \item{prob}{a value of the argument \code{prob}.
   }
-  \item{\dQuote{qXX\%}}{if \code{prob} is given then there is one
-    additional component named \dQuote{qXX\%}, e.g., \dQuote{q50\%} for
+  \item{qXX\%}{if \code{prob} is given then there is one
+    additional component named qXX\%, e.g., q50\% for
     each value of \code{prob} which has the same structure as the
     component \code{dens} and keeps computed posterior pointwise
     quantiles.

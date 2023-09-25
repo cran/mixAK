@@ -1,34 +1,22 @@
-citHeader("To cite package mixAK in publications use:")
-     
-year <- sub(".*(2[[:digit:]]{3})-.*", "\\1", meta$Date)
-vers <- paste("R package version", meta$Version)
+bibentry(bibtype = "Article",
+         title = "Capabilities of {R} Package {mixAK} for Clustering Based on Multivariate Continuous and Discrete Longitudinal Data",
+         author = c(as.person("Arnošt Komárek"), as.person("Lenka Komárková")),
+         journal      = "Journal of Statistical Software",
+         year         = "2014",
+	 volume       = "59",
+	 number       = "12",
+	 pages        = "1--38",
+	 doi          = "10.18637/jss.v059.i12",
+	 header = "To cite the package mixAK in publications use:"
+)
 
-citEntry(entry   = "Article",
-         title   = "Capabilities of {R} Package {mixAK} for Clustering Based on Multivariate Continuous and Discrete Longitudinal Data",
-         author  = personList(as.person("Arno\\v{s}t Kom\\'arek"),
-                              as.person("Lenka Kom\\'arkov\\'a")),
-         journal = "Journal of Statistical Software",
-         year    = "2014",
-         volume  = "59",
-         number  = "12",
-         pages   = "1--38",
-         doi     = "10.18637/jss.v059.i12",         
-         textVersion = paste(
-                        "Arnošt Komárek, Lenka Komárková (2014).
-                        Capabilities of R Package mixAK for Clustering Based on Multivariate Continuous and Discrete Longitudinal Data.
-                        Journal of Statistical Software, 59(12), 1--38. doi: 10.18637/jss.v059.i12.")
-         )
-
-citEntry(entry   = "Article",
-         title   = "A New {R} Package for {B}ayesian Estimation of Multivariate Normal Mixtures Allowing for Selection of the Number of Components and Interval-Censored Data",
-         author  = as.person("Arno\\v{s}t Kom\\'arek"),
-         journal = "Computational Statistics \\& Data Analysis",
-         year    = "2009",
-         volume  = "53",
-         number  = "12",
-         pages   = "3932--3947",
-         doi     = "10.1016/j.csda.2009.05.006",
-         textVersion = "Arnošt Komárek (2009). 
-                        A New R package for Bayesian Estimation of Multivariate Normal Mixtures
-                        Allowing for Selection of Number of Components and Interval-Censored Data.
-                        Computational Statistics & Data Analysis, 53(12), 3932--3947. doi: 10.1016/j.csda.2009.05.006.")
+bibentry(bibtype = "Article",
+         title = "A New {R} Package for {B}ayesian Estimation of Multivariate Normal Mixtures Allowing for Selection of the Number of Components and Interval-Censored Data",
+         author = as.person("Arnošt Komárek"),
+         journal      = "Computational Statistics \\& Data Analysis",
+         year         = "2009",
+	 volume       = "53",
+	 number       = "12",
+	 pages        = "3932--3947",
+	 doi          = "10.1016/j.csda.2009.05.006"
+)
