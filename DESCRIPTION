@@ -1,6 +1,6 @@
 Package: mixAK
-Version: 5.6
-Date: 2023-09-25
+Version: 5.7
+Date: 2023-12-14
 Title: Multivariate Normal Mixture Models and Mixtures of Generalized
         Linear Mixed Models Including Model Based Clustering
 Authors@R: person(given = "Arnošt", family = "Komárek", role = c("aut", "cre"), email = "arnost.komarek@mff.cuni.cz", comment = c(ORCID = "0000-0001-8778-3762"))
@@ -11,10 +11,10 @@ Suggests: mvtnorm
 Description: Contains a mixture of statistical methods including the MCMC methods to analyze normal mixtures. Additionally, model based clustering methods are implemented to perform classification based on (multivariate) longitudinal (or otherwise correlated) data. The basis for such clustering is a mixture of multivariate generalized linear mixed models.
 Encoding: UTF-8
 License: GPL (>= 3)
-URL: http://msekce.karlin.mff.cuni.cz/~komarek/
+URL: https://msekce.karlin.mff.cuni.cz/~komarek/
 NeedsCompilation: yes
-Packaged: 2023-09-25 10:01:08 UTC; komarek
+Packaged: 2023-12-14 13:41:12 UTC; komarek
 Author: Arnošt Komárek [aut, cre] (<https://orcid.org/0000-0001-8778-3762>)
 Maintainer: Arnošt Komárek <arnost.komarek@mff.cuni.cz>
 Repository: CRAN
-Date/Publication: 2023-09-25 11:00:02 UTC
+Date/Publication: 2023-12-14 14:30:02 UTC

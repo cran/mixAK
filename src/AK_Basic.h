@@ -70,6 +70,12 @@ const double _EMIN0 = -700;                                          // exp0_AK(
 const double _TOL_CHOL = 1e-10;           // tolerance for the Cholesky decomposition
 const double _TOL_QR = 1e-07;             // tolerance for the QR decomposition
 
+/*** integer absolute value ***/          // added on 14/12/2023
+inline int
+iabs_AK(const int& x){
+  return((x < 0) ? (-x) : x);
+}  
+
 /*** identity ***/
 inline double
 ident_AK(const double& x){
@@ -573,7 +579,7 @@ printMatrixRow4R(const int *a,  const int& nrow,  const int& ncol)
   aP = a;
   for (i = 0; i < nrow - 1; i++){
     for (j = 0; j < ncol; j++){
-      Rprintf((char*)("%g, "), fabs((double)(*aP)) < AK_Basic::_ZERO ? 0 : *aP);
+      Rprintf((char*)("%d, "), iabs_AK((int)(*aP)) < AK_Basic::_ZERO ? 0 : *aP);
       aP++;
     }
     Rprintf((char*)("\n"));
@@ -581,10 +587,10 @@ printMatrixRow4R(const int *a,  const int& nrow,  const int& ncol)
 
   /** i = nrow - 1 **/
   for (j = 0; j < ncol - 1; j++){
-    Rprintf((char*)("%g, "), fabs((double)(*aP)) < AK_Basic::_ZERO ? 0 : *aP);
+    Rprintf((char*)("%d, "), iabs_AK((int)(*aP)) < AK_Basic::_ZERO ? 0 : *aP);
     aP++;
   }
-  Rprintf((char*)("%g), nrow=%d, ncol=%d, byrow=TRUE);\n"), fabs((double)(*aP)) < AK_Basic::_ZERO ? 0 : *aP, nrow, ncol);
+  Rprintf((char*)("%d), nrow=%d, ncol=%d, byrow=TRUE);\n"), iabs_AK((int)(*aP)) < AK_Basic::_ZERO ? 0 : *aP, nrow, ncol);
 
   return;
 }

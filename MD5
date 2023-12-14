@@ -1,6 +1,6 @@
-ee24e97049f4722a8982f7ce1b0c27da *DESCRIPTION
+f71e6160bc45abedf7384f57fe10f43f *DESCRIPTION
 ac700933b2f308e63c45344fcb24c231 *NAMESPACE
-466050a2fae54f9473f2fecc6e40fa6f *NEWS
+145e358a20f3188217e7b075ad15bf96 *NEWS
 7938ac5b16fbe0c08f3bbba9b8582a53 *R/BLA.R
 1677ec1550e07ecc9f39e628a3061d36 *R/BsBasis.R
 bbd357410edd58553728be3c3d124d9c *R/GLMM_MCMC.R
@@ -145,11 +145,11 @@ af08a7be3ebc1a5c3696c94b592c0bfd *R/tracePlots.GLMM_MCMC.R
 7e07a26ffb56d282d8d69a73fe301cb8 *R/tracePlots.R
 ea2e3ecbfd8a0e6b367681944df32b9e *R/tracePlots.default.R
 d74c8554ea3d60db02dc53e2bf2531fd *R/zzz.R
-7080893e02c49cd296d4424b9be55069 *build/partial.rdb
-29528672df900aa2c9b6264214eeae23 *data/Acidity.rda
-f62adfe3e8d20f8039e347282bc24378 *data/Enzyme.rda
+8faf250d78a120ba4c7ea2186efddd24 *build/partial.rdb
+bd9b48541c8ddf711ba41641ec639c46 *data/Acidity.rda
+f040ec89da55ca56814fbbfc0160b689 *data/Enzyme.rda
 a033a5379d35fa4be267b86ac83e5e6f *data/Faithful.rda
-d1c8c049c58620fd287762450cef98b0 *data/Galaxy.rda
+c838bf96ff110a94d9509ebdf6decbbe *data/Galaxy.rda
 7d1d5e9dcd16a8c45a27dafb2cc46381 *data/PBC910.rda
 4e583978724d99e54438a4cb513eb466 *data/PBCseq.rda
 f69b67132ba4ea8a20c350b086ad9fb5 *data/SimData.rda
@@ -250,7 +250,7 @@ c9b512ff5923179d8ba23906a11fda2c *man/tracePlots.Rd
 65bff692e0ac5d0110c23ace43234c7f *src/AK_BLAS.h
 951ea405ac70e6ea4b579d5becb27542 *src/AK_BSTAT.cpp
 ae6e883717232c1d1cd4a082d1408f7b *src/AK_BSTAT.h
-64563f0844229765bc34494f82142c06 *src/AK_Basic.h
+85787c8376253585a3dfd79d0aa2981e *src/AK_Basic.h
 1ba5060ef5bd07eb461dd0176aaf0686 *src/AK_Complex.h
 3205afa5428903ca3688eb19457daba2 *src/AK_LAPACK.cpp
 5dfdf6bdc3068a4f7a5b3a58ed12960e *src/AK_LAPACK.h
@@ -285,9 +285,9 @@ defd5632b09a5d2989e87d8f03e33b4c *src/Dist_mixMVN.h
 fafde154a3306503aa402dc9c6012b6c *src/GLMM_Deviance2.h
 7e9a2c9afebc53d73f6684278b897dc4 *src/GLMM_Deviance2Pr_obs.cpp
 868cac3ad21a9e005476d8cc3d925b5e *src/GLMM_Deviance2Pr_obs.h
-54c250740e81359992932236176ed108 *src/GLMM_MCMC.cpp
+3f4b38100f4c3fab2e5b525d7e9dc506 *src/GLMM_MCMC.cpp
 36602283c05ef2c1c7b1f0154cb5811c *src/GLMM_MCMC.h
-2e21261871c2b496edd0c4b5a0678543 *src/GLMM_NMixRelabel.cpp
+09f36fcc3f7f5f1eced10be7184f2ec0 *src/GLMM_NMixRelabel.cpp
 4c407b3c14caa9dd8a4ed6a0d44ddd63 *src/GLMM_NMixRelabel.h
 d8d9ff1f942f5c42bbf9174b196d8f2a *src/GLMM_PED.cpp
 af5632b9e9cdf7b61703b887351303a5 *src/GLMM_PED.h
@@ -303,7 +303,7 @@ b19ca0ecc5f482a184642e0342243767 *src/GLMM_create_ZS.cpp
 7c5316f17eb0a6e06bc018e31098c64e *src/GLMM_create_ZS.h
 bff3d0f1da01905f85adb636fe194962 *src/GLMM_create_ZiS.cpp
 8b1d853ceb0ba73120b36d6d9a8dfcdd *src/GLMM_create_ZiS.h
-ddc9af3ad439e391e046115d02880e3f *src/GLMM_dY_meanY.cpp
+fc8edd3af76f4a9e34390e82e4736754 *src/GLMM_dY_meanY.cpp
 78f0ce865c712d9ab0a4a4158d85d4fb *src/GLMM_dY_meanY.h
 19927031afb2672a887f351802e7d031 *src/GLMM_eta_fixed_random2eta_meanY.cpp
 164fcbd16f87e830ff5efdcb56b7e19c *src/GLMM_eta_fixed_random2eta_meanY.h
@@ -358,7 +358,7 @@ fcb3df7003ba94405588b9a07afaec0a *src/NMix_Deviance.cpp
 bc507a123d90626502ef56f6f88171e3 *src/NMix_Deviance.h
 e09c772c70c874ab939539385f390393 *src/NMix_MCMC.cpp
 61ab24d90b3a881c4ca967625f8a36d5 *src/NMix_MCMC.h
-a6c57a5f9b53bc1ff9b8845099a4b4e9 *src/NMix_NMixRelabel.cpp
+c941ace2f3d2d1ae7e23d007077d8cfa *src/NMix_NMixRelabel.cpp
 e042d91a1f3b50740b7ade7ac110ebce *src/NMix_NMixRelabel.h
 39d6085a80ff7980f5cfc3ecca212e1f *src/NMix_PED.cpp
 a13bcce817b459dce991959c6d1fa016 *src/NMix_PED.h

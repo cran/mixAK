@@ -107,7 +107,8 @@ NMix_NMixRelabel(const int*    type,
     }
     if (iparam[3] < 0 || iparam[3] > 1){    
       *err = 1;
-      error("%s:  Unknown type of step 2 of the Stephens' algorithm.\n", fname, iparam[3]);
+      //error("%s:  Unknown type of step 2 of the Stephens' algorithm.\n", fname, iparam[3]);
+      error("%s:  Unknown type of step 2 of the Stephens' algorithm.\n", fname);               /* replaced the previous row on 08/12/2023 */
     }
     break;
 

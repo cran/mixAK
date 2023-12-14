@@ -16,6 +16,9 @@ TO DO LIST:
   --> more or less solved on 03/12/2010
 
 ======================================================================================================================
+08/12/2023 (version 5.7):
+Minor changes in few cpp/h files to make the CRAN check happy.
+
 25/09/2023 (version 5.6):
 Minor changes in Rd files to make the CRAN check happy.
 

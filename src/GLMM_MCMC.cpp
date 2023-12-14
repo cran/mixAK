@@ -188,7 +188,8 @@ GLMM_MCMC(double*       Y_c,                                // this is in fact c
     }
     if (*distribution_b != NMix::NORMAL && *priorK_b > NMix::K_FIXED){
       *err = 1;
-      error("%s: Only normally distributed random effects are allowed when K is random.\n", fname, 1);
+      //error("%s: Only normally distributed random effects are allowed when K is random.\n", fname, 1);
+      error("%s: Only normally distributed random effects are allowed when K is random.\n", fname);         /* replaced the previous row on 08/12/2023 */
     }
 
     switch (*priorK_b){

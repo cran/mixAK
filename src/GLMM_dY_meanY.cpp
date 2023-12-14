@@ -98,7 +98,8 @@ dY_meanY(double* dY,
 
     default:
       *err = 1;
-      error("GLMM::dY_meanY: Unimplemented distributional type.\n", *distP);
+      //error("GLMM::dY_meanY: Unimplemented distributional type.\n", *distP);
+      error("GLMM::dY_meanY: Unimplemented distributional type.\n");                 /* replaced the previous row on 08/12/2023 */
     }
 
     distP++;
