@@ -121,7 +121,7 @@ Moments_NormalApprox_QR(double* mean,
   F77_CALL(dqrls)(QR, &n_dim, &dim2, uwork, &one, &tol_qr, mean, rsd, tQu, rank, jpvt, QRaux, dwork);
   if (*rank < *dim){
     *err = 1;
-    error("%s: Collinear X/Z matrix in the proposal distribution.\n", caller);
+    Rf_error("%s: Collinear X/Z matrix in the proposal distribution.\n", caller);
   }
 
   /*** Mean of the full conditional distribution = mean0 + LS solution ***/
@@ -226,7 +226,7 @@ Moments_NormalApprox_QR(double* log_det_R,
   F77_CALL(dqrdc2)(QR, &n_dim, &n_dim, &dim2, &tol_qr, rank, QRaux, jpvt, dwork);
   if (*rank < *dim){
     *err = 1;
-    error("%s: Collinear X/Z matrix in the proposal distribution.\n", caller);
+    Rf_error("%s: Collinear X/Z matrix in the proposal distribution.\n", caller);
   }
 
   /*** log(det(R)) = log(prod R[j,j]) = sum log(abs(R[j,j])) ***/

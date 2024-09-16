@@ -8,6 +8,7 @@
 //  CREATED:   05/11/2007 as AK_Utils.cpp
 //             14/11/2007
 //             19/04/2022 FCONE added where needed
+//             16/09/2024 warning --> Rf_warning, Calloc --> R_Calloc, Free --> R_Free
 //
 // ======================================================================
 //
@@ -28,7 +29,7 @@ logDetGE(double* logDet,  int* sign,  double* A,  int* jpvt,  int* err,  const i
 
   F77_CALL(dgetrf)(p, p, A, p, jpvt, err);
   if (*err < 0){ 
-    warning("AK_LAPACK::logDetGE: LU decomposition failed.\n");
+    Rf_warning("AK_LAPACK::logDetGE: LU decomposition failed.\n");
     return;
   }
   if (*err > 0){    /** Singular matrix: U[err,err] is 0 **/
@@ -78,7 +79,7 @@ DetSignGE(int* sign,  double* A,  int* jpvt,  int* err,  const int* p)
 
   F77_CALL(dgetrf)(p, p, A, p, jpvt, err);
   if (*err < 0){ 
-    warning("AK_LAPACK::logDetGE: LU decomposition failed.\n");
+    Rf_warning("AK_LAPACK::logDetGE: LU decomposition failed.\n");
     return;
   }
   if (*err > 0){    /** Singular matrix: U[err,err] is 0 **/
@@ -177,7 +178,7 @@ correctMatGE(double* A,  double* dwork,  int* jpvt,  int* err,  const int* p)
     /***** ===================================== *****/
     AK_LAPACK::DetSignGE(sign, dwork, jpvt, err, p);
     if (*err){
-      warning("AK_LAPACK::correctMatGE: DetSignGE routine failed.\n");    
+      Rf_warning("AK_LAPACK::correctMatGE: DetSignGE routine failed.\n");    
       return;
     }
 
@@ -216,19 +217,19 @@ spevGE(double* A,  int* complexEV,  double* lambda_re,  double* lambda_im,  doub
   *lwork = -1;
   F77_CALL(dgeev)("N", "V", p, A, p, lambda_re, lambda_im, VL_re, p, V_re, p, dtemp, lwork, err FCONE FCONE);      // FCONE added on 19/04/2022
   if (*err){
-    warning("AK_LAPACK::spevGE: LAPACK dgeev failed.\n");    
+    Rf_warning("AK_LAPACK::spevGE: LAPACK dgeev failed.\n");    
     return;
   }
   *lwork = (int)(*dtemp);
 
   /*** Allocate a space for the work array ***/
-  dwork = Calloc(*lwork, double);
+  dwork = R_Calloc(*lwork, double);
 
   /*** Spectral decomposition ***/
   F77_CALL(dgeev)("N", "V", p, A, p, lambda_re, lambda_im, VL_re, p, V_re, p, dwork, lwork, err FCONE FCONE);      // FCONE added on 19/04/2022
   if (*err){
-    warning("AK_LAPACK::spevGE: LAPACK dgeev failed.\n");    
-    Free(dwork);
+    Rf_warning("AK_LAPACK::spevGE: LAPACK dgeev failed.\n");    
+    R_Free(dwork);
     return;
   }
 
@@ -288,7 +289,7 @@ spevGE(double* A,  int* complexEV,  double* lambda_re,  double* lambda_im,  doub
   }
 
   /*** Free the working array and return ***/
-  Free(dwork);
+  R_Free(dwork);
   return;
 }
 
@@ -313,19 +314,19 @@ spevGE_RL(double* A,      int* complexEV,  double* lambda_re,  double* lambda_im
   *lwork = -1;
   F77_CALL(dgeev)("V", "V", p, A, p, lambda_re, lambda_im, VL_re, p, VR_re, p, dtemp, lwork, err FCONE FCONE);      // FCONE added on 19/04/2022
   if (*err){
-    warning("AK_LAPACK::spevGE: LAPACK dgeev failed.\n");    
+    Rf_warning("AK_LAPACK::spevGE: LAPACK dgeev failed.\n");    
     return;
   }
   *lwork = (int)(*dtemp);
 
   /*** Allocate a space for the work array ***/
-  dwork = Calloc(*lwork, double);
+  dwork = R_Calloc(*lwork, double);
 
   /*** Spectral decomposition ***/
   F77_CALL(dgeev)("V", "V", p, A, p, lambda_re, lambda_im, VL_re, p, VR_re, p, dwork, lwork, err FCONE FCONE);      // FCONE added on 19/04/2022
   if (*err){
-    warning("AK_LAPACK::spevGE: LAPACK dgeev failed.\n");    
-    Free(dwork);
+    Rf_warning("AK_LAPACK::spevGE: LAPACK dgeev failed.\n");    
+    R_Free(dwork);
     return;
   }
 
@@ -400,7 +401,7 @@ spevGE_RL(double* A,      int* complexEV,  double* lambda_re,  double* lambda_im
   }
 
   /*** Free the working array and return ***/
-  Free(dwork);
+  R_Free(dwork);
   return;
 }
 
@@ -430,7 +431,7 @@ spevGE2GE(double* A_re,             double* A_im,             double* Vinv_re,  
     /*** Compute V^{-1} ***/
     AK_LAPACK::invComplexGE(Vinv_re, Vinv_im, jpvt, err, V_re, V_im, p);
     if (*err){
-      warning("AK_LAPACK::spevGE2GE: invComplexGE subroutine failed.\n");    
+      Rf_warning("AK_LAPACK::spevGE2GE: invComplexGE subroutine failed.\n");    
       return;
     }    
 
@@ -514,7 +515,7 @@ spevGE2GE(double* A_re,             double* A_im,             double* Vinv_re,  
     }
     AK_LAPACK::invGE(Vinv_re, Vtmp_re, jpvt, err, p);
     if (*err){
-      warning("AK_LAPACK::spevGE2GE: invGE subroutine failed.\n");    
+      Rf_warning("AK_LAPACK::spevGE2GE: invGE subroutine failed.\n");    
       return;
     }    
 
@@ -736,7 +737,7 @@ invGE(double* Ainv,  double* A,  int* jpvt,  int* err,  const int* p)
   /*** Compute inversion ***/
   F77_CALL(dgesv)(p, p, A, p, jpvt, Ainv, p, err);
   if (*err){
-    warning("AK_LAPACK::invGE: LAPACK dgesv failed.\n");    
+    Rf_warning("AK_LAPACK::invGE: LAPACK dgesv failed.\n");    
     return;
   }    
 
@@ -744,10 +745,10 @@ invGE(double* Ainv,  double* A,  int* jpvt,  int* err,  const int* p)
   //*Vnorm = F77_CALL(dlange)("1", p, p, Ainv, p, dtmp);
   //F77_CALL(dgecon)("1", p, Ainv, p, Vnorm, Rcond, dwork_dgecon, jpvt, err);
   //if (*Rcond < SOME EPSILON){
-  //  warning("AK_LAPACK::invGE: A is computationally singular, reciprocal condition number = %g", *Rcond)
+  //  Rf_warning("AK_LAPACK::invGE: A is computationally singular, reciprocal condition number = %g", *Rcond)
   //}
   //if (*err){
-  //  warning("AK_LAPACK::invGE: LAPACK dgecon failed.\n");    
+  //  Rf_warning("AK_LAPACK::invGE: LAPACK dgecon failed.\n");    
   //  return;      
   //}
 
@@ -767,27 +768,27 @@ invComplexGE(double* Ainv_re,  double* Ainv_im,  int* jpvt,  int* err,  const do
   p_p = *p * *p;
 
   /*** Copy A into a Rcomplex structure ***/
-  A    = Calloc(p_p, Rcomplex);
+  A    = R_Calloc(p_p, Rcomplex);
   AK_Complex::ReIm2Rcomplex(A, A_re, A_im, p_p);
 
   /*** Matrix of right-hand sides (unit matrix) ***/
-  Ainv = Calloc(p_p, Rcomplex);
+  Ainv = R_Calloc(p_p, Rcomplex);
   AK_Complex::eyeComplex(Ainv, *p);
 
   /*** Compute A^{-1} ***/
   F77_CALL(zgesv)(p, p, A, p, jpvt, Ainv, p, err);
   if (*err){
-    warning("AK_LAPACK::iinvComplexGE: LAPACK zgesv failed.\n");    
-    Free(Ainv);
-    Free(A);
+    Rf_warning("AK_LAPACK::iinvComplexGE: LAPACK zgesv failed.\n");    
+    R_Free(Ainv);
+    R_Free(A);
     return;
   }    
 
   /*** Copy A^{-1} from Rcomplex structure back to double arrays ***/
   AK_Complex::Rcomplex2ReIm(Ainv_re, Ainv_im, Ainv, p_p);
 
-  Free(Ainv);
-  Free(A);
+  R_Free(Ainv);
+  R_Free(A);
   return; 
 }
 
@@ -889,7 +890,7 @@ sqrtGE(double* Asqrt_re,        double* Asqrt_im,        double* Vinv_re,  doubl
   /***** Spectral decomposition of A *****/
   AK_LAPACK::spevGE(Asqrt_re, complexRES, sqrt_lambda_re, sqrt_lambda_im, V_re, V_im, err, p);
   if (*err){
-    warning("AK_LAPACK::sqrtGE: Spectral decomposition failed.\n");        
+    Rf_warning("AK_LAPACK::sqrtGE: Spectral decomposition failed.\n");        
     return;
   }
 
@@ -935,7 +936,7 @@ sqrtGE(double* Asqrt_re,        double* Asqrt_im,        double* Vinv_re,  doubl
   /***** Compute the square root matrix *****/
   AK_LAPACK::spevGE2GE(Asqrt_re, Asqrt_im, Vinv_re, Vinv_im, complexRES, dwork, jpvt, err, sqrt_lambda_re, sqrt_lambda_im, V_re, V_im, p);
   if (*err){
-    warning("AK_LAPACK::sqrtGE: spevGE2GE subroutine failed.\n");        
+    Rf_warning("AK_LAPACK::sqrtGE: spevGE2GE subroutine failed.\n");        
     return;
   }
 
@@ -1019,7 +1020,7 @@ MPpinvSP(double* Ainv,  double* work,  int* err,  const int* p)
   /*** Spectral decomposition ***/
   F77_CALL(dspev)("V", "L", p, Ainv, lambdaInv, V, p, work_dspev, err FCONE FCONE);      // FCONE added on 19/04/2022
   if (*err){
-    warning("AK_LAPACK::MPpinvSP: Spectral decomposition failed.\n");    
+    Rf_warning("AK_LAPACK::MPpinvSP: Spectral decomposition failed.\n");    
     return;
   }
 

@@ -7,6 +7,7 @@
 //
 //  CREATED:   12/11/2007
 //             19/04/2022 FCONE added where needed
+//             16/09/2024 error --> Rf_error
 //
 // ======================================================================
 //
@@ -290,7 +291,7 @@ rWishart_R(double* W,  double* dwork,  int* err,  const double* nu,  double* inv
 
   /*** Decomposition of invS matrix: invS = L*t(L) ***/
   F77_CALL(dpptrf)("L", dim, invS, err FCONE);
-  if (*err) error("Dist::rWishart_R:  Cholesky decomposition of the inverse scale matrix failed.\n");
+  if (*err) Rf_error("Dist::rWishart_R:  Cholesky decomposition of the inverse scale matrix failed.\n");
 
   /*** Generate random numbers  ***/
   GetRNGstate();
@@ -321,12 +322,12 @@ ldWishart_R(double* log_dens,   double* W_L,       double* log_sqrt_detW,
   /*** Decomposition of invS matrix: invS = invS_L*t(invS_L) ***/
   AK_Basic::copyArray(invS_L, invS, LTdim);
   F77_CALL(dpptrf)("L", dim, invS_L, err FCONE);
-  if (*err) error("Dist::ldWishart_R:  Cholesky decomposition of the inverse scale matrix failed.\n");
+  if (*err) Rf_error("Dist::ldWishart_R:  Cholesky decomposition of the inverse scale matrix failed.\n");
 
   /*** Decomposition of the first W matrix ***/
   AK_Basic::copyArray(W_L, W, LTdim);
   F77_CALL(dpptrf)("L", dim, W_L, err FCONE);
-  if (*err) error("Dist::ldWishart_R:  Cholesky decomposition of matrix W[%d] failed.\n", 0);
+  if (*err) Rf_error("Dist::ldWishart_R:  Cholesky decomposition of matrix W[%d] failed.\n", 0);
 
   /*** Log-Density for the first W matrix + quantities that only depends on nu and S ***/
   Dist::ldWishart0(log_dens, log_sqrt_detW, log_const, log_sqrt_detinvS, W, W_L, nu, invS, invS_L, dim);
@@ -343,7 +344,7 @@ ldWishart_R(double* log_dens,   double* W_L,       double* log_sqrt_detW,
     /*** Decomposition of the W matrix ***/
     AK_Basic::copyArray(W_LP, WP, LTdim);
     F77_CALL(dpptrf)("L", dim, W_LP, err FCONE);
-    if (*err) error("Dist::ldWishart_R:  Cholesky decomposition of matrix W[%d] failed.\n", i);
+    if (*err) Rf_error("Dist::ldWishart_R:  Cholesky decomposition of matrix W[%d] failed.\n", i);
 
     /*** log_sqrt_detW, shift W_LP at the same time  ***/
     *log_sqrt_detWP = 0.0;

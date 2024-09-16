@@ -18,6 +18,7 @@
 
 #include <R.h>
 #include <R_ext/Lapack.h>
+#include <R_ext/Error.h>
 
 #include "AK_Basic.h"
 #include "Dist_MVN.h"

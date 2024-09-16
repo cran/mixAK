@@ -64,7 +64,7 @@ Moments_NormalApprox(double* cmean,
   /*** Cholesky decomposition of precision matrix of proposal distribution for theta ***/
   /*** ============================================================================= ***/
   F77_CALL(dpptrf)("L", dim, Q, err FCONE);                 /** this should never fail... **/
-  if (*err) error("%s: Cholesky decomposition of the precision matrix of the proposal distribution failed.\n", caller);
+  if (*err) Rf_error("%s: Cholesky decomposition of the precision matrix of the proposal distribution failed.\n", caller);
 
 
   /*** Compute log(|Q|^{1/2}) = sum(log(Li[j,j])) ***/

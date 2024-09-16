@@ -185,7 +185,7 @@ NMix_MCMC(const double* y0,
 
   const int distribution[1] = {NMix::NORMAL};
   double *df;
-  df = Calloc(*Kmax, double);
+  df = R_Calloc(*Kmax, double);
   AK_Basic::fillArray(df, 1000, *Kmax);
 
   //const int p_Kmax   = *p * *Kmax;
@@ -194,7 +194,7 @@ NMix_MCMC(const double* y0,
   /*** priorK:  Some checks  ***/
   if (*priorK > NMix::K_FIXED && *p > NMix::_MCMC_max_dim){
     *err = 1;
-    error("%s: Dimension of the response must not be higher than %d when K is random.\n", fname, NMix::_MCMC_max_dim);
+    Rf_error("%s: Dimension of the response must not be higher than %d when K is random.\n", fname, NMix::_MCMC_max_dim);
   }
   switch (*priorK){
   case NMix::K_FIXED:
@@ -203,7 +203,7 @@ NMix_MCMC(const double* y0,
     break;
   default:
     *err = 1;
-    error("%s:  Unimplemented type of the prior for K.\n", fname);
+    Rf_error("%s:  Unimplemented type of the prior for K.\n", fname);
   }
 
   /***** Reset sum_Ir, sum_Pr_y *****/
@@ -244,7 +244,7 @@ NMix_MCMC(const double* y0,
     break;
   default:
     *err = 1;
-    error("%s:  Unimplemented type of the prior for (mu, Sigma).\n", fname);
+    Rf_error("%s:  Unimplemented type of the prior for (mu, Sigma).\n", fname);
   }
 
   /*** Density for auxiliary vector u (HARDCODED AT THIS MOMENT) ***/
@@ -286,8 +286,8 @@ NMix_MCMC(const double* y0,
   cumPaction[2] = 1.0;
 
   /***** logPsplit, logPcombine:   *****/
-  double *logPsplit   = Calloc(*Kmax, double);
-  double *logPcombine = Calloc(*Kmax, double);
+  double *logPsplit   = R_Calloc(*Kmax, double);
+  double *logPcombine = R_Calloc(*Kmax, double);
   if (*Kmax == 1){
     logPsplit[0]   = R_NegInf;
     logPcombine[0] = R_NegInf;
@@ -310,8 +310,8 @@ NMix_MCMC(const double* y0,
   }
 
   /***** logPbirth, logPdeath:   *****/
-  double *logPbirth = Calloc(*Kmax, double);
-  double *logPdeath = Calloc(*Kmax, double);
+  double *logPbirth = R_Calloc(*Kmax, double);
+  double *logPdeath = R_Calloc(*Kmax, double);
   if (*Kmax == 1){
     logPbirth[0] = R_NegInf;
     logPdeath[0] = R_NegInf;
@@ -353,18 +353,18 @@ NMix_MCMC(const double* y0,
   /*****                      *initialize it by zero vectors when priormuQ = MUQ_NC                                        *****/
   /***** log_dets_D:          log_dets based on D matrices                                                                 *****/
   /*****                      * initialize it by zeros when priormuQ = MUQ_NC                                              *****/
-  double *logK       = Calloc(*Kmax, double);
+  double *logK       = R_Calloc(*Kmax, double);
   double log_lambda[1];
-  double *c_xi       = Calloc(*p * *Kmax, double);
-  double *log_c      = Calloc(*Kmax, double);
-  double *sqrt_c     = Calloc(*Kmax, double);
+  double *c_xi       = R_Calloc(*p * *Kmax, double);
+  double *log_c      = R_Calloc(*Kmax, double);
+  double *sqrt_c     = R_Calloc(*Kmax, double);
   double log_Wishart_const[1];
-  double *D_Li       = Calloc(LTp * *Kmax, double);
-  double *Dinv_xi    = Calloc(*p * *Kmax, double);
-  double *log_dets_D = Calloc(2 * *Kmax, double);
+  double *D_Li       = R_Calloc(LTp * *Kmax, double);
+  double *Dinv_xi    = R_Calloc(*p * *Kmax, double);
+  double *log_dets_D = R_Calloc(2 * *Kmax, double);
   NMix::prior_derived(p, priorK, priormuQ, Kmax, lambda, xi, c, Dinv, zeta,
                       logK, log_lambda, c_xi, log_c, sqrt_c, log_Wishart_const, D_Li, Dinv_xi, log_dets_D, err);     /* declared in NMix_Utils.h */
-  if (*err) error("%s:  Something went wrong.\n", fname);
+  if (*err) Rf_error("%s:  Something went wrong.\n", fname);
 
 
 /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/
@@ -378,17 +378,17 @@ NMix_MCMC(const double* y0,
   /***** Var, VarData:       Mixture overall variance                              *****/
   /***** XiInv:              Diagonal matrix with gamma^{-1}'s on a diagonal       *****/
   /***** log_sqrt_detXiInv:  log|XiInv|^{1/2}                                      *****/
-  double *log_dets = Calloc(2 * *Kmax, double);
-  double *logw     = Calloc(*Kmax * *nxw, double);
-  double *Var      = Calloc(LTp * *nxw, double);
-  double *VarData  = Calloc(LTp * *nxw, double);
-  double *XiInv    = Calloc(LTp, double);
+  double *log_dets = R_Calloc(2 * *Kmax, double);
+  double *logw     = R_Calloc(*Kmax * *nxw, double);
+  double *Var      = R_Calloc(LTp * *nxw, double);
+  double *VarData  = R_Calloc(LTp * *nxw, double);
+  double *XiInv    = R_Calloc(LTp, double);
   double log_sqrt_detXiInv[1];
   NMix::init_derived(p, nxw, Kmax, K, distribution,
                      w, mu, Li, df, shift, scale, gammaInv,   
                      log_dets, logw, Q, Sigma, chMeanP, Var, chCorrP, chMeanDataP, VarData, chCorrDataP,
                      XiInv, log_sqrt_detXiInv, err);                                                               /* declared in NMix_Utils.h */
-  if (*err) error("%s:  Something went wrong.\n", fname);
+  if (*err) Rf_error("%s:  Something went wrong.\n", fname);
 
 
 /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/
@@ -397,12 +397,12 @@ NMix_MCMC(const double* y0,
 
   /***** u:           Auxiliary vector to implement dimension changing moves   *****/
   /***** log_dens_u:  Space to store joint and marginal density of u           *****/
-  double *u = Calloc(1 + *p + *p, double);
-  double *log_dens_u = Calloc(1 + 1 + *p + *p, double);
+  double *u = R_Calloc(1 + *p + *p, double);
+  double *log_dens_u = R_Calloc(1 + 1 + *p + *p, double);
   r_u(u, log_dens_u, pars_dens_u, p);
 
   /***** P:  Rotation matrix to implement dimension changing moves    *****/
-  double *P = Calloc(*p * *p, double);
+  double *P = R_Calloc(*p * *p, double);
   AK_Basic::fillArray(P, 0.0, *p * *p);   
 
 
@@ -418,18 +418,18 @@ NMix_MCMC(const double* y0,
   /*****                                                                                        *****/   
   /***** tabxw:  frequency table giving numbers of observations per factor covariate            *****/
   /*****                                                                                        *****/
-  int *mixN = Calloc(*Kmax, int);
+  int *mixN = R_Calloc(*Kmax, int);
   AK_Basic::fillArray(mixN, 0, *Kmax);
   
-  int *mixNxw = Calloc(*Kmax * *nxw, int);
+  int *mixNxw = R_Calloc(*Kmax * *nxw, int);
   AK_Basic::fillArray(mixNxw, 0, *Kmax * *nxw);
 
-  int *tabxw = Calloc(*nxw, int);
+  int *tabxw = R_Calloc(*nxw, int);
   AK_Basic::fillArray(tabxw, 0, *nxw);
   if (*nxw == 1) tabxw[0] = *n;
   else{
     for (i = 0; i < *n; i++){
-      if (xw[i] < 0 || xw[i] >= *nxw) error("%s: Incorrect value of a factor covariate on mixture weights.\n", fname);
+      if (xw[i] < 0 || xw[i] >= *nxw) Rf_error("%s: Incorrect value of a factor covariate on mixture weights.\n", fname);
       tabxw[xw[i]]++;
     }
   }
@@ -438,10 +438,10 @@ NMix_MCMC(const double* y0,
   /*****         rInv[j][i] (j=0,...,Kmax, i=0,...,mixN[j]-1)                                       *****/
   /*****         = indeces of "columns" of y which are currently allocated in the j-th component    *****/
   /*****         * initialize rInv[j] by -1's                                                       *****/
-  int **rInv   = Calloc(*Kmax, int*);
+  int **rInv   = R_Calloc(*Kmax, int*);
   int **rInvPP = rInv;
   for (j = 0; j < *Kmax; j++){
-    *rInvPP = Calloc(*n, int);
+    *rInvPP = R_Calloc(*n, int);
     AK_Basic::fillArray(*rInvPP, -1, *n);
     rInvPP++;
   }
@@ -451,7 +451,7 @@ NMix_MCMC(const double* y0,
   for (i = 0; i < *n; i++){
     if (*rP >= *K){ 
       *err = 1;
-      error("%s: r[%d] = %d >= K (=%d)\n", fname, i, *rP, *K);
+      Rf_error("%s: r[%d] = %d >= K (=%d)\n", fname, i, *rP, *K);
     }
     rInv[*rP][mixN[*rP]] = i;
     mixN[*rP]++;
@@ -485,16 +485,16 @@ NMix_MCMC(const double* y0,
   /***** pred_dens:          pred_dens[i]         = sum_{j=1}^K w_j * phi(y_i | mu_j, Sigma_j)                                  *****/
   /***** Pr_y:               Pr_y[j, i]           = w_l * phi(y_i | mu_l, Sigma_l) / C (to sum-up to one)                       *****/
   /***** cum_Pr_y:           cum_Pr_y[j, i]       = sum_{l=1}^j w_l * phi(y_i | mu_l, Sigma_l)                                  *****/
-  double *indLogL0          = Calloc(*n, double);
-  double *indLogL1          = Calloc(*n, double);
-  double *indDevCompl       = Calloc(*n, double);
-  double *indDevObs         = Calloc(*n, double);
-  double *indDevCompl_inHat = Calloc(*n, double);
-  double *pred_dens         = Calloc(*n, double);
-  double *Pr_y              = Calloc(*Kmax * *n, double);
-  double *cum_Pr_y          = Calloc(*Kmax * *n, double);
+  double *indLogL0          = R_Calloc(*n, double);
+  double *indLogL1          = R_Calloc(*n, double);
+  double *indDevCompl       = R_Calloc(*n, double);
+  double *indDevObs         = R_Calloc(*n, double);
+  double *indDevCompl_inHat = R_Calloc(*n, double);
+  double *pred_dens         = R_Calloc(*n, double);
+  double *Pr_y              = R_Calloc(*Kmax * *n, double);
+  double *cum_Pr_y          = R_Calloc(*Kmax * *n, double);
   const int ldwork_Deviance = *p + (2 * *p + LTp + 2 * *nxw + *p + 2 * LTp + 2) * *Kmax;
-  double *dwork_Deviance    = Calloc(ldwork_Deviance, double);
+  double *dwork_Deviance    = R_Calloc(ldwork_Deviance, double);
   NMix_Deviance(indLogL0, indLogL1, indDevCompl, indDevObs, indDevCompl_inHat, 
                 chLogL0P, chLogL1P, chDevComplP, chDevObsP, chDevCompl_inHatP, 
                 pred_dens, Pr_y, cum_Pr_y, dwork_Deviance, err,
@@ -503,15 +503,15 @@ NMix_MCMC(const double* y0,
                 logw, mu, Q, Li, log_dets, delta, c, xi, c_xi, Dinv, Dinv_xi, zeta, XiInv);
   bool cum_Pr_done[1] = {true};
   if (*err){
-    warning("%s: Calculation of quantities for DIC's failed on init.\n", fname);
+    Rf_warning("%s: Calculation of quantities for DIC's failed on init.\n", fname);
     *cum_Pr_done = false;
     *err = 0;
   }
 
   /***** beta, sigmaR2:   Space for NMix::updateCensObs to store regression coefficients and residual variances  *****/
   /*****                  * initialized by zeros                                                                 *****/
-  double *beta    = Calloc(*p * *p * *Kmax, double);
-  double *sigmaR2 = Calloc(*p * *Kmax, double);
+  double *beta    = R_Calloc(*p * *p * *Kmax, double);
+  double *sigmaR2 = R_Calloc(*p * *Kmax, double);
   AK_Basic::fillArray(beta, 0.0, *p * *p * *Kmax);
   AK_Basic::fillArray(sigmaR2, 0.0, *p * *Kmax);
 
@@ -519,31 +519,31 @@ NMix_MCMC(const double* y0,
 /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/
 /***** Working arrays                                                                                     *****/
 /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/ 
-  double *dwork_updateAlloc      = Calloc(*p, double);
-  double *dwork_updateMeansVars  = Calloc(*Kmax * (*p + *p + LTp) + *p + LTp + 2 + LTp + 2 * *p * *p + *Kmax, double);
-  double *dwork_updateWeights    = Calloc(*Kmax, double);
-  double *dwork_updateHyperVars  = Calloc(*p, double);
+  double *dwork_updateAlloc      = R_Calloc(*p, double);
+  double *dwork_updateMeansVars  = R_Calloc(*Kmax * (*p + *p + LTp) + *p + LTp + 2 + LTp + 2 * *p * *p + *Kmax, double);
+  double *dwork_updateWeights    = R_Calloc(*Kmax, double);
+  double *dwork_updateHyperVars  = R_Calloc(*p, double);
 
   const int ldwork_updateCensObs = (*p == 1 ? *Kmax : ((*p - 1) * *p)/2);
-  double *dwork_updateCensObs    = Calloc(ldwork_updateCensObs, double);
+  double *dwork_updateCensObs    = R_Calloc(ldwork_updateCensObs, double);
  
   const int ldwork_logJacLambdaVSigma = *p * LTp + (4 + 2 * *p) * *p;
   const int ldwork_RJMCMCsplit   = 2 * *p + 2 * LTp + 2 * *p + 2 * p_p + 5 * LTp + 1 * *p + 1 * p_p + *p + p_p + ldwork_logJacLambdaVSigma + *Kmax + LTp * LTp;
   const int ldwork_RJMCMCcombine = 1 * *p + 1 * LTp + 1 * *p + 1 * p_p + 3 * LTp + 2 * *p + 2 * p_p + *p + p_p + ldwork_logJacLambdaVSigma + *Kmax + LTp * LTp + 3 * p_p + 2 * *p + 2 * p_p;
   const int liwork_RJMCMCsplit   = 3 * *n + *p;
   const int liwork_RJMCMCcombine = *p; 
-  double *dwork_RJMCMC_sc        = Calloc(ldwork_RJMCMCsplit > ldwork_RJMCMCcombine ? ldwork_RJMCMCsplit : ldwork_RJMCMCcombine, double);
-  int *iwork_RJMCMC_sc           = Calloc(liwork_RJMCMCsplit > liwork_RJMCMCcombine ? liwork_RJMCMCsplit : liwork_RJMCMCcombine, int);
+  double *dwork_RJMCMC_sc        = R_Calloc(ldwork_RJMCMCsplit > ldwork_RJMCMCcombine ? ldwork_RJMCMCsplit : ldwork_RJMCMCcombine, double);
+  int *iwork_RJMCMC_sc           = R_Calloc(liwork_RJMCMCsplit > liwork_RJMCMCcombine ? liwork_RJMCMCsplit : liwork_RJMCMCcombine, int);
 
-  double *dwork_RJMCMC_birth = Calloc(2 * LTp + *Kmax, double);
-  int *iwork_RJMCMC_death    = Calloc(*Kmax, int);
+  double *dwork_RJMCMC_birth = R_Calloc(2 * LTp + *Kmax, double);
+  int *iwork_RJMCMC_death    = R_Calloc(*Kmax, int);
 
 
 /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/
 /***** Ordering of the initial components                                                                 *****/
 /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/ 
-  int *order = Calloc(*Kmax, int);
-  int *rank  = Calloc(*Kmax, int);  
+  int *order = R_Calloc(*Kmax, int);
+  int *rank  = R_Calloc(*Kmax, int);  
   NMix::orderComp(order, rank, dwork_RJMCMC_birth, &AK_Basic::_ZERO_INT, K, mu, p);
   AK_Basic::fillArray(order + *K, 0, *Kmax - *K);
   AK_Basic::fillArray(rank  + *K, 0, *Kmax - *K);
@@ -696,7 +696,7 @@ NMix_MCMC(const double* y0,
           //Rprintf((char*)("COMBINE (K_after = %d, log_AR = %g, accept = %d)\n"), *K, *log_AR, *accept);
         }
         if (*err){
-          warning("%s: Split-combine move encoutered problems in iteration %d (thin=%d).\n", fname, *iter, witer);
+          Rf_warning("%s: Split-combine move encoutered problems in iteration %d (thin=%d).\n", fname, *iter, witer);
           *err = 0;
         }
         if (JustOneAction) break;
@@ -719,7 +719,7 @@ NMix_MCMC(const double* y0,
           //Rprintf((char*)("DEATH (K_after = %d, log_AR = %g, accept = %d)\n"), *K, *log_AR, *accept);
         }
         if (*err){
-          warning("%s: Birth-death move encoutered problems in iteration %d (thin=%d).\n", fname, *iter, witer);
+          Rf_warning("%s: Birth-death move encoutered problems in iteration %d (thin=%d).\n", fname, *iter, witer);
           *err = 0;
         }
         if (JustOneAction) break;
@@ -794,7 +794,7 @@ NMix_MCMC(const double* y0,
           //Rprintf((char*)("COMBINE (K_after = %d, log_AR = %g, accept = %d)\n"), *K, *log_AR, *accept);
         }
         if (*err){
-          warning("%s: Split-combine move encoutered problems in iteration %d (thin=%d).\n", fname, *iter, witer);
+          Rf_warning("%s: Split-combine move encoutered problems in iteration %d (thin=%d).\n", fname, *iter, witer);
           *err = 0;
         }
         if (JustOneAction) break;
@@ -825,7 +825,7 @@ NMix_MCMC(const double* y0,
           //Rprintf((char*)("DEATH (K_after = %d, log_AR = %g, accept = %d)\n"), *K, *log_AR, *accept);
         }
         if (*err){
-          warning("%s: Birth-death move encoutered problems in iteration %d (thin=%d).\n", fname, *iter, witer);
+          Rf_warning("%s: Birth-death move encoutered problems in iteration %d (thin=%d).\n", fname, *iter, witer);
           *err = 0;
         }
         if (JustOneAction) break;
@@ -922,7 +922,7 @@ NMix_MCMC(const double* y0,
                   logw, mu, Q, Li, log_dets, delta, c, xi, c_xi, Dinv, Dinv_xi, zeta, XiInv);
     *cum_Pr_done = true;
     if (*err){
-      warning("%s: Calculation of quantities for DIC's failed in iteration %d.\n", fname, *iter);
+      Rf_warning("%s: Calculation of quantities for DIC's failed in iteration %d.\n", fname, *iter);
       *cum_Pr_done = false;
       *err = 0;
     }
@@ -1035,60 +1035,60 @@ NMix_MCMC(const double* y0,
 /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/
 /***** Cleaning                                                                                           *****/
 /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/ 
-  Free(rank);
-  Free(order);
-  Free(dwork_RJMCMC_birth);
-  Free(iwork_RJMCMC_death);
-  Free(dwork_RJMCMC_sc);
-  Free(iwork_RJMCMC_sc);
-  Free(dwork_updateCensObs);
-  Free(dwork_updateHyperVars);
-  Free(dwork_updateWeights);
-  Free(dwork_updateMeansVars);
-  Free(dwork_updateAlloc);
-  Free(sigmaR2);
-  Free(beta);
-  Free(VarData);
-  Free(Var);
-  Free(logw);
-  Free(dwork_Deviance);
-  Free(cum_Pr_y);
-  Free(Pr_y);
-  Free(pred_dens);
-  Free(indDevCompl_inHat);
-  Free(indDevCompl);
-  Free(indDevObs);
-  Free(indLogL1);
-  Free(indLogL0);
-  Free(mixN);
-  Free(mixNxw);
-  Free(tabxw);
+  R_Free(rank);
+  R_Free(order);
+  R_Free(dwork_RJMCMC_birth);
+  R_Free(iwork_RJMCMC_death);
+  R_Free(dwork_RJMCMC_sc);
+  R_Free(iwork_RJMCMC_sc);
+  R_Free(dwork_updateCensObs);
+  R_Free(dwork_updateHyperVars);
+  R_Free(dwork_updateWeights);
+  R_Free(dwork_updateMeansVars);
+  R_Free(dwork_updateAlloc);
+  R_Free(sigmaR2);
+  R_Free(beta);
+  R_Free(VarData);
+  R_Free(Var);
+  R_Free(logw);
+  R_Free(dwork_Deviance);
+  R_Free(cum_Pr_y);
+  R_Free(Pr_y);
+  R_Free(pred_dens);
+  R_Free(indDevCompl_inHat);
+  R_Free(indDevCompl);
+  R_Free(indDevObs);
+  R_Free(indLogL1);
+  R_Free(indLogL0);
+  R_Free(mixN);
+  R_Free(mixNxw);
+  R_Free(tabxw);
   rInvPP = rInv;
   for (j = 0; j < *Kmax; j++){
-    Free(*rInvPP);
+    R_Free(*rInvPP);
     rInvPP++;
   }
-  Free(rInv);
-  Free(XiInv);
-  Free(log_dets);
-  Free(log_dets_D);
-  Free(Dinv_xi);
-  Free(D_Li);
-  Free(sqrt_c);
-  Free(log_c);
-  Free(c_xi);
-  Free(logK);
+  R_Free(rInv);
+  R_Free(XiInv);
+  R_Free(log_dets);
+  R_Free(log_dets_D);
+  R_Free(Dinv_xi);
+  R_Free(D_Li);
+  R_Free(sqrt_c);
+  R_Free(log_c);
+  R_Free(c_xi);
+  R_Free(logK);
 
-  Free(logPdeath);
-  Free(logPbirth);
-  Free(logPcombine);
-  Free(logPsplit);
+  R_Free(logPdeath);
+  R_Free(logPbirth);
+  R_Free(logPcombine);
+  R_Free(logPsplit);
 
-  Free(log_dens_u);
-  Free(P);
-  Free(u);
+  R_Free(log_dens_u);
+  R_Free(P);
+  R_Free(u);
 
-  Free(df);
+  R_Free(df);
   return;
 }    /** end of function MCMC_Nmixture **/
 

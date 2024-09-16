@@ -59,7 +59,7 @@ NMix_PredDA(const double* y0,
   /***** NOT REALLY USED VARIABLES RELATED TO A FACTOR COVARIATE ON MIXTURE WEIGHTS *****/
   /***** (not implemented (yet) in NMix_NMixRelabel)                                *****/
   const int nxw_ONE = 1;
-  int *xw = Calloc(*n, int);
+  int *xw = R_Calloc(*n, int);
   for (i = 0; i < *n; i++) xw[i] = 0;
 
   /***** Pointers to sampled values *****/
@@ -81,24 +81,24 @@ NMix_PredDA(const double* y0,
   }
 
   /***** logw:  Space to store log-weights                                 *****/
-  double *logw = Calloc(*K, double);
+  double *logw = R_Calloc(*K, double);
   NMix::w2logw(logw, chw, K, &nxw_ONE);  
 
   /***** log_dets:  Space to calculate log_dets for MVN functions         *****/
-  double *log_dets = Calloc(2 * *K, double);  
+  double *log_dets = R_Calloc(2 * *K, double);  
   for (j = 0; j < *K; j++) log_dets[2*j + 1] = -(*p) * M_LN_SQRT_2PI;
   NMix::Li2log_dets(log_dets, chLi, K, p);
 
   /***** dwork_MVN:  Working space for MVN functions                       *****/
-  double *dwork_MVN = Calloc(*p, double);
+  double *dwork_MVN = R_Calloc(*p, double);
   AK_Basic::fillArray(dwork_MVN, 0.0, *p);
 
   /***** Declare cum_Pr_y, Pr_y                                                               *****/
   /***** Pr_y[j, i]     = w_j * phi(y_i | mu_j, Sigma_j)                                      *****/
   /***** cum_Pr_y[j, i] = sum_{l=1}^j w_l * phi(y_i | mu_l, Sigma_l)                          *****/
   /***** Reset hatPr_y, sum_Ir                                                                *****/
-  double *Pr_y     = Calloc(*K * *n, double);
-  double *cum_Pr_y = Calloc(*K * *n, double);
+  double *Pr_y     = R_Calloc(*K * *n, double);
+  double *cum_Pr_y = R_Calloc(*K * *n, double);
   NMix::Pr_y_and_cum_Pr_y(Pr_y, cum_Pr_y, dwork_MVN, y, p, n, logw, chmu, chLi, log_dets, K, xw, &nxw_ONE);
   AK_Basic::fillArray(sum_Ir,  0,   *n * *K);
   AK_Basic::fillArray(hatPr_y, 0.0, *n * *K);
@@ -107,12 +107,12 @@ NMix_PredDA(const double* y0,
   bool cum_Pr_done[1] = {true};
 
   /***** Component allocations and related quantities *****/
-  int *mixN    = Calloc(*K, int);
-  int *mixNxw  = Calloc(*K * nxw_ONE, int);
-  int **rInv   = Calloc(*K, int*);
+  int *mixN    = R_Calloc(*K, int);
+  int *mixNxw  = R_Calloc(*K * nxw_ONE, int);
+  int **rInv   = R_Calloc(*K, int*);
   int **rInvPP = rInv;
   for (j = 0; j < *K; j++){
-    *rInvPP = Calloc(*n, int);
+    *rInvPP = R_Calloc(*n, int);
     rInvPP++;
   }
   NMix::updateAlloc(r, mixN, mixNxw, rInv, cum_Pr_y, dwork_MVN,
@@ -120,14 +120,14 @@ NMix_PredDA(const double* y0,
 
   /***** beta, sigmaR2:   Space for NMix::updateCensObs to store regression coefficients and residual variances  *****/
   /*****                  * initialized by zeros                                                                 *****/
-  double *beta    = Calloc(*p * *p * *K, double);
-  double *sigmaR2 = Calloc(*p * *K, double);
+  double *beta    = R_Calloc(*p * *p * *K, double);
+  double *sigmaR2 = R_Calloc(*p * *K, double);
   AK_Basic::fillArray(beta,    0.0, *p * *p * *K);
   AK_Basic::fillArray(sigmaR2, 0.0, *p * *K);
 
   /***** Working space for NMix::updateCensObs *****/
   const int ldwork_updateCensObs = (*p == 1 ? *K : ((*p - 1) * *p)/2);
-  double *dwork_updateCensObs    = Calloc(ldwork_updateCensObs, double);
+  double *dwork_updateCensObs    = R_Calloc(ldwork_updateCensObs, double);
   AK_Basic::fillArray(dwork_updateCensObs, 0.0, ldwork_updateCensObs);
 
 
@@ -189,23 +189,23 @@ NMix_PredDA(const double* y0,
 /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/
 /***** Cleaning                                                                                           *****/
 /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/ 
-  Free(dwork_updateCensObs);
-  Free(sigmaR2);
-  Free(beta);
+  R_Free(dwork_updateCensObs);
+  R_Free(sigmaR2);
+  R_Free(beta);
   rInvPP = rInv;
   for (j = 0; j < *K; j++){
-    Free(*rInvPP);
+    R_Free(*rInvPP);
     rInvPP++;
   }
-  Free(rInv);
-  Free(mixN);
-  Free(mixNxw);
-  Free(xw);
-  Free(cum_Pr_y);
-  Free(Pr_y);
-  Free(dwork_MVN);
-  Free(log_dets);
-  Free(logw);
+  R_Free(rInv);
+  R_Free(mixN);
+  R_Free(mixNxw);
+  R_Free(xw);
+  R_Free(cum_Pr_y);
+  R_Free(Pr_y);
+  R_Free(dwork_MVN);
+  R_Free(log_dets);
+  R_Free(logw);
 
   return;
 }

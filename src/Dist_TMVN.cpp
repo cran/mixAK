@@ -77,7 +77,7 @@ rTMVN2(double* x,             double* dwork,
        const double* alpha,   const double* Ainv,   const int*  whichA,
        const double* a,       const double* b,      const int* trunc,    const int* p)
 {
-  error("rTMVN2 has not been fully implemented yet!\n");
+  Rf_error("rTMVN2 has not been fully implemented yet!\n");
 
   static int i;
   static double *zP, *z, *Gz;
@@ -108,19 +108,19 @@ rTMVN2(double* x,             double* dwork,
       bP     = b;
       truncP = trunc;
       GzP    = Gz;      
-      warning("TO DO\n");
+      Rf_warning("TO DO\n");
 
       /*** Sample new z[i] ***/
-      warning("TO DO\n");
+      Rf_warning("TO DO\n");
 
       /*** Shift pointers ***/
-      warning("TO DO?\n");
+      Rf_warning("TO DO?\n");
       alphaP++;
       zP++; 
     }
 
     /*** Recalculate x = A^{-1} %*% z = t(Li^{-1}) %*% z ***/
-    warning("TO DO\n");
+    Rf_warning("TO DO\n");
 
   }else{                   /*** A = L^{-1} and array Ainv contains lower triangle of L    ***/
                            /*** A^{-1} = L is LOWER triangular                            ***/
@@ -138,19 +138,19 @@ rTMVN2(double* x,             double* dwork,
       AK_BLAS::LTxVec(Gz, Ainv, z, p, &i);
 
       /*** Determine univariate bounds for the distribution z[i] | z[-i] ***/
-      warning("TO DO\n");
+      Rf_warning("TO DO\n");
 
       /*** Sample new z[i] ***/
-      warning("TO DO\n");
+      Rf_warning("TO DO\n");
 
       /*** Shift pointers ***/
-      warning("TO DO?\n");
+      Rf_warning("TO DO?\n");
       alphaP++;
       zP++; 
     }
 
     /*** Recalculate x = A^{-1} %*% z ***/
-    warning("TO DO\n");
+    Rf_warning("TO DO\n");
   }
 
   return;
@@ -175,7 +175,7 @@ rTMVN1_R(double* x,            double* beta,         double* sigmaR2,
   double *xP;
 
   Stat::BLA(beta, sigmaR2, L, err, mu, Sigma, p);
-  if (*err) error("Dist::rTMVN1_R: Cholesky decomposition of some of submatrices of Sigma failed.\n");
+  if (*err) Rf_error("Dist::rTMVN1_R: Cholesky decomposition of some of submatrices of Sigma failed.\n");
 
   GetRNGstate(); 
 

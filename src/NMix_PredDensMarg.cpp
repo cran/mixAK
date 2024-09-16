@@ -134,7 +134,7 @@ NMix_PredDensMarg(double* dens,     double* densK,   int* freqK,   double* propK
           Li++;
         }
         F77_CALL(dpptri)("L", p, Sigma, err FCONE);
-        if (*err) error("%s: Computation of Sigma failed.\n", fname);        
+        if (*err) Rf_error("%s: Computation of Sigma failed.\n", fname);        
 
         y0P = y;                   /** start of the grid for the first margin                                **/
         n0  = n;                   /** length of the grid for the first margin                               **/

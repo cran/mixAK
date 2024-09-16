@@ -18,6 +18,7 @@
 #define _MISC_GENERATE_PERMUTATIONS_H_
 
 #include <R.h>
+#include <R_ext/Error.h>
 
 namespace Misc{
 

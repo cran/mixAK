@@ -16,6 +16,7 @@
 
 #include <R.h>
 #include <Rmath.h>        // added on 15/03/2017
+#include <R_ext/Error.h>
 
 #include "AK_Basic.h"
 

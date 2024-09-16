@@ -181,7 +181,7 @@ updateRanEf_QR(double* b,
       //  Rprintf("etaR[[%d]] <- ", s+1);
       //  AK_Basic::printVec4R(eta_randomrespP[s], *nrespP[s]);        
       //}
-      error("%s: TRAP, infinite log-likelihood for cluster %d of grouped obs.\n", fname, i + 1);      
+      Rf_error("%s: TRAP, infinite log-likelihood for cluster %d of grouped obs.\n", fname, i + 1);      
     }
 
 

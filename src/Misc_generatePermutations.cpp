@@ -30,7 +30,7 @@ generatePermutations(int* n_perm,
   int k, j, i, h;
   int *orderP, *tmp_orderP, *tmp_order_now, *rankP;
 
-  if (*K <= 0) error("Misc::generatePermutations: non-positive K supplied.\n");
+  if (*K <= 0) Rf_error("Misc::generatePermutations: non-positive K supplied.\n");
 
   /*** K = 1 ***/
   if (*K == 1){

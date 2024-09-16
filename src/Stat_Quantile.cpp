@@ -35,8 +35,8 @@ Quantile(double       *quantile,
   /*** Indeces of quantile values in sampled chain (indexing starting from 0)                    ***/
   /***    indquant1, indquant2 ..... quantile = q*sample[indquant1] + (1-q)sample[indquant2]     ***/
   /*** ========================================================================================= ***/
-  indquant1  = Calloc(*nprob, int);
-  indquant2  = Calloc(*nprob, int);
+  indquant1  = R_Calloc(*nprob, int);
+  indquant2  = R_Calloc(*nprob, int);
 
   probP = prob;
   ind1P = indquant1;
@@ -44,7 +44,7 @@ Quantile(double       *quantile,
   for (i = 0; i < *nprob; i++){
     if (*probP < 0 || *probP > 1){
       Rprintf((char*)("prob[%d]=%g\n"), i, *probP);
-      error("%s: prob must lie between 0 and 1.\n", fname);              
+      Rf_error("%s: prob must lie between 0 and 1.\n", fname);              
     }
     if (*probP <= 0){
       *ind1P = *ind2P = 0;
@@ -73,7 +73,7 @@ Quantile(double       *quantile,
   
   /*** Compute quantiles  ***/
   /*** ================== ***/
-  value = Calloc(*nsample, double);
+  value = R_Calloc(*nsample, double);
 
   sampStart  = sample;
   quantStart = quantile;
@@ -122,9 +122,9 @@ Quantile(double       *quantile,
 
   /*** Cleaning ***/
   /*** ======== ***/
-  Free(value);
-  Free(indquant1);
-  Free(indquant2);
+  R_Free(value);
+  R_Free(indquant1);
+  R_Free(indquant2);
 
   return;
 }

@@ -74,6 +74,8 @@
 #include <R.h>
 #include <Rmath.h>                             // added on 11/10/2016 to get M_SQRT2 also on Solaris compilers
 #include <R_ext/Lapack.h>
+#include <R_ext/Error.h>                       // added 16/09/2024, to have Rf_warning
+#include <R_ext/RS.h>                          // added 16/09/2024, to have R_Calloc, R_Free
 
 #include "AK_BLAS.h"
 #include "AK_Complex.h"

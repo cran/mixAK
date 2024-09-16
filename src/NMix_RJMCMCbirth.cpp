@@ -104,7 +104,7 @@ RJMCMCbirth(int* accept,              double* log_AR,
   AK_Basic::copyArray(Listar, Qstar, LTp);
   F77_CALL(dpptrf)("L", p, Listar, err FCONE);
   if (*err){ 
-    warning("%s: Cholesky decomposition of proposed Q failed.\n", fname);    
+    Rf_warning("%s: Cholesky decomposition of proposed Q failed.\n", fname);    
     *log_AR = R_NegInf;
     return;
   }
@@ -191,7 +191,7 @@ RJMCMCbirth(int* accept,              double* log_AR,
     AK_Basic::copyArray(Sigmastar, Listar, LTp);
     F77_CALL(dpptri)("L", p, Sigmastar, err FCONE);
     if (*err){
-      error("%s: Inversion of proposed Sigmastar failed.\n", fname);     // this should never happen
+      Rf_error("%s: Inversion of proposed Sigmastar failed.\n", fname);     // this should never happen
     }
 
     /***** mixN *****/

@@ -93,9 +93,9 @@ GLMM_longitDA2(const int*    nonSilent,
   /***** NOT REALLY USED VARIABLES RELATED TO A FACTOR COVARIATE ON MIXTURE WEIGHTS *****/
   /***** (not implemented in the context of this function                           *****/
   const int nxw_ONE = 1;
-  int *xw = Calloc(*I, int);
+  int *xw = R_Calloc(*I, int);
   for (i = 0; i < *I; i++) xw[i] = 0;
-  int *tabxw = Calloc(nxw_ONE, int);
+  int *tabxw = R_Calloc(nxw_ONE, int);
   tabxw[0] = *I;
 
   /***** Distribution of b: currently only a normal mixture allowed *****/
@@ -106,7 +106,7 @@ GLMM_longitDA2(const int*    nonSilent,
   case NMix::MVT:
   default:
     *err = 1;
-    error("%s: Unimplemented distribution for random effects specified.\n", fname);    
+    Rf_error("%s: Unimplemented distribution for random effects specified.\n", fname);    
   }
 
   const double df_MVT = 1;      // fake df (only needed for MVT random effects)
@@ -114,11 +114,11 @@ GLMM_longitDA2(const int*    nonSilent,
 
   /***** Dimensionality variables per cluster (per model) *****/
   /***** ++++++++++++++++++++++++++++++++++++++++++++++++ *****/
-  int* l_beta = Calloc(*nClust, int);                       /* length of beta vector for each cluster        */
-  int* dim_b  = Calloc(*nClust, int);                       /* dimension of random effects for each cluster  */
-  int* LT_b   = Calloc(*nClust, int);                       
-  int* p_fi   = Calloc(R * *nClust, int);
-  int* q_ri   = Calloc(R * *nClust, int);
+  int* l_beta = R_Calloc(*nClust, int);                       /* length of beta vector for each cluster        */
+  int* dim_b  = R_Calloc(*nClust, int);                       /* dimension of random effects for each cluster  */
+  int* LT_b   = R_Calloc(*nClust, int);                       
+  int* p_fi   = R_Calloc(R * *nClust, int);
+  int* q_ri   = R_Calloc(R * *nClust, int);
   int sum_dim_b = 0;
   for (cl = 0; cl < *nClust; cl++){
     for (s = 0; s < R; s++){
@@ -127,7 +127,7 @@ GLMM_longitDA2(const int*    nonSilent,
       if (q_ri[cl*R + s] <= 0){
         /*** This should not be a problem in this version. ***/
         //*err = 1;
-        //error("%s: There are no random effects in a model for response %d in cluster %d.\n", fname, s, cl);
+        //Rf_error("%s: There are no random effects in a model for response %d in cluster %d.\n", fname, s, cl);
       }
     }
     l_beta[cl] = AK_Basic::sum(p_fi + cl*R, R);
@@ -144,15 +144,15 @@ GLMM_longitDA2(const int*    nonSilent,
   /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/
   /***** Quantities related to regression                                                                   *****/
   /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/
-  int *N_s           = Calloc(R, int);           // total number of observations for each response
-  int *N_i           = Calloc(*I, int);          // total number of observations for each group of repeated observations
-  double *eta_fixed  = Calloc(N, double); 
-  double *eta_random = Calloc(N, double);
-  double *eta        = Calloc(N, double);  
-  double *eta_zs     = Calloc(N, double);
-  double *meanY      = Calloc(N, double);  
-  double *dY         = Calloc(N, double);  
-  double *sum_dY_i   = Calloc(*I, double);
+  int *N_s           = R_Calloc(R, int);           // total number of observations for each response
+  int *N_i           = R_Calloc(*I, int);          // total number of observations for each group of repeated observations
+  double *eta_fixed  = R_Calloc(N, double); 
+  double *eta_random = R_Calloc(N, double);
+  double *eta        = R_Calloc(N, double);  
+  double *eta_zs     = R_Calloc(N, double);
+  double *meanY      = R_Calloc(N, double);  
+  double *dY         = R_Calloc(N, double);  
+  double *sum_dY_i   = R_Calloc(*I, double);
   double sum_dY[1] = {0.0};
   int max_N_i = 0;
 
@@ -185,35 +185,35 @@ GLMM_longitDA2(const int*    nonSilent,
   int **Y_drespP = NULL;
 
   if (*R_c){
-    Y_cresp  = Calloc(*R_c, double*);
-    Y_crespP = Calloc(*R_c, double*);
+    Y_cresp  = R_Calloc(*R_c, double*);
+    Y_crespP = R_Calloc(*R_c, double*);
 
     *Y_cresp = Y_c;
     for (s = 1; s < *R_c; s++) Y_cresp[s] = Y_cresp[s-1] + N_s[s-1];
   }
 
   if (*R_d){
-    Y_dresp  = Calloc(*R_d, int*);
-    Y_drespP = Calloc(*R_d, int*);
+    Y_dresp  = R_Calloc(*R_d, int*);
+    Y_drespP = R_Calloc(*R_d, int*);
 
     *Y_dresp = Y_d;
     for (s = 1; s < *R_d; s++) Y_dresp[s] = Y_dresp[s-1] + N_s[*R_c+s-1];
   }
 
-  double **eta_fixedresp   = Calloc(R, double*);
-  double **eta_fixedrespP  = Calloc(R, double*);
-  double **eta_randomresp  = Calloc(R, double*);
-  double **eta_randomrespP = Calloc(R, double*);
-  //double **eta_zsresp      = Calloc(R, double*);
-  //double **eta_zsrespP     = Calloc(R, double*);
-  double **etaresp         = Calloc(R, double*);
-  double **etarespP        = Calloc(R, double*);
-  double **meanYresp       = Calloc(R, double*);
-  double **meanYrespP      = Calloc(R, double*);  
-  double **dYresp          = Calloc(R, double*);
-  double **dYrespP         = Calloc(R, double*);  
-  int **nresp              = Calloc(R, int*);
-  int **nrespP             = Calloc(R, int*);
+  double **eta_fixedresp   = R_Calloc(R, double*);
+  double **eta_fixedrespP  = R_Calloc(R, double*);
+  double **eta_randomresp  = R_Calloc(R, double*);
+  double **eta_randomrespP = R_Calloc(R, double*);
+  //double **eta_zsresp      = R_Calloc(R, double*);
+  //double **eta_zsrespP     = R_Calloc(R, double*);
+  double **etaresp         = R_Calloc(R, double*);
+  double **etarespP        = R_Calloc(R, double*);
+  double **meanYresp       = R_Calloc(R, double*);
+  double **meanYrespP      = R_Calloc(R, double*);  
+  double **dYresp          = R_Calloc(R, double*);
+  double **dYrespP         = R_Calloc(R, double*);  
+  int **nresp              = R_Calloc(R, int*);
+  int **nrespP             = R_Calloc(R, int*);
   *eta_fixedresp  = eta_fixed;
   *eta_randomresp = eta_random;
   //*eta_zsresp     = eta_zs;
@@ -231,11 +231,11 @@ GLMM_longitDA2(const int*    nonSilent,
     nresp[s]          = nresp[s-1]          + *I;
   }
 
-  int *l_ZS = Calloc(*I, int);
+  int *l_ZS = R_Calloc(*I, int);
   int sum_l_ZS;
   double *ZS = NULL;
-  double **Zresp   = Calloc(R, double*);
-  double **ZrespP  = Calloc(R, double*);  
+  double **Zresp   = R_Calloc(R, double*);
+  double **ZrespP  = R_Calloc(R, double*);  
   // NOTE: For each cluster (model), Zs and Zresp must be set-up!
   
 
@@ -244,40 +244,40 @@ GLMM_longitDA2(const int*    nonSilent,
   /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/ 
 
   /*** Space to store calculated predictions of (scaled) random effects ***/
-  double *bpred_i       = Calloc(*I * max_dim_b, double);
-  double *bpredscaled_i = Calloc(*I * max_dim_b, double);
+  double *bpred_i       = R_Calloc(*I * max_dim_b, double);
+  double *bpredscaled_i = R_Calloc(*I * max_dim_b, double);
   AK_Basic::fillArray(bpred_i,       0.0, *I * max_dim_b);
   AK_Basic::fillArray(bpredscaled_i, 0.0, *I * max_dim_b);
 
   /*** Space for log-likelihoods and stuff for IWLS ***/
   double ll_marg[1] = {0.0};
-  double *f_marg_i  = Calloc(*I, double);
+  double *f_marg_i  = R_Calloc(*I, double);
   AK_Basic::fillArray(f_marg_i,  0.0, *I);
 
-  double *pi_ik = Calloc(*I * max_Kmax_b, double);
+  double *pi_ik = R_Calloc(*I * max_Kmax_b, double);
   AK_Basic::fillArray(pi_ik, 0.0, *I * max_Kmax_b);
 
   double ll_cond[1] = {0.0};
-  double *f_cond_i  = Calloc(*I, double);
+  double *f_cond_i  = R_Calloc(*I, double);
   AK_Basic::fillArray(f_cond_i,  0.0, *I);  
 
   double ll_reff[1] = {0.0};
-  double *f_reff_i  = Calloc(*I, double);
+  double *f_reff_i  = R_Calloc(*I, double);
   AK_Basic::fillArray(f_reff_i,  0.0, *I);  
 
-  double *stres = Calloc(N, double);
+  double *stres = R_Calloc(N, double);
   AK_Basic::fillArray(stres, 0.0, N);  
 
-  double *sqrt_w_phi = Calloc(N, double);
+  double *sqrt_w_phi = R_Calloc(N, double);
   AK_Basic::fillArray(sqrt_w_phi, 0.0, N);    
 
   /*** Completely working space ***/ 
   const int ldwork_GLMM_Deviance2 = (max_N_i + max_dim_b) * (max_dim_b + 3) + max_dim_b * (7 + max_Kmax_b) + max_N_i * (3 * max_dim_b + 6) + 3 * max_LT_b + max_Kmax_b;
-  double *dwork_GLMM_Deviance2 = Calloc(ldwork_GLMM_Deviance2, double);
+  double *dwork_GLMM_Deviance2 = R_Calloc(ldwork_GLMM_Deviance2, double);
   AK_Basic::fillArray(dwork_GLMM_Deviance2, 0.0, ldwork_GLMM_Deviance2);
 
   const int liwork_GLMM_Deviance2 = max_dim_b > 0 ? max_dim_b : 1;
-  int    *iwork_GLMM_Deviance2 = Calloc(liwork_GLMM_Deviance2, int);
+  int    *iwork_GLMM_Deviance2 = R_Calloc(liwork_GLMM_Deviance2, int);
   AK_Basic::fillArray(iwork_GLMM_Deviance2, 0.0, liwork_GLMM_Deviance2);
 
 
@@ -301,8 +301,8 @@ GLMM_longitDA2(const int*    nonSilent,
   const double *sigma_eps = chsigma_eps;
   const double *beta      = chbeta;  
 
-  double *logw_b      = Calloc(max_Kmax_b, double);
-  double *log_dets_b  = Calloc(2 * max_Kmax_b, double);
+  double *logw_b      = R_Calloc(max_Kmax_b, double);
+  double *log_dets_b  = R_Calloc(2 * max_Kmax_b, double);
   AK_Basic::fillArray(logw_b,     0.0, max_Kmax_b);
   AK_Basic::fillArray(log_dets_b, 0.0, 2 * max_Kmax_b);
    
@@ -328,7 +328,7 @@ GLMM_longitDA2(const int*    nonSilent,
   const int *q_ri_cl        = q_ri;
   const int *randIntcpt_cl  = randIntcpt;  
 
-  int *cumq_ri_cl = Calloc(R, int);
+  int *cumq_ri_cl = R_Calloc(R, int);
   AK_Basic::fillArray(cumq_ri_cl, 0.0, R);
 
   double scaleProd_cl[1]   = {1.0};
@@ -409,7 +409,7 @@ GLMM_longitDA2(const int*    nonSilent,
       }
     }
     sum_l_ZS = AK_Basic::sum(l_ZS, *I);
-    ZS = Calloc(sum_l_ZS, double);
+    ZS = R_Calloc(sum_l_ZS, double);
     GLMM::create_ZS(ZS, ZrespP, nrespP, Zresp, nresp, scale_b_cl, q_cl, randIntcpt_cl, &R, I);
 
     //Rprintf("\np_fi_cl: ");
@@ -656,7 +656,7 @@ GLMM_longitDA2(const int*    nonSilent,
     q_ri_cl        += R;
     randIntcpt_cl  += R;
 
-    Free(ZS);
+    R_Free(ZS);
   }      /*** End of for (clust_lC = 0; clust_lC < *nClust; clust_lC++) (loop over clusters) ***/
   if (*nonSilent) Rprintf((char*)("\n"));  
 
@@ -665,70 +665,70 @@ GLMM_longitDA2(const int*    nonSilent,
   /***** %%%%%%%%%%%%%%% *****/ 
 
   /*** Add-ons for cluster specific variables ***/
-  Free(cumq_ri_cl);
+  R_Free(cumq_ri_cl);
 
   /*** Add-ons to sampled chains ***/
-  Free(log_dets_b);
-  Free(logw_b);
+  R_Free(log_dets_b);
+  R_Free(logw_b);
 
   /*** Miscellaneous working arrays ***/
-  Free(iwork_GLMM_Deviance2);
-  Free(dwork_GLMM_Deviance2);
-  Free(sqrt_w_phi);
-  Free(stres);
-  Free(f_reff_i);
-  Free(f_cond_i);
-  Free(pi_ik);
-  Free(f_marg_i);
-  Free(bpredscaled_i);
-  Free(bpred_i);
+  R_Free(iwork_GLMM_Deviance2);
+  R_Free(dwork_GLMM_Deviance2);
+  R_Free(sqrt_w_phi);
+  R_Free(stres);
+  R_Free(f_reff_i);
+  R_Free(f_cond_i);
+  R_Free(pi_ik);
+  R_Free(f_marg_i);
+  R_Free(bpredscaled_i);
+  R_Free(bpred_i);
 
   /*** Quantities related to regression ***/
-  Free(ZrespP);
-  Free(Zresp);
-  Free(l_ZS);
+  R_Free(ZrespP);
+  R_Free(Zresp);
+  R_Free(l_ZS);
 
-  Free(nrespP);
-  Free(nresp);
-  Free(dYrespP);
-  Free(dYresp);
-  Free(meanYrespP);
-  Free(meanYresp);
-  Free(etarespP);
-  Free(etaresp);
-  //Free(eta_zsrespP);
-  //Free(eta_zsresp);
-  Free(eta_randomrespP);
-  Free(eta_randomresp);
-  Free(eta_fixedrespP);  
-  Free(eta_fixedresp); 
+  R_Free(nrespP);
+  R_Free(nresp);
+  R_Free(dYrespP);
+  R_Free(dYresp);
+  R_Free(meanYrespP);
+  R_Free(meanYresp);
+  R_Free(etarespP);
+  R_Free(etaresp);
+  //R_Free(eta_zsrespP);
+  //R_Free(eta_zsresp);
+  R_Free(eta_randomrespP);
+  R_Free(eta_randomresp);
+  R_Free(eta_fixedrespP);  
+  R_Free(eta_fixedresp); 
 
   if (*R_d){
-    Free(Y_dresp);  
-    Free(Y_drespP);  
+    R_Free(Y_dresp);  
+    R_Free(Y_drespP);  
   }
 
   if (*R_c){
-    Free(Y_cresp);  
-    Free(Y_crespP);  
+    R_Free(Y_cresp);  
+    R_Free(Y_crespP);  
   }
 
-  Free(sum_dY_i); 
-  Free(dY);
-  Free(meanY);
-  Free(eta_zs);
-  Free(eta);
-  Free(eta_random);
-  Free(eta_fixed);
-  Free(N_i);
-  Free(N_s);
+  R_Free(sum_dY_i); 
+  R_Free(dY);
+  R_Free(meanY);
+  R_Free(eta_zs);
+  R_Free(eta);
+  R_Free(eta_random);
+  R_Free(eta_fixed);
+  R_Free(N_i);
+  R_Free(N_s);
 
   /***  Dimensionality variables per cluster (per model) ***/
-  Free(q_ri);
-  Free(p_fi);
-  Free(LT_b);
-  Free(dim_b);
-  Free(l_beta);
+  R_Free(q_ri);
+  R_Free(p_fi);
+  R_Free(LT_b);
+  R_Free(dim_b);
+  R_Free(l_beta);
 
   return;
 }

@@ -90,7 +90,7 @@ RotationMatrix(double* P, double* dwork, int* pivot, int* err, const int* dim)
     // in the Matlab code of Papageorgiou (correctmatrix.m)
     AK_LAPACK::correctMatGE(P, dwork, pivot, err, dim);
     if (*err){
-      warning("Rand::RotationMatrix: Subroutine AK_LAPACK::correctMatGE failed.\n");
+      Rf_warning("Rand::RotationMatrix: Subroutine AK_LAPACK::correctMatGE failed.\n");
       return;
     }
   }
@@ -116,7 +116,7 @@ RotationMatrix_R(double* P, double* dwork, int* pivot, int* err, const int* dim,
   for (int i = 0; i < *n; i++){
     Rand::RotationMatrix(PP, dwork, pivot, err, dim);
     if (*err){
-      warning("Rand::RotationMatrix_R: Subroutine Rand::RotationMatrix failed for i=%d.\n", i+1);
+      Rf_warning("Rand::RotationMatrix_R: Subroutine Rand::RotationMatrix failed for i=%d.\n", i+1);
     }
     PP += dim2;
   }

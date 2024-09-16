@@ -19,6 +19,7 @@
 #include <R.h>
 #include <Rmath.h>
 #include <R_ext/Lapack.h>
+#include <R_ext/Error.h>
 
 #include "AK_Basic.h"
 #include "AK_LAPACK.h"

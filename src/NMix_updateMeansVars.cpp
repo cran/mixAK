@@ -139,7 +139,7 @@ updateMeansVars_NC(double* mu,
 
     /*** Cholesky decomposition of XiInv4Q, store it again in XiInv4Q ***/
     F77_CALL(dpptrf)("L", p, XiInv4Q, err FCONE);                 /** this should never fail... **/
-    if (*err) error("NMix::updateMeansVars_NC:  Cholesky decomposition of the Wishart inverse scale matrix failed.\n");
+    if (*err) Rf_error("NMix::updateMeansVars_NC:  Cholesky decomposition of the Wishart inverse scale matrix failed.\n");
 
     // printf("Cholesky decomposition of XiInv4Q[%d]:\n", j);              // DEBUG CODE
     // AK_Basic::printLT(XiInv4Q, *p);                                     // DEBUG CODE
@@ -158,7 +158,7 @@ updateMeansVars_NC(double* mu,
       QP++;
     }
     F77_CALL(dpptrf)("L", p, LiP, err FCONE);                 /** this should never fail... **/
-    if (*err) error("NMix::updateMeansVars_NC:  Cholesky decomposition of the sampled component inverse covariance matrix failed.\n");
+    if (*err) Rf_error("NMix::updateMeansVars_NC:  Cholesky decomposition of the sampled component inverse covariance matrix failed.\n");
 
     // printf("Li[%d]:\n", j);                    // DEBUG CODE
     // AK_Basic::printLT(LiP, *p);                // DEBUG CODE
@@ -172,7 +172,7 @@ updateMeansVars_NC(double* mu,
       cdP++;
     }
     F77_CALL(dpptri)("L", p, Sigma_j, err FCONE);
-    if (*err) error("NMix::updateMeansVars_NC:  Computation of Sigma failed.\n");
+    if (*err) Rf_error("NMix::updateMeansVars_NC:  Computation of Sigma failed.\n");
 
     // printf("Sigma[%d]:\n", j);                          // DEBUG CODE
     // AK_Basic::printLT(SigmaP - LTp, *p);                // DEBUG CODE
@@ -333,7 +333,7 @@ updateMeansVars_IC(double* mu,
 
     /*** Cholesky decomposition of XiInv4Q, store it again in XiInv4Q_OR_Li4mu ***/
     F77_CALL(dpptrf)("L", p, XiInv4Q_OR_Li4mu, err FCONE);                 /** this should never fail... **/
-    if (*err) error("NMix::updateMeansVars_IC:  Cholesky decomposition of the Wishart inverse scale matrix failed.\n");
+    if (*err) Rf_error("NMix::updateMeansVars_IC:  Cholesky decomposition of the Wishart inverse scale matrix failed.\n");
 
     //Rprintf((char*)("zeta=%g,  mixN=%d,  zeta+mixN=%g\n"), *zeta, *mixNP, n_plus_zeta);                  // DEBUG CODE
     //Rprintf((char*)("Cholesky decomposition of XiInv4Q[%d]: "), j);                                      // DEBUG CODE
@@ -354,7 +354,7 @@ updateMeansVars_IC(double* mu,
       cdP++;
     }
     F77_CALL(dpptrf)("L", p, Li_j, err FCONE);                 /** this should never fail ... **/
-    if (*err) error("NMix::updateMeansVars_IC:  Cholesky decomposition of the sampled component inverse covariance matrix failed.\n");
+    if (*err) Rf_error("NMix::updateMeansVars_IC:  Cholesky decomposition of the sampled component inverse covariance matrix failed.\n");
     //Rprintf((char*)("Cholesky decomposition of Q[%d]: "), j);                 // DEBUG CODE
     //AK_Basic::printArray(Li_j, LTp);                                          // DEBUG CODE
 
@@ -367,7 +367,7 @@ updateMeansVars_IC(double* mu,
       cdP++;
     }
     F77_CALL(dpptri)("L", p, Sigma_j, err FCONE);
-    if (*err) error("NMix::updateMeansVars_IC:  Computation of Sigma failed.\n");
+    if (*err) Rf_error("NMix::updateMeansVars_IC:  Computation of Sigma failed.\n");
     //Rprintf((char*)("Sigma[%d]: "), j);                                      // DEBUG CODE
     //AK_Basic::printArray(Sigma_j, LTp);                                      // DEBUG CODE
     
@@ -398,7 +398,7 @@ updateMeansVars_IC(double* mu,
 
     /*** Cholesky decomposition of var(mu_j|...)^{-1} ***/
     F77_CALL(dpptrf)("L", p, XiInv4Q_OR_Li4mu, err FCONE);                 /** this should never fail ... **/
-    if (*err) error("NMix::updateMeansVars_IC:  Cholesky decomposition of the full conditional inverse covariance matrix of a mixture mean failed.\n");
+    if (*err) Rf_error("NMix::updateMeansVars_IC:  Cholesky decomposition of the full conditional inverse covariance matrix of a mixture mean failed.\n");
     //Rprintf((char*)("Cholesky decomposition of the inverse variance of mu[%d]|...: "), j);             // DEBUG CODE
     //AK_Basic::printArray(XiInv4Q_OR_Li4mu, LTp);                                                       // DEBUG CODE
 
@@ -535,7 +535,7 @@ updateMeansVars_IC_homoscedastic(double* mu,
 
   /*** Cholesky decomposition of XiInv4Q, store it again in XiInv4Q_OR_Li4mu ***/
   F77_CALL(dpptrf)("L", p, XiInv4Q_OR_Li4mu, err FCONE);                 /** this should never fail... **/
-  if (*err) error("NMix::updateMeansVars_IC_homoscedastic:  Cholesky decomposition of the Wishart inverse scale matrix failed.\n");
+  if (*err) Rf_error("NMix::updateMeansVars_IC_homoscedastic:  Cholesky decomposition of the Wishart inverse scale matrix failed.\n");
 
   /*** Sample new component inverse variance from the full conditional Wishart ***/
   Dist::rWishart(Q, work4rWishart, &n_plus_zeta, XiInv4Q_OR_Li4mu, p);
@@ -549,7 +549,7 @@ updateMeansVars_IC_homoscedastic(double* mu,
     QP++;
   }
   F77_CALL(dpptrf)("L", p, Li, err FCONE);                 /** this should never fail ... **/
-  if (*err) error("NMix::updateMeansVars_IC_homoscedastic:  Cholesky decomposition of the sampled component inverse covariance matrix failed.\n");
+  if (*err) Rf_error("NMix::updateMeansVars_IC_homoscedastic:  Cholesky decomposition of the sampled component inverse covariance matrix failed.\n");
 
   /*** Component variance ***/
   SigmaP = Sigma;
@@ -560,7 +560,7 @@ updateMeansVars_IC_homoscedastic(double* mu,
     LiP++;
   }
   F77_CALL(dpptri)("L", p, Sigma, err FCONE);
-  if (*err) error("NMix::updateMeansVars_IC_homoscedastic:  Computation of Sigma failed.\n");
+  if (*err) Rf_error("NMix::updateMeansVars_IC_homoscedastic:  Computation of Sigma failed.\n");
     
   /*** log_dets related to the new component inverse variance ***/
   LiP = Li;
@@ -624,7 +624,7 @@ updateMeansVars_IC_homoscedastic(double* mu,
 
     /*** Cholesky decomposition of var(mu_j|...)^{-1} ***/
     F77_CALL(dpptrf)("L", p, XiInv4Q_OR_Li4mu, err FCONE);                 /** this should never fail ... **/
-    if (*err) error("NMix::updateMeansVars_IC_homoscedastic:  Cholesky decomposition of the full conditional inverse covariance matrix of a mixture mean failed.\n");
+    if (*err) Rf_error("NMix::updateMeansVars_IC_homoscedastic:  Cholesky decomposition of the full conditional inverse covariance matrix of a mixture mean failed.\n");
 
     /*** log_dets of the full conditional distribution ***/
     cdP = XiInv4Q_OR_Li4mu;

@@ -42,11 +42,11 @@ NMix_PredCondDensCDFMarg(double* dens,
   *err = 0;  
   if (*p <= 1){ 
     *err = 1;
-    error("%s: Dimension must be at least 2.\n", fname);        
+    Rf_error("%s: Dimension must be at least 2.\n", fname);        
   }
   if (*icond < 0 || *icond >= *p){
     *err = 1;
-    error("%s: Incorrect index of the margin by which we condition,\n", fname);
+    Rf_error("%s: Incorrect index of the margin by which we condition,\n", fname);
   }
 
   /***** Variables which will (repeatedly) be used *****/
@@ -105,7 +105,7 @@ NMix_PredCondDensCDFMarg(double* dens,
   
   /***** Working array *****/
   /***** ============= *****/
-  double *dwork = Calloc(2 + LTp + lcgrid * (2 + lgrid), double);
+  double *dwork = R_Calloc(2 + LTp + lcgrid * (2 + lgrid), double);
 
   double *dwork_dMVN, *Sigma, *dens_denom, *w_fycond, *dens_numer;
   double *SigmaP, *dens_denomP, *w_fycondP, *dens_numerP, *cSigma;
@@ -127,7 +127,7 @@ NMix_PredCondDensCDFMarg(double* dens,
   double *chdens  = NULL;
   double *chdensP = NULL;
   if (*nquant){
-    chdens = Calloc(ldens * *M, double);
+    chdens = R_Calloc(ldens * *M, double);
     chdensP = chdens;
   }
 
@@ -160,7 +160,7 @@ NMix_PredCondDensCDFMarg(double* dens,
         Li++;
       }
       F77_CALL(dpptri)("L", p, Sigma, err FCONE);
-      if (*err) error("%s: Computation of Sigma failed (iteration %d, component %d).\n", fname, t+1, j+1);        
+      if (*err) Rf_error("%s: Computation of Sigma failed (iteration %d, component %d).\n", fname, t+1, j+1);        
 
       /*** Standard deviation of the margin by which we condition ***/
       /*** ++++++++++++++++++++++++++++++++++++++++++++++++++++++ ***/
@@ -219,7 +219,7 @@ NMix_PredCondDensCDFMarg(double* dens,
 
           /*** Cholesky decomposition of the 2x2 covariance matrix of (margin m0, margin icond) ***/       
           F77_CALL(dpptrf)("L", &TWO, Li2, err FCONE);
-          if (*err) error("%s: Cholesky decomposition of 2x2 covariance matrix failed.\n", fname);        
+          if (*err) Rf_error("%s: Cholesky decomposition of 2x2 covariance matrix failed.\n", fname);        
           log_dets[0] = -AK_Basic::log_AK(Li2[0]) - AK_Basic::log_AK(Li2[2]);                            /** log(|Sigma|^{-1/2}) **/             
 
           /*** Loop over values by which we condition ***/      
@@ -255,7 +255,7 @@ NMix_PredCondDensCDFMarg(double* dens,
           if (m0 < *icond) cov_m0_icond = SigmaP[(*icond - m0)];          /* covariance between this margin and the margin by which we condition */
           else             cov_m0_icond = cSigma[m0 - (*icond)];
           sigma_cond = *SigmaP - cov_m0_icond * cov_m0_icond / *cSigma;
-          if (sigma_cond < 0) error("%s: Negative conditional variance.\n", fname);
+          if (sigma_cond < 0) Rf_error("%s: Negative conditional variance.\n", fname);
           sigma_cond = sqrt(sigma_cond);
 
           /*** Loop over values by which we condition ***/      
@@ -389,8 +389,8 @@ NMix_PredCondDensCDFMarg(double* dens,
 
   /***** Clean *****/
   /***** ===== *****/
-  if (*nquant) Free(chdens);
-  Free(dwork);
+  if (*nquant) R_Free(chdens);
+  R_Free(dwork);
 
   return;
 }

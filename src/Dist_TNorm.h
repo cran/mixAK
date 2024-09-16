@@ -20,6 +20,7 @@
 
 #include <R.h>
 #include <Rmath.h>
+#include <R_ext/Error.h>
 
 namespace Dist{
 

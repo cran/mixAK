@@ -16,6 +16,11 @@ TO DO LIST:
   --> more or less solved on 03/12/2010
 
 ======================================================================================================================
+16/09/2024 (version 5.8):
+C code: all instances of 'error' and 'warning' changed to 'Rf_error' and 'Rf_warning' (R_ext/Error.h)
+        all instances of 'Calloc' and 'Free' changed to 'R_Calloc' and 'R_Free' (R_ext/RS.h)
+        [to make the CRAN check happy]
+
 08/12/2023 (version 5.7):
 Minor changes in few cpp/h files to make the CRAN check happy.
 

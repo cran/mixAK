@@ -104,7 +104,7 @@ NMix_ChainsDerived(double* chEexpY,
           Li++;
         }
         F77_CALL(dpptri)("L", p, Sigma, err FCONE);
-        if (*err) error("%s: Computation of Sigma failed.\n", fname);        
+        if (*err) Rf_error("%s: Computation of Sigma failed.\n", fname);        
 
         /*** Loop over margins ***/
         chEexpYPP = chEexpYP;

@@ -66,7 +66,7 @@ rTNorm1(double* x,  const double* mu,  const double* sigma,  const double* a,  c
     return;
 
   default:
-    error("Dist::rTnorm1:  Unimplemented value of trunc.\n");
+    Rf_error("Dist::rTnorm1:  Unimplemented value of trunc.\n");
   }
 }
 

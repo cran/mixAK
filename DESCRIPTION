@@ -1,6 +1,6 @@
 Package: mixAK
-Version: 5.7
-Date: 2023-12-14
+Version: 5.8
+Date: 2024-09-16
 Title: Multivariate Normal Mixture Models and Mixtures of Generalized
         Linear Mixed Models Including Model Based Clustering
 Authors@R: person(given = "Arnošt", family = "Komárek", role = c("aut", "cre"), email = "arnost.komarek@mff.cuni.cz", comment = c(ORCID = "0000-0001-8778-3762"))
@@ -8,13 +8,13 @@ Depends: R (>= 3.0.0), colorspace, lme4 (>= 1.0)
 Imports: graphics, stats, methods, splines, fastGHQuad, mnormt,
         parallel, coda
 Suggests: mvtnorm
-Description: Contains a mixture of statistical methods including the MCMC methods to analyze normal mixtures. Additionally, model based clustering methods are implemented to perform classification based on (multivariate) longitudinal (or otherwise correlated) data. The basis for such clustering is a mixture of multivariate generalized linear mixed models.
+Description: Contains a mixture of statistical methods including the MCMC methods to analyze normal mixtures. Additionally, model based clustering methods are implemented to perform classification based on (multivariate) longitudinal (or otherwise correlated) data. The basis for such clustering is a mixture of multivariate generalized linear mixed models. The package is primarily related to the publications Komárek (2009, Comp. Stat. and Data Anal.) <doi:10.1016/j.csda.2009.05.006> and Komárek and Komárková (2014, J. of Stat. Soft.) <doi:10.18637/jss.v059.i12>. It also implements methods published in Komárek and Komárková (2013, Ann. of Appl. Stat.) <doi:10.1214/12-AOAS580>, Hughes, Komárek, Bonnett, Czanner, García-Fiñana (2017, Stat. in Med.) <doi:10.1002/sim.7397>, Jaspers, Komárek, Aerts (2018, Biom. J.) <doi:10.1002/bimj.201600253> and Hughes, Komárek, Czanner, García-Fiñana (2018, Stat. Meth. in Med. Res) <doi:10.1177/0962280216674496>.
 Encoding: UTF-8
 License: GPL (>= 3)
 URL: https://msekce.karlin.mff.cuni.cz/~komarek/
 NeedsCompilation: yes
-Packaged: 2023-12-14 13:41:12 UTC; komarek
+Packaged: 2024-09-16 09:23:45 UTC; komarek
 Author: Arnošt Komárek [aut, cre] (<https://orcid.org/0000-0001-8778-3762>)
 Maintainer: Arnošt Komárek <arnost.komarek@mff.cuni.cz>
 Repository: CRAN
-Date/Publication: 2023-12-14 14:30:02 UTC
+Date/Publication: 2024-09-16 15:10:09 UTC

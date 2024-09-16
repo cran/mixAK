@@ -89,12 +89,12 @@ loglik_Zwork1_stres(double*  loglik,
 
     default:
       *err = 1;
-      error("%s: Unimplemented distributional type (%d).\n", fname, *dist_s);
+      Rf_error("%s: Unimplemented distributional type (%d).\n", fname, *dist_s);
     }
     if (!R_finite(loglik_s)){
       *err = 1;
       return;
-      //error("%s: TRAP, infinite log-likelihood for response profile %d.\n", fname, s + 1);
+      //Rf_error("%s: TRAP, infinite log-likelihood for response profile %d.\n", fname, s + 1);
     }      
     *loglik += loglik_s;
 
@@ -242,12 +242,12 @@ loglik_Zwork1_stres(double*  loglik,
 
     default:
       *err = 1;
-      error("%s: Unimplemented distributional type (%d).\n", fname, *dist_s);
+      Rf_error("%s: Unimplemented distributional type (%d).\n", fname, *dist_s);
     }
     if (!R_finite(loglik_s)){
       *err = 1;
       return;
-      //error("%s: TRAP, infinite log-likelihood for response profile %d.\n", fname, s + 1);
+      //Rf_error("%s: TRAP, infinite log-likelihood for response profile %d.\n", fname, s + 1);
     }      
     *loglik += loglik_s;
 
@@ -392,12 +392,12 @@ loglik_Zwork1(double*  loglik,
 
     default:
       *err = 1;
-      error("%s: Unimplemented distributional type (%d).\n", fname, *dist_s);
+      Rf_error("%s: Unimplemented distributional type (%d).\n", fname, *dist_s);
     }
     if (!R_finite(loglik_s)){
       *err = 1;
       return;
-      //error("%s: TRAP, infinite log-likelihood for response profile %d.\n", fname, s + 1);
+      //Rf_error("%s: TRAP, infinite log-likelihood for response profile %d.\n", fname, s + 1);
     }      
     *loglik += loglik_s;
 
@@ -527,12 +527,12 @@ loglik(double*  loglik,
 
     default:
       *err = 1;
-      error("%s: Unimplemented distributional type (%d).\n", fname, *dist_s);
+      Rf_error("%s: Unimplemented distributional type (%d).\n", fname, *dist_s);
     }
     if (!R_finite(loglik_s)){
       *err = 1;
       return;
-      //error("%s: TRAP, infinite log-likelihood for response profile %d.\n", fname, s + 1);
+      //Rf_error("%s: TRAP, infinite log-likelihood for response profile %d.\n", fname, s + 1);
     }      
     *loglik += loglik_s;
 
@@ -614,12 +614,12 @@ loglik(double*  loglik,
 
     default:
       *err = 1;
-      error("%s: Unimplemented distributional type (%d).\n", fname, *dist_s);
+      Rf_error("%s: Unimplemented distributional type (%d).\n", fname, *dist_s);
     }
     if (!R_finite(loglik_s)){
       *err = 1;
       return;
-      //error("%s: TRAP, infinite log-likelihood for response profile %d.\n", fname, s + 1);
+      //Rf_error("%s: TRAP, infinite log-likelihood for response profile %d.\n", fname, s + 1);
     }      
     *loglik += loglik_s;
 
@@ -755,7 +755,7 @@ Zwork1_stres2UI(double*  U,
 
     default:
       *err = 1;
-      error("%s: Unimplemented distributional type (%d).\n", fname, *dist_s);
+      Rf_error("%s: Unimplemented distributional type (%d).\n", fname, *dist_s);
     }
 
     stres_s      += *nresp[s];

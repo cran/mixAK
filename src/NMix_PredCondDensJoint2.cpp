@@ -32,11 +32,11 @@ NMix_PredCondDensJoint2(double* dens,
   *err = 0;  
   if (*p <= 2){ 
     *err = 1;
-    error("%s: Dimension must be at least 3.\n", fname);        
+    Rf_error("%s: Dimension must be at least 3.\n", fname);        
   }
   if (*icond < 0 || *icond >= *p){
     *err = 1;
-    error("%s: Incorrect index of the margin by which we condition,\n", fname);
+    Rf_error("%s: Incorrect index of the margin by which we condition,\n", fname);
   }
 
   /***** Variables which will (repeatedly) be used *****/
@@ -136,7 +136,7 @@ NMix_PredCondDensJoint2(double* dens,
         Li++;
       }
       F77_CALL(dpptri)("L", p, Sigma, err FCONE);
-      if (*err) error("%s: Computation of Sigma failed (iteration %d, component %d).\n", fname, t+1, j+1);        
+      if (*err) Rf_error("%s: Computation of Sigma failed (iteration %d, component %d).\n", fname, t+1, j+1);        
 
       /*** Standard deviation of the margin by which we condition ***/
       cSigma = Sigma + icdiag;         /* variance of the margin by which we condition */
@@ -209,7 +209,7 @@ NMix_PredCondDensJoint2(double* dens,
           *Li3P = *cSigma;                                          /* variance of the margin by which we condition                        */
        
           F77_CALL(dpptrf)("L", &THREE, Li3, err FCONE);                  /* Cholesky decomposition                                              */
-          if (*err) error("%s: Cholesky decomposition of 3x3 covariance matrix failed (iteration %d, component %d, margins %d, %d, %d).\n", fname, t+1, j+1, m0+1, m1+1, *icond+1);        
+          if (*err) Rf_error("%s: Cholesky decomposition of 3x3 covariance matrix failed (iteration %d, component %d, margins %d, %d, %d).\n", fname, t+1, j+1, m0+1, m1+1, *icond+1);        
           Li3P = Li3;
           log_dets[0] = -AK_Basic::log_AK(*Li3P); 
           Li3P += 3;

@@ -47,7 +47,7 @@ BLA(double* beta,
     /*** Compute L[i] = Cholesky decomposition of Sigma[-i,-i] ***/
     AK_BLAS::SPjj(L, betaP, sigmaR2P, Sigma, p, &i);
     F77_CALL(dpptrf)("L", &p_1, L, err FCONE);
-    if (*err) error("Stat::BLA:  Cholesky decomposition of Sigma[-%d,-%d] failed.\n", i, i);
+    if (*err) Rf_error("Stat::BLA:  Cholesky decomposition of Sigma[-%d,-%d] failed.\n", i, i);
 
     /*** Compute beta[1:(p-1),i] = Sigma[-i,-i]^{-1} %*% Sigma[i,-i]                                           ***/
     /*** In the middle, compute also betaVbeta = t(beta[1:(p-1),i]) %*% L[i] %*% t(L[i]) %*% beta[1:(p-1),i]   ***/

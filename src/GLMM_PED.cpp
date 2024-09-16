@@ -111,13 +111,13 @@ GLMM_PED(double*       PED,
   const int *q           = fixedIntcpt + R;
   const int *randIntcpt  = q + R;
 
-  int *p_fi     = Calloc(R, int);
-  int *q_ri     = Calloc(R, int);
+  int *p_fi     = R_Calloc(R, int);
+  int *q_ri     = R_Calloc(R, int);
   for (s = 0; s < R; s++){
     p_fi[s] = p[s] + fixedIntcpt[s];
     q_ri[s] = q[s] + randIntcpt[s];    
   }
-  int *cumq_ri  = Calloc(R, int);
+  int *cumq_ri  = R_Calloc(R, int);
   AK_Basic::cumsum(cumq_ri, q_ri, R);
   int max_p_fi    = AK_Basic::maxArray(p_fi, R);
   int LT_max_p_fi = (max_p_fi * (max_p_fi + 1)) / 2;
@@ -133,11 +133,11 @@ GLMM_PED(double*       PED,
       break;
     case NMix::MVT:
       *err = 1;
-      error("%s: Multivariate t-distribution for random effects not (yet) implemented.\n", fname);
+      Rf_error("%s: Multivariate t-distribution for random effects not (yet) implemented.\n", fname);
       break;
     default:
       *err = 1;
-      error("%s: Unimplemented distribution for random effects specified.\n", fname);    
+      Rf_error("%s: Unimplemented distribution for random effects specified.\n", fname);    
     }
   }
 
@@ -205,8 +205,8 @@ GLMM_PED(double*       PED,
   int N_c = (*R_c > 0 ? AK_Basic::sum(n, *R_c * *I) : 0);              /* total number of continuous responses */
   int N_d = (*R_d > 0 ? AK_Basic::sum(n + *R_c * *I, *R_d * *I) : 0);  /* total number of discrete responses   */
 
-  int *N_s = Calloc(R, int);
-  int *N_i = Calloc(*I, int);
+  int *N_s = R_Calloc(R, int);
+  int *N_i = R_Calloc(*I, int);
   /*** N_s and N_i is properly filled by GLMM::linear_predictors function below ***/
   /*** After that, max_N_s and max_N_i are calculated                           ***/
 
@@ -257,24 +257,24 @@ GLMM_PED(double*       PED,
   //double *bhat1_i, *bhat2_i;                      /*** used only as pointers in loops ***/
 
   if (dim_b){
-  //  Ebscaled1    = Calloc(dim_b, double);
-  //  Ebscaled2    = Calloc(dim_b, double);
-  //  Varbscaled1  = Calloc(LT_b, double);
-  //  Varbscaled2  = Calloc(LT_b, double);
-  //  Corrbscaled1 = Calloc(LT_b, double);
-  //  Corrbscaled2 = Calloc(LT_b, double);
-  //  Eb1          = Calloc(dim_b, double);
-  //  Eb2          = Calloc(dim_b, double);
-  //  Varb1        = Calloc(LT_b, double);
-  //  Varb2        = Calloc(LT_b, double);
-  //  Corrb1       = Calloc(LT_b, double);
-  //  Corrb2       = Calloc(LT_b, double);        
-  //  Sigma_b1     = Calloc(Kmax_b * LT_b, double);
-  //  Sigma_b2     = Calloc(Kmax_b * LT_b, double);
-    logw_b1 = Calloc(Kmax_b, double);
-    logw_b2 = Calloc(Kmax_b, double);
-    log_dets_b1 = Calloc(2 * Kmax_b, double);
-    log_dets_b2 = Calloc(2 * Kmax_b, double);
+  //  Ebscaled1    = R_Calloc(dim_b, double);
+  //  Ebscaled2    = R_Calloc(dim_b, double);
+  //  Varbscaled1  = R_Calloc(LT_b, double);
+  //  Varbscaled2  = R_Calloc(LT_b, double);
+  //  Corrbscaled1 = R_Calloc(LT_b, double);
+  //  Corrbscaled2 = R_Calloc(LT_b, double);
+  //  Eb1          = R_Calloc(dim_b, double);
+  //  Eb2          = R_Calloc(dim_b, double);
+  //  Varb1        = R_Calloc(LT_b, double);
+  //  Varb2        = R_Calloc(LT_b, double);
+  //  Corrb1       = R_Calloc(LT_b, double);
+  //  Corrb2       = R_Calloc(LT_b, double);        
+  //  Sigma_b1     = R_Calloc(Kmax_b * LT_b, double);
+  //  Sigma_b2     = R_Calloc(Kmax_b * LT_b, double);
+    logw_b1 = R_Calloc(Kmax_b, double);
+    logw_b2 = R_Calloc(Kmax_b, double);
+    log_dets_b1 = R_Calloc(2 * Kmax_b, double);
+    log_dets_b2 = R_Calloc(2 * Kmax_b, double);
 
   //  NMix::Li2Sigma(Sigma_b1, err, Li_b1, K_b1, &dim_b);
   //  NMix::Moments(Ebscaled1, Varbscaled1, Corrbscaled1, Eb1, Varb1, Corrb1, w_b1, mu_b1, Sigma_b1, K_b1, shift_b, scale_b, &dim_b);
@@ -286,10 +286,10 @@ GLMM_PED(double*       PED,
     NMix::w2logw(logw_b2, w_b2, K_b2, &nxw_ONE);
     NMix::Li2log_dets(log_dets_b2, Li_b2, K_b2, &dim_b);
 
-    //bhat1 = Calloc(*I * dim_b, double);
-    //bhat2 = Calloc(*I * dim_b, double);
-    bhatscaled1 = Calloc(*I * dim_b, double);
-    bhatscaled2 = Calloc(*I * dim_b, double);
+    //bhat1 = R_Calloc(*I * dim_b, double);
+    //bhat2 = R_Calloc(*I * dim_b, double);
+    bhatscaled1 = R_Calloc(*I * dim_b, double);
+    bhatscaled2 = R_Calloc(*I * dim_b, double);
 
     //bhat1_i = bhat1;
     //bhat2_i = bhat2;
@@ -323,18 +323,18 @@ GLMM_PED(double*       PED,
   /***** sum_dY:                     data dependent quantity (see GLMM::dY_meanY)                               *****/
   /*****                                                                                                        *****/
   /***** ------------------------------------------------------------------------------------------------------ *****/
-  double *eta_fixed1  = Calloc(N, double); 
-  double *eta_fixed2  = Calloc(N, double); 
-  double *eta_random1 = Calloc(N, double);
-  double *eta_random2 = Calloc(N, double);
-  double *eta1        = Calloc(N, double);  
-  double *eta2        = Calloc(N, double);  
-  double *meanY1      = Calloc(N, double);  
-  double *meanY2      = Calloc(N, double);  
+  double *eta_fixed1  = R_Calloc(N, double); 
+  double *eta_fixed2  = R_Calloc(N, double); 
+  double *eta_random1 = R_Calloc(N, double);
+  double *eta_random2 = R_Calloc(N, double);
+  double *eta1        = R_Calloc(N, double);  
+  double *eta2        = R_Calloc(N, double);  
+  double *meanY1      = R_Calloc(N, double);  
+  double *meanY2      = R_Calloc(N, double);  
 
-  double *eta_zs      = Calloc(N, double);
-  double *dY          = Calloc(N, double);  
-  double *sum_dY_i    = Calloc(*I, double);
+  double *eta_zs      = R_Calloc(N, double);
+  double *dY          = R_Calloc(N, double);  
+  double *sum_dY_i    = R_Calloc(*I, double);
   double sum_dY[1]    = {0.0};
 
     /*** Initialize eta_fixed1, eta_random1, eta1, eta_zs, N_s, N_i ***/
@@ -388,15 +388,15 @@ GLMM_PED(double*       PED,
   double *Y_c_repl1 = NULL;
   double *Y_c_repl2 = NULL;
   if (*R_c){
-    Y_c_repl1 = Calloc(N_c, double);
-    Y_c_repl2 = Calloc(N_c, double);
+    Y_c_repl1 = R_Calloc(N_c, double);
+    Y_c_repl2 = R_Calloc(N_c, double);
   }
 
   int *Y_d_repl1 = NULL;
   int *Y_d_repl2 = NULL;
   if (*R_d){
-    Y_d_repl1 = Calloc(N_d, int);
-    Y_d_repl2 = Calloc(N_d, int);
+    Y_d_repl1 = R_Calloc(N_d, int);
+    Y_d_repl2 = R_Calloc(N_d, int);
   }
 
   double *b_repl1 = NULL;
@@ -404,27 +404,27 @@ GLMM_PED(double*       PED,
   double *bscaled_repl1 = NULL;
   double *bscaled_repl2 = NULL;
   if (dim_b){
-    b_repl1 = Calloc(*I * dim_b, double);
-    b_repl2 = Calloc(*I * dim_b, double);
+    b_repl1 = R_Calloc(*I * dim_b, double);
+    b_repl2 = R_Calloc(*I * dim_b, double);
 
-    bscaled_repl1 = Calloc(*I * dim_b, double);
-    bscaled_repl2 = Calloc(*I * dim_b, double);
+    bscaled_repl1 = R_Calloc(*I * dim_b, double);
+    bscaled_repl2 = R_Calloc(*I * dim_b, double);
   }
   
-  double *eta_random_repl1 = Calloc(N, double);
-  double *eta_random_repl2 = Calloc(N, double);
+  double *eta_random_repl1 = R_Calloc(N, double);
+  double *eta_random_repl2 = R_Calloc(N, double);
 
-  double *eta_repl1        = Calloc(N, double);  
-  double *eta_repl2        = Calloc(N, double);  
-  double *eta_repl1_ch2    = Calloc(N, double);  
-  double *eta_repl2_ch1    = Calloc(N, double);  
-  double *meanY_repl1      = Calloc(N, double);  
-  double *meanY_repl2      = Calloc(N, double);  
-  double *meanY_repl1_ch2  = Calloc(N, double);  
-  double *meanY_repl2_ch1  = Calloc(N, double);  
+  double *eta_repl1        = R_Calloc(N, double);  
+  double *eta_repl2        = R_Calloc(N, double);  
+  double *eta_repl1_ch2    = R_Calloc(N, double);  
+  double *eta_repl2_ch1    = R_Calloc(N, double);  
+  double *meanY_repl1      = R_Calloc(N, double);  
+  double *meanY_repl2      = R_Calloc(N, double);  
+  double *meanY_repl1_ch2  = R_Calloc(N, double);  
+  double *meanY_repl2_ch1  = R_Calloc(N, double);  
 
-  double *dY_repl1       = Calloc(N, double);  
-  double *dY_repl2       = Calloc(N, double);  
+  double *dY_repl1       = R_Calloc(N, double);  
+  double *dY_repl2       = R_Calloc(N, double);  
 
 
   /***** Pointers to start of Y_c, Y_d, meanY, dY, eta_fixed, eta_random, eta_zs, eta,Z, n                    *****/
@@ -444,75 +444,75 @@ GLMM_PED(double*       PED,
   int    **Y_drespP = NULL;
 
   if (*R_c){
-    Y_cresp  = Calloc(*R_c, double*);
+    Y_cresp  = R_Calloc(*R_c, double*);
     *Y_cresp = Y_c;
     for (s = 1; s < *R_c; s++) Y_cresp[s] = Y_cresp[s-1] + N_s[s-1];
 
-    Y_c_repl1resp  = Calloc(*R_c, double*);
+    Y_c_repl1resp  = R_Calloc(*R_c, double*);
     *Y_c_repl1resp = Y_c_repl1;
     for (s = 1; s < *R_c; s++) Y_c_repl1resp[s] = Y_c_repl1resp[s-1] + N_s[s-1];
 
-    Y_c_repl2resp  = Calloc(*R_c, double*);
+    Y_c_repl2resp  = R_Calloc(*R_c, double*);
     *Y_c_repl2resp = Y_c_repl2;
     for (s = 1; s < *R_c; s++) Y_c_repl2resp[s] = Y_c_repl2resp[s-1] + N_s[s-1];
 
-    Y_crespP = Calloc(*R_c, double*);
+    Y_crespP = R_Calloc(*R_c, double*);
   }
 
   if (*R_d){
-    Y_dresp  = Calloc(*R_d, int*);
+    Y_dresp  = R_Calloc(*R_d, int*);
     *Y_dresp = Y_d;
     for (s = 1; s < *R_d; s++) Y_dresp[s] = Y_dresp[s-1] + N_s[*R_c+s-1];
 
-    Y_d_repl1resp  = Calloc(*R_d, int*);
+    Y_d_repl1resp  = R_Calloc(*R_d, int*);
     *Y_d_repl1resp = Y_d_repl1;
     for (s = 1; s < *R_d; s++) Y_d_repl1resp[s] = Y_d_repl1resp[s-1] + N_s[s-1];
 
-    Y_d_repl2resp  = Calloc(*R_d, int*);
+    Y_d_repl2resp  = R_Calloc(*R_d, int*);
     *Y_d_repl2resp = Y_d_repl2;
     for (s = 1; s < *R_d; s++) Y_d_repl2resp[s] = Y_d_repl2resp[s-1] + N_s[s-1];
 
-    Y_drespP = Calloc(*R_d, int*);
+    Y_drespP = R_Calloc(*R_d, int*);
   }
 
-  double **eta_fixed1resp   = Calloc(R, double*);
-  double **eta_fixed2resp   = Calloc(R, double*);
+  double **eta_fixed1resp   = R_Calloc(R, double*);
+  double **eta_fixed2resp   = R_Calloc(R, double*);
 
-  double **eta_random1resp      = Calloc(R, double*);
-  double **eta_random2resp      = Calloc(R, double*);
-  double **eta_random_repl1resp = Calloc(R, double*);
-  double **eta_random_repl2resp = Calloc(R, double*);
+  double **eta_random1resp      = R_Calloc(R, double*);
+  double **eta_random2resp      = R_Calloc(R, double*);
+  double **eta_random_repl1resp = R_Calloc(R, double*);
+  double **eta_random_repl2resp = R_Calloc(R, double*);
 
-  //double **eta1resp          = Calloc(R, double*);
-  //double **eta2resp          = Calloc(R, double*);
-  //double **eta_repl1resp     = Calloc(R, double*);
-  //double **eta_repl2resp     = Calloc(R, double*);
-  //double **eta_repl1_ch2resp = Calloc(R, double*);
-  //double **eta_repl2_ch1resp = Calloc(R, double*);
+  //double **eta1resp          = R_Calloc(R, double*);
+  //double **eta2resp          = R_Calloc(R, double*);
+  //double **eta_repl1resp     = R_Calloc(R, double*);
+  //double **eta_repl2resp     = R_Calloc(R, double*);
+  //double **eta_repl1_ch2resp = R_Calloc(R, double*);
+  //double **eta_repl2_ch1resp = R_Calloc(R, double*);
 
-  double **meanY1resp          = Calloc(R, double*);
-  double **meanY2resp          = Calloc(R, double*);
-  double **meanY_repl1resp     = Calloc(R, double*);
-  double **meanY_repl2resp     = Calloc(R, double*);
-  double **meanY_repl1_ch2resp = Calloc(R, double*);
-  double **meanY_repl2_ch1resp = Calloc(R, double*);
+  double **meanY1resp          = R_Calloc(R, double*);
+  double **meanY2resp          = R_Calloc(R, double*);
+  double **meanY_repl1resp     = R_Calloc(R, double*);
+  double **meanY_repl2resp     = R_Calloc(R, double*);
+  double **meanY_repl1_ch2resp = R_Calloc(R, double*);
+  double **meanY_repl2_ch1resp = R_Calloc(R, double*);
 
-  double **dYresp       = Calloc(R, double*);
-  double **dY_repl1resp = Calloc(R, double*);
-  double **dY_repl2resp = Calloc(R, double*);
+  double **dYresp       = R_Calloc(R, double*);
+  double **dY_repl1resp = R_Calloc(R, double*);
+  double **dY_repl2resp = R_Calloc(R, double*);
 
-  //double **eta_zsresp  = Calloc(R, double*);
-  double **Zresp       = Calloc(R, double*);
-  int    **nresp       = Calloc(R, int*);
+  //double **eta_zsresp  = R_Calloc(R, double*);
+  double **Zresp       = R_Calloc(R, double*);
+  int    **nresp       = R_Calloc(R, int*);
 
-  double **eta_fixedrespP  = Calloc(R, double*);
-  double **eta_randomrespP = Calloc(R, double*);
-  double **etarespP        = Calloc(R, double*);
-  double **meanYrespP      = Calloc(R, double*);  
-  double **eta_zsrespP = Calloc(R, double*);
-  double **dYrespP     = Calloc(R, double*);  
-  double **ZrespP      = Calloc(R, double*);
-  int    **nrespP      = Calloc(R, int*);
+  double **eta_fixedrespP  = R_Calloc(R, double*);
+  double **eta_randomrespP = R_Calloc(R, double*);
+  double **etarespP        = R_Calloc(R, double*);
+  double **meanYrespP      = R_Calloc(R, double*);  
+  double **eta_zsrespP = R_Calloc(R, double*);
+  double **dYrespP     = R_Calloc(R, double*);  
+  double **ZrespP      = R_Calloc(R, double*);
+  int    **nrespP      = R_Calloc(R, int*);
 
   *eta_fixed1resp  = eta_fixed1;
   *eta_fixed2resp  = eta_fixed2;
@@ -580,7 +580,7 @@ GLMM_PED(double*       PED,
   /***** Create ZS matrices                                                           *****/
   /*** --- l_ZS[i] gives the length of array for ZS matrices in the i-th cluster    --- ***/
   /***** ---------------------------------------------------------------------------- *****/
-  int *l_ZS = Calloc(*I, int);
+  int *l_ZS = R_Calloc(*I, int);
   AK_Basic::fillArray(l_ZS, 0, *I);
   int *l_ZSP;
   nP = n;
@@ -593,7 +593,7 @@ GLMM_PED(double*       PED,
     }
   }
   int sum_l_ZS = AK_Basic::sum(l_ZS, *I);                        /* length of array for ZS matrices */
-  double *ZS = Calloc(sum_l_ZS, double);
+  double *ZS = R_Calloc(sum_l_ZS, double);
   GLMM::create_ZS(ZS, ZrespP, nrespP, Zresp, nresp, scale_b, q, randIntcpt, &R, I);
 
 
@@ -632,23 +632,23 @@ GLMM_PED(double*       PED,
   /***** iwork_GLMM_Deviance:                                                                                   *****/
   /*****             - they are all only working spaces as they are nowhere used to calculate PED               *****/
   /***** ------------------------------------------------------------------------------------------------------ *****/
-  double *marg_ll1_i  = Calloc(*I, double);
-  double *marg_ll2_i  = Calloc(*I, double);
+  double *marg_ll1_i  = R_Calloc(*I, double);
+  double *marg_ll2_i  = R_Calloc(*I, double);
 
-  double *marg_ll_repl1_ch1_i  = Calloc(*I, double);
-  double *marg_ll_repl1_ch2_i  = Calloc(*I, double);
-  double *marg_ll_repl2_ch1_i  = Calloc(*I, double);
-  double *marg_ll_repl2_ch2_i  = Calloc(*I, double);
+  double *marg_ll_repl1_ch1_i  = R_Calloc(*I, double);
+  double *marg_ll_repl1_ch2_i  = R_Calloc(*I, double);
+  double *marg_ll_repl2_ch1_i  = R_Calloc(*I, double);
+  double *marg_ll_repl2_ch2_i  = R_Calloc(*I, double);
 
   double cond_ll[1]  = {0.0};
 
-  double *cond_ll_i  = Calloc(*I, double);
-  double *pi_ik      = Calloc(Kmax_b * *I, double);
-  double *stres      = Calloc(N, double);
-  double *sqrt_w_phi = Calloc(N, double);
+  double *cond_ll_i  = R_Calloc(*I, double);
+  double *pi_ik      = R_Calloc(Kmax_b * *I, double);
+  double *stres      = R_Calloc(N, double);
+  double *sqrt_w_phi = R_Calloc(N, double);
 
-  double *dwork_GLMM_Deviance = Calloc((max_N_i + dim_b) * (dim_b + 3) + dim_b * 8 + max_N_i * (3 * dim_b + 6) + 3 * LT_b, double);
-  int    *iwork_GLMM_Deviance = Calloc(dim_b > 0 ? dim_b : 1, int);
+  double *dwork_GLMM_Deviance = R_Calloc((max_N_i + dim_b) * (dim_b + 3) + dim_b * 8 + max_N_i * (3 * dim_b + 6) + 3 * LT_b, double);
+  int    *iwork_GLMM_Deviance = R_Calloc(dim_b > 0 ? dim_b : 1, int);
  
 
   /***** Additional quantities needed to sample replicated data                                                 *****/
@@ -656,7 +656,7 @@ GLMM_PED(double*       PED,
   /*****                                                                                                        *****/
   /***** dwork_GLMM_newData:                                                                                    *****/
   /***** ------------------------------------------------------------------------------------------------------ *****/
-  double *dwork_GLMM_newData = Calloc(3 * Kmax_b + *I + dim_b, double);
+  double *dwork_GLMM_newData = R_Calloc(3 * Kmax_b + *I + dim_b, double);
 
 
   /***** Additional declarations of variables used inside the loop *****/
@@ -946,160 +946,160 @@ GLMM_PED(double*       PED,
   /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/
   /***** Cleaning                                                                                           *****/
   /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/ 
-  Free(dwork_GLMM_newData);
+  R_Free(dwork_GLMM_newData);
 
-  Free(cond_ll_i);
-  Free(pi_ik);
-  Free(stres);
-  Free(sqrt_w_phi);
-  Free(dwork_GLMM_Deviance);
-  Free(iwork_GLMM_Deviance);
+  R_Free(cond_ll_i);
+  R_Free(pi_ik);
+  R_Free(stres);
+  R_Free(sqrt_w_phi);
+  R_Free(dwork_GLMM_Deviance);
+  R_Free(iwork_GLMM_Deviance);
 
-  Free(marg_ll1_i);
-  Free(marg_ll2_i);
+  R_Free(marg_ll1_i);
+  R_Free(marg_ll2_i);
 
-  Free(marg_ll_repl1_ch1_i);
-  Free(marg_ll_repl1_ch2_i);
-  Free(marg_ll_repl2_ch1_i);
-  Free(marg_ll_repl2_ch2_i);
+  R_Free(marg_ll_repl1_ch1_i);
+  R_Free(marg_ll_repl1_ch2_i);
+  R_Free(marg_ll_repl2_ch1_i);
+  R_Free(marg_ll_repl2_ch2_i);
 
-  Free(ZS);
-  Free(l_ZS);
+  R_Free(ZS);
+  R_Free(l_ZS);
 
-  Free(nrespP);
-  Free(ZrespP);
-  Free(dYrespP);
-  //Free(eta_zsrespP);
+  R_Free(nrespP);
+  R_Free(ZrespP);
+  R_Free(dYrespP);
+  //R_Free(eta_zsrespP);
 
-  Free(meanYrespP);
-  Free(etarespP);
-  Free(eta_fixedrespP);
-  Free(eta_randomrespP);
+  R_Free(meanYrespP);
+  R_Free(etarespP);
+  R_Free(eta_fixedrespP);
+  R_Free(eta_randomrespP);
 
-  Free(nresp);
-  Free(Zresp);
+  R_Free(nresp);
+  R_Free(Zresp);
 
-  //Free(eta_zsresp);
+  //R_Free(eta_zsresp);
 
-  Free(dYresp);
-  Free(dY_repl1resp);
-  Free(dY_repl2resp);
+  R_Free(dYresp);
+  R_Free(dY_repl1resp);
+  R_Free(dY_repl2resp);
 
-  Free(meanY1resp);
-  Free(meanY2resp);
-  Free(meanY_repl1resp);
-  Free(meanY_repl2resp);
-  Free(meanY_repl1_ch2resp);
-  Free(meanY_repl2_ch1resp);
+  R_Free(meanY1resp);
+  R_Free(meanY2resp);
+  R_Free(meanY_repl1resp);
+  R_Free(meanY_repl2resp);
+  R_Free(meanY_repl1_ch2resp);
+  R_Free(meanY_repl2_ch1resp);
 
-  //Free(eta1resp);
-  //Free(eta2resp);
-  //Free(eta_repl1resp);
-  //Free(eta_repl2resp);
-  //Free(eta_repl1_ch2resp);
-  //Free(eta_repl2_ch1resp);
+  //R_Free(eta1resp);
+  //R_Free(eta2resp);
+  //R_Free(eta_repl1resp);
+  //R_Free(eta_repl2resp);
+  //R_Free(eta_repl1_ch2resp);
+  //R_Free(eta_repl2_ch1resp);
 
-  Free(eta_random1resp);
-  Free(eta_random2resp);
-  Free(eta_random_repl1resp);
-  Free(eta_random_repl2resp);
+  R_Free(eta_random1resp);
+  R_Free(eta_random2resp);
+  R_Free(eta_random_repl1resp);
+  R_Free(eta_random_repl2resp);
 
-  Free(eta_fixed1resp);
-  Free(eta_fixed2resp);
-
-  if (*R_d){
-    Free(Y_dresp);
-    Free(Y_d_repl1resp);
-    Free(Y_d_repl2resp);
-
-    Free(Y_drespP);
-  }
-  if (*R_c){
-    Free(Y_cresp);
-    Free(Y_c_repl1resp);
-    Free(Y_c_repl2resp);
-
-    Free(Y_crespP);
-  }
-
-  Free(dY_repl1);
-  Free(dY_repl2);
-
-  Free(eta_random_repl1);
-  Free(eta_random_repl2);
-
-  Free(eta_repl1);
-  Free(eta_repl2);
-  Free(eta_repl1_ch2);
-  Free(eta_repl2_ch1);
-  Free(meanY_repl1);  
-  Free(meanY_repl2);
-  Free(meanY_repl1_ch2);  
-  Free(meanY_repl2_ch1);
-
-  if (dim_b){
-    Free(b_repl1);
-    Free(b_repl2);
-
-    Free(bscaled_repl1);
-    Free(bscaled_repl2);
-  }
+  R_Free(eta_fixed1resp);
+  R_Free(eta_fixed2resp);
 
   if (*R_d){
-    Free(Y_d_repl1);
-    Free(Y_d_repl2);
+    R_Free(Y_dresp);
+    R_Free(Y_d_repl1resp);
+    R_Free(Y_d_repl2resp);
+
+    R_Free(Y_drespP);
+  }
+  if (*R_c){
+    R_Free(Y_cresp);
+    R_Free(Y_c_repl1resp);
+    R_Free(Y_c_repl2resp);
+
+    R_Free(Y_crespP);
+  }
+
+  R_Free(dY_repl1);
+  R_Free(dY_repl2);
+
+  R_Free(eta_random_repl1);
+  R_Free(eta_random_repl2);
+
+  R_Free(eta_repl1);
+  R_Free(eta_repl2);
+  R_Free(eta_repl1_ch2);
+  R_Free(eta_repl2_ch1);
+  R_Free(meanY_repl1);  
+  R_Free(meanY_repl2);
+  R_Free(meanY_repl1_ch2);  
+  R_Free(meanY_repl2_ch1);
+
+  if (dim_b){
+    R_Free(b_repl1);
+    R_Free(b_repl2);
+
+    R_Free(bscaled_repl1);
+    R_Free(bscaled_repl2);
+  }
+
+  if (*R_d){
+    R_Free(Y_d_repl1);
+    R_Free(Y_d_repl2);
   }
 
   if (*R_c){
-    Free(Y_c_repl1);
-    Free(Y_c_repl2);
+    R_Free(Y_c_repl1);
+    R_Free(Y_c_repl2);
   }
 
-  Free(eta_zs);
-  Free(sum_dY_i);
-  Free(dY);
-  Free(meanY1);
-  Free(meanY2);
-  Free(eta1);
-  Free(eta2);
-  Free(eta_random1);
-  Free(eta_random2);
-  Free(eta_fixed1);
-  Free(eta_fixed2);
+  R_Free(eta_zs);
+  R_Free(sum_dY_i);
+  R_Free(dY);
+  R_Free(meanY1);
+  R_Free(meanY2);
+  R_Free(eta1);
+  R_Free(eta2);
+  R_Free(eta_random1);
+  R_Free(eta_random2);
+  R_Free(eta_fixed1);
+  R_Free(eta_fixed2);
 
   if (dim_b){
-    Free(bhatscaled1);
-    Free(bhatscaled2);
-    //Free(bhat1);
-    //Free(bhat2);
+    R_Free(bhatscaled1);
+    R_Free(bhatscaled2);
+    //R_Free(bhat1);
+    //R_Free(bhat2);
 
-    Free(logw_b1);
-    Free(logw_b2);
-    Free(log_dets_b1);
-    Free(log_dets_b2);
+    R_Free(logw_b1);
+    R_Free(logw_b2);
+    R_Free(log_dets_b1);
+    R_Free(log_dets_b2);
 
-    //Free(Ebscaled1);
-    //Free(Ebscaled2);    
-    //Free(Varbscaled1);  
-    //Free(Varbscaled2);  
-    //Free(Corrbscaled1); 
-    //Free(Corrbscaled2); 
-    //Free(Eb1);          
-    //Free(Eb2);          
-    //Free(Varb1);        
-    //Free(Varb2);        
-    //Free(Corrb1);       
-    //Free(Corrb2);       
-    //Free(Sigma_b1);       
-    //Free(Sigma_b2);       
+    //R_Free(Ebscaled1);
+    //R_Free(Ebscaled2);    
+    //R_Free(Varbscaled1);  
+    //R_Free(Varbscaled2);  
+    //R_Free(Corrbscaled1); 
+    //R_Free(Corrbscaled2); 
+    //R_Free(Eb1);          
+    //R_Free(Eb2);          
+    //R_Free(Varb1);        
+    //R_Free(Varb2);        
+    //R_Free(Corrb1);       
+    //R_Free(Corrb2);       
+    //R_Free(Sigma_b1);       
+    //R_Free(Sigma_b2);       
   }
 
-  Free(N_s);
-  Free(N_i);
+  R_Free(N_s);
+  R_Free(N_i);
 
-  Free(cumq_ri);
-  Free(q_ri);
-  Free(p_fi);
+  R_Free(cumq_ri);
+  R_Free(q_ri);
+  R_Free(p_fi);
 
   return;
 }

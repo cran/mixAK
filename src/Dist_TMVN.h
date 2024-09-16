@@ -24,6 +24,7 @@
 #define _DIST_TRUNCATED_MVN_H_
 
 #include <R.h>
+#include <R_ext/Error.h>       
 
 #include "AK_Basic.h"
 #include "AK_BLAS.h"

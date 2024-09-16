@@ -94,7 +94,7 @@ Deviance_NC(double* indLogL0,
                                          mixNxw, nxw, tabxw,
                                          K, Q, delta, c, xi, c_xi, Dinv, Dinv_xi, zeta, XiInv);
   if (*err){
-    warning("%s: NMix_fullCondMean_MeansVars subroutine failed.\n", fname);
+    Rf_warning("%s: NMix_fullCondMean_MeansVars subroutine failed.\n", fname);
     return;
   }
 
@@ -312,7 +312,7 @@ Deviance_IC(double* indLogL0,
   //                                       mixNxw, nxw, tabxw,
   //                                       Q, delta, c, xi, c_xi, Dinv, Dinv_xi, zeta, XiInv);
   //if (*err){
-  //  warning("%s: NMix_fullCondMean_MeansVars subroutine failed.\n", fname);
+  //  Rf_warning("%s: NMix_fullCondMean_MeansVars subroutine failed.\n", fname);
   //  return;
   //}
 

@@ -49,7 +49,7 @@ NMix_PredDensJoint2(double* dens,     double* densK,     int* freqK,     double*
 
   if (*p < 2){
     *err = 1;
-    error("%s:  Not implemented for a univariate mixture.\n", fname);    
+    Rf_error("%s:  Not implemented for a univariate mixture.\n", fname);    
   }
 
   yy         = dwork;           /** space to store a bivariate vector of grid values to be passed to dMVN **/
@@ -164,7 +164,7 @@ NMix_PredDensJoint2(double* dens,     double* densK,     int* freqK,     double*
           Li++;
         }
         F77_CALL(dpptri)("L", p, Sigma, err FCONE);
-        if (*err) error("%s: Computation of Sigma failed.\n", fname);        
+        if (*err) Rf_error("%s: Computation of Sigma failed.\n", fname);        
 
         y0         = y;                   /** start of the grid for margin 0 in the first pair                      **/
         n0         = n;                   /** length of the grid for margin 0 in the first pair                     **/
@@ -195,7 +195,7 @@ NMix_PredDensJoint2(double* dens,     double* densK,     int* freqK,     double*
 
             /** Decompose the covariance matrix in margin (m0, m1), invert the decomposition and compute log_dets[0] **/
             F77_CALL(dpptrf)("L", &TWO, L_mm, err FCONE);
-	    if (*err) error("%s: Decomposition of Sigma[j=%d](%d, %d)^(t=%d) failed.\n", fname, j, m0, m1, t);
+	    if (*err) Rf_error("%s: Decomposition of Sigma[j=%d](%d, %d)^(t=%d) failed.\n", fname, j, m0, m1, t);
             log_dets[0] = -AK_Basic::log_AK(L_mm[0]) - AK_Basic::log_AK(L_mm[2]);              /** log(|Sigma(m0, m1)_j|^{-1/2}) **/
 
  	    /** Loop over grid values **/

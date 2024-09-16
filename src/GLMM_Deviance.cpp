@@ -6,6 +6,7 @@
 //
 //  LOG:       20100414  created
 //             20220419  FCONE added where needed
+//             20240916  error --> Rf_error
 //
 // ======================================================================
 //
@@ -213,7 +214,7 @@ Deviance(double* marg_ll,
                               ZS_i, sigma, q_ri, dist, R_c, R_d);       
 
     if (*err){ 
-      error("%s: TRAP (MCMC iteration %d), infinite log-likelihood for cluster %d of grouped obs.\n", fname, *iterNum, i + 1);
+      Rf_error("%s: TRAP (MCMC iteration %d), infinite log-likelihood for cluster %d of grouped obs.\n", fname, *iterNum, i + 1);
     }
     *cond_ll += *cond_ll_iP;
 
@@ -275,7 +276,7 @@ Deviance(double* marg_ll,
             break;
           default:
             *err = 1;
-            error("%s: Unimplemented distribution for random effects specified (place 1).\n", fname);    
+            Rf_error("%s: Unimplemented distribution for random effects specified (place 1).\n", fname);    
           }
           g_k0 += *cond_ll_iP;
 
@@ -322,7 +323,7 @@ Deviance(double* marg_ll,
               /*** !!! dspsv destroys H_g !!!                                                ***/
               F77_CALL(dspsv)("L", dim_b, &AK_Basic::_ONE_INT, H_g, iwork, U_g, dim_b, err FCONE);
               if (*err){
-                //error("%s: TRAP (MCMC iteration %d): Singular Hessian encountered.\n", fname, *iterNum);    
+                //Rf_error("%s: TRAP (MCMC iteration %d): Singular Hessian encountered.\n", fname, *iterNum);    
                 *err = 0;
 		AK_Basic::fillArray(U_g, 0.0, *dim_b);   
               }
@@ -332,7 +333,7 @@ Deviance(double* marg_ll,
               break;
             default:
               *err = 1;
-              error("%s: Unimplemented distribution for random effects specified (place 2).\n", fname);    
+              Rf_error("%s: Unimplemented distribution for random effects specified (place 2).\n", fname);    
             }
 
             /*** Calculate the upper part of the new Z matrix (Zwork1_hat),                                      ***/
@@ -365,7 +366,7 @@ Deviance(double* marg_ll,
                 break;
               default:
                 *err = 1;
-                error("%s: Unimplemented distribution for random effects specified (place 3).\n", fname);    
+                Rf_error("%s: Unimplemented distribution for random effects specified (place 3).\n", fname);    
               }
               g_k1 += cond_ll_hat;
               //if (i == clus_show && *iterNum == iter_show) Rprintf("\n%g",g_k1);
@@ -397,7 +398,7 @@ Deviance(double* marg_ll,
                   break;
                 default:
                   *err = 1;
-                  error("%s: Unimplemented distribution for random effects specified (place 4).\n", fname);    
+                  Rf_error("%s: Unimplemented distribution for random effects specified (place 4).\n", fname);    
                 }
 
                 MCMC::loglik_Zwork1_stres(&cond_ll_hat, b_hat, Zwork1_hat, stres_hat, sqrt_w_phi_hat, eta_random_hat, meanY_hat, err, 
@@ -420,7 +421,7 @@ Deviance(double* marg_ll,
                     break;
                   default:
                     *err = 1;
-                    error("%s: Unimplemented distribution for random effects specified (place 5).\n", fname);    
+                    Rf_error("%s: Unimplemented distribution for random effects specified (place 5).\n", fname);    
                   }
                   g_k1 += cond_ll_hat;
                 }
@@ -495,7 +496,7 @@ Deviance(double* marg_ll,
                 /*** Cholesky decomposition of the minus Hessian ***/
                 F77_CALL(dpptrf)("L", dim_b, I_glmm, err FCONE);   
                 if (*err){
-                  error("%s: TRAP (MCMC iteration %d), negative definite minus Hessian in the Laplace approximation (component %d) for cluster %d of grouped obs.\n", fname, *iterNum, i + 1, k + 1);
+                  Rf_error("%s: TRAP (MCMC iteration %d), negative definite minus Hessian in the Laplace approximation (component %d) for cluster %d of grouped obs.\n", fname, *iterNum, i + 1, k + 1);
                 }
 
                 /*** Half times log-determinant of the minus Hessian ***/
@@ -503,7 +504,7 @@ Deviance(double* marg_ll,
                 break;
               default:
                 *err = 1;
-                error("%s: Unimplemented distribution for random effects specified (place 6).\n", fname);    
+                Rf_error("%s: Unimplemented distribution for random effects specified (place 6).\n", fname);    
               }
               
               /*** Shift mixture mean (to have the code consistent with that in a part where we do not look for the model) ***/
@@ -528,7 +529,7 @@ Deviance(double* marg_ll,
         else{                       /*** else (*iterate_to_mode) ***/
           if (*distribution_b != NMix::NORMAL){
             *err = 1;
-            error("%s: For non-normal random effects, iterate_to_mode must be true. It is a programming error, please, contact AK.\n", fname);
+            Rf_error("%s: For non-normal random effects, iterate_to_mode must be true. It is a programming error, please, contact AK.\n", fname);
           }
 
            

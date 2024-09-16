@@ -7,6 +7,7 @@
 //
 //  CREATED:   06/11/2008
 //             19/04/2022 FCONE added where needed
+//             16/09/2024 error --> Rf_error
 //
 // ======================================================================
 //
@@ -217,7 +218,7 @@ dmixMVN_R(double* dens,      double* w_dets,   double* Li,
   LiP = Li;
   for (k = 0; k < *K; k++){  
     F77_CALL(dpptrf)("L", nx, LiP, err FCONE);
-    if (*err) error("Dist::dmixMVN_R: Cholesky decomposition of one of the precision matrices failed.\n");
+    if (*err) Rf_error("Dist::dmixMVN_R: Cholesky decomposition of one of the precision matrices failed.\n");
 
     wd_tmp = -(*nx) * M_LN_SQRT_2PI;
     for (j = *nx; j > 0; j--){
@@ -271,7 +272,7 @@ rmixMVN_R(double* x,         double* dens,     double* w_dets,   double* cumw,  
   LiP = Li;
   for (k = 0; k < *K; k++){  
     F77_CALL(dpptrf)("L", nx, LiP, err FCONE);
-    if (*err) error("Dist::dmixMVN_R: Cholesky decomposition of one of the precision matrices failed.\n");
+    if (*err) Rf_error("Dist::dmixMVN_R: Cholesky decomposition of one of the precision matrices failed.\n");
 
     wd_tmp = -(*nx) * M_LN_SQRT_2PI;
     for (j = *nx; j > 0; j--){

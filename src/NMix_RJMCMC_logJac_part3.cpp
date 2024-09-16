@@ -34,7 +34,7 @@ RJMCMC_logJac_part3(double* logJac3,  const double* Lambdastar,  const double* V
     return;
 
   default:
-    error("NMix::RJMCMC_logJac_part3 not (yet) implemented for dimension %d.\n", *p);
+    Rf_error("NMix::RJMCMC_logJac_part3 not (yet) implemented for dimension %d.\n", *p);
   }  
 }
 

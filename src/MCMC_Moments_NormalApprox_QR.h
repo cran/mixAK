@@ -21,6 +21,7 @@
 #include <Rmath.h>
 #include <R_ext/Lapack.h>
 #include <R_ext/Applic.h>                // contains declaration for dqrdc2 (QR decomposition) and dqrls (LS solution through QR decomposition)
+#include <R_ext/Error.h>
 
 #include "AK_Basic.h"
 

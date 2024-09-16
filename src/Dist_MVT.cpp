@@ -8,6 +8,7 @@
 //  LOG:       20111208  created
 //             20161011  lgamma -> lgammafn
 //             20220419  FCONE added where needed
+//             20240916  error --> Rf_error
 //
 // ======================================================================
 //
@@ -221,7 +222,7 @@ rMVT1_R(double* x,
 {
   /*** Cholesky decomposition of Q, i.e., Q = Li %*% t(Li) ***/
   F77_CALL(dpptrf)("L", nx, Q, err FCONE);
-  if (*err) error("Dist::rMVT1_R: Cholesky decomposition of the precision matrix failed.\n");
+  if (*err) Rf_error("Dist::rMVT1_R: Cholesky decomposition of the precision matrix failed.\n");
 
   int i;
   double *dP1, *dP2;
@@ -273,7 +274,7 @@ dMVT1_R(double*       log_dens,
 {
   /*** Cholesky decomposition of Q, i.e., Q = Li %*% t(Li) ***/
   F77_CALL(dpptrf)("L", nx, Q, err FCONE);
-  if (*err) error("Dist::rMVT1_R: Cholesky decomposition of the precision matrix failed.\n");
+  if (*err) Rf_error("Dist::rMVT1_R: Cholesky decomposition of the precision matrix failed.\n");
 
   int i;
   double *dP;

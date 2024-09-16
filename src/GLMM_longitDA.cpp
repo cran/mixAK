@@ -76,24 +76,24 @@ GLMM_longitDA(double*       Y_c,                       /* it is in fact const, n
   for (i = 0; i < *I; i++){
     if (n[i] <= 0){
       *err = 1;
-      error("%s: There are no observations in a longitudinal profile %d.\n", fname, i);
+      Rf_error("%s: There are no observations in a longitudinal profile %d.\n", fname, i);
       // There must be at least one observation in each longitudinal profile and each response,
       // otherwise AK_BLAS::BDROWxtLT function used inside GLMM::longitPred_nmix_gauss does not work properly.
     }
   }
 
-  int* l_beta = Calloc(*nClust, int);                       /* length of beta vector for each cluster        */
-  int* dim_b  = Calloc(*nClust, int);                       /* dimension of random effects for each cluster  */
-  int* LT_b   = Calloc(*nClust, int);                       
-  int* p_fi   = Calloc(R * *nClust, int);
-  int* q_ri   = Calloc(R * *nClust, int);
+  int* l_beta = R_Calloc(*nClust, int);                       /* length of beta vector for each cluster        */
+  int* dim_b  = R_Calloc(*nClust, int);                       /* dimension of random effects for each cluster  */
+  int* LT_b   = R_Calloc(*nClust, int);                       
+  int* p_fi   = R_Calloc(R * *nClust, int);
+  int* q_ri   = R_Calloc(R * *nClust, int);
   for (cl = 0; cl < *nClust; cl++){
     for (s = 0; s < R; s++){
       p_fi[cl*R + s] = p[cl*R + s] + fixedIntcpt[cl*R + s];
       q_ri[cl*R + s] = q[cl*R + s] + randIntcpt[cl*R + s];
       if (q_ri[cl*R + s] <= 0){
         *err = 1;
-        error("%s: There are no random effects in a model for response %d in cluster %d.\n", fname, s, cl);      
+        Rf_error("%s: There are no random effects in a model for response %d in cluster %d.\n", fname, s, cl);      
         // There must be at least one random effect for each response in each cluster,
         // otherwise AK_BLAS::BDROWxtLT function used inside GLMM::longitPred_nmix_gauss does not work properly.
       }
@@ -112,15 +112,15 @@ GLMM_longitDA(double*       Y_c,                       /* it is in fact const, n
   /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/
   /***** Data related variables                                                                             *****/
   /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/ 
-  double *eta_fixed  = Calloc(N, double);
-  double *eta_random = Calloc(max_n * R, double);
-  double *eta_zs     = Calloc(N, double);
+  double *eta_fixed  = R_Calloc(N, double);
+  double *eta_random = R_Calloc(max_n * R, double);
+  double *eta_zs     = R_Calloc(N, double);
 
   double **Y_cresp  = NULL;
   double **Y_crespP = NULL;
   if (*R_c){
-    Y_cresp  = Calloc(*R_c, double*);
-    Y_crespP = Calloc(*R_c, double*);
+    Y_cresp  = R_Calloc(*R_c, double*);
+    Y_crespP = R_Calloc(*R_c, double*);
     *Y_cresp = Y_c;
     for (s = 1; s < *R_c; s++) Y_cresp[s] = Y_cresp[s-1] + N_s;
   }
@@ -128,18 +128,18 @@ GLMM_longitDA(double*       Y_c,                       /* it is in fact const, n
   int **Y_dresp  = NULL;
   int **Y_drespP = NULL;
   if (*R_d){
-    Y_dresp  = Calloc(*R_d, int*);
-    Y_drespP = Calloc(*R_d, int*);
+    Y_dresp  = R_Calloc(*R_d, int*);
+    Y_drespP = R_Calloc(*R_d, int*);
     *Y_dresp = Y_d;
     for (s = 1; s < *R_d; s++) Y_dresp[s] = Y_dresp[s-1] + N_s;
   }
 
-  double **eta_fixedresp   = Calloc(R, double*);
-  double **eta_fixedrespP  = Calloc(R, double*);
-  double **eta_zsresp      = Calloc(R, double*);
-  double **eta_zsrespP     = Calloc(R, double*);
-  double **Zresp           = Calloc(R, double*);
-  double **ZrespP          = Calloc(R, double*);
+  double **eta_fixedresp   = R_Calloc(R, double*);
+  double **eta_fixedrespP  = R_Calloc(R, double*);
+  double **eta_zsresp      = R_Calloc(R, double*);
+  double **eta_zsrespP     = R_Calloc(R, double*);
+  double **Zresp           = R_Calloc(R, double*);
+  double **ZrespP          = R_Calloc(R, double*);
   *eta_fixedresp  = eta_fixed;
   *eta_zsresp     = eta_zs;
   for (s = 1; s < R; s++){ 
@@ -175,7 +175,7 @@ GLMM_longitDA(double*       Y_c,                       /* it is in fact const, n
   const int *q_ri_cl        = q_ri;
   const int *randIntcpt_cl  = randIntcpt;  
 
-  int *cumq_ri_cl = Calloc(R, int);
+  int *cumq_ri_cl = R_Calloc(R, int);
 
   double *ZiS = NULL;
   int nrowZiS, l_ZiS;
@@ -203,10 +203,10 @@ GLMM_longitDA(double*       Y_c,                       /* it is in fact const, n
   const double *sigma_eps = chsigma_eps;
   const double *beta      = chbeta;
 
-  double *log_dets_b   = Calloc(2 * max_Kmax_b, double);
+  double *log_dets_b   = R_Calloc(2 * max_Kmax_b, double);
   const int ldworkPred = max_dim_b + max_dim_b*max_Kmax_b + 2*max_LT_b*max_Kmax_b + max_dim_b*max_Kmax_b + 2*max_Kmax_b + 2*max_dim_b + max_LT_b + max_dim_b + (4 + max_dim_b)*R*max_n + LT_R_max_n;
-  double *dworkPred = Calloc(ldworkPred, double);
-  int *iworkPred = Calloc(R, int);
+  double *dworkPred = R_Calloc(ldworkPred, double);
+  int *iworkPred = R_Calloc(R, int);
 
   double det_S;
   int ncolX, ncolZ; 
@@ -261,11 +261,11 @@ GLMM_longitDA(double*       Y_c,                       /* it is in fact const, n
       /***** Allocate this space                            *****/
       l_SZitZiS_c = 0;
       for (s = 0; s < *R_c; s++) l_SZitZiS_c += N_s * ((q_ri_cl[s] * (q_ri_cl[s] + 1)) / 2);       
-      SZitZiS_c = Calloc(l_SZitZiS_c > 0 ? l_SZitZiS_c : 1, double);
+      SZitZiS_c = R_Calloc(l_SZitZiS_c > 0 ? l_SZitZiS_c : 1, double);
 
       l_SZitZiS_d = 0;
       for (s = *R_c; s < *R_c + *R_d; s++) l_SZitZiS_d += N_s * ((q_ri_cl[s] * (q_ri_cl[s] + 1)) / 2);       
-      SZitZiS_d = Calloc(l_SZitZiS_d > 0 ? l_SZitZiS_d : 1, double);   
+      SZitZiS_d = R_Calloc(l_SZitZiS_d > 0 ? l_SZitZiS_d : 1, double);   
 
       /***** Calculate matrices SZitZiS_c and SZitZiS_d *****/
       GLMM::create_SZitZiS_4longitDA(SZitZiS_c, SZitZiS_d, ZrespP, Zresp, scale_b_cl, q_cl, randIntcpt_cl, R_c, R_d, I, n);
@@ -281,7 +281,7 @@ GLMM_longitDA(double*       Y_c,                       /* it is in fact const, n
       }
            /** Second, calculate total length of the space to store S*t(Zi) and allocate needed space **/
       l_ZiS = nrowZiS * *dim_b_cl;
-      ZiS = Calloc(l_ZiS, double);
+      ZiS = R_Calloc(l_ZiS, double);
            /** Third, calculate Zi*S matrices (order of storage will be the same as for SZitZiS)   **/
            /** REMARK:  Like Z and X matrices, matrices ZiS are stored in ROW major order          **/
       GLMM::create_ZiS(ZiS, ZrespP, Zresp, scale_b_cl, q_cl, randIntcpt_cl, &R, I, n);
@@ -363,9 +363,9 @@ GLMM_longitDA(double*       Y_c,                       /* it is in fact const, n
       randIntcpt_cl  += R;
 
       /***** Cleaning *****/
-      Free(ZiS);
-      Free(SZitZiS_c);
-      Free(SZitZiS_d);
+      R_Free(ZiS);
+      R_Free(SZitZiS_c);
+      R_Free(SZitZiS_d);
     }
     Rprintf((char*)("\n"));  
 
@@ -380,7 +380,7 @@ GLMM_longitDA(double*       Y_c,                       /* it is in fact const, n
   else{
 
     *err = 1;
-    error("%s: You should never get here... C++ function GLMM_longitDA2 was to be called... Only AK can solve this ;-).\n", fname);
+    Rf_error("%s: You should never get here... C++ function GLMM_longitDA2 was to be called... Only AK can solve this ;-).\n", fname);
 
   }       // end of else from if (allGaussIdent)
 
@@ -390,36 +390,36 @@ GLMM_longitDA(double*       Y_c,                       /* it is in fact const, n
   /***** Cleaning                                                                                           *****/
   /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/ 
   //Rprintf((char*)("Start cleaning.\n"));  
-  Free(iworkPred);
-  Free(dworkPred);
+  R_Free(iworkPred);
+  R_Free(dworkPred);
 
-  Free(log_dets_b);
+  R_Free(log_dets_b);
 
-  Free(q_ri);
-  Free(p_fi);
-  Free(LT_b);
-  Free(dim_b);
-  Free(l_beta);
-  Free(cumq_ri_cl);
+  R_Free(q_ri);
+  R_Free(p_fi);
+  R_Free(LT_b);
+  R_Free(dim_b);
+  R_Free(l_beta);
+  R_Free(cumq_ri_cl);
 
-  Free(Zresp);
-  Free(ZrespP);
-  Free(eta_fixedresp);
-  Free(eta_fixedrespP);
-  Free(eta_zsresp);
-  Free(eta_zsrespP);
+  R_Free(Zresp);
+  R_Free(ZrespP);
+  R_Free(eta_fixedresp);
+  R_Free(eta_fixedrespP);
+  R_Free(eta_zsresp);
+  R_Free(eta_zsrespP);
   if (*R_c){
-    Free(Y_cresp);
-    Free(Y_crespP);
+    R_Free(Y_cresp);
+    R_Free(Y_crespP);
   }
   if (*R_d){
-    Free(Y_dresp);
-    Free(Y_drespP);
+    R_Free(Y_dresp);
+    R_Free(Y_drespP);
   }
 
-  Free(eta_zs);
-  Free(eta_random);
-  Free(eta_fixed);  
+  R_Free(eta_zs);
+  R_Free(eta_random);
+  R_Free(eta_fixed);  
 
   return;
 }

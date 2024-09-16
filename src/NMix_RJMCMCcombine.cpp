@@ -321,14 +321,14 @@ RJMCMCcombine(int* accept,           double* log_AR,
     AK_Basic::copyArray(SigmaTemp, Sigma1, LTp);
     F77_CALL(dspev)("V", "L", p, SigmaTemp, Lambda_dspev, V_dspev, p, dwork_misc, err FCONE FCONE);    /** eigen values in ascending order  **/
     if (*err){
-      warning("%s: Spectral decomposition of Sigma[%d] failed.\n", fname, j1);    
+      Rf_warning("%s: Spectral decomposition of Sigma[%d] failed.\n", fname, j1);    
       return;
     }
     //AK_LAPACK::spevAsc2spevDesc(Lambda1, V1, Lambda_dspev, V_dspev, p);                  /** eigen values in descending order **/
     // 05/02/2008:  CHANGE - eigenvalues are assumed to be in ASCENDING order
     AK_LAPACK::correctMatGE(V1, dwork_misc, iwork_misc, err, p);                           /** be sure that det(V1) = 1 and not -1 **/
     if (*err){
-      warning("%s: Correction of V[%d] failed.\n", fname, j1);    
+      Rf_warning("%s: Correction of V[%d] failed.\n", fname, j1);    
       return;
     }
 
@@ -336,14 +336,14 @@ RJMCMCcombine(int* accept,           double* log_AR,
     AK_Basic::copyArray(SigmaTemp, Sigma2, LTp);
     F77_CALL(dspev)("V", "L", p, SigmaTemp, Lambda_dspev, V_dspev, p, dwork_misc, err FCONE FCONE);    /** eigen values in ascending order  **/
     if (*err){
-      warning("%s: Spectral decomposition of Sigma[%d] failed.\n", fname, j2);    
+      Rf_warning("%s: Spectral decomposition of Sigma[%d] failed.\n", fname, j2);    
       return;
     }
     //AK_LAPACK::spevAsc2spevDesc(Lambda2, V2, Lambda_dspev, V_dspev, p);                    /** eigen values in descending order **/
     // 05/02/2008:  CHANGE - eigenvalues are assumed to be in ASCENDING order
     AK_LAPACK::correctMatGE(V2, dwork_misc, iwork_misc, err, p);                             /** be sure that det(V2) = 1 and not -1 **/
     if (*err){
-      warning("%s: Correction of V[%d] failed.\n", fname, j2);    
+      Rf_warning("%s: Correction of V[%d] failed.\n", fname, j2);    
       return;
     }
 
@@ -351,7 +351,7 @@ RJMCMCcombine(int* accept,           double* log_AR,
     F77_CALL(dgemm)("N", "T", p, p, p, &AK_Basic::_ONE_DOUBLE, V1, p, V2, p, &AK_Basic::_ZERO_DOUBLE, P, p FCONE FCONE);       /*** P = V1 %*% t(V2) ***/
     AK_LAPACK::sqrtGE(P, P_im, VPinv_re, VPinv_im, complexP, sqrt_Plambda_re, sqrt_Plambda_im, VP_re, VP_im, dwork_misc, iwork_misc, err, p);
     if (*err){
-      warning("%s: Computation of the square root of the rotation matrix failed.\n", fname);    
+      Rf_warning("%s: Computation of the square root of the rotation matrix failed.\n", fname);    
       return;
     }
 
@@ -441,7 +441,7 @@ RJMCMCcombine(int* accept,           double* log_AR,
     AK_Basic::copyArray(Lstar, Sigmastar, LTp);
     F77_CALL(dpptrf)("L", p, Lstar, err FCONE);
     if (*err){ 
-      warning("%s: Cholesky decomposition of proposed Sigmastar failed.\n", fname);    
+      Rf_warning("%s: Cholesky decomposition of proposed Sigmastar failed.\n", fname);    
       return;
     }
 
@@ -449,7 +449,7 @@ RJMCMCcombine(int* accept,           double* log_AR,
     AK_Basic::copyArray(Qstar, Lstar, LTp);
     F77_CALL(dpptri)("L", p, Qstar, err FCONE);
     if (*err){
-      warning("%s: Inversion of proposed Sigmastar failed.\n", fname);    
+      Rf_warning("%s: Inversion of proposed Sigmastar failed.\n", fname);    
       return;
     }
 
@@ -466,7 +466,7 @@ RJMCMCcombine(int* accept,           double* log_AR,
     //NMix::RJMCMC_logJacLambdaVSigma(log_dlambdaV_dSigma, dlambdaV_dSigma, dwork_misc, iwork_misc, err,
     //                                Lambdastar, Vstar, Sigmastar, p, &AK_Basic::_ZERO_INT);
     //if (*err){ 
-    //  warning("%s: RJMCMC_logJacLambdaVSigma failed.\n", fname);    
+    //  Rf_warning("%s: RJMCMC_logJacLambdaVSigma failed.\n", fname);    
     //  return;
     //}
 
@@ -688,7 +688,7 @@ RJMCMCcombine(int* accept,           double* log_AR,
 
     F77_CALL(dpptrf)("L", p, Listar, err FCONE);
     if (*err){ 
-      error("%s: Cholesky decomposition of proposed Q(star) failed.\n", fname);     // this should never happen
+      Rf_error("%s: Cholesky decomposition of proposed Q(star) failed.\n", fname);     // this should never happen
     }
 
     muOldP    += *p * (jremove - jstar - 1);       /** jump to the point from which everything must be shifted **/

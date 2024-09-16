@@ -100,7 +100,7 @@ RJMCMC_logJacLambdaVSigma(double* logJac,        double* dlambdaV_dSigma,  doubl
     /*** Compute Moore-Penrose pseudoinverse of (lambda[p-k-2]*I - Sigma) ***/
     AK_LAPACK::MPpinvSP(MPpinv, work_MPpinvSP, err, p);
     if (*err){ 
-      warning("NMix::RJMCMC_logJacLambdaVSigma: Moore-Penrose pseudoinverse failed.\n");
+      Rf_warning("NMix::RJMCMC_logJacLambdaVSigma: Moore-Penrose pseudoinverse failed.\n");
       return;
     }
 
@@ -145,7 +145,7 @@ RJMCMC_logJacLambdaVSigma(double* logJac,        double* dlambdaV_dSigma,  doubl
   /*** Compute determinant and logarithm of its absolute value ***/
   AK_LAPACK::logDetGE(logJac, &sign, dlambdaV_dSigma, iwork, err, &LTp);  
   if (*err){
-    warning("NMix::RJMCMC_logJacLambdaVSigma: AK_LAPACK::logDet failed.\n");
+    Rf_warning("NMix::RJMCMC_logJacLambdaVSigma: AK_LAPACK::logDet failed.\n");
     return;
   }
 

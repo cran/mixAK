@@ -354,7 +354,7 @@ longitPred_nmix_gauss(double*  f_marg,
 
         /*** Cholesky decomposition of the precision matrix of the full condtional distribution ***/
         F77_CALL(dpptrf)("L", dim_b, Li_full, err FCONE);                 /** this should never fail... **/
-        if (*err) error("GLMM::longitPred_nmix_gauss:  Cholesky decomposition of the precision matrix of full conditional distribution failed (cl=%d, iter=%d, i=%d, j=%d, k=%d).\n", clust_lC+1, iter_lC+1, i+1, j+1, k+1);
+        if (*err) Rf_error("GLMM::longitPred_nmix_gauss:  Cholesky decomposition of the precision matrix of full conditional distribution failed (cl=%d, iter=%d, i=%d, j=%d, k=%d).\n", clust_lC+1, iter_lC+1, i+1, j+1, k+1);
          
         /*** At this moment: Li_full    = Cholesky factor of the precision matrix of the full cond. distribution    ***/
         /***                 EBscaled_k = c[k] canonical mean of the full. cond. distribution                       ***/
@@ -568,7 +568,7 @@ longitPred_nmix_gauss(double*  f_marg,
 
         /*** Cholesky decomposition of V_k and its -1/2 log-determinant ***/
         F77_CALL(dpptrf)("L", &dim_y, V_k, err FCONE);                 /** this should never fail... **/
-        if (*err) error("GLMM::longitPred_nmix_gauss:  Cholesky decomposition of the covariance matrix of the marginal distribution failed (cl=%d, iter=%d, i=%d, j=%d, k=%d).\n", clust_lC+1, iter_lC+1, i+1, j+1, k+1);
+        if (*err) Rf_error("GLMM::longitPred_nmix_gauss:  Cholesky decomposition of the covariance matrix of the marginal distribution failed (cl=%d, iter=%d, i=%d, j=%d, k=%d).\n", clust_lC+1, iter_lC+1, i+1, j+1, k+1);
         V_kP = V_k;
         *log_dets_y = -AK_Basic::log_AK(*V_kP);
         for (l1 = dim_y; l1 >= 2; l1--){

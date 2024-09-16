@@ -58,7 +58,7 @@ eta_fixed_random2eta_meanY(double* eta,
 	break;
 
       default:
-        error("GLMM::eta_fixed_random2eta_meanY: Unimplemented distributional type (%d).\n", *distP);
+        Rf_error("GLMM::eta_fixed_random2eta_meanY: Unimplemented distributional type (%d).\n", *distP);
     }
 
     for (i = 0; i < *I; i++){                 /* loop over clusters */

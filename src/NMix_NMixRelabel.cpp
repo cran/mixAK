@@ -77,44 +77,44 @@ NMix_NMixRelabel(const int*    type,
   case NMix::MEAN:
     if (iparam[0] < 0 || iparam[0] >= *p){
       *err = 1;
-      error("%s:  Incorrect margin for ordering specified (margin=%d, dimension=%d).\n", fname, iparam[0], *p);
+      Rf_error("%s:  Incorrect margin for ordering specified (margin=%d, dimension=%d).\n", fname, iparam[0], *p);
     }
     break;
 
   case NMix::WEIGHT:
     if (*nxw > 1){
       *err = 1;
-      error("%s:  Re-labeling based on mixture weights not possible if covariates on weights are present.\n", fname);
+      Rf_error("%s:  Re-labeling based on mixture weights not possible if covariates on weights are present.\n", fname);
     }
     break;
 
   case NMix::STEPHENS:
     if (iparam[0] != NMix::IDENTITY && iparam[0] != NMix::MEAN && iparam[0] != NMix::WEIGHT){
       *err = 1;
-      error("%s:  Unknown initial re-labeling algorithm (%d) supplied.\n", fname, iparam[0]);
+      Rf_error("%s:  Unknown initial re-labeling algorithm (%d) supplied.\n", fname, iparam[0]);
     }
     if (*nxw > 1 && iparam[0] == NMix::WEIGHT){
       *err = 1;
-      error("%s:  Initial re-labeling may not be based on mixture weights if covariates on weights present.\n", fname);
+      Rf_error("%s:  Initial re-labeling may not be based on mixture weights if covariates on weights present.\n", fname);
     }
     if (iparam[1] < 0 || iparam[1] >= *p){
       *err = 1;
-      error("%s:  Incorrect margin for ordering specified (margin=%d, dimension=%d).\n", fname, iparam[1], *p);
+      Rf_error("%s:  Incorrect margin for ordering specified (margin=%d, dimension=%d).\n", fname, iparam[1], *p);
     }
     if (iparam[2] <= 0){
       *err = 1;
-      error("%s:  Non-positive number (%d) of re-labeling iterations supplied.\n", fname, iparam[2]);
+      Rf_error("%s:  Non-positive number (%d) of re-labeling iterations supplied.\n", fname, iparam[2]);
     }
     if (iparam[3] < 0 || iparam[3] > 1){    
       *err = 1;
-      //error("%s:  Unknown type of step 2 of the Stephens' algorithm.\n", fname, iparam[3]);
-      error("%s:  Unknown type of step 2 of the Stephens' algorithm.\n", fname);               /* replaced the previous row on 08/12/2023 */
+      //Rf_error("%s:  Unknown type of step 2 of the Stephens' algorithm.\n", fname, iparam[3]);
+      Rf_error("%s:  Unknown type of step 2 of the Stephens' algorithm.\n", fname);               /* replaced the previous row on 08/12/2023 */
     }
     break;
 
   default:
     *err = 1;
-    error("%s:  Unimplemented type of the re-labeling algorithm.\n", fname);
+    Rf_error("%s:  Unimplemented type of the re-labeling algorithm.\n", fname);
   }
 
   /***** Pointers to sampled values *****/
@@ -139,16 +139,16 @@ NMix_NMixRelabel(const int*    type,
   }
 
   /***** logw:  Space to store log-weights                                 *****/
-  double *logw = Calloc(*K * *nxw, double);
+  double *logw = R_Calloc(*K * *nxw, double);
   NMix::w2logw(logw, chw, K, nxw);  
 
   /***** log_dets:  Space to calculate log_dets for MVN functions         *****/
-  double *log_dets = Calloc(2 * *K, double);  
+  double *log_dets = R_Calloc(2 * *K, double);  
   for (j = 0; j < *K; j++) log_dets[2*j + 1] = -(*p) * M_LN_SQRT_2PI;
   NMix::Li2log_dets(log_dets, chLi, K, p);
 
   /***** dwork_MVN:  Working space for MVN functions                       *****/
-  double *dwork_MVN = Calloc(*p, double);
+  double *dwork_MVN = R_Calloc(*p, double);
   AK_Basic::fillArray(dwork_MVN, 0.0, *p);
 
   /***** Declare cum_Pr_y                                                                     *****/
@@ -157,7 +157,7 @@ NMix_NMixRelabel(const int*    type,
   /*****     * as of November 2010, all are always stored                                     *****/
   /***** cum_Pr_y[j, i] = sum_{l=1}^j w_l * phi(y_i | mu_l, Sigma_l)                          *****/
   /***** Reset sum_Ir, hatPr_y, declare some additional needed quantities                     *****/  
-  double *cum_Pr_y = Calloc(*K * *n, double);
+  double *cum_Pr_y = R_Calloc(*K * *n, double);
 
   NMix::Pr_y_and_cum_Pr_y(Pr_y, cum_Pr_y, dwork_MVN, y, p, n, logw, chmu, chLi, log_dets, K, xw, nxw);
         /** Even for *type == NMix::STEPHENS, Pr_y is initialized only at first K * n places **/
@@ -169,12 +169,12 @@ NMix_NMixRelabel(const int*    type,
   bool cum_Pr_done[1] = {true};
 
   /***** Initial component allocations and related quantities *****/
-  int *mixN    = Calloc(*K, int);
-  int **rInv   = Calloc(*K, int*);
+  int *mixN    = R_Calloc(*K, int);
+  int **rInv   = R_Calloc(*K, int*);
   int **rInvPP = rInv;
-  int *mixNxw  = Calloc(*K * *nxw, int);
+  int *mixNxw  = R_Calloc(*K * *nxw, int);
   for (j = 0; j < *K; j++){
-    *rInvPP = Calloc(*n, int);
+    *rInvPP = R_Calloc(*n, int);
     rInvPP++;
   }
   NMix::updateAlloc(r, mixN, mixNxw, rInv, cum_Pr_y, dwork_MVN,
@@ -182,18 +182,18 @@ NMix_NMixRelabel(const int*    type,
 
   /***** beta, sigmaR2:   Space for NMix::updateCensObs to store regression coefficients and residual variances  *****/
   /*****                  * initialized by zeros                                                                 *****/
-  double *beta    = Calloc(*p * *p * *K, double);
-  double *sigmaR2 = Calloc(*p * *K, double);
+  double *beta    = R_Calloc(*p * *p * *K, double);
+  double *sigmaR2 = R_Calloc(*p * *K, double);
   AK_Basic::fillArray(beta,    0.0, *p * *p * *K);
   AK_Basic::fillArray(sigmaR2, 0.0, *p * *K);
 
   /***** Working space for NMix::updateCensObs *****/
   const int ldwork_updateCensObs = (*p == 1 ? *K : ((*p - 1) * *p)/2);
-  double *dwork_updateCensObs    = Calloc(ldwork_updateCensObs, double);
+  double *dwork_updateCensObs    = R_Calloc(ldwork_updateCensObs, double);
   AK_Basic::fillArray(dwork_updateCensObs, 0.0, ldwork_updateCensObs);
 
   /***** Working space for NMix::orderComp *****/
-  double *dwork_orderComp = Calloc(*K, double);
+  double *dwork_orderComp = R_Calloc(*K, double);
   AK_Basic::fillArray(dwork_orderComp, 0.0, *K);
 
 
@@ -289,7 +289,7 @@ NMix_NMixRelabel(const int*    type,
 
   /***** Space to store component allocations from all iterations of MCMC  *****/
   /***** * initialize by -1                                                *****/
-  rAll = Calloc(*n * *keepMCMC, int);
+  rAll = R_Calloc(*n * *keepMCMC, int);
   AK_Basic::fillArray(rAll, -1, *n * *keepMCMC);
 
   /***** Loop over MCMC iterations to calculate Pr_y and rAll.                                   *****/
@@ -377,13 +377,13 @@ NMix_NMixRelabel(const int*    type,
     case 0:                   /***** TRANSPORTATION version of the Stephens' algorithm *****/                 
 
       /***** Initialize variables for lp_transbig *****/
-      lp_costs    = Calloc(1 + *K * *K, double);
-      lp_solution = Calloc(*K * *K, double);
-      lp_r_signs  = Calloc(*K, int);
-      lp_r_rhs    = Calloc(*K, double);
-      lp_c_signs  = Calloc(*K, int);
-      lp_c_rhs    = Calloc(*K, double);
-      lp_integers = Calloc(*K, int);
+      lp_costs    = R_Calloc(1 + *K * *K, double);
+      lp_solution = R_Calloc(*K * *K, double);
+      lp_r_signs  = R_Calloc(*K, int);
+      lp_r_rhs    = R_Calloc(*K, double);
+      lp_c_signs  = R_Calloc(*K, int);
+      lp_c_rhs    = R_Calloc(*K, double);
+      lp_integers = R_Calloc(*K, int);
 
       lp_costs[0] = 0.0;
       for (j = 0; j < *K; j++){
@@ -408,7 +408,7 @@ NMix_NMixRelabel(const int*    type,
         /***** Step 2 of Stephens' algorithm        *****/
         /***** * change labeling                    *****/
         *err = 1;
-        error("%s:  Transportation version of the Stephens' algorithm not (yet?) implemented.\n", fname);    
+        Rf_error("%s:  Transportation version of the Stephens' algorithm not (yet?) implemented.\n", fname);    
         NMix::Stephens_step2_transport(nchangeP, chorder, chrank, lp_costs, lp_solution, lp_r_signs, lp_r_rhs, lp_c_signs, lp_c_rhs, lp_integers, hatPr_y, Pr_y, keepMCMC, n, K);
         nchanges = *nchangeP;
         nchangeP++;
@@ -418,13 +418,13 @@ NMix_NMixRelabel(const int*    type,
       }
 
       /***** Cleaning of the space allocated for search version of the Stephens' algorithm *****/
-      Free(lp_integers);
-      Free(lp_c_rhs);
-      Free(lp_c_signs);
-      Free(lp_r_rhs);
-      Free(lp_r_signs);
-      Free(lp_solution);
-      Free(lp_costs);
+      R_Free(lp_integers);
+      R_Free(lp_c_rhs);
+      R_Free(lp_c_signs);
+      R_Free(lp_r_rhs);
+      R_Free(lp_r_signs);
+      R_Free(lp_solution);
+      R_Free(lp_costs);
       break;                   /*** break case 0              ***/
 
     case 1:                   /***** SEARCH version of the Stephens' algorithm *****/
@@ -433,13 +433,13 @@ NMix_NMixRelabel(const int*    type,
       Kfact = 1;
       for (j = 2; j <= *K; j++) Kfact *= j;
   
-      order_perm    = Calloc(Kfact * *K, int);
-      tmporder_perm = Calloc(Kfact * *K, int);
-      rank_perm     = Calloc(Kfact * *K, int);
+      order_perm    = R_Calloc(Kfact * *K, int);
+      tmporder_perm = R_Calloc(Kfact * *K, int);
+      rank_perm     = R_Calloc(Kfact * *K, int);
       Misc::generatePermutations(&Kfact, order_perm, tmporder_perm, rank_perm, K);
 
       /***** Array to store indeces (values from {0, ..., K!}) of currently used permutations *****/
-      index = Calloc(*keepMCMC, int);
+      index = R_Calloc(*keepMCMC, int);
       Misc::findIndexOfPermutation(index, chorder, order_perm, K, keepMCMC);
 
       /***** Main Re-labeling (Algorithm 2, p. 802 of Stephens, 2000) *****/
@@ -465,10 +465,10 @@ NMix_NMixRelabel(const int*    type,
       }
 
       /***** Cleaning of the space allocated for search version of the Stephens' algorithm *****/
-      Free(index);
-      Free(rank_perm);
-      Free(tmporder_perm);
-      Free(order_perm);
+      R_Free(index);
+      R_Free(rank_perm);
+      R_Free(tmporder_perm);
+      R_Free(order_perm);
       break;                   /*** break case 1              ***/
     }                          /*** end of switch (iparam[3]) ***/
     Rprintf((char*)("\n"));    
@@ -489,9 +489,9 @@ NMix_NMixRelabel(const int*    type,
   NMix::sum_Ir(sum_Ir, rAll, chrank, K, n, keepMCMC);
 
   /***** Re-shuffle columns in Pr_y *****/
-  double *work_reorder = Calloc(*K, double);
+  double *work_reorder = R_Calloc(*K, double);
   NMix::reorder_Pr_y(Pr_y, work_reorder, chorder, keepMCMC, n, K);  
-  Free(work_reorder);
+  R_Free(work_reorder);
 
   /***** Calculate posterior means of model parameters (using re-labeled sample)                            *****/
   NMix::PosterMeanMixParam(pm_w, pm_mu, pm_Q, pm_Sigma, pm_Li, K, chw, chmu, chQ, chSigma, chLi, chorder, p, keepMCMC, nxw);
@@ -500,23 +500,23 @@ NMix_NMixRelabel(const int*    type,
 /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/
 /***** Cleaning                                                                                           *****/
 /***** %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *****/ 
-  Free(rAll);
-  Free(dwork_orderComp);
-  Free(dwork_updateCensObs);
-  Free(beta);
-  Free(sigmaR2);
+  R_Free(rAll);
+  R_Free(dwork_orderComp);
+  R_Free(dwork_updateCensObs);
+  R_Free(beta);
+  R_Free(sigmaR2);
   rInvPP = rInv;
   for (j = 0; j < *K; j++){
-    Free(*rInvPP);
+    R_Free(*rInvPP);
     rInvPP++;
   }
-  Free(rInv);
-  Free(mixN);
-  Free(mixNxw);
-  Free(cum_Pr_y);
-  Free(dwork_MVN);
-  Free(log_dets);
-  Free(logw);
+  R_Free(rInv);
+  R_Free(mixN);
+  R_Free(mixNxw);
+  R_Free(cum_Pr_y);
+  R_Free(dwork_MVN);
+  R_Free(log_dets);
+  R_Free(logw);
 
   return;
 }

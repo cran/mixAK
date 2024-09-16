@@ -352,7 +352,7 @@ updateRanEf(double*  b,
  
       default:
         *err = 1;
-        error("%s: Unimplemented distributional type (%d).\n", fname, *distP);
+        Rf_error("%s: Unimplemented distributional type (%d).\n", fname, *distP);
       }
 
       /*** Compute log-likelihood, score and information matrix for current estimates. ***/    
@@ -374,7 +374,7 @@ updateRanEf(double*  b,
         //Rprintf((char*)("eta.fixed <- "));
 	//AK_Basic::printVec4R(eta_fixedrespP[s], *nrespP[s]);        
         /***** END DEBUG CODE *****/
-        error("%s: TRAP, infinite log-likelihood for response profile %d, cluster %d.\n", fname, s + 1, i + 1);
+        Rf_error("%s: TRAP, infinite log-likelihood for response profile %d, cluster %d.\n", fname, s + 1, i + 1);
       }
       loglik += loglik_s;
 
@@ -452,7 +452,7 @@ updateRanEf(double*  b,
       /*** Try dpotrf, it happens sometimes that dpptrf fails but dpotrf not ***/
       /*** +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ ***/
       //F77_CALL(dpotrf)("L", dim_b, Li_full_backup, dim_b, err);            
-      if (*err) error("%s:  Cholesky decomposition of the precision matrix of full conditional distribution failed (cluster %d).\n", fname, i + 1);
+      if (*err) Rf_error("%s:  Cholesky decomposition of the precision matrix of full conditional distribution failed (cluster %d).\n", fname, i + 1);
       
       /*** Copy lower triangle of Li_full_backup back to Li_full ***/
       /*** +++++++++++++++++++++++++++++++++++++++++++++++++++++ ***/
@@ -591,7 +591,7 @@ updateRanEf(double*  b,
  
         default:
           *err = 1;
-          error("%s: Unimplemented distributional type (%d).\n", fname, *distP);
+          Rf_error("%s: Unimplemented distributional type (%d).\n", fname, *distP);
         }
 
         /*** Compute b_prop (pointed to by b_resp), shift bscaled_resp ***/
@@ -686,7 +686,7 @@ updateRanEf(double*  b,
         /*** Cholesky decomposition of precision matrix of the reversal proposal distribution of bscaled[i]   ***/
         F77_CALL(dpptrf)("L", dim_b, Li_full2, err FCONE);                 /** this should never fail... **/
         if (*err){
-          error("%s:  Cholesky decomposition of the precision matrix of the reversal proposal distribution failed (cluster %d).\n", fname, i + 1);
+          Rf_error("%s:  Cholesky decomposition of the precision matrix of the reversal proposal distribution failed (cluster %d).\n", fname, i + 1);
         }
 
         /*** Compute log(|Q_reversal|^{1/2}) = sum(log(Li_full2[j,j]))  ***/

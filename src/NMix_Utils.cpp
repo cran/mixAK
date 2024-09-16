@@ -159,7 +159,7 @@ Li2Sigma(double* Sigma,  int* err,  const double* Li,  const int* K,  const int*
     }
     
     F77_CALL(dpptri)("L", p, SigmaP, err FCONE);
-    if (*err) error("NMix::Li2Sigma: Computation of Sigma failed.\n");
+    if (*err) Rf_error("NMix::Li2Sigma: Computation of Sigma failed.\n");
     SigmaP += LTp;
   }
 
@@ -218,7 +218,7 @@ muLi2beta_sigmaR2(double* beta,  double* sigmaR2,   double* work,
     }
     
     F77_CALL(dpptri)("L", p, Sigma, &err FCONE);
-    if (err) error("NMix::muLi2beta_sigmaR2: Computation of Sigma failed.\n");
+    if (err) Rf_error("NMix::muLi2beta_sigmaR2: Computation of Sigma failed.\n");
 
     Stat::BLA(betaP, sigmaR2P, dwork, &err, muP, Sigma, p);
     betaP    += *p_p;
@@ -307,7 +307,7 @@ Moments(double* Mean,
       dfP++;
       break;
     default:
-      error("%s: Unimplemented mixture distribution specified.\n", fname);    
+      Rf_error("%s: Unimplemented mixture distribution specified.\n", fname);    
     }
 
     VarP   = Var + ix * LTp;
@@ -344,7 +344,7 @@ Moments(double* Mean,
         dfP++;
         break;
       default:
-        error("%s: Unimplemented mixture distribution specified.\n", fname);    
+        Rf_error("%s: Unimplemented mixture distribution specified.\n", fname);    
       }
 
       VarP   = Var + ix * LTp;
@@ -697,7 +697,7 @@ prior_derived(const int* p,
       /*** D_Li = Cholesky decomposition of Dinv ***/
       AK_Basic::copyArray(D_LiP, DinvP, LTp);
       F77_CALL(dpptrf)("L", p, D_LiP, err FCONE);      
-      if (*err) error("%s:  Cholesky decomposition of Dinv[%d] failed.\n", fname, j);
+      if (*err) Rf_error("%s:  Cholesky decomposition of Dinv[%d] failed.\n", fname, j);
 
       /*** log_dets based on D ***/
       *log_dets_DP = 0.0;                                   /*** log_dets_D[0, j] will be log(|D[j]|^{-1/2}) = sum(log(D_Li_{j}[l,l]))   ***/
@@ -779,7 +779,7 @@ init_derived(const int* p,
       break;
     default:
       *err = 1;
-      error("%s: Unimplemented mixture distribution specified.\n", fname);    
+      Rf_error("%s: Unimplemented mixture distribution specified.\n", fname);    
     }
     log_detsP++;
   }

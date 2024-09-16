@@ -172,7 +172,7 @@ updateFixEf(double* beta,
 
       /*** Cholesky decomposition of precision matrix Q_full of full conditional distribution of beta[s]   ***/
       F77_CALL(dpptrf)("L", p_fiP, Li_full, err FCONE);                 /** this should never fail... **/
-      if (*err) error("%s: Cholesky decomposition of the precision matrix of full conditional distribution failed.\n", fname);
+      if (*err) Rf_error("%s: Cholesky decomposition of the precision matrix of full conditional distribution failed.\n", fname);
 
       /*** Compute log(|Q_full[s]|^{1/2}) = sum(log(Li_full[s][j,j])) ***/
       Li_fullP = Li_full;
@@ -297,7 +297,7 @@ updateFixEf(double* beta,
  
       default:
         *err = 1;
-        error("%s: Unimplemented distributional type (%d).\n", fname, *distP);
+        Rf_error("%s: Unimplemented distributional type (%d).\n", fname, *distP);
       }
 
       /*** Compute log-likelihood, score and information matrix for current estimates ***/    
@@ -308,7 +308,7 @@ updateFixEf(double* beta,
       //Rprintf((char*)("\nLoglik: %g"), loglik);
       if (!R_finite(loglik)){
         *err = 1;
-        error("%s: TRAP, infinite log-likelihood for response profile %d.\n", fname, s + *R_c + 1);
+        Rf_error("%s: TRAP, infinite log-likelihood for response profile %d.\n", fname, s + *R_c + 1);
       }
 
       /*** Canonical mean and Cholesky decomposition of the precision matrix of the proposal distribution ***/

@@ -89,7 +89,7 @@ NMix_PED(double* PED,
   int *invalid_windpoptP;
  
   /***** work array *****/
-  double *work = Calloc((*Kmax)*2 + (*Kmax * *nxw)*4 + (*p)*5 + 6 + 2*(*Kmax)*p_p + 2*(*Kmax)*(*p) + 2*LTp, double);
+  double *work = R_Calloc((*Kmax)*2 + (*Kmax * *nxw)*4 + (*p)*5 + 6 + 2*(*Kmax)*p_p + 2*(*Kmax)*(*p) + 2*LTp, double);
   double *sigma1   = work;                         /** std. deviations for chain 1 in univariate case                                            **/
   double *sigma2   = sigma1 + *Kmax;               /** std. deviations for chain 2 in univariate case                                            **/
   double *cumw1    = sigma2 + *Kmax;               /** cummulative mixture weights for chain 1                                                   **/
@@ -448,7 +448,7 @@ NMix_PED(double* PED,
   *PEDweighted = *Dbar + *wpopt;  
 
   /***** Cleaning *****/
-  Free(work);
+  R_Free(work);
 
   return;
 }    /** end of function NMix_PED **/

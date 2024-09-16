@@ -18,6 +18,7 @@
 
 #include <R.h>
 #include <Rmath.h>
+#include <R_ext/RS.h>
 
 #include "AK_Basic.h"
 #include "NMix_Utils.h"

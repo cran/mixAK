@@ -120,7 +120,7 @@ fullCondMean_WeightsMeansVars_NC(double* fcm_weight,     double* logfcm_weight, 
       }
       F77_CALL(dpptrf)("L", p, ifcm_Lstart, err FCONE);                 /** this should never fail... **/
       if (*err){ 
-        warning("NMix::fullCondMean_MeansVars_NC:  Cholesky decomposition of (E[Q|...])^{-1} failed.\n");
+        Rf_warning("NMix::fullCondMean_MeansVars_NC:  Cholesky decomposition of (E[Q|...])^{-1} failed.\n");
         return;
       }
     
@@ -217,7 +217,7 @@ fullCondMean_WeightsMeansVars_NC(double* fcm_weight,     double* logfcm_weight, 
       }
       F77_CALL(dpptrf)("L", p, ifcm_Lstart, err FCONE);                 /** this should never fail... **/
       if (*err){ 
-        warning("NMix::fullCondMean_MeansVars_NC:  Cholesky decomposition of (E[Q|...])^{-1} failed.\n");
+        Rf_warning("NMix::fullCondMean_MeansVars_NC:  Cholesky decomposition of (E[Q|...])^{-1} failed.\n");
         return;
       }
     

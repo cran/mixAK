@@ -22,6 +22,7 @@
 #define _NMIX_DEVIANCE_H_
 
 #include <R.h>
+#include <R_ext/Error.h>
 
 #include "AK_Basic.h"
 

@@ -145,7 +145,7 @@ RJMCMCsplit(int* accept,           double* log_AR,
   /***** =================================================== *****/
   Rand::RotationMatrix(P, dwork_misc, iwork_misc, err, p);
   if (*err){ 
-    warning("%s: Rand::RotationMatrix failed.\n", fname);    
+    Rf_warning("%s: Rand::RotationMatrix failed.\n", fname);    
     return;
   }
   r_u(u, log_dens_u, pars_dens_u, p);
@@ -262,7 +262,7 @@ RJMCMCsplit(int* accept,           double* log_AR,
     AK_Basic::copyArray(SigmastarTemp, Sigmastar, LTp);
     F77_CALL(dspev)("V", "L", p, SigmastarTemp, Lambda_dspev, V_dspev, p, dwork_misc, err FCONE FCONE);    /** eigen values in ascending order  **/
     if (*err){
-      warning("%s: Spectral decomposition of Sigma[%d] failed.\n", fname, jstar);    
+      Rf_warning("%s: Spectral decomposition of Sigma[%d] failed.\n", fname, jstar);    
       return;
     }
     //AK_LAPACK::spevAsc2spevDesc(Lambdastar, Vstar, Lambda_dspev, V_dspev, p);                /** eigen values in descending order       **/
@@ -270,7 +270,7 @@ RJMCMCsplit(int* accept,           double* log_AR,
     //                       of I. Papageorgiou
     AK_LAPACK::correctMatGE(Vstar, dwork_misc, iwork_misc, err, p);                            /** be sure that det(Vstar) = 1 and not -1 **/
     if (*err){
-      warning("%s: Correction of V[%d] failed.\n", fname, jstar);    
+      Rf_warning("%s: Correction of V[%d] failed.\n", fname, jstar);    
       return;
     }
 
@@ -330,7 +330,7 @@ RJMCMCsplit(int* accept,           double* log_AR,
     /***** Check adjacency condition needed for reversibility *****/
     /***** - no need to check it if K = 1                     *****/
     if (*K > 1){
-      //warning("%s: IS IT NECESSARY TO IMPLEMENT ADJACENCY CONDITION FOR p > 1???\n", fname);
+      //Rf_warning("%s: IS IT NECESSARY TO IMPLEMENT ADJACENCY CONDITION FOR p > 1???\n", fname);
       // NOT YET NEEDED AS IN THE COMBINE MOVE A PAIR IS SAMPLED FROM ALL PAIRS
     }
 
@@ -352,13 +352,13 @@ RJMCMCsplit(int* accept,           double* log_AR,
     AK_Basic::copyArray(L1, Sigma1, LTp);
     F77_CALL(dpptrf)("L", p, L1, err FCONE);
     if (*err){ 
-      warning("%s: Cholesky decomposition of proposed Sigma1 failed.\n", fname);    
+      Rf_warning("%s: Cholesky decomposition of proposed Sigma1 failed.\n", fname);    
       return;
     }
     AK_Basic::copyArray(L2, Sigma2, LTp);
     F77_CALL(dpptrf)("L", p, L2, err FCONE);
     if (*err){
-      warning("%s: Cholesky decomposition of proposed Sigma2 failed.\n", fname);    
+      Rf_warning("%s: Cholesky decomposition of proposed Sigma2 failed.\n", fname);    
       return;
     }
 
@@ -366,13 +366,13 @@ RJMCMCsplit(int* accept,           double* log_AR,
     AK_Basic::copyArray(Q1, L1, LTp);
     F77_CALL(dpptri)("L", p, Q1, err FCONE);
     if (*err){
-      warning("%s: Inversion of proposed Sigma1 failed.\n", fname);    
+      Rf_warning("%s: Inversion of proposed Sigma1 failed.\n", fname);    
       return;
     }
     AK_Basic::copyArray(Q2, L2, LTp);
     F77_CALL(dpptri)("L", p, Q2, err FCONE);
     if (*err){
-      warning("%s: Inversion of proposed Sigma2 failed.\n", fname);    
+      Rf_warning("%s: Inversion of proposed Sigma2 failed.\n", fname);    
       return;
     }
 
@@ -397,7 +397,7 @@ RJMCMCsplit(int* accept,           double* log_AR,
     //NMix::RJMCMC_logJacLambdaVSigma(log_dlambdaV_dSigma, dlambdaV_dSigma, dwork_misc, iwork_misc, err,
     //                                Lambdastar, Vstar, Sigmastar, p, &AK_Basic::_ZERO_INT);
     //if (*err){ 
-    //  warning("%s: RJMCMC_logJacLambdaVSigma failed.\n", fname);    
+    //  Rf_warning("%s: RJMCMC_logJacLambdaVSigma failed.\n", fname);    
     //  return;
     //}
     
@@ -646,7 +646,7 @@ RJMCMCsplit(int* accept,           double* log_AR,
 
     F77_CALL(dpptrf)("L", p, Listar, err FCONE);
     if (*err){ 
-      error("%s: Cholesky decomposition of proposed Q1 failed.\n", fname);     // this should never happen
+      Rf_error("%s: Cholesky decomposition of proposed Q1 failed.\n", fname);     // this should never happen
     }
 
     muOldP += *p * (*K - jstar - 1);
@@ -680,7 +680,7 @@ RJMCMCsplit(int* accept,           double* log_AR,
 
     F77_CALL(dpptrf)("L", p, Listar, err FCONE);
     if (*err){ 
-      error("%s: Cholesky decomposition of proposed Q1 failed.\n", fname);     // this should never happen
+      Rf_error("%s: Cholesky decomposition of proposed Q1 failed.\n", fname);     // this should never happen
     }
 
     /*** log_dets ***/

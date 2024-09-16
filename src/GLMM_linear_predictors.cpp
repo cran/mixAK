@@ -202,7 +202,7 @@ linear_predictors_fixed_updated(double* eta_fixed,
 	break;
 
       default:
-        error("GLMM::linear_predictors_fixed_updated: Unimplemented distributional type (%d).\n", *distP);
+        Rf_error("GLMM::linear_predictors_fixed_updated: Unimplemented distributional type (%d).\n", *distP);
     }
 
     for (i = 0; i < *I; i++){                 /* loop over clusters */
@@ -304,7 +304,7 @@ linear_predictors_random_updated(double* eta_random,
 	break;
 
       default:
-        error("GLMM::linear_predictors_random_updated: Unimplemented distributional type (%d).\n", *distP);
+        Rf_error("GLMM::linear_predictors_random_updated: Unimplemented distributional type (%d).\n", *distP);
     }
 
 

@@ -18,6 +18,7 @@
 
 #include <R.h>
 #include <R_ext/Applic.h>        // for Fortran dqrdc2 and dqrqy
+#include <R_ext/Error.h>
 
 #include "AK_Basic.h"
 #include "AK_BLAS.h"

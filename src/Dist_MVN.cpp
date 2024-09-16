@@ -7,6 +7,7 @@
 //
 //  CREATED:   05/11/2007
 //             19/04/2022 FCONE added where needed
+//             16/09/2024 error --> Rf_error
 //
 // ======================================================================
 //
@@ -412,7 +413,7 @@ dMVN1_R(double* log_dens,  double* Q,              double* work,       int* err,
 {
   /*** Cholesky decomposition of Q, i.e., Q = Li %*% t(Li) ***/
   F77_CALL(dpptrf)("L", nx, Q, err FCONE);
-  if (*err) error("Dist::dMVN1_R: Cholesky decomposition of the precision matrix failed.\n");
+  if (*err) Rf_error("Dist::dMVN1_R: Cholesky decomposition of the precision matrix failed.\n");
 
   int i;
   double *dP;
@@ -454,7 +455,7 @@ rMVN1_R(double* x,         double* log_dens,  double* Q,              int* err,
 {
   /*** Cholesky decomposition of Q, i.e., Q = Li %*% t(Li) ***/
   F77_CALL(dpptrf)("L", nx, Q, err FCONE);
-  if (*err) error("Dist::rMVN1_R: Cholesky decomposition of the precision matrix failed.\n");
+  if (*err) Rf_error("Dist::rMVN1_R: Cholesky decomposition of the precision matrix failed.\n");
 
   int i;
   double *dP1, *dP2;
@@ -499,7 +500,7 @@ rMVN2_R(double* x,      double* mu,         double* log_dens,
 {
   /*** Cholesky decomposition of Q, i.e., Q = Li %*% t(Li) ***/
   F77_CALL(dpptrf)("L", nx, Q, err FCONE);
-  if (*err) error("Dist::rMVN2_R: Cholesky decomposition of the precision matrix failed.\n");
+  if (*err) Rf_error("Dist::rMVN2_R: Cholesky decomposition of the precision matrix failed.\n");
 
   /*** Solve Li %*% w = b, then w = Li^{-1} %*% b  ***/
   /*** Store the solution in mu                    ***/

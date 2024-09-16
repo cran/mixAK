@@ -171,7 +171,7 @@ newData(double* Y_c,
         break;
 
       default:
-        error("GLMM::newData: Unimplemented continuous distributional type (%d).\n", *dist_s);
+        Rf_error("GLMM::newData: Unimplemented continuous distributional type (%d).\n", *dist_s);
     }
 
     dist_s++;
@@ -220,7 +220,7 @@ newData(double* Y_c,
         break;
 
       default:
-        error("GLMM::newData: Unimplemented discrete distributional type (%d).\n", *dist_s);
+        Rf_error("GLMM::newData: Unimplemented discrete distributional type (%d).\n", *dist_s);
     }
 
     dist_s++;

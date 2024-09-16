@@ -16,6 +16,7 @@
 #define _NMIX_RJMCMC_LOG_JAC_LAMBDA_V_SIGMA_H_
 
 #include <R.h>
+#include <R_ext/Error.h>
 
 #include "AK_BLAS.h"
 #include "AK_LAPACK.h"
